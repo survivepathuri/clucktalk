@@ -1,5 +1,5 @@
 """Domain errors. Each carries a customer-safe English message, and the tool layer turns it into the
-structured MCP error (PRD Section 8, rule 4). No codes, IDs, or JSON in the message."""
+structured MCP error (docs/DESIGN.md §5, rule 4). No codes, IDs, or JSON in the message."""
 
 from __future__ import annotations
 

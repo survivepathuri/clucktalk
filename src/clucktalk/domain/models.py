@@ -34,7 +34,7 @@ class DailyRecord:
 
 @dataclass(frozen=True)
 class House:
-    house_id: str  # stable ID used across tools (PRD Section 8, rule 5)
+    house_id: str  # stable ID used across tools (docs/DESIGN.md §5, rule 5)
     number: int  # the farmer says "shed two" / "house 2" / "kotam 2"
     kind: HouseKind
     breed: str

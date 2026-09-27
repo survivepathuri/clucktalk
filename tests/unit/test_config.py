@@ -34,7 +34,7 @@ def test_invalid_port_fails_loudly(port):
 
 
 def test_non_local_host_requires_auth_token():
-    # PRD 7.4: localhost bind in local mode, auth token when exposed.
+    # docs/DESIGN.md §4: localhost bind in local mode, auth token when exposed.
     with pytest.raises(ConfigError, match="CLUCKTALK_AUTH_TOKEN"):
         load_settings({"CLUCKTALK_HOST": "0.0.0.0"})
     s = load_settings({"CLUCKTALK_HOST": "0.0.0.0", "CLUCKTALK_AUTH_TOKEN": "t"})

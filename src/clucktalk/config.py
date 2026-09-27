@@ -1,6 +1,6 @@
 """Single source of truth for the product name and runtime settings.
 
-Renaming the product is a one-line change to APP_NAME (PRD Section 19, decision 1).
+Renaming the product is a one-line change to APP_NAME (docs/DESIGN.md §11).
 Settings come only from environment variables. Invalid values raise ConfigError at startup rather than
 falling back silently (Rule 6).
 """
@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 APP_NAME = "CluckTalk"
-APP_NAME_TE = "కోడి మిత్ర"  # Telugu subtitle: pending native-speaker review (PRD Section 5)
+APP_NAME_TE = "కోడి మిత్ర"  # Telugu subtitle: pending native-speaker review (docs/DESIGN.md §8)
 TAGLINE_EN = "The voice farm manager for India's poultry farmers."
 
 REPO_ROOT = Path(__file__).resolve().parents[2]

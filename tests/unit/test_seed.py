@@ -1,4 +1,4 @@
-"""The demo farm must tell the same story on any day it is run (PRD 12.7), and must stay fictional."""
+"""The demo farm must tell the same story on any day it is run (docs/DESIGN.md §10), and must stay fictional."""
 
 import json
 from datetime import date

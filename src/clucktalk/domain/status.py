@@ -1,7 +1,7 @@
 """Per-house status: flock numbers plus ranked findings. Pure function of (house, as_of).
 
 Returns structured data only. Spoken and card text (text_en / text_te) are rendered from these same
-numbers in the tool layer, so voice and screen cannot disagree (PRD Section 9, cross-modal).
+numbers in the tool layer, so voice and screen cannot disagree (docs/DESIGN.md §6, cross-modal).
 """
 
 from __future__ import annotations

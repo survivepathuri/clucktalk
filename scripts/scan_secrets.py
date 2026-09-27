@@ -1,4 +1,4 @@
-"""Rule 9 guard: fail if a credential-looking string or a real .env file would be committed.
+"""Rule 9 guard: fail if a credential-looking string, a real .env file, or private notes would be committed.
 
 Scans every file git would track (tracked + untracked-but-not-ignored), so it runs before the
 first commit too. Exit codes: 0 = clean, 1 = secret found, 2 = scan could not run.
@@ -25,6 +25,9 @@ SECRET_PATTERNS = {
 }
 # .env files hold real values; only the committed template is allowed.
 ALLOWED_ENV_FILES = {".env.example"}
+# Maintainer-only notes stay local (gitignored); they must never become committable.
+PRIVATE_DIRS = ("private/",)
+PRIVATE_FILES = {"CLAUDE.local.md"}
 MAX_BYTES = 2_000_000
 
 
@@ -46,6 +49,9 @@ def scan(root: Path) -> tuple[list[str], int]:
         rel = path.relative_to(root).as_posix()
         if path.name.startswith(".env") and path.name not in ALLOWED_ENV_FILES:
             findings.append(f"{rel}: .env file is not git-ignored (never commit real env files)")
+            continue
+        if rel in PRIVATE_FILES or rel.startswith(PRIVATE_DIRS):
+            findings.append(f"{rel}: private file is not git-ignored (keep private/ and CLAUDE.local.md local)")
             continue
         if not path.is_file() or path.stat().st_size > MAX_BYTES:
             continue

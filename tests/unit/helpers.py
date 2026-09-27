@@ -1,5 +1,5 @@
 """Small builders for hand-made test houses. Expected values in tests are computed by hand from the
-definitions (PRD and the cited breed table), never copied from code output."""
+definitions (docs/DESIGN.md and the cited breed table), never copied from code output."""
 
 from __future__ import annotations
 

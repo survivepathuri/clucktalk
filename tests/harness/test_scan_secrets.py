@@ -45,3 +45,25 @@ def test_gitignored_env_file_is_allowed(tmp_path):
 
 def test_not_a_git_repo_is_an_error_not_a_pass(tmp_path):
     assert scan_secrets.main(["--root", str(tmp_path)]) == 2
+
+
+def test_unignored_private_notes_fail(tmp_path):
+    repo = _git_repo(tmp_path)
+    (repo / "private").mkdir()
+    (repo / "private" / "notes.md").write_text("plan\n", encoding="utf-8")
+    assert scan_secrets.main(["--root", str(repo)]) == 1
+
+
+def test_unignored_claude_local_fails(tmp_path):
+    repo = _git_repo(tmp_path)
+    (repo / "CLAUDE.local.md").write_text("@private/x.md\n", encoding="utf-8")
+    assert scan_secrets.main(["--root", str(repo)]) == 1
+
+
+def test_gitignored_private_notes_are_allowed(tmp_path):
+    repo = _git_repo(tmp_path)
+    (repo / ".gitignore").write_text("private/\nCLAUDE.local.md\n", encoding="utf-8")
+    (repo / "private").mkdir()
+    (repo / "private" / "notes.md").write_text("plan\n", encoding="utf-8")
+    (repo / "CLAUDE.local.md").write_text("@private/notes.md\n", encoding="utf-8")
+    assert scan_secrets.main(["--root", str(repo)]) == 0

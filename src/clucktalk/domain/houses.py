@@ -1,6 +1,6 @@
 """Resolve how a farmer names a house ("shed two", "kotam 2", "house no. 2", "do number") to a House.
 
-Synonyms follow PRD Section 8, rule 6 (shed / house / kotam) and cover Hinglish numbers.
+Synonyms follow docs/DESIGN.md §5, rule 6 (shed / house / kotam) and cover Hinglish numbers.
 Ambiguous or unknown references raise UnknownHouse with the list of real labels. Never guess.
 """
 

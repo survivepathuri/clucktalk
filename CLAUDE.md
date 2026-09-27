@@ -79,7 +79,7 @@ python tasks.py run         :: local demo: Simulator + MCP server, mock mode
 - If context gets long, summarize into the progress log and start a fresh session rather than continuing degraded.
 
 ### RULE 11: Independent review for every P0 feature
-- After finishing a P0 feature, run a separate review pass (fresh subagent/session). It reads the code cold against the tool contract rules, functional requirements, and known-mistake countermeasures. Fix its findings before moving on.
+- After finishing a P0 feature, run a separate review pass (fresh subagent/session). It reads the code cold against `docs/DESIGN.md` (§5 tool contract rules, §6 behavior requirements, §7 safety rules, §12 pitfalls). Fix its findings before moving on.
 
 ### RULE 12: Cross-platform
 - User is on Windows (cmd). All scripts are Python (`tasks.py`), with no bash/make dependency. Build paths with `pathlib`. Document Windows commands first.

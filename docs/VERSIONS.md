@@ -45,9 +45,9 @@ HANDSHAKE_PROTOCOL_VERSIONS = 2024-11-05, 2025-03-26, 2025-06-18, 2025-11-25   (
 MODERN_PROTOCOL_VERSIONS    = 2026-07-28                                         (stateless per-request envelope)
 ```
 
-- **2025-11-25**, the version the PRD requires, is the SDK's newest *handshake* version (`LATEST_HANDSHAKE_VERSION`). It keeps the PRD's `initialize → tools/list → tools/call → resources/read` flow and `Mcp-Session-Id` sessions. ✅
-- A newer protocol, **2026-07-28**, exists and is stateless (no `initialize`). The PRD and Amazon's Alexa+ docs (per PRD Sources) target 2025-11-25. **Decision: stay on 2025-11-25** unless Amazon's current Alexa+ docs say otherwise; a contract test will assert the negotiated version.
-- SDK 2.2.0 ships MCP Apps server support in-core (`mcp.server.apps`: `Apps` extension, `_meta.ui.resourceUri`, `text/html;profile=mcp-app`). The source comment says the TypeScript SDK ships it as the separate `@modelcontextprotocol/ext-apps` package, which the PRD (12.2) names for the card side.
+- **2025-11-25**, the version the design targets (docs/DESIGN.md §2), is the SDK's newest *handshake* version (`LATEST_HANDSHAKE_VERSION`). It keeps the `initialize → tools/list → tools/call → resources/read` flow and `Mcp-Session-Id` sessions. ✅
+- A newer protocol, **2026-07-28**, exists and is stateless (no `initialize`). Amazon's Alexa+ docs target 2025-11-25. **Decision: stay on 2025-11-25** unless Amazon's current Alexa+ docs say otherwise; a contract test will assert the negotiated version.
+- SDK 2.2.0 ships MCP Apps server support in-core (`mcp.server.apps`: `Apps` extension, `_meta.ui.resourceUri`, `text/html;profile=mcp-app`). The source comment says the TypeScript SDK ships it as the separate `@modelcontextprotocol/ext-apps` package, which the card side uses.
 
 ## Not yet verified: moved to the "AWS setup" task (no AWS account yet; user decision 2026-09-27)
 

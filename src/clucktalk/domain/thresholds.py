@@ -5,7 +5,7 @@ early warning. They are not veterinary standards, and user-facing text must neve
 """
 
 # Sourced: farms with mortality < 5% were more profitable than those > 10%
-# (jebas.org/ojs/index.php/jebas/article/view/832, 2023; PRD Section 3).
+# (jebas.org/ojs/index.php/jebas/article/view/832, 2023; docs/DESIGN.md §9).
 CUM_MORTALITY_WATCH_PCT = 5.0
 CUM_MORTALITY_ALERT_PCT = 10.0
 
