@@ -1,0 +1,41 @@
+# Secrets (Rule 9): never commit real env files or credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials
+.aws/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+
+# AWS CDK
+cdk.out/
+cdk.context.json
+
+# Local runtime data and logs
+.local/
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+
+# Private maintainer context: never commit (CLAUDE.md Rule 9)
+private/
+CLAUDE.local.md

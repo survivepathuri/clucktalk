@@ -1,0 +1,6 @@
+# Normalize line endings: LF in the repo, so every OS gets identical files.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ttf binary
+*.woff2 binary

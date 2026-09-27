@@ -1,0 +1,18 @@
+[project]
+name = "clucktalk"
+version = "0.0.0"
+description = "CluckTalk: the voice farm manager for India's poultry farmers (Alexa+ MCP add-on)"
+license = "MIT"
+requires-python = ">=3.13"
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+extend-exclude = ["cdk.out", "node_modules"]
+
+[tool.ruff.lint]
+# E722 bare except, BLE001 blind except, S110 try-except-pass: enforce Rule 6 (fail loud, never fake).
+select = ["E", "F", "W", "I", "B", "UP", "E722", "BLE001", "S110"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
