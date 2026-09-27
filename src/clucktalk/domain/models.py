@@ -63,7 +63,7 @@ class House:
 
     @property
     def label_te(self) -> str:
-        return f"షెడ్ {self.number}"  # pending native-speaker review
+        return f"షెడ్ {self.number}"
 
     def records_until(self, as_of: date) -> tuple[DailyRecord, ...]:
         return tuple(r for r in self.records if r.day <= as_of)

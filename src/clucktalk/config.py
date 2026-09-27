@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 APP_NAME = "CluckTalk"
-APP_NAME_TE = "కోడి మిత్ర"  # Telugu subtitle: pending native-speaker review (docs/DESIGN.md §8)
+APP_NAME_TE = "కోడి మిత్ర"  # Telugu subtitle; review status per string in docs/TELUGU_REVIEW.md
 TAGLINE_EN = "The voice farm manager for India's poultry farmers."
 
 REPO_ROOT = Path(__file__).resolve().parents[2]

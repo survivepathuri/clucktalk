@@ -1,4 +1,5 @@
-"""Fixed bilingual strings (docs/DESIGN.md §8). Every Telugu string is pending native-speaker review."""
+"""Fixed bilingual strings (docs/DESIGN.md §8). Telugu follows the glossary (§8.1);
+review status per string in docs/TELUGU_REVIEW.md."""
 
 from __future__ import annotations
 
@@ -10,10 +11,6 @@ class Text:
     en: str
     te: str
 
-
-# Telugu below was drafted without a native speaker. Keep this flag True until a reviewer signs off,
-# and list the reviewer + date in docs/SOURCES.md when it flips.
-TE_REVIEWED = False
 
 # Customer-safe fallback for any failure the tool itself did not describe (docs/DESIGN.md §5, rule 4).
 GENERIC_ERROR = Text(

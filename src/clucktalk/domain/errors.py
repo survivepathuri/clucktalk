@@ -1,6 +1,6 @@
 """Domain errors. Each carries a customer-safe message and one next step, in English and Telugu; the tool layer
 turns it into the structured MCP error (docs/DESIGN.md §5, rule 4). No codes, IDs, or JSON in the message.
-Telugu is pending native-speaker review (clucktalk.i18n.TE_REVIEWED)."""
+Telugu: review status per string in docs/TELUGU_REVIEW.md."""
 
 from __future__ import annotations
 

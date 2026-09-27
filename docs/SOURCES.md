@@ -28,3 +28,10 @@ Nothing below is used in code yet. When it is, the exact passage and the file th
 | Sanitisers (chlorine, peroxide, organic acids) removed at least 24 h before and after; stabiliser; water withheld 2–3 h; vaccine consumed in 1–2 h | Elanco, *Best Practices in Water Vaccination*, 16 June 2025. farmanimal.elanco.com/us/poultry/article/best-practices-water-vaccination | **Verified** (quotes checked). |
 
 Sources disagree on water withholding (about 1 h to 3 h) and the drinking window (1–2 h to 2–3 h). CluckTalk will present these as ranges with sources and defer to the vaccine label and the farmer's vet or company.
+
+## Telugu wording review
+Telugu strings are reviewed by a native speaker. Status is tracked **per string** in `data/i18n/telugu_approvals.json` and shown in `docs/TELUGU_REVIEW.md` (pending strings first). An approval covers one exact English + Telugu pair; any new or changed string, in either language, is pending until reviewed again. Word choices follow the glossary in `docs/DESIGN.md` §8.1.
+
+| Date | Reviewer | Scope |
+|---|---|---|
+| 2026-09-27 | Pathuri Venkateswara Rao (native Telugu speaker) | All 82 Telugu strings in the code at that date (80 unique English + Telugu pairs), after applying the reviewer's corrections and glossary |

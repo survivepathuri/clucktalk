@@ -1,0 +1,565 @@
+{
+  "note": "Per-string Telugu review approvals. Written by scripts/telugu_review.py --approve-pending; each entry covers one exact English + Telugu pair (key = sha256 of both). Do not edit keys by hand.",
+  "approvals": [
+    {
+      "key": "916fe4adb2030d80",
+      "en": ", laying {num(hen_day)}% {when.en}",
+      "te": ", {when.te} గుడ్ల ఉత్పత్తి {num(hen_day)}%",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "6c9f9cfa0d9f280f",
+      "en": ", average weight {num(avg_w)} g",
+      "te": ", సగటు బరువు {num(avg_w)} గ్రా.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "7d174c5aecfad323",
+      "en": ", average weight {num(avg_w)} g against the {out.breed} target of {num(tgt_w)} g",
+      "te": ", సగటు బరువు {num(avg_w)} గ్రా. ({out.breed} లక్ష్యం {num(tgt_w)} గ్రా.)",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "d54ba7f313469a49",
+      "en": "Feed conversion is {num(fcr)}, above the target of {num(tgt)}.",
+      "te": "FCR {num(fcr)}, లక్ష్యం {num(tgt)} కంటే ఎక్కువ.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "6344a35f18d4d684",
+      "en": "I don't have a verified growth standard for {breed} yet, so I can't compare weight or feed to target.",
+      "te": "{breed} కి ధృవీకరించిన పెరుగుదల ప్రమాణం నా దగ్గర ఇంకా లేదు, కాబట్టి బరువు లేదా ఫీడ్‌ను లక్ష్యంతో పోల్చలేను.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "26c17af31809a542",
+      "en": "I have no verified {breed} growth standard, so weight and feed are not compared to a target.",
+      "te": "{breed} కి ధృవీకరించిన పెరుగుదల ప్రమాణం లేదు, కాబట్టి బరువు, ఫీడ్‌ను లక్ష్యంతో పోల్చలేదు.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "4b41f4668f3d3168",
+      "en": "Ask me for {days_left} {'day' if days_left == 1 else 'days'} or fewer.",
+      "te": "{days_left} రోజులు లేదా అంతకంటే తక్కువకు అడగండి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "6cfc6c3cccb84dbe",
+      "en": "No readings for {d} {plural(d, 'day', 'days')}.",
+      "te": "{d} రోజులుగా రీడింగులు లేవు.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "6ba4aeacc66a35b6",
+      "en": "{h.label_en} needs attention now.",
+      "te": "{h.label_te} కి వెంటనే శ్రద్ధ అవసరం.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "a9f36c70c071f47d",
+      "en": "{h.label_en} needs a closer look.",
+      "te": "{h.label_te} ని కొంచెం గమనించాలి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "52f23bab78223a2c",
+      "en": "{h.label_en} is doing well.",
+      "te": "{h.label_te} బాగుంది.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "58326d46202ddf4c",
+      "en": "{head.en} Order {b} {plural(b, 'bag', 'bags')} now.",
+      "te": "{head.te} ఇప్పుడే {b} బస్తాలు ఆర్డర్ చేయండి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "e464d35a44e09cf9",
+      "en": "a feed plan for {house.label_en}",
+      "te": "{house.label_te} ఫీడ్ ప్లాన్",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "b342a589b307056d",
+      "en": "a feed plan for {house.label_en}, because no live birds are recorded there",
+      "te": "{house.label_te} ఫీడ్ ప్లాన్ (అక్కడ బతికి ఉన్న కోళ్లు నమోదు కాలేదు)",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "0e7778a73f3a6536",
+      "en": "the status of {house.label_en}",
+      "te": "{house.label_te} స్థితి",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "a469c2bc4152e402",
+      "en": "the status of {house.label_en}, because no live birds are recorded there",
+      "te": "{house.label_te} స్థితి (అక్కడ బతికి ఉన్న కోళ్లు నమోదు కాలేదు)",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "99043af36a4d05d4",
+      "en": "{label_en} has reached the end of the {breed} growth table (day {max_day}), so I can't project its feed.",
+      "te": "{label_te} {breed} పెరుగుదల పట్టిక చివరి రోజు ({max_day}) కి చేరింది, కాబట్టి ఫీడ్‌ను అంచనా వేయలేను.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "81d0a907be57d585",
+      "en": "I can plan only {days_left} more {'day' if days_left == 1 else 'days'} for {label_en}, up to day {max_day} of the {breed} growth table.",
+      "te": "{label_te} కి {breed} పెరుగుదల పట్టికలోని {max_day}వ రోజు వరకు, ఇంకా {days_left} రోజులకే ప్రణాళిక చేయగలను.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "79a5bb1986ae850f",
+      "en": "{num(out.live_birds)} birds",
+      "te": "{num(out.live_birds)} కోళ్లు",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "2d112c33f1f35e26",
+      "en": "Switch from {change.from_phase} to {change.to_phase} feed in {n} {plural(n, 'day', 'days')}.",
+      "te": "{n} రోజుల్లో {PHASE_TE[change.from_phase]} ఫీడ్ నుండి {PHASE_TE[change.to_phase]} ఫీడ్‌కు మార్చండి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "782da30da845385a",
+      "en": "Day {out.age_days}, {num(out.live_birds)} birds",
+      "te": "{out.age_days}వ రోజు, {num(out.live_birds)} కోళ్లు",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "75e6d7781ae63e49",
+      "en": "My latest reading for {out.label_en} is {d} days old, so please check the stock count.",
+      "te": "{out.label_te} తాజా రీడింగ్ {d} రోజుల క్రితం తీసుకున్నది, కాబట్టి దయచేసి నిల్వను ఒకసారి చూసుకోండి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "6cc6e26c6d8dd63c",
+      "en": "{out.label_en}: {need.en} You have {num(out.stock_kg)} kg, {cover.en}",
+      "te": "{out.label_te}: {need.te} మీ దగ్గర {num(out.stock_kg)} కిలోలు ఉన్నాయి; ఇది {cover.te}",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "f8e4d8eefc8dbe52",
+      "en": "enough until the {p.breed} growth table ends in {d} {plural(d, 'day', 'days')}.",
+      "te": "{p.breed} పెరుగుదల పట్టిక ముగిసే {d} రోజుల వరకు సరిపోతుంది.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "003ab8324f03223b",
+      "en": "{p.label_en}: stock is {cover.en}",
+      "te": "{p.label_te}: ఫీడ్ నిల్వ {cover.te}",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "fd48161345ac73da",
+      "en": "I couldn't find a shed called {reference}.",
+      "te": "{reference} అనే షెడ్ నాకు కనబడలేదు.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "7dbc111507f78bd8",
+      "en": "I don't have enough recent records to work out {what}.",
+      "te": "{what_te} లెక్కించడానికి నా దగ్గర సరిపడా తాజా రికార్డులు లేవు.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "5bb2de3b0a85866e",
+      "en": "{num(deaths)} birds died {when.en}, after hardly any deaths this past week.",
+      "te": "{when.te} {num(deaths)} కోళ్లు చనిపోయాయి; గత వారం దాదాపు ఏవీ చనిపోలేదు.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "615faed73fa96231",
+      "en": "{num(deaths)} birds died {when.en}, against about {num(base)} a day this past week.",
+      "te": "{when.te} {num(deaths)} కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు {num(base)}.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "9b0eb1fcd1c8460e",
+      "en": "Laying is {num(pct)}% {when.en}, down {num(drop)} points from the {LAYING_AVG_DAYS}-day average of {num(avg)}%.",
+      "te": "{when.te} గుడ్ల ఉత్పత్తి {num(pct)}%, {LAYING_AVG_DAYS} రోజుల సగటు {num(avg)}% కంటే {num(drop)} పాయింట్లు తక్కువ.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "feee18d75f93ce2e",
+      "en": "Feed check for every house.",
+      "te": "అన్ని షెడ్ల ఫీడ్ తనిఖీ.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "6bf79e84911ffd9b",
+      "en": "Sunday",
+      "te": "ఆదివారం",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "19152b413a1d535b",
+      "en": "No reorder needed yet.",
+      "te": "ఇంకా ఆర్డర్ అవసరం లేదు.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "ae30406fee36afca",
+      "en": "There are more houses; ask about one by shed number.",
+      "te": "ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "66e37b7ad8790269",
+      "en": "Order {b} {plural(b, 'bag', 'bags')} of {p.bag_kg} kg now: about {rupees(p.suggested_order_cost_inr)} before GST and delivery, at the simulated price of {rupees(p.feed_price_per_kg_inr)} a kilo.",
+      "te": "ఇప్పుడే {p.bag_kg} కిలోల {b} బస్తాలు ఆర్డర్ చేయండి: అంచనా ధర (డెమో) కిలోకు {rupees(p.feed_price_per_kg_inr)} ప్రకారం సుమారు {rupees(p.suggested_order_cost_inr)} (జీఎస్‌టీ, డెలివరీ కాకుండా).",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "faedcdcb4a648117",
+      "en": "Add today's readings for this shed, then ask me again.",
+      "te": "ఈ షెడ్ ఈరోజు రీడింగులు నమోదు చేసి, మళ్ళీ అడగండి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "d1b55d1e8f14c5bb",
+      "en": "today",
+      "te": "ఈరోజు",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "b194eab9cebbda64",
+      "en": "Here's your farm today.",
+      "te": "ఈరోజు మీ ఫారం స్థితి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "dcbb78a4033eabad",
+      "en": "Ask me for a feed plan to hear how much to order.",
+      "te": "ఎంత ఆర్డర్ చేయాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "8849c5381abb166e",
+      "en": "How many days should I plan for?",
+      "te": "ఎన్ని రోజులకు ప్రణాళిక చేయాలి?",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "f31a7d4c0a6a5f6b",
+      "en": "enough for at least {d} {plural(d, 'day', 'days')}.",
+      "te": "కనీసం {d} రోజులు సరిపోతుంది.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "c11a92a026a3755d",
+      "en": "CluckTalk",
+      "te": "కోడి మిత్ర",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "a0ad41f5f29e5977",
+      "en": "Birds ate {drop}% less than expected: {got} g per bird against {exp} g.",
+      "te": "కోళ్లు అంచనా కంటే {drop}% తక్కువ తిన్నాయి: ఒక్కో కోడికి {got} గ్రా., అంచనా {exp} గ్రా.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "1b7bf7bfc8dd3023",
+      "en": "Sorry, I couldn't do that just now.",
+      "te": "క్షమించండి, ఇప్పుడు అది చేయలేకపోయాను.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "981e7c1e1e6a64b3",
+      "en": "Sorry, I didn't catch all the details for that.",
+      "te": "క్షమించండి, దానికి కావలసిన వివరాలు పూర్తిగా అందలేదు.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "471eeb258dc49b06",
+      "en": "Thursday",
+      "te": "గురువారం",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "444a8c17d67d8e7c",
+      "en": "in the latest count",
+      "te": "తాజా లెక్కలో",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "b0b9e5a0f3f809f5",
+      "en": "Please check the birds today and call your vet if deaths continue.",
+      "te": "దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ డాక్టర్‌కి ఫోన్ చేయండి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "31a0142cd5eb16a6",
+      "en": "Please say that again with a little more detail.",
+      "te": "దయచేసి కొంచెం ఎక్కువ వివరాలతో మళ్ళీ చెప్పండి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "e01ee3d85bdf9747",
+      "en": "Please ask me again in a moment.",
+      "te": "దయచేసి కొద్దిసేపటి తర్వాత మళ్ళీ అడగండి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "6afdd2f2c94c090a",
+      "en": "My farm tools are still being set up, so right now I can only explain what I do.",
+      "te": "నా ఫారం సేవలు ఇంకా సిద్ధమవుతున్నాయి, కాబట్టి ప్రస్తుతం నేను ఏమి చేస్తానో మాత్రమే చెప్పగలను.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "630e069c12a2d81e",
+      "en": "I can plan feed for {MIN_HORIZON_DAYS} to {MAX_HORIZON_DAYS} days ahead.",
+      "te": "నేను {MIN_HORIZON_DAYS} నుండి {MAX_HORIZON_DAYS} రోజుల వరకు ఫీడ్ ప్లాన్ చేయగలను.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "aeb1e4c9b8978f9d",
+      "en": "I'm {app_en}, your poultry farm helper.",
+      "te": "నేను {app_te}, మీ కోళ్ల ఫారం సహాయకుడిని.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "98fd7320a85b90a0",
+      "en": "Say a shed number to hear its full feed plan and the simulated cost.",
+      "te": "పూర్తి ఫీడ్ ప్లాన్, అంచనా ధర (డెమో) కోసం షెడ్ నంబర్ చెప్పండి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "c884532c14887506",
+      "en": "pre-starter",
+      "te": "ప్రీ-స్టార్టర్",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "b4ee61ab6dae575e",
+      "en": "finisher",
+      "te": "ఫినిషర్",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "d8a8097e350893f4",
+      "en": "There is no feed stock left.",
+      "te": "ఫీడ్ నిల్వ అయిపోయింది.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "2e6ac2737f9fdff5",
+      "en": "Feed stock runs out by tomorrow.",
+      "te": "ఫీడ్ నిల్వ రేపటికే అయిపోతుంది.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "4681a56bbc08f710",
+      "en": "Feed stock lasts about {days} {plural(days, 'day', 'days')}.",
+      "te": "ఫీడ్ నిల్వ సుమారు {days} రోజులు సరిపోతుంది.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "07b6a11aaaf7a083",
+      "en": "Feed stock and reorder",
+      "te": "ఫీడ్ నిల్వ, ఆర్డర్",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "8b72e7c6ff24df7b",
+      "en": "Ask me how the shed is doing instead.",
+      "te": "బదులుగా షెడ్ ఎలా ఉందో అడగండి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "981194b63117fa08",
+      "en": "Wednesday",
+      "te": "బుధవారం",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "289d28d9c1f92e85",
+      "en": "The flock is past day {md} of the {breed} growth table, so weight is not compared to a target.",
+      "te": "బ్యాచ్ {breed} పెరుగుదల పట్టికలోని {md}వ రోజు దాటింది, కాబట్టి బరువును లక్ష్యంతో పోల్చలేదు.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "6134a20e980dd82f",
+      "en": "Tuesday",
+      "te": "మంగళవారం",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "14ccc8c01ad0284a",
+      "en": "Your sheds are {', '.join(known_labels)}. Which one do you mean?",
+      "te": "మీ షెడ్లు: {', '.join(known_labels_te)}. మీరు ఏది అడుగుతున్నారు?",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "59f7dae6662b01a4",
+      "en": "You can ask me:",
+      "te": "మీరు నన్ను ఇలా అడగవచ్చు:",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "8e21b0d2b549a54e",
+      "en": "the next {h} days need about {num(out.need_kg)} kg of feed.",
+      "te": "రాబోయే {h} రోజులకు సుమారు {num(out.need_kg)} కిలోల ఫీడ్ కావాలి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "e8214139a1f389c8",
+      "en": "This uses the {out.breed} standard because there are only a few records.",
+      "te": "రికార్డులు తక్కువగా ఉన్నందున ఇది {out.breed} ప్రమాణం ఆధారంగా లెక్కించబడింది.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "472283b8a5102120",
+      "en": "not enough for tomorrow.",
+      "te": "రేపటికి సరిపోదు.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "ead4633662c59e58",
+      "en": "tomorrow needs about {num(out.need_kg)} kg of feed.",
+      "te": "రేపటికి సుమారు {num(out.need_kg)} కిలోల ఫీడ్ కావాలి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "50f5f8399e51fa80",
+      "en": "Total losses are {num(pct)}% of the birds placed.",
+      "te": "వేసిన కోళ్లలో మొత్తం {num(pct)}% చనిపోయాయి.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "2cb0e5112bbb35e0",
+      "en": "Saturday",
+      "te": "శనివారం",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "111395224738a549",
+      "en": "Friday",
+      "te": "శుక్రవారం",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "d7503a9f7b11330c",
+      "en": "House {self.number}",
+      "te": "షెడ్ {self.number}",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "e866601f4288705a",
+      "en": "How a shed is doing",
+      "te": "షెడ్ ఎలా ఉందో",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "a8e48c3e6164f90e",
+      "en": "Average weight is {num(w)} g, {pct}% of the {breed} target of {num(tgt)} g.",
+      "te": "సగటు బరువు {num(w)} గ్రా., {breed} లక్ష్యం {num(tgt)} గ్రా.లో {pct}%.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "21adeb0002d29382",
+      "en": "enough for about {d} days.",
+      "te": "సుమారు {d} రోజులు సరిపోతుంది.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "433b395ae82e1722",
+      "en": "enough for about {d} {plural(d, 'day', 'days')}, until {weekday_en(last)}.",
+      "te": "సుమారు {d} రోజులు, {weekday_te(last)} వరకు సరిపోతుంది.",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "381395c83e9ad6a4",
+      "en": "Monday",
+      "te": "సోమవారం",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    },
+    {
+      "key": "1434e27622acd383",
+      "en": "starter",
+      "te": "స్టార్టర్",
+      "reviewer": "Pathuri Venkateswara Rao",
+      "date": "2026-09-27"
+    }
+  ]
+}

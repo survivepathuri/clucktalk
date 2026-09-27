@@ -1,7 +1,7 @@
 """``get_farm_status``: how one house, or the whole farm, is doing today (docs/DESIGN.md §5, §6).
 
 Build order enforces the cross-modal rule: domain status -> rounded output model -> text rendered from the
-output model only (clucktalk.server.render). Telugu wording is pending native-speaker review.
+output model only (clucktalk.server.render). Telugu: review status per string in docs/TELUGU_REVIEW.md.
 """
 
 from __future__ import annotations

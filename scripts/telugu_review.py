@@ -1,15 +1,24 @@
-"""Generate docs/TELUGU_REVIEW.md: every Telugu string in the code with its English counterpart, plus rendered
-example answers from the demo farm, for review by a native speaker.
+"""Generate docs/TELUGU_REVIEW.md: every Telugu string in the code with its English counterpart and its review
+status, plus rendered example answers from the demo farm, for review by a native speaker.
+
+Review status is tracked per string in data/i18n/telugu_approvals.json. An approval covers one exact
+(English, Telugu) pair, so any new or changed string (either language) is automatically pending.
 
 Usage (Windows):
-    .venv\\Scripts\\python scripts\\telugu_review.py          write docs/TELUGU_REVIEW.md
-    .venv\\Scripts\\python scripts\\telugu_review.py --check  exit 1 if the file is out of date (used by a harness test)
+    .venv\\Scripts\\python scripts\\telugu_review.py            write docs/TELUGU_REVIEW.md
+    .venv\\Scripts\\python scripts\\telugu_review.py --check    exit 1 if the file is out of date (harness test)
+    .venv\\Scripts\\python scripts\\telugu_review.py --approve-pending --reviewer "NAME" --date YYYY-MM-DD
+                                                           record that NAME reviewed every pending string
+    .venv\\Scripts\\python scripts\\telugu_review.py --require-none-pending
+                                                           exit 1 if any string is pending (submission gate)
 """
 
 from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
+import json
 import sys
 from datetime import date
 from pathlib import Path
@@ -17,7 +26,35 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "src" / "clucktalk"
 OUT = ROOT / "docs" / "TELUGU_REVIEW.md"
+APPROVALS = ROOT / "data" / "i18n" / "telugu_approvals.json"
 EXAMPLE_DAY = date(2026, 9, 29)  # fixed, so the file only changes when wording changes
+
+
+def string_key(en: str | None, te: str) -> str:
+    """Identity of one reviewed pair. Changing either language gives a new key, so the pair is pending again."""
+    return hashlib.sha256(f"{en or ''}\x1f{te}".encode()).hexdigest()[:16]
+
+
+def load_approvals(path: Path = APPROVALS) -> dict[str, dict]:
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {a["key"]: a for a in data["approvals"]}
+
+
+def all_strings() -> list[dict]:
+    rows = []
+    for path in sorted(SRC.rglob("*.py")):
+        for row in collect(path):
+            row["key"] = string_key(row["en"], row["te"])
+            rows.append(row)
+    return rows
+
+
+def split_by_status(rows: list[dict], approvals: dict[str, dict]) -> tuple[list[dict], list[dict]]:
+    pending = [r for r in rows if r["key"] not in approvals]
+    approved = [r for r in rows if r["key"] in approvals]
+    return pending, approved
 
 
 def has_telugu(s: str) -> bool:
@@ -163,7 +200,9 @@ def rendered_examples() -> list[tuple[str, str, str]]:
     return out
 
 
-def render() -> str:
+def render(approvals: dict[str, dict] | None = None) -> str:
+    approvals = load_approvals() if approvals is None else approvals
+    pending, approved = split_by_status(all_strings(), approvals)
     lines = [
         "# Telugu review",
         "",
@@ -173,22 +212,36 @@ def render() -> str:
         "",
         "- `{name}` marks a value filled in at run time (a number, a shed label, a breed). Keep it in your wording.",
         "- Numbers are written with Western digits in both languages, and must stay identical to the English.",
-        "- Status: all Telugu below is **pending native-speaker review**",
-        "  (`TE_REVIEWED = False` in `src/clucktalk/i18n`).",
+        "- Words follow the glossary in `docs/DESIGN.md` §8.1.",
+        "- Status is tracked per string (`data/i18n/telugu_approvals.json`). An approval covers one exact English +",
+        "  Telugu pair: any new or changed string, in either language, is **pending** until reviewed again.",
         "",
-        "## 1. Strings in the code",
+        f"**Pending: {len(pending)}** · Approved: {len(approved)}",
         "",
-        "| # | English | Telugu | Where | Reviewer |",
-        "|---|---|---|---|---|",
+        f"## 1. Pending review ({len(pending)})",
+        "",
     ]
-    n = 0
-    for path in sorted(SRC.rglob("*.py")):
-        for row in collect(path):
-            n += 1
+    if pending:
+        lines += ["| # | English | Telugu | Where | Reviewer |", "|---|---|---|---|---|"]
+        for n, row in enumerate(pending, start=1):
             lines.append(f"| {n} | {_cell(row['en'])} | {_cell(row['te'])} | `{row['where']}` |  |")
+    else:
+        lines.append("Nothing pending.")
     lines += [
         "",
-        f"## 2. Whole answers as a farmer would hear or read them (demo farm, {EXAMPLE_DAY.isoformat()})",
+        f"## 2. Approved ({len(approved)})",
+        "",
+        "| # | English | Telugu | Where | Reviewed by | Date |",
+        "|---|---|---|---|---|---|",
+    ]
+    for n, row in enumerate(approved, start=1):
+        a = approvals[row["key"]]
+        lines.append(
+            f"| {n} | {_cell(row['en'])} | {_cell(row['te'])} | `{row['where']}` | {a['reviewer']} | {a['date']} |"
+        )
+    lines += [
+        "",
+        f"## 3. Whole answers as a farmer would hear or read them (demo farm, {EXAMPLE_DAY.isoformat()})",
         "",
         "Check that each sentence reads naturally as a whole, not only string by string.",
         "",
@@ -200,10 +253,47 @@ def render() -> str:
     return "\n".join(lines) + "\n"
 
 
+def approve_pending(reviewer: str, day: str, path: Path = APPROVALS) -> int:
+    """Record ``reviewer`` as having approved every currently pending string. Returns how many were added."""
+    date.fromisoformat(day)  # fail loudly on a malformed date
+    if not reviewer.strip():
+        raise ValueError("reviewer name is required")
+    approvals = load_approvals(path)
+    pending, _ = split_by_status(all_strings(), approvals)
+    for row in pending:
+        approvals[row["key"]] = {"key": row["key"], "en": row["en"], "te": row["te"], "reviewer": reviewer, "date": day}
+    data = {
+        "note": (
+            "Per-string Telugu review approvals. Written by scripts/telugu_review.py --approve-pending; each entry "
+            "covers one exact English + Telugu pair (key = sha256 of both). Do not edit keys by hand."
+        ),
+        "approvals": sorted(approvals.values(), key=lambda a: (a["date"], a["te"])),
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    return len({r["key"] for r in pending})
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--approve-pending", action="store_true")
+    parser.add_argument("--reviewer")
+    parser.add_argument("--date")
+    parser.add_argument("--require-none-pending", action="store_true")
     args = parser.parse_args(argv)
+    if args.approve_pending:
+        if not args.reviewer or not args.date:
+            parser.error("--approve-pending needs --reviewer and --date")
+        added = approve_pending(args.reviewer, args.date)
+        print(f"approved {added} pending string(s) for {args.reviewer} on {args.date}")
+    if args.require_none_pending:
+        pending, _ = split_by_status(all_strings(), load_approvals())
+        if pending:
+            print(f"{len(pending)} Telugu string(s) still pending review (docs/TELUGU_REVIEW.md §1)", file=sys.stderr)
+            return 1
+        print("No pending Telugu strings.")
+        return 0
     text = render()
     if args.check:
         current = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
