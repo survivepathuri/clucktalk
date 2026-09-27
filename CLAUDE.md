@@ -15,6 +15,7 @@ python tasks.py eval-fast   :: golden evals in mock mode, no AWS (after changing
 python tasks.py serve       :: MCP server only, demo data, http://127.0.0.1:8765/mcp
 python tasks.py run         :: local demo: Simulator + MCP server, mock mode
 .venv\Scripts\python -m ruff format .      :: auto-format
+.venv\Scripts\python scripts\telugu_review.py  :: regenerate docs\TELUGU_REVIEW.md after changing any Telugu or English wording
 .venv\Scripts\python -m pytest -q tests\unit   :: run one test folder
 ```
 - Local development and the reviewer path use a **Python venv only**. Docker/`docker-compose` is optional and must never be required.

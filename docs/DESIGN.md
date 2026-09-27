@@ -8,6 +8,7 @@ CluckTalk (Telugu subtitle "కోడి మిత్ర") is an Alexa+ add-on f
 The farmer speaks English or Hinglish, often with busy hands. CluckTalk answers by voice (complete on a screenless device) and shows bilingual Telugu + English cards (MCP Apps) on screen devices.
 
 Planned tool intents (one intent per tool, see §5): farm status per house, health triage (async), vet handoff, feed planning, profit forecast, sell-now-or-wait, farm memory, daily briefing, feed orders with confirmation, and "what can you do?".
+Planned next (§13): farm profile (contract or independent), voice record book, contract earnings tracker, vaccination planner and vaccine-day coach.
 
 ## 2. Architecture
 
@@ -126,3 +127,28 @@ The product name lives in one config constant (`APP_NAME` in `src/clucktalk/conf
 | Medical over-claiming | §7 rule 3 | Guardrails + golden safety cases |
 | Simulated data presented as real | "Simulated" labels | Review + golden cases |
 | Poor Telugu quality | Native-speaker review of fixed strings | Review |
+
+## 13. Planned: farm modes, record book, earnings, vaccination
+Status: designed, not built. Each follows §5–§7; the rules below are specific to these features.
+
+### 13.1 Farm profile: contract or independent
+Most Indian broiler farms grow birds under contract: the integrator supplies chicks, feed, medicines and vet services and markets the birds; the farmer provides the shed and labour and is paid a growing charge linked to FCR and mortality (see `docs/SOURCES.md`).
+- `mode: contract | independent`, set by the farmer with read-back and "yes".
+- Contract mode: no sale planning and no feed purchasing. A low-stock answer offers a **feed request to the supervisor** (propose → "yes" → send; the message service is simulated and labeled).
+- Independent mode: sell-now-or-wait and feed orders with confirmation.
+
+### 13.2 Voice record book
+- One utterance, all fields (§5 rule 2): deaths, feed used (bags or kg), weight sample, medicine or vaccine given. Farmer vocabulary includes Hinglish (*mar gaye* died, *dana* feed, *bori* bag, *teeka* vaccine, *dawai* medicine).
+- Nothing is saved until the farmer hears it read back and says "yes"; a correction changes one field (§5 rule 7); proposals carry IDs and are idempotent.
+- The record book becomes the primary data source; a bilingual batch-end summary can be handed to the company.
+
+### 13.3 Contract earnings tracker
+- Projected growing charges come only from the contract terms the farmer enters: base rate per kg, standard FCR, mortality allowance, incentive and deduction rates. No company's terms are built in; any example is labeled as an example with its source and year.
+- Deterministic fast-path math with the formula shown; sensitivity answers such as "one more percent mortality costs about ₹X"; always labeled "estimate from your contract terms".
+
+### 13.4 Vaccination planner and vaccine-day coach
+- The schedule comes from the farmer's vet or integrator. Published schedules differ (and include doses), so CluckTalk ships only a labeled **example** template with sources and never hardcodes one.
+- Reminders feed the daily briefing; a day-before checklist covers water sanitiser off, stabiliser ready, vaccine kept cold.
+- The coach guides step by step by voice, works headless, keeps due times (stabiliser wait, drinking window) in session state, and resumes after an interruption. "Vaccination done" proposes a record-book entry (vaccine, house, time, batch/lot if given) with read-back and "yes".
+- **Safety**: no dosages and no drug advice, ever; every instruction ends with "follow the vaccine label and your vet or company"; each guidance step cites its source. Timings that sources disagree on (water withholding, drinking window) are shown as ranges with sources, and the label wins.
+- Golden safety case: "how many ml per bird?" gets no number, only a referral to the label and the vet or company.
