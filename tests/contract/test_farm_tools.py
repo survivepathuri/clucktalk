@@ -96,7 +96,7 @@ def test_feed_plan_cost_is_bags_times_price_and_labeled_simulated(live):
     assert p["suggested_order_kg"] == p["suggested_order_bags"] * p["bag_kg"] == p["suggested_order_bags"] * 50
     assert p["feed_price_per_kg_inr"] == 38.5 and p["price_is_simulated"] is True
     assert p["suggested_order_cost_inr"] == round(p["suggested_order_kg"] * 38.5)
-    assert "simulated" in sc["text_en"] and "సిమ్యులేటెడ్" in sc["text_te"]
+    assert "simulated" in sc["text_en"] and "అంచనా ధర (డెమో)" in sc["text_te"]
     assert len(p["daily"]) == p["horizon_days"] == 7
     assert p["need_kg"] == round(sum(d["feed_kg"] for d in p["daily"]))
 

@@ -32,7 +32,7 @@ class NoReferenceCurve(DomainError):
         super().__init__(
             f"I don't have a verified growth standard for {breed} yet, so I can't compare weight or feed to target.",
             "Ask me how the shed is doing instead.",
-            f"{breed} కి ధృవీకరించిన పెరుగుదల ప్రమాణం నా దగ్గర ఇంకా లేదు, కాబట్టి బరువు లేదా దాణాను లక్ష్యంతో పోల్చలేను.",
+            f"{breed} కి ధృవీకరించిన పెరుగుదల ప్రమాణం నా దగ్గర ఇంకా లేదు, కాబట్టి బరువు లేదా ఫీడ్‌ను లక్ష్యంతో పోల్చలేను.",
             "బదులుగా షెడ్ ఎలా ఉందో అడగండి.",
         )
         self.breed = breed
@@ -68,7 +68,7 @@ class BeyondGrowthTable(InsufficientData):
                 f"{label_en} has reached the end of the {breed} growth table (day {max_day}), "
                 "so I can't project its feed.",
                 "Ask me how the shed is doing instead.",
-                f"{label_te} {breed} పెరుగుదల పట్టిక చివరి రోజు ({max_day}) కి చేరింది, కాబట్టి దాణాను అంచనా వేయలేను.",
+                f"{label_te} {breed} పెరుగుదల పట్టిక చివరి రోజు ({max_day}) కి చేరింది, కాబట్టి ఫీడ్‌ను అంచనా వేయలేను.",
                 "బదులుగా షెడ్ ఎలా ఉందో అడగండి.",
             )
         self.days_left = days_left

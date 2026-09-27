@@ -155,7 +155,7 @@ def _order(p: HouseFeedPlanOut) -> Text:
     return Text(
         f"Order {b} {plural(b, 'bag', 'bags')} of {p.bag_kg} kg now: about {rupees(p.suggested_order_cost_inr)} "
         f"before GST and delivery, at the simulated price of {rupees(p.feed_price_per_kg_inr)} a kilo.",
-        f"ఇప్పుడే {p.bag_kg} కిలోల {b} బస్తాలు ఆర్డర్ చేయండి: సిమ్యులేటెడ్ ధర కిలోకు "
+        f"ఇప్పుడే {p.bag_kg} కిలోల {b} బస్తాలు ఆర్డర్ చేయండి: అంచనా ధర (డెమో) కిలోకు "
         f"{rupees(p.feed_price_per_kg_inr)} ప్రకారం సుమారు {rupees(p.suggested_order_cost_inr)} "
         "(జీఎస్‌టీ, డెలివరీ కాకుండా).",
     )
@@ -205,11 +205,11 @@ def _house_plan(farm: Farm, house: House, as_of: date, horizon_days: int) -> Hou
     cover = _cover(out, as_of)
     h = out.horizon_days
     need = (
-        Text(f"tomorrow needs about {num(out.need_kg)} kg of feed.", f"రేపటికి సుమారు {num(out.need_kg)} కిలోల దాణా కావాలి.")
+        Text(f"tomorrow needs about {num(out.need_kg)} kg of feed.", f"రేపటికి సుమారు {num(out.need_kg)} కిలోల ఫీడ్ కావాలి.")
         if h == 1
         else Text(
             f"the next {h} days need about {num(out.need_kg)} kg of feed.",
-            f"రాబోయే {h} రోజులకు సుమారు {num(out.need_kg)} కిలోల దాణా కావాలి.",
+            f"రాబోయే {h} రోజులకు సుమారు {num(out.need_kg)} కిలోల ఫీడ్ కావాలి.",
         )
     )
     parts = [
@@ -224,7 +224,7 @@ def _house_plan(farm: Farm, house: House, as_of: date, horizon_days: int) -> Hou
         parts.append(
             Text(
                 f"My latest reading for {out.label_en} is {d} days old, so please check the stock count.",
-                f"{out.label_te} తాజా రీడింగ్ {d} రోజుల క్రితంది, కాబట్టి దయచేసి నిల్వను ఒకసారి చూసుకోండి.",
+                f"{out.label_te} తాజా రీడింగ్ {d} రోజుల క్రితం తీసుకున్నది, కాబట్టి దయచేసి నిల్వను ఒకసారి చూసుకోండి.",
             )
         )
     if change is not None:
@@ -232,7 +232,7 @@ def _house_plan(farm: Farm, house: House, as_of: date, horizon_days: int) -> Hou
         parts.append(
             Text(
                 f"Switch from {change.from_phase} to {change.to_phase} feed in {n} {plural(n, 'day', 'days')}.",
-                f"{n} రోజుల్లో {PHASE_TE[change.from_phase]} దాణా నుండి {PHASE_TE[change.to_phase]} దాణాకు మార్చండి.",
+                f"{n} రోజుల్లో {PHASE_TE[change.from_phase]} ఫీడ్ నుండి {PHASE_TE[change.to_phase]} ఫీడ్‌కు మార్చండి.",
             )
         )
     if out.basis == "breed_target":
@@ -249,7 +249,7 @@ def _house_plan(farm: Farm, house: House, as_of: date, horizon_days: int) -> Hou
 
 def _short(p: HouseFeedPlanOut, as_of: date) -> Text:
     cover = _cover(p, as_of)
-    head = Text(f"{p.label_en}: stock is {cover.en}", f"{p.label_te}: దాణా నిల్వ {cover.te}")
+    head = Text(f"{p.label_en}: stock is {cover.en}", f"{p.label_te}: ఫీడ్ నిల్వ {cover.te}")
     if not p.reorder_needed:
         return head
     b = p.suggested_order_bags
@@ -285,17 +285,19 @@ def build_plan(source: DemoFarmSource, house_ref: str | None, horizon_days: int)
                     )
                 )
         plans.sort(key=lambda p: (not p.reorder_needed, p.days_covered, p.number))
-        parts = [Text("Feed check for every house.", "అన్ని షెడ్ల దాణా తనిఖీ.")]
+        parts = [Text("Feed check for every house.", "అన్ని షెడ్ల ఫీడ్ తనిఖీ.")]
         items = [_short(p, as_of) for p in plans]
         items += [unavailable_text(u) for u in unavailable]
         parts += items[:MAX_SPOKEN_HOUSES]  # voice-only: at most 5 houses read out, planned or not
         if len(items) > MAX_SPOKEN_HOUSES:
-            parts.append(Text("There are more houses; ask about one by name.", "ఇంకా షెడ్లు ఉన్నాయి; పేరుతో అడగండి."))
+            parts.append(
+                Text("There are more houses; ask about one by shed number.", "ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి.")
+            )
         if any(p.reorder_needed for p in plans):
             parts.append(
                 Text(
-                    "Name a shed to hear its full plan and the simulated cost.",
-                    "పూర్తి ప్రణాళిక, సిమ్యులేటెడ్ ధర కోసం షెడ్ పేరు చెప్పండి.",
+                    "Say a shed number to hear its full feed plan and the simulated cost.",
+                    "పూర్తి ఫీడ్ ప్లాన్, అంచనా ధర (డెమో) కోసం షెడ్ నంబర్ చెప్పండి.",
                 )
             )
     return FeedPlanOutput(
@@ -330,7 +332,7 @@ def register(server: MCPServer, registry: CapabilityRegistry, source: DemoFarmSo
     registry.add(
         Capability(
             tool_name="plan_feed",
-            title=Text("Feed stock and reorder", "దాణా నిల్వ, ఆర్డర్"),
+            title=Text("Feed stock and reorder", "ఫీడ్ నిల్వ, ఆర్డర్"),
             example_en="How much feed does shed two need this week?",
         )
     )

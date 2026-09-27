@@ -100,7 +100,7 @@ def _per_bird_projection(house: House, as_of: date):
     if house.kind is HouseKind.LAYER:
         recent = records[-LAYER_BASELINE_DAYS:]
         if len(recent) < INTAKE_BASELINE_DAYS:
-            raise InsufficientData(f"a feed plan for {house.label_en}", f"{house.label_te} దాణా ప్రణాళిక")
+            raise InsufficientData(f"a feed plan for {house.label_en}", f"{house.label_te} ఫీడ్ ప్లాన్")
         avg = sum(1000 * r.feed_kg / _live_start(house, r.day) for r in recent) / len(recent)
         return (lambda _age: avg), "house_actual", None
 
@@ -133,13 +133,13 @@ def plan_feed(farm: Farm, house: House, as_of: date, horizon_days: int = DEFAULT
         raise InvalidInput(
             f"I can plan feed for {MIN_HORIZON_DAYS} to {MAX_HORIZON_DAYS} days ahead.",
             "How many days should I plan for?",
-            f"నేను {MIN_HORIZON_DAYS} నుండి {MAX_HORIZON_DAYS} రోజుల వరకు దాణా ప్రణాళిక చేయగలను.",
+            f"నేను {MIN_HORIZON_DAYS} నుండి {MAX_HORIZON_DAYS} రోజుల వరకు ఫీడ్ ప్లాన్ చేయగలను.",
             "ఎన్ని రోజులకు ప్రణాళిక చేయాలి?",
         )
     if house.live_birds(as_of) == 0:
         raise InsufficientData(
             f"a feed plan for {house.label_en}, because no live birds are recorded there",
-            f"{house.label_te} దాణా ప్రణాళిక (అక్కడ బతికి ఉన్న కోళ్లు నమోదు కాలేదు)",
+            f"{house.label_te} ఫీడ్ ప్లాన్ (అక్కడ బతికి ఉన్న కోళ్లు నమోదు కాలేదు)",
         )
 
     max_age = None

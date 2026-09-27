@@ -133,7 +133,7 @@ def _finding(f: Finding, breed: str, is_today: bool) -> FindingOut:
             pct = round(float(v["cum_mortality_pct"]), 1)
             vals = {"cum_mortality_pct": pct}
             en = f"Total losses are {num(pct)}% of the birds placed."
-            te = f"మొత్తం నష్టం వేసిన కోళ్లలో {num(pct)}%."
+            te = f"వేసిన కోళ్లలో మొత్తం {num(pct)}% చనిపోయాయి."
         case "mortality_spike":
             deaths, base = int(v["deaths"]), round(float(v["baseline_daily_avg"]))
             vals = {"deaths": deaths, "baseline_per_day": base}
@@ -166,7 +166,7 @@ def _finding(f: Finding, breed: str, is_today: bool) -> FindingOut:
             fcr, tgt = round(float(v["farm_fcr"]), 2), round(float(v["target_fcr"]), 2)
             vals = {"farm_fcr": fcr, "target_fcr": tgt}
             en = f"Feed conversion is {num(fcr)}, above the target of {num(tgt)}."
-            te = f"దాణా మార్పిడి నిష్పత్తి (FCR) {num(fcr)}, లక్ష్యం {num(tgt)} కంటే ఎక్కువ."
+            te = f"FCR {num(fcr)}, లక్ష్యం {num(tgt)} కంటే ఎక్కువ."
         case "laying_drop":
             pct, avg = round(float(v["hen_day_pct"]), 1), round(float(v["avg_7d_pct"]), 1)
             drop = round(avg - pct, 1)  # from the rounded values, so the spoken arithmetic adds up
@@ -184,11 +184,11 @@ def _finding(f: Finding, breed: str, is_today: bool) -> FindingOut:
             md = int(v["max_day"])
             vals = {"max_day": md}
             en = f"The flock is past day {md} of the {breed} growth table, so weight is not compared to a target."
-            te = f"మంద {breed} పెరుగుదల పట్టికలోని {md}వ రోజు దాటింది, కాబట్టి బరువును లక్ష్యంతో పోల్చలేదు."
+            te = f"బ్యాచ్ {breed} పెరుగుదల పట్టికలోని {md}వ రోజు దాటింది, కాబట్టి బరువును లక్ష్యంతో పోల్చలేదు."
         case "no_reference_curve":
             vals = {}
             en = f"I have no verified {breed} growth standard, so weight and feed are not compared to a target."
-            te = f"{breed} కి ధృవీకరించిన పెరుగుదల ప్రమాణం లేదు, కాబట్టి బరువు, దాణాను లక్ష్యంతో పోల్చలేదు."
+            te = f"{breed} కి ధృవీకరించిన పెరుగుదల ప్రమాణం లేదు, కాబట్టి బరువు, ఫీడ్‌ను లక్ష్యంతో పోల్చలేదు."
         case _:
             raise ValueError(f"no wording for finding {f.code!r}")  # a new finding must get wording first
     return FindingOut(code=f.code, level=level, text_en=en, text_te=te, values=vals)
@@ -201,12 +201,12 @@ def _when(is_today: bool) -> Text:
 
 def _feed_stock_finding(days: int, stock_kg: float) -> FindingOut:
     if stock_kg <= 0:
-        en, te = "There is no feed stock left.", "దాణా నిల్వ అయిపోయింది."
+        en, te = "There is no feed stock left.", "ఫీడ్ నిల్వ అయిపోయింది."
     elif days == 0:
-        en, te = "Feed stock runs out by tomorrow.", "దాణా నిల్వ రేపటికే అయిపోతుంది."
+        en, te = "Feed stock runs out by tomorrow.", "ఫీడ్ నిల్వ రేపటికే అయిపోతుంది."
     else:
         en = f"Feed stock lasts about {days} {plural(days, 'day', 'days')}."
-        te = f"దాణా నిల్వ సుమారు {days} రోజులు సరిపోతుంది."
+        te = f"ఫీడ్ నిల్వ సుమారు {days} రోజులు సరిపోతుంది."
     return FindingOut(code="feed_stock_low", level="watch", text_en=en, text_te=te, values={"days_covered": days})
 
 
@@ -285,11 +285,11 @@ def _house_out(farm: Farm, house: House, as_of) -> HouseStatusOut:
 
 SAFETY_STEP = Text(
     "Please check the birds today and call your vet if deaths continue.",
-    "దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ పశువైద్యుడిని సంప్రదించండి.",
+    "దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ డాక్టర్‌కి ఫోన్ చేయండి.",
 )
 FEED_PLAN_HINT = Text(
     "Ask me for a feed plan to hear how much to order.",
-    "ఎంత ఆర్డర్ చేయాలో తెలుసుకోవడానికి నన్ను దాణా ప్రణాళిక అడగండి.",
+    "ఎంత ఆర్డర్ చేయాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి.",
 )
 
 
@@ -347,7 +347,9 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
         items += [unavailable_text(u) for u in unavailable]
         parts += items[:MAX_SPOKEN_HOUSES]  # voice-only: at most 5 houses read out, checked or not
         if len(items) > MAX_SPOKEN_HOUSES:
-            parts.append(Text("There are more houses; ask about one by name.", "ఇంకా షెడ్లు ఉన్నాయి; పేరుతో అడగండి."))
+            parts.append(
+                Text("There are more houses; ask about one by shed number.", "ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి.")
+            )
     parts += _closing(spoken)
     level = min((h.level for h in houses), key=lambda lv: order[lv], default="unknown")
     if unavailable and level == "ok":

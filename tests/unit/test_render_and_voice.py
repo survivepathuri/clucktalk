@@ -71,7 +71,7 @@ def test_farm_status_speaks_at_most_five_houses_and_no_screen_reference():
     assert len(out.houses) == 7
     spoken = sum(out.text_en.count(f"House {n} ") for n in range(1, 8))
     assert spoken == MAX_SPOKEN_HOUSES
-    assert "ask about one by name" in out.text_en
+    assert "ask about one by shed number" in out.text_en
     assert "card" not in out.text_en.lower() and "screen" not in out.text_en.lower()
     assert unbacked_numbers(out.model_dump(), out.text_en, out.text_te) == []
 

@@ -41,5 +41,5 @@ HELP_INTRO = Text(
 HELP_TRY = Text(en="You can ask me:", te="మీరు నన్ను ఇలా అడగవచ్చు:")
 HELP_NOTHING_YET = Text(
     en="My farm tools are still being set up, so right now I can only explain what I do.",
-    te="నా ఫారం పనిముట్లు ఇంకా సిద్ధమవుతున్నాయి, కాబట్టి ప్రస్తుతం నేను ఏమి చేస్తానో మాత్రమే చెప్పగలను.",
+    te="నా ఫారం సేవలు ఇంకా సిద్ధమవుతున్నాయి, కాబట్టి ప్రస్తుతం నేను ఏమి చేస్తానో మాత్రమే చెప్పగలను.",
 )

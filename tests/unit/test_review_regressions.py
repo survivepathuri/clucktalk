@@ -84,7 +84,7 @@ def test_unavailable_houses_count_toward_the_spoken_limit_and_level_is_unknown()
     out = _ok(build_status(_Source(farm_with(*empties), 9), None))
     assert out.houses == [] and len(out.unavailable) == 7
     assert out.text_en.count("I don't have enough recent records") == MAX_SPOKEN_HOUSES
-    assert "ask about one by name" in out.text_en
+    assert "ask about one by shed number" in out.text_en
     assert out.level == "unknown"
 
 
