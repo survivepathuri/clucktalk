@@ -68,3 +68,13 @@ Each one shaped the server design; the contract tests pin them.
 - Tool errors: crash → `"Error executing tool <name>"`; bad arguments → pydantic text. CluckTalk's `SafeToolErrors` middleware replaces both (FL-002).
 - Middleware return values are not version-shaped by the runner, so `resultType` must be stripped for 2025-11-25 (FL-001).
 - `Annotated[CallToolResult, Model]` return type: publishes `Model` as `outputSchema`, validates `structuredContent` on success, lets the tool set `content`/`_meta` itself. The client validates `structuredContent` only when `isError` is false.
+
+## MCP Apps (cards), checked 2026-09-27
+| Item | Version | Status | Evidence |
+|---|---|---|---|
+| MCP Apps extension spec (`io.modelcontextprotocol/ui`) | **2026-01-26** (stable; a `draft` also exists) | used | `specification/2026-01-26/apps.mdx` and `src/spec.types.ts` (`LATEST_PROTOCOL_VERSION = "2026-01-26"`) read from github.com/modelcontextprotocol/ext-apps (main). The card sends `ui/initialize` with this `protocolVersion` |
+| `mcp.server.apps` (in `mcp` 2.2.0) | 2.2.0 | used | `Apps.tool(resource_uri=...)`, `Apps.add_html_resource(...)`, `MCPServer(extensions=[apps])` read in the installed source; wire shape confirmed by a scratch probe and pinned by `tests/contract/test_card.py`. On 2025-11-25 the server's `capabilities.extensions` is not sent (FRICTION_LOG FL-008) |
+| `@modelcontextprotocol/ext-apps` (JS SDK) | 2.0.0 | **not used** | The card speaks the documented postMessage protocol directly, so no Node build and no npm dependency |
+| Noto Sans Telugu | **2.005** (Regular 400, Bold 700, OTF) | bundled (`ui/fonts/`) | Official release `NotoSansTelugu-v2.005` (2023-09-28, latest Sans release on 2026-09-27) from github.com/notofonts/telugu; SIL OFL 1.1; checksums in `ui/fonts/README.md` |
+
+The Simulator adds no dependencies: it uses Starlette (routing, static files), uvicorn and httpx2, already pinned for the server.

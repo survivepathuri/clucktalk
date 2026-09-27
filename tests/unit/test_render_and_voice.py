@@ -29,6 +29,10 @@ def test_num_and_rupees():
     assert num(38.5) == "38.5"
     assert num(1.25) == "1.25"
     assert num(4862) == "4,862"
+    # Negative values keep their sign, also between -1 and 0 (found in the 2026-09-27 cold review).
+    assert num(-0.5) == "-0.5"
+    assert num(-1234.5) == "-1,234.5"
+    assert num(-3) == "-3"
     assert rupees(Decimal("38.50")) == "₹38.50"
     assert rupees(98175) == "₹98,175"
     assert rupees(Decimal("123456")) == "₹1,23,456"

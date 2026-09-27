@@ -17,6 +17,7 @@ import json
 import logging
 import sys
 
+from mcp.server.apps import Apps
 from mcp.server.mcpserver import MCPServer
 from mcp.server.streamable_http import MCP_PROTOCOL_VERSION_HEADER
 from mcp.server.transport_security import TransportSecuritySettings
@@ -48,15 +49,17 @@ def build_mcp_server(source: DemoFarmSource | None = None) -> MCPServer:
     """``source`` defaults to the demo farm as of today (IST); tests pass one with a fixed clock."""
     source = source or DemoFarmSource()
     guard = SafeToolErrors()
+    registry = CapabilityRegistry()
+    apps = Apps()  # MCP Apps extension: card-bearing tools + their ui:// resources (docs/DESIGN.md §14)
+    farm_status.register(apps, registry, source)
     server = MCPServer(
         name=APP_NAME,
         title=APP_NAME,
         instructions=f"{APP_NAME} is a voice farm manager for poultry farmers. Call get_help to see what it can do.",
         version="0.1.0",
         middleware=[guard],
+        extensions=[apps],
     )
-    registry = CapabilityRegistry()
-    farm_status.register(server, registry, source)
     feed.register(server, registry, source)
     help_tool.register(server, registry)
     guard.bind(server)

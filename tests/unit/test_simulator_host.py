@@ -1,0 +1,103 @@
+"""Mock host rules and host security settings (clucktalk.simulator), written from the design, not the code:
+the intent matcher only picks the tool and passes the shed words through; the sandbox CSP is the MCP Apps
+spec's restrictive default plus one documented addition (font-src data:)."""
+
+from __future__ import annotations
+
+import pytest
+
+from clucktalk.config import ConfigError
+from clucktalk.simulator.__main__ import load_simulator_settings
+from clucktalk.simulator.app import sandbox_csp
+from clucktalk.simulator.intents import match
+
+
+@pytest.mark.parametrize(
+    ("utterance", "tool", "args"),
+    [
+        # Invocation examples and farmer phrasing (docs/DESIGN.md §5 rule 6: shed/house/kotam, Hinglish numbers)
+        ("Alexa, ask CluckTalk how shed two is doing", "get_farm_status", {"house": "shed two"}),
+        ("Alexa, ask Cluck Talk how shed 2 is doing?", "get_farm_status", {"house": "shed 2"}),
+        ("How's the farm today?", "get_farm_status", {}),
+        ("How are all sheds doing", "get_farm_status", {}),
+        ("Kotam teen kaisa hai?", "get_farm_status", {"house": "kotam teen"}),
+        ("how is the second shed", "get_farm_status", {"house": "second shed"}),
+        ("do number shed ka haal", "get_farm_status", {"house": "do number shed"}),
+        ("house number 3 status", "get_farm_status", {"house": "house number 3"}),
+        ("How is shade two doing", "get_farm_status", {"house": "shed two"}),  # common mishearing
+        ("How is shed nine doing?", "get_farm_status", {"house": "shed nine"}),  # the server decides it's unknown
+        ("Feed plan for shed two", "plan_feed", {"house": "shed two"}),
+        ("how much dana do I need", "plan_feed", {}),
+        ("What can you do?", "get_help", {}),
+        ("help", "get_help", {}),
+    ],
+)
+def test_utterance_to_tool(utterance, tool, args):
+    intent = match(utterance)
+    assert intent is not None, utterance
+    assert (intent.tool, intent.arguments) == (tool, args)
+    assert intent.rule  # the developer panel always shows why
+
+
+@pytest.mark.parametrize("utterance", ["", "   ", "Should I sell my birds now?", "play some music", "Alexa"])
+def test_no_rule_no_tool(utterance):
+    """Unbuilt or out-of-scope requests get the host fallback, never a guessed tool call."""
+    assert match(utterance) is None
+
+
+def test_what_can_you_do_is_help_not_a_shed():
+    """'do' is also Hinglish for two; it only counts next to a shed word."""
+    assert match("what can you do").tool == "get_help"
+
+
+def test_sandbox_csp_default_is_the_spec_default_plus_inline_fonts():
+    csp = dict(d.split(" ", 1) for d in sandbox_csp(None).split("; "))
+    assert csp == {
+        "default-src": "'none'",
+        "script-src": "'self' 'unsafe-inline'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data:",
+        "media-src": "'self' data:",
+        "font-src": "'self' data:",
+        "connect-src": "'none'",
+        "frame-src": "'none'",
+        "base-uri": "'self'",
+        "object-src": "'none'",
+        "form-action": "'none'",  # host hardening: default-src does not cover form posts
+        "frame-ancestors": "'none'",  # no embedder given: nobody may frame the proxy
+    }
+
+
+def test_sandbox_csp_lets_only_the_simulator_page_embed_the_proxy():
+    csp = sandbox_csp({}, ("http://127.0.0.1:8766", "http://localhost:8766"))
+    assert "frame-ancestors http://127.0.0.1:8766 http://localhost:8766" in csp
+
+
+def test_sandbox_csp_adds_declared_https_origins_and_drops_anything_else():
+    csp = sandbox_csp(
+        {
+            "connectDomains": ["https://api.example.com", "http://insecure.example", "*"],
+            "resourceDomains": ["https://*.cdn.example", "javascript:alert(1)", "https://ok.example; script-src *"],
+        }
+    )
+    assert "connect-src https://api.example.com;" in csp + ";"
+    assert "font-src 'self' data: https://*.cdn.example" in csp
+    for bad in ("http://insecure.example", " * ", "javascript:", "ok.example"):
+        assert bad not in csp, bad
+
+
+def test_simulator_refuses_live_mode_until_aws_setup():
+    with pytest.raises(ConfigError, match="AWS setup"):
+        load_simulator_settings({})
+    with pytest.raises(ConfigError, match="AWS setup"):
+        load_simulator_settings({"MOCK_BEDROCK": "false"})
+
+
+def test_simulator_settings():
+    s = load_simulator_settings({"MOCK_BEDROCK": "true"})
+    assert (s.port, s.mcp_url) == (8766, "http://127.0.0.1:8765/mcp")
+    assert s.origins == {"http://127.0.0.1:8766", "http://localhost:8766"}
+    with pytest.raises(ConfigError, match="same|both"):
+        load_simulator_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_SIMULATOR_PORT": "8765"})
+    with pytest.raises(ConfigError, match="port"):
+        load_simulator_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_SIMULATOR_PORT": "99999"})

@@ -74,3 +74,43 @@ Expected vs actual: Expected the documented JSON error on stderr and a normal no
 Severity: Low
 Workaround: Read the JSON printed before the crash; do not rely on the exit code for error cases on Windows.
 Actionable suggestion: Close pending async handles before `process.exit` on the CLI error path (a double close of a libuv async handle), and add a Windows CI smoke test for error exits.
+
+### FL-006: MCP Apps spec example sends `clientInfo` in `ui/initialize`, but the schema requires `appInfo`
+Date: 2026-09-27
+Tool / service: MCP Apps extension spec 2026-01-26 (`specification/2026-01-26/apps.mdx`) vs `src/spec.types.ts` in modelcontextprotocol/ext-apps (main)
+Task attempted: Write the farm-status card against the documented postMessage protocol without the JS SDK (the spec says "you don't need an SDK").
+Steps taken: Followed the "Transport Layer" example, then cross-checked the field names in `spec.types.ts`.
+Expected vs actual: Expected the example to match the schema. Actual: the example calls `sendRequest("initialize", {capabilities: {}, clientInfo: {...}, protocolVersion: "2026-01-26"})`, while `McpUiInitializeRequest` is method `ui/initialize` with required params `appInfo`, `appCapabilities`, `protocolVersion`. A host that validates against the schema would reject a view written from the example.
+Severity: Low
+Workaround: The card sends `ui/initialize` with `appInfo` + `appCapabilities` + `protocolVersion`, as in the types file; the Simulator's developer panel logs what the card sent.
+Actionable suggestion: Update the spec's hand-rolled example to `ui/initialize` with `appInfo` / `appCapabilities`, and add a schema check of spec examples to CI.
+
+### FL-007: MCP Apps default CSP has no `font-src`, so even an inlined (data:) font is blocked; the reference host allows it
+Date: 2026-09-27
+Tool / service: MCP Apps extension spec 2026-01-26 ("Host Behavior", restrictive default CSP) vs ext-apps `examples/basic-host/serve.ts`
+Task attempted: Bundle Noto Sans Telugu in the card so Telugu renders identically on every device (Indic system fonts vary).
+Steps taken: Read the spec's mandatory default CSP and the reference host's CSP builder.
+Expected vs actual: Expected a documented way for a card to ship its own font. Actual: the spec default is `default-src 'none'` with no `font-src`, so fonts fall back to `'none'` (data: URIs included), and `resourceDomains` only accepts origins. The reference host instead sends `font-src 'self' data: blob:`. A card that bundles a font works on the reference host and may silently lose it on a strict host.
+Severity: Medium
+Workaround: The card inlines the font as data: URIs, falls back to system Telugu fonts (Nirmala UI, Gautami) in CSS, and reports a `notifications/message` warning when its bundled font did not load. The Simulator follows the reference host (`font-src 'self' data:`) and says so in `docs/DESIGN.md` §15.
+Actionable suggestion: Add `font-src 'self' data:` to the spec's default CSP (fonts cannot exfiltrate data), or a declared `fontDomains`/"inline fonts" flag in `McpUiResourceCsp`, and state whether hosts should provide Indic fonts through `hostContext.styles.css.fonts`.
+
+### FL-008: On a 2025-11-25 connection, SDK 2.2.0 drops the server's `capabilities.extensions`, so the Apps extension is invisible in `initialize`
+Date: 2026-09-27
+Tool / service: MCP Python SDK `mcp` 2.2.0 (`mcp.server.apps.Apps`, `MCPServer(extensions=[...])`)
+Task attempted: Serve the farm-status card through the SDK's MCP Apps extension on the 2025-11-25 wire.
+Steps taken: Scratch probe over real HTTP: `initialize` (with and without the client's `io.modelcontextprotocol/ui` extension), `tools/list`, `resources/list`, `resources/read`, `tools/call` with `client_supports_apps(ctx)`.
+Expected vs actual: Expected the server's `initialize` result to include `capabilities.extensions["io.modelcontextprotocol/ui"]`, which `_apply_extension` registers. Actual: the result has `experimental`, `prompts`, `resources`, `tools` only (the 2025-11-25 `ServerCapabilities` model has no `extensions` field). Everything else works: tool `_meta.ui.resourceUri`, the `text/html;profile=mcp-app` resource with `_meta.ui`, and `client_supports_apps` reading the client's capability. So the server reads the client's extension capability but cannot declare its own on this version.
+Severity: Low
+Workaround: None needed for hosts that discover cards via tool `_meta.ui.resourceUri` (the spec's mechanism). Contract tests pin the tool meta and resource shape.
+Actionable suggestion: Document in `mcp.server.apps` which protocol versions carry the server's `extensions` capability, or pass it through under `experimental` on pre-2026 versions.
+
+### FL-009: Alexa+ docs say MCP Apps render "in the conversation view" but give no container size, supported `ui/*` methods, CSP or fonts
+Date: 2026-09-27
+Tool / service: Amazon Alexa+ developer docs (MCP Toolkit overview, Choose an integration approach, Functional Requirements, CX testing guide)
+Task attempted: Size the farm-status card for Echo Show and phone from official Amazon docs rather than guesses.
+Steps taken: Read the four Alexa+ pages above; searched developer.amazon.com; fell back to the Alexa Presentation Language (APL) docs for device viewports.
+Expected vs actual: Expected an Alexa+ MCP Apps rendering profile. Actual: Alexa+ pages state MCP Apps support and the < 500 ms latency requirement, and the CX guide asks for arm's-length legibility on Echo Show (primary), mobile, web and voice-only devices, but none gives the card container's width/height, display modes, the subset of MCP Apps messages Alexa+ supports (e.g. `tools/call` from a card), CSP, or font availability (Telugu included). Device sizes had to come from APL docs (1024x600 px original Echo Show; 1280x800 px at 213 dpi; `hubLandscapeSmall` 960-1279 x 100-599 dp), which describe skills, not add-on cards.
+Severity: Medium
+Workaround: The card is responsive and was checked at 1024x600, 960x600, 960x480 and a 390x844 phone in the Simulator; tap-to-call is optional (voice gives the same answer).
+Actionable suggestion: Publish an "MCP Apps on Alexa+" page: container dimensions per device class, supported `ui/*` requests and notifications, CSP and font policy (Indic scripts), and whether card-initiated `tools/call` is allowed.

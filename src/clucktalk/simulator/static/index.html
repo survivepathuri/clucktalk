@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CluckTalk Simulator</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="bar">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#f2a623"/><path d="M10 20c0-5 3-9 7-9 3 0 5 2 5 5h3l-3 2c0 4-3 6-6 6-4 0-6-1-6-4z" fill="#fff"/><circle cx="19" cy="15" r="1.3" fill="#1b1b1b"/><path d="M15 9c1-2 3-2 4 0" stroke="#c0392b" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    <div><strong>CluckTalk</strong><span class="sub">Alexa+ Simulator</span></div>
+  </div>
+  <div class="mode" id="mode" role="note" title="MOCK_BEDROCK=true: fictional seeded farm, rule-based host">Demo data · mock host</div>
+  <div class="seg" role="radiogroup" aria-label="Device">
+    <button type="button" role="radio" aria-checked="true" data-device="show">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 21h10l-2-4H9z" fill="currentColor"/></svg>
+      Echo Show <span class="hint">screen</span></button>
+    <button type="button" role="radio" aria-checked="false" data-device="dot">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><ellipse cx="12" cy="14" rx="10" ry="5" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="12" cy="11" rx="10" ry="5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      Echo Dot <span class="hint">voice only</span></button>
+  </div>
+  <button type="button" class="sound" id="sound" aria-pressed="true" title="Spoken answers on/off">🔊 Sound on</button>
+</header>
+
+<main class="stage">
+  <section class="device-area" aria-label="Device">
+    <div class="show-wrap" id="show-wrap">
+      <div class="scaler" id="scaler">
+        <div class="bezel" id="bezel">
+          <div class="screen" id="screen" data-theme="dark">
+            <div class="home view" id="home">
+              <div class="clock" id="clock">--:--</div>
+              <div class="try">Try <q>How is shed two doing?</q></div>
+            </div>
+            <div class="asked view" id="asked" hidden><div class="asked-text" id="asked-text"></div></div>
+            <div class="native view" id="native" hidden>
+              <div class="native-head"><span>CluckTalk</span><span class="native-note" id="native-note">text answer · this answer has no card</span></div>
+              <p class="native-en" id="native-en"></p>
+              <p class="native-te" id="native-te" lang="te"></p>
+            </div>
+            <div class="cardhost view" id="cardhost" hidden></div>
+            <div class="interim" id="interim-show" hidden><span class="spinner" aria-hidden="true"></span>Still working…</div>
+            <div class="listenbar" id="listenbar" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+      <div class="stand" aria-hidden="true"></div>
+    </div>
+
+    <div class="dot-wrap" id="dot-wrap" hidden>
+      <div class="puck" aria-hidden="true">
+        <div class="ring" id="ring"></div>
+        <div class="puck-top"><span></span><span></span><span></span><span></span></div>
+      </div>
+      <p class="dot-state" id="dot-state">Voice only: no screen. Everything must work by voice.</p>
+    </div>
+  </section>
+
+  <section class="talk" aria-label="Conversation">
+    <div class="transcript" id="transcript" aria-live="polite">
+      <p class="empty">Ask by voice or type below. Answers are spoken; on Echo Show the card appears on screen.</p>
+    </div>
+    <form class="ask" id="ask" autocomplete="off">
+      <button type="button" class="mic" id="mic" aria-label="Speak (English, India)">
+        <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="12" rx="3.5" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <input id="text" name="text" type="text" placeholder="Type what you'd say, e.g. How is shed two doing?" aria-label="What you would say">
+      <button type="submit" class="send">Ask</button>
+    </form>
+    <div class="chips" id="chips">
+      <button type="button" class="chip">How is shed two doing?</button>
+      <button type="button" class="chip">How's the farm today?</button>
+      <button type="button" class="chip">Kotam teen kaisa hai?</button>
+      <button type="button" class="chip">Feed plan for shed two</button>
+      <button type="button" class="chip">What can you do?</button>
+    </div>
+    <p class="note" id="voice-note" role="status"></p>
+  </section>
+</main>
+
+<aside class="dev" id="dev" data-open="false" aria-label="Developer panel">
+  <button type="button" class="dev-toggle" id="dev-toggle" aria-expanded="false">
+    <span>Developer panel</span><span class="dev-sum" id="dev-sum">MCP</span>
+  </button>
+  <div class="dev-body" id="dev-body" hidden>
+    <div class="dev-grid">
+      <label>Screen
+        <select id="preset">
+          <option value="show-1024x600">Echo Show · 1024×600 (Amazon APL docs: original Echo Show viewport)</option>
+          <option value="show-960x600">Echo Show · 960×600 dp (Amazon APL docs: 1280×800 px hub at 213 dpi)</option>
+          <option value="show-960x480">Echo Show 5 class · 960×480 dp (hubLandscapeSmall profile range)</option>
+          <option value="phone-390x844">Phone (Alexa app) · 390×844 (typical phone, not from Amazon docs)</option>
+        </select>
+      </label>
+      <label>Card theme
+        <select id="theme"><option value="dark">Dark (device)</option><option value="light">Light</option></select>
+      </label>
+      <label>Simulate a slow answer
+        <select id="delay"><option value="0">Off</option><option value="1500">+1.5 s (simulator delay)</option><option value="3000">+3 s (simulator delay)</option></select>
+      </label>
+    </div>
+    <div class="conn" id="conn">Connecting…</div>
+    <ol class="log" id="log" reversed></ol>
+  </div>
+</aside>
+
+<footer class="foot">Simulated devices for testing an Alexa+ add-on; not Amazon products. The farm is fictional demo data.</footer>
+<script src="/static/app.js"></script>
+</body>
+</html>

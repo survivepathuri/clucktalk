@@ -15,8 +15,11 @@ from __future__ import annotations
 
 import os
 import shutil
+import socket
 import subprocess
 import sys
+import time
+import webbrowser
 from collections.abc import Callable
 from pathlib import Path
 
@@ -136,19 +139,77 @@ def check() -> int:
     return 0
 
 
-def serve() -> int:
-    """MCP server only. Demo mode is switched on here, explicitly and visibly (Rule 6)."""
-    _require_venv()
+def _demo_env(command: str) -> dict[str, str]:
+    """Demo mode is switched on here, explicitly and visibly (Rule 6)."""
     env = dict(os.environ)
     if env.get("MOCK_BEDROCK", "").strip() == "":
         env["MOCK_BEDROCK"] = "true"
-        print("serve: MOCK_BEDROCK not set, so starting in DEMO DATA mode (MOCK_BEDROCK=true).", flush=True)
+        print(f"{command}: MOCK_BEDROCK not set, so starting in DEMO DATA mode (MOCK_BEDROCK=true).", flush=True)
     env["PYTHONPATH"] = str(ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
+    return env
+
+
+def serve() -> int:
+    """MCP server only."""
+    _require_venv()
+    env = _demo_env("serve")
     try:
         return subprocess.call([str(VENV_PY), "-m", "clucktalk.server"], cwd=ROOT, env=env)
     except KeyboardInterrupt:
         print("serve: stopped.")
         return 0
+
+
+def _wait_for_port(port: int, proc: subprocess.Popen, seconds: float = 20) -> bool:
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        if proc.poll() is not None:
+            return False
+        with socket.socket() as s:
+            s.settimeout(0.2)
+            if s.connect_ex(("127.0.0.1", port)) == 0:
+                return True
+        time.sleep(0.1)
+    return False
+
+
+def run() -> int:
+    """Local demo: MCP server + Simulator, demo data. Set CLUCKTALK_NO_BROWSER=1 to skip opening the browser."""
+    _require_venv()
+    env = _demo_env("run")
+    mcp_port = int(env.get("CLUCKTALK_PORT") or 8765)
+    sim_port = int(env.get("CLUCKTALK_SIMULATOR_PORT") or 8766)
+    procs: list[subprocess.Popen] = []
+    try:
+        server = subprocess.Popen([str(VENV_PY), "-m", "clucktalk.server"], cwd=ROOT, env=env)
+        procs.append(server)
+        if not _wait_for_port(mcp_port, server):
+            print(f"run: the MCP server did not start on port {mcp_port} (see the error above).", file=sys.stderr)
+            return 1
+        sim = subprocess.Popen([str(VENV_PY), "-m", "clucktalk.simulator"], cwd=ROOT, env=env)
+        procs.append(sim)
+        if not _wait_for_port(sim_port, sim):
+            print(f"run: the Simulator did not start on port {sim_port} (see the error above).", file=sys.stderr)
+            return 1
+        url = f"http://127.0.0.1:{sim_port}/"
+        print(f"\nrun: ready. Open {url}  (Ctrl+C to stop)\n", flush=True)
+        if env.get("CLUCKTALK_NO_BROWSER", "").strip() not in ("1", "true"):
+            webbrowser.open(url)
+        while all(p.poll() is None for p in procs):
+            time.sleep(0.5)
+        print("run: a process exited; stopping.", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("run: stopped.")
+        return 0
+    finally:
+        for p in procs:
+            if p.poll() is None:
+                p.terminate()
+                try:
+                    p.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    p.kill()
 
 
 def _not_built_yet(command: str) -> int:
@@ -165,7 +226,7 @@ COMMANDS = {
     "check": check,
     "serve": serve,
     "eval-fast": lambda: _not_built_yet("eval-fast"),
-    "run": lambda: _not_built_yet("run"),
+    "run": run,
 }
 
 

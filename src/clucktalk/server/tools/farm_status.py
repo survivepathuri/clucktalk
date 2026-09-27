@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from typing import Annotated, Literal
 
-from mcp.server.mcpserver import MCPServer
+from mcp.server.apps import Apps
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -19,6 +19,7 @@ from clucktalk.domain.houses import resolve_house
 from clucktalk.domain.models import Farm, House, HouseKind
 from clucktalk.domain.status import Finding, Level, house_status
 from clucktalk.i18n import Text
+from clucktalk.server.cards import FARM_STATUS_URI, farm_status_html
 from clucktalk.server.errors import domain_error_result
 from clucktalk.server.farm_state import DemoFarmSource
 from clucktalk.server.render import num, plural
@@ -365,8 +366,21 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
     )
 
 
-def register(server: MCPServer, registry: CapabilityRegistry, source: DemoFarmSource) -> None:
-    @server.tool(
+def register(apps: Apps, registry: CapabilityRegistry, source: DemoFarmSource) -> None:
+    """Registered through the MCP Apps extension: the tool's ``_meta.ui.resourceUri`` names the card, and hosts
+    without MCP Apps still get the full spoken answer in ``content`` (spec: graceful degradation)."""
+    card = farm_status_html().replace('"@SERVER_DEMO@"', "true" if source.demo_data else "false")
+    apps.add_html_resource(
+        FARM_STATUS_URI,
+        card,
+        name="farm-status-card",
+        title="Farm status card",
+        description="Bilingual (Telugu + English) card for get_farm_status: one shed or the whole farm.",
+        prefers_border=False,
+    )
+
+    @apps.tool(
+        resource_uri=FARM_STATUS_URI,
         name="get_farm_status",
         title="Farm status",
         description=DESCRIPTION,

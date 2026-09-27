@@ -35,3 +35,14 @@ Telugu strings are reviewed by a native speaker. Status is tracked **per string*
 | Date | Reviewer | Scope |
 |---|---|---|
 | 2026-09-27 | Pathuri Venkateswara Rao (native Telugu speaker) | All 82 Telugu strings in the code at that date (80 unique English + Telugu pairs), after applying the reviewer's corrections and glossary |
+
+## Device sizes and visual guidance for cards (checked 2026-09-27)
+| Used for | Source | What it supports |
+|---|---|---|
+| Echo Show 1024×600 preset | Amazon, *Viewport Object in the Data-binding Context* (APL). https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-viewport-property.html | "the viewport object on the original Echo Show reports": width 1024, height 600, pixelWidth 1024, pixelHeight 600, dpi 160 |
+| Echo Show 960×600 dp preset | Amazon, *Alexa.Presentation.APL Interface Reference*. https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-interface.html | Example HUB device viewport: pixelWidth 1280, pixelHeight 800, dpi 213 (= 960×600 dp) |
+| 960×480 dp preset (Echo Show 5 class) | Amazon, *Viewport Profiles* and *Select the Viewport Profiles Your Skill Supports* (APL) | `hubLandscapeSmall`: width 960–1279 dp, height 100–599 dp; the Echo Show 5 is named as a device with this profile. The exact Echo Show 5 size was not found on the pages read, so the preset is labeled as a profile-range size |
+| Phone 390×844 preset | none (typical phone size) | Labeled "not from Amazon docs" in the Simulator |
+| Legibility, cross-modal and accessibility checks | Amazon, *Design Guide: Test Your Add-on Customer Experience*. https://developer.amazon.com/docs/alexaplus/add-ons/mcp-addon-test-addon-cx.html; *Functional Requirements*. https://developer.amazon.com/docs/alexaplus/add-ons/functional-requirements.html | Text readable at arm's length; no voice/screen data contradictions; no stale previous-turn content; Echo Show (primary), Alexa app, web and voice-only devices; colour correction/inversion must not hide content; "still working" message when slow |
+| MCP Apps on Alexa+ | Amazon, *Alexa+ MCP Toolkit Overview*. https://developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-overview.html | Alexa+ supports the MCP Apps extension ("render interactive UIs for MCP tools directly in the conversation view"). No container sizes or supported-message list published (FRICTION_LOG FL-009) |
+| Bundled Telugu font | Noto Sans Telugu 2.005, https://github.com/notofonts/telugu (SIL Open Font License 1.1) | License and checksums in `ui/fonts/README.md` |

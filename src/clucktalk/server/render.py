@@ -34,8 +34,9 @@ def num(x: float | int | Decimal) -> str:
     d = Decimal(str(x))
     if d == d.to_integral_value():
         return indian_group(int(d))
-    whole, frac = f"{d.normalize():f}".split(".")
-    return f"{indian_group(int(whole))}.{frac}"
+    sign = "-" if d < 0 else ""  # kept apart: int("-0") would lose the sign of -0.5
+    whole, frac = f"{abs(d).normalize():f}".split(".")
+    return f"{sign}{indian_group(int(whole))}.{frac}"
 
 
 def rupees(x: Decimal | float | int) -> str:

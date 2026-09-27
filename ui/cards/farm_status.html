@@ -1,0 +1,465 @@
+<!doctype html>
+<!--
+  CluckTalk farm-status card: an MCP App view (MCP Apps spec 2026-01-26, text/html;profile=mcp-app).
+  Source template. scripts/build_cards.py inlines the font and labels and writes
+  src/clucktalk/server/cards/farm_status.html (the file the server serves). Edit this file, then rebuild.
+
+  Rules (docs/DESIGN.md §6, §14):
+  - Every number shown comes verbatim from the tool's structuredContent, formatted like the spoken answer.
+    No arithmetic on data here. Finding sentences are the exact sentences the voice answer uses.
+  - Status is an icon AND a word, never colour alone.
+  - No external requests (the spec's default CSP allows none): font and labels are inlined at build time.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Farm status</title>
+<style>
+/*@FONT_FACES@*/
+:root {
+  --bg: #f6f4ef; --surface: #ffffff; --text: #17191c; --muted: #4a5058; --line: #d9d5cc;
+  --ok: #1d6b30; --ok-bg: #e2f3e5; --watch: #7a4f00; --watch-bg: #fff0c7; --alert: #a3211a; --alert-bg: #fde5e3;
+  --unknown: #3f4854; --unknown-bg: #e7eaee; --badge-bg: #1f2a44; --badge-text: #ffffff; --focus: #1557b0;
+  --en: system-ui, "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif;
+  --te: "Noto Sans Telugu CT", "Nirmala UI", "Gautami", "Noto Sans Telugu", sans-serif;
+}
+:root[data-theme="dark"] {
+  --bg: #0f1317; --surface: #1a2027; --text: #f3f4f6; --muted: #b9c1cb; --line: #333c47;
+  --ok: #86dc97; --ok-bg: #173522; --watch: #ffd36b; --watch-bg: #3a2e0c; --alert: #ff9a90; --alert-bg: #43191a;
+  --unknown: #c9d1db; --unknown-bg: #2a323c; --badge-bg: #ffd36b; --badge-text: #17191c; --focus: #8ab4ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--en); }
+body { padding: 16px 20px 14px; line-height: 1.25; -webkit-text-size-adjust: 100%; }
+:lang(te) { font-family: var(--te); line-height: 1.45; }
+button { font: inherit; color: inherit; }
+button:focus-visible, .tile:focus-visible { outline: 4px solid var(--focus); outline-offset: 2px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.brand { font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: .02em; white-space: nowrap; }
+.brand span[lang="te"] { font-weight: 400; }
+.badge { background: var(--badge-bg); color: var(--badge-text); border-radius: 999px; padding: 6px 14px;
+  font-size: 16px; font-weight: 700; white-space: nowrap; }
+.titlerow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
+h1 { font-size: 26px; margin: 0; font-weight: 700; }
+h1 [lang="te"] { font-weight: 600; font-size: 23px; }
+.asof { font-size: 16px; color: var(--muted); white-space: nowrap; }
+
+.pill { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 5px 14px 5px 8px;
+  font-weight: 800; font-size: 18px; letter-spacing: .03em; }
+.pill svg { width: 26px; height: 26px; flex: none; }
+.pill [lang="te"] { font-weight: 600; letter-spacing: 0; font-size: 16px; }
+.lv-ok { color: var(--ok); background: var(--ok-bg); }
+.lv-watch { color: var(--watch); background: var(--watch-bg); }
+.lv-alert { color: var(--alert); background: var(--alert-bg); }
+.lv-unknown { color: var(--unknown); background: var(--unknown-bg); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
+.tile { background: var(--surface); border: 2px solid var(--line); border-radius: 18px; padding: 14px 16px;
+  text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 8px; min-height: 48px; width: 100%; }
+.tile.edge-alert { border-color: var(--alert); border-width: 3px; }
+.tile.edge-watch { border-color: var(--watch); }
+.tile[disabled] { cursor: default; }
+.tile.busy { opacity: .6; }
+.hname { font-size: 26px; font-weight: 800; }
+.hname [lang="te"] { font-weight: 600; font-size: 22px; }
+.meta { font-size: 17px; color: var(--muted); }
+.kpis { display: flex; gap: 18px; flex-wrap: wrap; }
+.kpi { min-width: 110px; }
+.kpi .v { font-size: 40px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.kpi .v small { font-size: 20px; font-weight: 700; }
+.kpi .l { font-size: 15px; color: var(--muted); }
+.kpi .l [lang="te"] { display: block; font-size: 14px; }
+.tile .kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tile .kpi { min-width: 0; }
+.tile .kpi .v { font-size: 32px; white-space: nowrap; }
+.tile .kpi .v small { font-size: 16px; }
+.tile .meta { font-size: 15px; }
+.tile .say { font-size: 17px; }
+.tile .say [lang="te"] { font-size: 16px; }
+.house .kpi .l { font-size: 17px; }
+.house .kpi .l [lang="te"] { font-size: 16px; }
+.say { font-size: 18px; }
+.say [lang="te"] { display: block; font-size: 17px; color: var(--muted); margin-top: 2px; }
+
+.band { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.band .pill { font-size: 22px; padding: 8px 18px 8px 10px; }
+.band .pill svg { width: 32px; height: 32px; }
+.house .kpis { background: var(--surface); border: 2px solid var(--line); border-radius: 18px; padding: 12px 18px;
+  margin-bottom: 12px; gap: 28px; }
+.house .kpi .v { font-size: 48px; }
+.findings { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.findings li { display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border-radius: 14px;
+  padding: 8px 14px; border-left: 8px solid var(--line); }
+.findings li.lv-alert { border-left-color: var(--alert); background: var(--surface); color: var(--text); }
+.findings li.lv-watch { border-left-color: var(--watch); background: var(--surface); color: var(--text); }
+.findings li.lv-ok { border-left-color: var(--ok); background: var(--surface); color: var(--text); }
+.findings .tag { flex: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 15px;
+  min-width: 96px; padding-top: 2px; }
+.findings .tag svg { width: 22px; height: 22px; }
+.lv-alert .tag { color: var(--alert); } .lv-watch .tag { color: var(--watch); } .lv-ok .tag { color: var(--ok); }
+.action { display: inline-flex; align-items: center; gap: 10px; min-height: 56px; padding: 10px 22px;
+  border-radius: 999px; border: 2px solid var(--text); background: var(--surface); font-size: 19px; font-weight: 700;
+  cursor: pointer; }
+.hint { margin-top: 12px; font-size: 16px; color: var(--muted); }
+.center { min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 10px; font-size: 22px; }
+.center svg { width: 56px; height: 56px; }
+.stale { margin-top: 2px; font-weight: 700; color: var(--watch); }
+.tag-te { display: block; font-weight: 600; font-size: 13px; }
+.msg { max-width: 640px; }
+.msg p { margin: 6px 0; font-size: 21px; }
+.msg p[lang="te"] { font-size: 19px; }
+
+@media (max-height: 520px) and (min-width: 641px) {  /* e.g. hubLandscapeSmall (Echo Show 5 class) */
+  body { padding: 10px 16px 8px; }
+  .top { margin-bottom: 4px; } .titlerow { margin-bottom: 8px; }
+  h1 { font-size: 23px; }
+  .grid { gap: 10px; }
+  .tile { padding: 10px 12px; gap: 6px; }
+  .hname { font-size: 22px; } .hname [lang="te"] { font-size: 19px; }
+  .pill { font-size: 16px; padding: 3px 12px 3px 6px; } .pill svg { width: 22px; height: 22px; }
+  .tile .kpi .v { font-size: 28px; }
+  .tile .kpi .l { font-size: 13px; } .tile .kpi .l [lang="te"] { font-size: 13px; }
+  .tile .say { font-size: 15px; } .tile .say [lang="te"] { font-size: 14px; }
+  .tile .meta { font-size: 13px; }
+  .house .kpi .v { font-size: 40px; }
+  .band { margin-bottom: 6px; }
+  .findings { gap: 6px; } .findings li { padding: 6px 12px; }
+  .hint { margin-top: 6px; }
+}
+@media (max-width: 640px) {
+  body { padding: 12px 12px 10px; }
+  h1 { font-size: 22px; } h1 [lang="te"] { font-size: 19px; }
+  .titlerow { flex-wrap: wrap; }
+  .grid { grid-template-columns: 1fr; gap: 12px; }
+  .kpi .v, .house .kpi .v { font-size: 36px; }
+  .house .kpis { gap: 18px; }
+  .kpi { min-width: 0; flex: 1 1 40%; }
+  .band .pill { font-size: 19px; }
+  .findings .tag { min-width: 0; }
+  .findings li { flex-direction: column; gap: 4px; }
+  .brand { font-size: 13px; } .badge { font-size: 14px; padding: 5px 10px; }
+}
+</style>
+</head>
+<body>
+<main id="root" aria-live="polite">
+  <div class="center"><span data-l="loading"></span></div>
+</main>
+<script>
+"use strict";
+const L = "@LABELS@";
+const APP = "@APP@";
+const SERVER_DEMO = "@SERVER_DEMO@";  // stamped by the server at startup: badge on every card, errors too
+const NUM_FIXTURES = "@NUM_FIXTURES@";  // [value, Python render.num(value)] pairs, written at build time
+const SPEC_VERSION = "2026-01-26";
+const TOOL = "get_farm_status";
+const ERROR_META_KEY = "clucktalk/error";
+
+// ---------- MCP Apps messaging (JSON-RPC 2.0 over postMessage; spec "Transport Layer") ----------
+let nextId = 1;
+const pending = new Map();
+function request(method, params) {
+  const id = nextId++;
+  window.parent.postMessage({ jsonrpc: "2.0", id, method, params }, "*");
+  return new Promise((resolve, reject) => {
+    pending.set(id, { resolve, reject });
+    setTimeout(() => { if (pending.delete(id)) reject(new Error(method + " timed out")); }, method === "ui/initialize" ? 5000 : 15000);
+  });
+}
+function notify(method, params) { window.parent.postMessage({ jsonrpc: "2.0", method, params }, "*"); }
+function log(level, data) { notify("notifications/message", { level, logger: "clucktalk.card", data }); }
+
+let hostContext = {};
+let lastResult = null;
+
+window.addEventListener("message", (event) => {
+  if (event.source !== window.parent) return;
+  const m = event.data;
+  if (!m || m.jsonrpc !== "2.0") return;
+  if (m.id != null && m.method === undefined) {           // response to one of our requests
+    const p = pending.get(m.id);
+    if (!p) return;
+    pending.delete(m.id);
+    if (m.error) p.reject(new Error(m.error.message || "request failed")); else p.resolve(m.result);
+    return;
+  }
+  switch (m.method) {
+    case "ui/notifications/tool-input": break;              // arguments are not needed: the result says it all
+    case "ui/notifications/tool-result": render(m.params); break;
+    case "ui/notifications/tool-cancelled": renderMessage(L.sorry, L.generic_error, L.generic_next); break;
+    case "ui/notifications/host-context-changed": applyContext(m.params || {}); break;
+    case "ui/resource-teardown": window.parent.postMessage({ jsonrpc: "2.0", id: m.id, result: {} }, "*"); break;
+    case "ping": window.parent.postMessage({ jsonrpc: "2.0", id: m.id, result: {} }, "*"); break;
+  }
+});
+
+function applyContext(ctx) {
+  hostContext = Object.assign({}, hostContext, ctx);
+  const theme = hostContext.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  document.documentElement.dataset.theme = theme;
+}
+
+let lastSize = "";
+function reportSize() {
+  const w = Math.ceil(document.documentElement.scrollWidth), h = Math.ceil(document.documentElement.scrollHeight);
+  const key = w + "x" + h;
+  if (key !== lastSize) { lastSize = key; notify("ui/notifications/size-changed", { width: w, height: h }); }
+}
+
+// ---------- formatting: must match clucktalk.server.render.num (spoken form) ----------
+function indianGroup(intStr) {
+  const neg = intStr.startsWith("-"); let s = neg ? intStr.slice(1) : intStr;
+  if (s.length <= 3) return (neg ? "-" : "") + s;
+  let head = s.slice(0, -3); const tail = s.slice(-3); const pairs = [];
+  while (head.length > 2) { pairs.unshift(head.slice(-2)); head = head.slice(0, -2); }
+  return (neg ? "-" : "") + [head, ...pairs, tail].join(",");
+}
+function num(x) {
+  const s = String(x);                                    // JSON numbers print in shortest round-trip form
+  if (!s.includes(".")) return indianGroup(s);
+  const [whole, frac] = s.split(".");
+  return indianGroup(whole) + "." + frac;
+}
+function numSelfTest() {  // the card must format exactly like the spoken answer; say so loudly if not
+  const bad = NUM_FIXTURES.filter(([v, want]) => num(v) !== want).map(([v, want]) => [v, want, num(v)]);
+  if (bad.length) log("error", { event: "num-mismatch", message: "card number format differs from the server", cases: bad });
+}
+function fill(label, n) { return { en: label.en.replace("{n}", num(n)), te: label.te.replace("{n}", num(n)) }; }
+
+// ---------- DOM helpers ----------
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+function bi(t, sep) {   // English + Telugu side by side
+  return [el("span", { lang: "en" }, t.en), sep === undefined ? " · " : sep, el("span", { lang: "te" }, t.te)];
+}
+function stacked(t, cls) {
+  return el("div", { class: cls }, el("span", { lang: "en" }, t.en), el("span", { lang: "te" }, t.te));
+}
+
+const ICONS = {  // distinct shapes, so status reads without colour (spec: never colour alone)
+  ok: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M6.5 12.5l3.5 3.5 7.5-8" fill="none" stroke="var(--bg)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  watch: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.8L23 21.5H1z" fill="currentColor"/><rect x="10.8" y="8" width="2.4" height="7.5" rx="1" fill="var(--bg)"/><circle cx="12" cy="18.2" r="1.5" fill="var(--bg)"/></svg>',
+  alert: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 1h9.2L23 7.4v9.2L16.6 23H7.4L1 16.6V7.4z" fill="currentColor"/><rect x="10.7" y="5.5" width="2.6" height="9" rx="1" fill="var(--bg)"/><circle cx="12" cy="18" r="1.7" fill="var(--bg)"/></svg>',
+  unknown: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M9 9.2a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.9v.6" fill="none" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.8" r="1.5" fill="var(--bg)"/></svg>',
+  back: '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+function icon(name) { const s = el("span", { "aria-hidden": "true", style: "display:inline-flex" }); s.innerHTML = ICONS[name]; return s; }
+function pill(level) {
+  const t = L["level_" + level];
+  return el("span", { class: "pill lv-" + level, role: "img", "aria-label": t.en + ", " + t.te },
+    icon(level), el("span", { lang: "en" }, t.en), el("span", { lang: "te" }, t.te));
+}
+
+function header(sc) {
+  const top = el("div", { class: "top" },
+    el("div", { class: "brand", "data-xm-skip": true }, el("span", { lang: "en" }, APP.name), " · ", el("span", { lang: "te" }, APP.name_te)),
+    SERVER_DEMO === true || (sc && sc.demo_data) ? el("div", { class: "badge", role: "note" }, bi(L.demo_badge)) : null);
+  return top;
+}
+function dateText(iso) { const [y, m, d] = iso.split("-"); return d + "-" + m + "-" + y; }
+
+// ---------- KPIs: values verbatim from structuredContent ----------
+// Each big value carries data-field="<path into structuredContent>", so the host can check it against that
+// exact field (not just "some number in the result").
+function value(path, v, unit) {
+  return el("div", { class: "v", "data-field": path }, num(v), unit ? el("small", {}, unit) : null);
+}
+function deathsKpi(h, p, asOf) {
+  const lab = h.latest_record_day === asOf ? L.deaths_today : L.deaths_latest;
+  return el("div", { class: "kpi" }, value(p + ".deaths_latest", h.deaths_latest), stacked(lab, "l"));
+}
+function feedKpi(h, p, compact) {
+  const n = h.feed_days_covered;
+  if (n == null) {  // cover unknown: say so, never leave it blank
+    return el("div", { class: "kpi" }, el("div", { class: "v" }, "—"),
+      stacked({ en: L.feed_left.en + ": " + L.not_known.en, te: L.feed_left.te + ": " + L.not_known.te }, "l"));
+  }
+  if (compact && !h.feed_days_covered_is_minimum) {
+    return el("div", { class: "kpi" }, value(p + ".feed_days_covered", n), stacked(L.feed_days, "l"));
+  }
+  const t = fill(h.feed_days_covered_is_minimum ? L.at_least_days_n : (n === 1 ? L.day_one_n : L.days_n), n);
+  return el("div", { class: "kpi" }, value(p + ".feed_days_covered", n),
+    stacked({ en: L.feed_left.en + ": " + t.en, te: L.feed_left.te + ": " + t.te }, "l"));
+}
+function thirdKpi(h, p, compact) {  // compact (farm tiles): the target is shown on the house card
+  if (h.kind === "layer" && h.hen_day_pct != null) {
+    return el("div", { class: "kpi" }, value(p + ".hen_day_pct", h.hen_day_pct, "%"), stacked(L.laying, "l"));
+  }
+  if (h.avg_weight_g != null) {
+    const lab = h.target_weight_g != null && !compact
+      ? { en: L.avg_weight.en + " (" + fill(L.target_grams_n, h.target_weight_g).en + ")", te: L.avg_weight.te + " (" + fill(L.target_grams_n, h.target_weight_g).te + ")" }
+      : L.avg_weight;
+    return el("div", { class: "kpi" }, value(p + ".avg_weight_g", h.avg_weight_g, " g"), stacked(lab, "l"));
+  }
+  return null;
+}
+function metaLine(h, asOf) {
+  const en = [], te = [];
+  if (h.kind === "broiler") { const d = fill(L.age_day_n, h.age_days); en.push(d.en); te.push(d.te); }
+  const b = fill(L.birds_n, h.live_birds); en.push(b.en); te.push(b.te);
+  return el("div", { class: "meta" }, h.breed, " · ", el("span", { lang: "en" }, en.join(", ")), " · ",
+    el("span", { lang: "te" }, te.join(", ")), staleNote(h, asOf));
+}
+function staleNote(h, asOf) {  // honest time (docs/DESIGN.md §7.7): old readings are dated, never shown as today's
+  if (h.latest_record_day === asOf) return null;
+  const d = dateText(h.latest_record_day);
+  return el("div", { class: "stale", "data-xm-skip": true },
+    bi({ en: L.readings_from_d.en.replace("{d}", d), te: L.readings_from_d.te.replace("{d}", d) }));
+}
+function levelTag(level) {
+  return el("span", { class: "tag" }, icon(level), el("span", {}, el("span", { lang: "en" }, L["level_" + level].en),
+    el("span", { lang: "te", class: "tag-te" }, L["level_" + level].te)));
+}
+
+// ---------- views ----------
+function farmView(sc) {
+  const root = el("main", { id: "root", class: "farm" });
+  root.append(header(sc));
+  root.append(el("div", { class: "titlerow" },
+    el("h1", {}, bi(L.farm_title)),
+    el("div", { style: "display:flex;gap:12px;align-items:center;flex-wrap:wrap" },
+      el("span", { class: "asof", "data-xm-skip": true }, dateText(sc.as_of)), pill(sc.level))));
+  const grid = el("div", { class: "grid" });
+  sc.houses.forEach((h, i) => {
+    const p = "houses." + i;
+    const f = h.findings[0];
+    const tile = el("button", { class: "tile edge-" + h.level, type: "button",
+      "aria-label": h.label_en + ", " + L["level_" + h.level].en + ". " + (f ? f.text_en : h.summary_en),
+      onclick: () => openHouse(h.house_id, tile) },
+      pill(h.level),
+      el("div", { class: "hname" }, bi({ en: h.label_en, te: h.label_te })),
+      el("div", { class: "kpis" }, deathsKpi(h, p, sc.as_of), feedKpi(h, p, true), thirdKpi(h, p, true)),
+      f ? stacked({ en: f.text_en, te: f.text_te }, "say") : null,
+      metaLine(h, sc.as_of));  // least important line last: on short screens it is what falls below the fold
+    grid.append(tile);
+  });
+  for (const u of sc.unavailable) {
+    grid.append(el("div", { class: "tile", role: "group" },
+      el("span", { class: "pill lv-unknown" }, icon("unknown"), bi(L.not_checked, " ")),
+      el("div", { class: "hname" }, bi({ en: u.label_en, te: u.label_te })),
+      stacked({ en: u.message_en, te: u.message_te }, "say")));
+  }
+  root.append(grid);
+  if (sc.houses.length) root.append(el("div", { class: "hint" }, bi(L.tap_hint)));
+  return root;
+}
+
+function houseView(sc) {
+  const h = sc.houses[0];
+  const root = el("main", { id: "root", class: "house" });
+  root.append(header(sc));
+  root.append(el("div", { class: "band" }, pill(h.level),
+    el("h1", {}, bi({ en: h.label_en, te: h.label_te })),
+    el("span", { class: "asof", "data-xm-skip": true }, dateText(sc.as_of))));
+  root.append(metaLine(h, sc.as_of));
+  root.append(el("div", { class: "kpis", style: "margin-top:10px" },
+    deathsKpi(h, "houses.0", sc.as_of), feedKpi(h, "houses.0"), thirdKpi(h, "houses.0")));
+  if (h.findings.length) {
+    root.append(el("ul", { class: "findings" }, h.findings.map((f) => el("li", { class: "lv-" + f.level },
+      levelTag(f.level), stacked({ en: f.text_en, te: f.text_te }, "say")))));
+  } else {
+    root.append(stacked({ en: h.summary_en, te: h.summary_te }, "say"));
+  }
+  root.append(el("button", { class: "action", type: "button", onclick: () => openFarm() }, icon("back"), bi(L.back_all)));
+  return root;
+}
+
+function errorView(result) {
+  const meta = (result._meta || {})[ERROR_META_KEY];
+  const text = (result.content || []).filter((c) => c.type === "text").map((c) => c.text).join(" ");
+  return messageView(L.sorry,
+    // Without the bilingual error details, show the spoken sentence and the reviewed generic Telugu apology.
+    meta ? { en: meta.message_en, te: meta.message_te } : { en: text || L.generic_error.en, te: L.generic_error.te },
+    meta ? { en: meta.next_step_en, te: meta.next_step_te } : L.generic_next);
+}
+function messageView(title, message, next) {
+  const root = el("main", { id: "root" });
+  root.append(header(lastResult && lastResult.structuredContent));
+  root.append(el("div", { class: "center" }, el("span", { style: "color:var(--unknown)" }, icon("unknown")),
+    el("h1", {}, bi(title)),
+    el("div", { class: "msg" },
+      message ? [el("p", { lang: "en" }, message.en), message.te ? el("p", { lang: "te" }, message.te) : null] : null,
+      next ? [el("p", { lang: "en" }, next.en), el("p", { lang: "te" }, next.te)] : null),
+    el("button", { class: "action", type: "button", onclick: () => openFarm() }, bi(L.back_all))));
+  return root;
+}
+function renderMessage(title, message, next) { swap(messageView(title, message, next), "message"); }
+
+function swap(root, view) {
+  document.getElementById("root").replaceWith(root);
+  reportSize();
+  // Cross-modal self-report: the host compares these numbers with the spoken answer (docs/DESIGN.md §6).
+  // Text nodes are joined with a space: textContent would glue "షెడ్ 2" and a following "26" into "226".
+  const clone = root.cloneNode(true);
+  clone.querySelectorAll("[data-xm-skip]").forEach((n) => n.remove());
+  const parts = [];
+  const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) parts.push(walker.currentNode.nodeValue);
+  const fields = [...root.querySelectorAll("[data-field]")].map((n) => ({ path: n.dataset.field, shown: n.textContent }));
+  log("info", { event: "rendered", view, text: parts.join(" "), fields });
+}
+
+function render(result) {
+  lastResult = result;
+  const sc = result && result.structuredContent;
+  if (!result || result.isError || !sc) { swap(errorView(result || {}), "error"); return; }
+  const single = sc.houses.length === 1 && sc.unavailable.length === 0;
+  swap(single ? houseView(sc) : farmView(sc), single ? "house" : "farm");
+}
+
+// ---------- touch = voice: taps call the same tool the voice path calls ----------
+async function call(args, busyEl) {
+  if (busyEl) { busyEl.classList.add("busy"); busyEl.disabled = true; }
+  try {
+    render(await request("tools/call", { name: TOOL, arguments: args }));
+  } catch (err) {  // host or network failure: a clear bilingual error, never a blank or stale card
+    log("error", { event: "tools/call failed", message: String(err && err.message) });
+    render({ isError: true, content: [], _meta: { [ERROR_META_KEY]: {
+      message_en: L.generic_error.en, message_te: L.generic_error.te,
+      next_step_en: L.generic_next.en, next_step_te: L.generic_next.te } } });
+  } finally {
+    if (busyEl && busyEl.isConnected) { busyEl.classList.remove("busy"); busyEl.disabled = false; }
+  }
+}
+function openHouse(id, tile) { return call({ house: id }, tile); }
+function openFarm() { return call({}, null); }
+
+// ---------- start ----------
+function start() {
+  document.querySelectorAll("[data-l]").forEach((n) => n.replaceChildren(...bi(L[n.dataset.l])));
+  applyContext({});
+  new ResizeObserver(reportSize).observe(document.documentElement);
+  request("ui/initialize", {
+    appInfo: { name: APP.name + " farm status card", version: "1" },
+    appCapabilities: { availableDisplayModes: ["inline"] },
+    protocolVersion: SPEC_VERSION,
+  }).then((res) => {
+    applyContext((res && res.hostContext) || {});
+    notify("ui/notifications/initialized", {});
+  }).catch((err) => {  // no host answer: say so on the card instead of staying on "Loading" (fail loud)
+    log("error", { event: "ui/initialize failed", message: String(err && err.message) });
+    renderMessage(L.sorry, L.generic_error, L.generic_next);
+  });
+  numSelfTest();
+  document.fonts.ready.then(() => {
+    if (!document.fonts.check('16px "Noto Sans Telugu CT"', "తెలుగు")) {
+      log("warning", { event: "font", message: "Bundled Noto Sans Telugu did not load (host CSP?); using a system Telugu font." });
+    }
+  });
+}
+start();
+</script>
+</body>
+</html>
