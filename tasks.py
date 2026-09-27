@@ -4,6 +4,7 @@ Windows (cmd):
     python tasks.py setup       Create .venv with Python 3.13 (via the py launcher) and install pinned deps
     python tasks.py check       Lint + unit + contract tests + AOSS check + secret scan (Rule 3)
     python tasks.py eval-fast   Golden eval suite in mock mode, no AWS needed
+    python tasks.py serve       Start only the MCP server (demo data, http://127.0.0.1:8765/mcp)
     python tasks.py run         Start the local demo (Simulator + MCP server, mock mode)
 
 Every step prints PASS / FAIL / SKIP, and the run exits non-zero if any step fails.
@@ -135,6 +136,21 @@ def check() -> int:
     return 0
 
 
+def serve() -> int:
+    """MCP server only. Demo mode is switched on here, explicitly and visibly (Rule 6)."""
+    _require_venv()
+    env = dict(os.environ)
+    if env.get("MOCK_BEDROCK", "").strip() == "":
+        env["MOCK_BEDROCK"] = "true"
+        print("serve: MOCK_BEDROCK not set, so starting in DEMO DATA mode (MOCK_BEDROCK=true).", flush=True)
+    env["PYTHONPATH"] = str(ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
+    try:
+        return subprocess.call([str(VENV_PY), "-m", "clucktalk.server"], cwd=ROOT, env=env)
+    except KeyboardInterrupt:
+        print("serve: stopped.")
+        return 0
+
+
 def _not_built_yet(command: str) -> int:
     print(
         f"'{command}' is not implemented yet: the application code does not exist.\n"
@@ -147,6 +163,7 @@ def _not_built_yet(command: str) -> int:
 COMMANDS = {
     "setup": setup,
     "check": check,
+    "serve": serve,
     "eval-fast": lambda: _not_built_yet("eval-fast"),
     "run": lambda: _not_built_yet("run"),
 }

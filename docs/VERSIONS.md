@@ -19,20 +19,23 @@ Every version below was checked on the date shown, from the command or source na
 
 | Package | Version | Status | Evidence / notes |
 |---|---|---|---|
-| `mcp` (official MCP Python SDK) | **2.2.0** (latest; released 2026-09-07) | verified, pin at MCP server skeleton step | `pip index versions mcp`; PyPI JSON: `requires_python >=3.10`, classifiers include 3.14. Repo: github.com/modelcontextprotocol/python-sdk |
-| `mcp-types` | 2.2.0 | verified (exact-pinned dependency of `mcp` 2.2.0) | PyPI `requires_dist`: `mcp-types==2.2.0` |
+| `mcp` (official MCP Python SDK) | **2.2.0** (latest; released 2026-09-07) | **pinned** (`requirements.txt`, 2026-09-27) | `pip index versions mcp`; PyPI JSON: `requires_python >=3.10`, classifiers include 3.14. Repo: github.com/modelcontextprotocol/python-sdk |
+| `mcp-types` | 2.2.0 | pinned (exact-pinned dependency of `mcp` 2.2.0) | PyPI `requires_dist`: `mcp-types==2.2.0` |
 | `ruff` | 0.16.9 | pinned (`requirements-dev.txt`) | `pip index versions ruff`; installed in `.venv`, `ruff check` ran |
 | `pytest` | 9.1.1 | pinned (`requirements-dev.txt`) | `pip index versions pytest`; installed in `.venv`; harness tests ran on 3.14.5 and again on 3.13.15 |
 | `strands-agents` | 1.57.1 | verified | PyPI JSON: classifiers include 3.14 |
 | `bedrock-agentcore` | 1.23.1 | verified | PyPI JSON: classifiers list 3.10–3.13 (no 3.14). Resolved by using Python 3.13 for the project |
 | `boto3` | 1.43.103 | verified | PyPI JSON: classifiers include 3.14 |
-| `pydantic` | 2.13.5 | verified | PyPI JSON: classifiers include 3.14 |
-| `uvicorn` | 0.54.0 | verified | PyPI JSON: classifiers include 3.14 |
+| `pydantic` | 2.13.5 | pinned | PyPI JSON: classifiers include 3.14 |
+| `uvicorn` | 0.54.0 | pinned | PyPI JSON: classifiers include 3.14 |
+
+Full app dependency set (transitive included) is pinned in `requirements.txt`; on 2026-09-27 it matched `pip freeze` of the venv exactly (dev tools excluded). Notable transitive packages: `starlette` 1.7.0 (imported directly for ASGI types), `jsonschema` 4.26.0 (imported directly for argument validation), `httpx2` 2.13.1 (the SDK's HTTP client; also used by the contract tests).
 
 ## npm packages
 
 | Package | Version | Status | Evidence |
 |---|---|---|---|
+| `@modelcontextprotocol/inspector` | 2.8.0 | verified, used outside the repo for evidence | `npm view @modelcontextprotocol/inspector version`; CLI flags read from `mcp-inspector --cli --help` (`--method`, `--tool-name`, `--strict`, `--protocol-era`) |
 | `@modelcontextprotocol/ext-apps` | 2.0.0 (npm metadata modified 2026-09-25) | verified | `npm view @modelcontextprotocol/ext-apps version` |
 
 ## MCP protocol version: what SDK 2.2.0 actually speaks
@@ -56,3 +59,12 @@ Development continues mock-first. In the AWS setup task: verify which region sup
 - AWS region with Bedrock, Guardrails, AgentCore Runtime/Memory/Observability, and S3 Vectors all available
 - Bedrock model access enabled for the chosen host and multimodal models (model IDs)
 - S3 Vectors as a Bedrock Knowledge Base vector store, plus its pricing (Rule 1 alternative to AOSS)
+
+## SDK behaviors verified in source (mcp 2.2.0, 2026-09-27)
+Each one shaped the server design; the contract tests pin them.
+- `MCPServer` (FastMCP was renamed in 2.x; `mcp.server.fastmcp` now raises on import).
+- `streamable_http_app(host=localhost)` auto-enables DNS-rebinding protection but allows **any localhost port** as Origin; CluckTalk passes its own allow-list (FRICTION_LOG FL-003). Absent `Origin` is allowed (non-browser clients); a present, unlisted one gets 403; bad `Host` gets 421.
+- The session manager routes any `MCP-Protocol-Version` header outside the handshake set (e.g. 2026-07-28) to the stateless path; CluckTalk's `ProtocolVersionGate` returns 400 for those. The SDK client's default `mode="auto"` probes `server/discover` first and falls back to `initialize` on that 400 (contract test).
+- Tool errors: crash → `"Error executing tool <name>"`; bad arguments → pydantic text. CluckTalk's `SafeToolErrors` middleware replaces both (FL-002).
+- Middleware return values are not version-shaped by the runner, so `resultType` must be stripped for 2025-11-25 (FL-001).
+- `Annotated[CallToolResult, Model]` return type: publishes `Model` as `outputSchema`, validates `structuredContent` on success, lets the tool set `content`/`_meta` itself. The client validates `structuredContent` only when `isError` is false.

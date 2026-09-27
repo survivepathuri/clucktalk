@@ -12,6 +12,7 @@ These are the project's non-negotiable engineering rules. A maintainer's local `
 python tasks.py setup       :: create .venv + install pinned deps
 python tasks.py check       :: lint + format + tests + AOSS check + secret scan  (run after EVERY change)
 python tasks.py eval-fast   :: golden evals in mock mode, no AWS (after changing a tool/schema/prompt)
+python tasks.py serve       :: MCP server only, demo data, http://127.0.0.1:8765/mcp
 python tasks.py run         :: local demo: Simulator + MCP server, mock mode
 .venv\Scripts\python -m ruff format .      :: auto-format
 .venv\Scripts\python -m pytest -q tests\unit   :: run one test folder

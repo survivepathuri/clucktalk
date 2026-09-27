@@ -23,4 +23,10 @@ Proposed behavior:
 
 ## Requests
 
-_None yet._
+### FR-001: A hook for customer-safe tool error text in the MCP Python SDK
+Date: 2026-09-27
+Product / service: MCP Python SDK (`mcp` 2.x, `MCPServer`)
+Priority: Important
+Problem it solves (who, when): Voice add-on builders (e.g., Alexa+) must never have a tool name, field name, or exception text spoken to a customer. Today the SDK's default error results contain "Error executing tool <name>" or pydantic validation text, and changing that needs a custom middleware that re-validates arguments.
+Related friction-log entry: FL-002
+Proposed behavior: `MCPServer(tool_error_formatter=callable)` receiving (tool name, error kind: validation | tool_error | crash, exception) and returning the `CallToolResult` to send, with the SDK still logging the original server-side and applying per-version wire shaping (see FL-001).
