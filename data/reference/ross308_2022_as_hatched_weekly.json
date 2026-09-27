@@ -1,0 +1,28 @@
+{
+  "breed": "Ross 308",
+  "breed_synonyms": ["ross 308", "ross308", "ross"],
+  "sex": "as-hatched (mixed)",
+  "source": {
+    "title": "Ross 308 / Ross 308 FF Broiler: Performance Objectives 2022 (Aviagen), As-Hatched Performance table, metric section",
+    "url": "https://aviagen.com/assets/Tech_Center/Ross_Broiler/RossxRoss308-BroilerPerformanceObjectives2022-EN.pdf",
+    "retrieved": "2026-09-27",
+    "publisher_notes": [
+      "Objectives indicate performance achievable under good management; local average performance may be lower.",
+      "On-farm body weight; feed consumption per living bird; FCR includes initial body weight and does not account for mortality."
+    ]
+  },
+  "license_note": "Only weekly checkpoints are cited here, not the publisher's full daily table. The PDF's permission flags disallow content copying.",
+  "interpolation": "Days between checkpoints are linearly interpolated by CluckTalk. That is an approximation, not publisher data.",
+  "points": [
+    {"day": 0,  "weight_g": 44,   "daily_intake_g": null, "cum_intake_g": 0},
+    {"day": 1,  "weight_g": 62,   "daily_intake_g": 12,   "cum_intake_g": 12},
+    {"day": 7,  "weight_g": 213,  "daily_intake_g": 35,   "cum_intake_g": 166},
+    {"day": 14, "weight_g": 533,  "daily_intake_g": 67,   "cum_intake_g": 535},
+    {"day": 21, "weight_g": 1012, "daily_intake_g": 105,  "cum_intake_g": 1155},
+    {"day": 28, "weight_g": 1616, "daily_intake_g": 145,  "cum_intake_g": 2051},
+    {"day": 35, "weight_g": 2296, "daily_intake_g": 180,  "cum_intake_g": 3211},
+    {"day": 42, "weight_g": 2998, "daily_intake_g": 207,  "cum_intake_g": 4586},
+    {"day": 49, "weight_g": 3681, "daily_intake_g": 225,  "cum_intake_g": 6115},
+    {"day": 56, "weight_g": 4318, "daily_intake_g": 234,  "cum_intake_g": 7733}
+  ]
+}

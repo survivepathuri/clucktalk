@@ -1,0 +1,53 @@
+{
+  "fictional_notice": "FICTIONAL DEMO DATA. This farm, its owner, and every reading are invented for demonstration. No real farmer's data is used (CLAUDE.md Rule 9).",
+  "farm_id": "farm-demo-001",
+  "name": "Sri Lakshmi Poultry Farm",
+  "owner_first_name": "Ravi",
+  "location": "Eluru district, Andhra Pradesh",
+  "simulated": {
+    "feed_price_per_kg_inr": "38.50",
+    "supplier_lead_days": 2,
+    "note": "Feed price and supplier are simulated and labeled as such in every answer."
+  },
+  "houses": [
+    {
+      "house_id": "house-1",
+      "number": 1,
+      "kind": "broiler",
+      "breed": "Ross 308",
+      "placed_days_ago": 34,
+      "age_at_placement_days": 0,
+      "birds_placed": 5000,
+      "feed_stock_kg": 5200,
+      "profile": {"intake_factor": 0.97, "weight_factor": 0.97, "daily_mortality_pct": 0.08, "weigh_every_days": 7},
+      "story": "Healthy flock near market weight: the Sell-Now-or-Wait example.",
+      "events": []
+    },
+    {
+      "house_id": "house-2",
+      "number": 2,
+      "kind": "broiler",
+      "breed": "Ross 308",
+      "placed_days_ago": 23,
+      "age_at_placement_days": 0,
+      "birds_placed": 4000,
+      "feed_stock_kg": 900,
+      "profile": {"intake_factor": 0.98, "weight_factor": 0.93, "daily_mortality_pct": 0.1, "weigh_every_days": 7},
+      "story": "Today: deaths jump and birds eat less, plus feed stock is low. The 'how is shed two doing' example.",
+      "events": [{"days_ago": 0, "deaths": 26, "intake_factor": 0.8}]
+    },
+    {
+      "house_id": "house-3",
+      "number": 3,
+      "kind": "layer",
+      "breed": "BV-300",
+      "placed_days_ago": 150,
+      "age_at_placement_days": 126,
+      "birds_placed": 3000,
+      "feed_stock_kg": 3500,
+      "profile": {"feed_g_per_bird": 112, "hen_day_pct": 88.0, "lay_start_age_days": 140, "daily_mortality_pct": 0.03},
+      "story": "Steady layer flock: the calm baseline.",
+      "events": []
+    }
+  ]
+}

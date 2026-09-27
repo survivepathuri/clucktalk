@@ -16,3 +16,4 @@ select = ["E", "F", "W", "I", "B", "UP", "E722", "BLE001", "S110"]
 
 [tool.pytest.ini_options]
 addopts = "-ra"
+pythonpath = ["src", "."]
