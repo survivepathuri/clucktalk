@@ -28,7 +28,9 @@ def _call(live, sid, name, arguments=None):
 def _assert_contract_error(result):
     """Rule 4: isError, one safe sentence + next step, bilingual structured error, nothing internal."""
     assert result["isError"] is True
-    err = result["structuredContent"]["error"]
+    # Spec 2025-11-25: structured results MUST match outputSchema, so errors carry none; details go in _meta.
+    assert "structuredContent" not in result
+    err = result["_meta"]["clucktalk/error"]
     assert set(err) == REQUIRED_ERROR_FIELDS
     assert all(isinstance(v, str) and v.strip() for v in err.values())
     spoken = " ".join(c["text"] for c in result["content"] if c["type"] == "text")

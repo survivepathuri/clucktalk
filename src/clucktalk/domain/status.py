@@ -12,7 +12,7 @@ from datetime import date, timedelta
 from enum import IntEnum
 
 from clucktalk.domain import thresholds as t
-from clucktalk.domain.errors import InsufficientData
+from clucktalk.domain.errors import InsufficientData, NoReferenceCurve
 from clucktalk.domain.models import DailyRecord, House, HouseKind
 from clucktalk.domain.reference import curve_for
 
@@ -193,10 +193,13 @@ def _layer_production(house: House, records: tuple[DailyRecord, ...], latest: Da
 def house_status(house: House, as_of: date) -> HouseStatus:
     records = house.records_until(as_of)
     if not records:
-        raise InsufficientData(f"the status of {house.label_en}")
+        raise InsufficientData(f"the status of {house.label_en}", f"{house.label_te} స్థితి")
     latest = records[-1]
     if _live_at_start_of(house, latest.day) == 0:
-        raise InsufficientData(f"the status of {house.label_en}, because no live birds are recorded there")
+        raise InsufficientData(
+            f"the status of {house.label_en}, because no live birds are recorded there",
+            f"{house.label_te} స్థితి (అక్కడ బతికి ఉన్న కోళ్లు నమోదు కాలేదు)",
+        )
     findings: list[Finding] = []
 
     stale_days = (as_of - latest.day).days
@@ -205,15 +208,33 @@ def house_status(house: House, as_of: date) -> HouseStatus:
             Finding("records_stale", Level.WATCH, {"days_since_record": stale_days, "latest": latest.day.isoformat()})
         )
     findings += _mortality_findings(house, records, latest)
-    feed_drop = _feed_drop_finding(house, records, latest)
-    if feed_drop:
-        findings.append(feed_drop)
+
+    # A broiler breed without a cited curve still gets deaths, feed and weights; only target comparisons
+    # are skipped, and the finding says so (never another breed's curve, Rule 6).
+    has_curve = True
+    if house.kind is HouseKind.BROILER:
+        try:
+            curve_for(house.breed)
+        except NoReferenceCurve:
+            has_curve = False
+    if has_curve:
+        feed_drop = _feed_drop_finding(house, records, latest)
+        if feed_drop:
+            findings.append(feed_drop)
 
     avg_w = w_day = target_w = farm_fcr = target_fcr = None
     hen_day = hen_day_avg = None
-    if house.kind is HouseKind.BROILER:
+    if house.kind is HouseKind.BROILER and has_curve:
         avg_w, w_day, target_w, farm_fcr, target_fcr, growth_findings = _broiler_growth(house, records)
         findings += growth_findings
+        max_day = curve_for(house.breed).max_day
+        if house.age_days(as_of) > max_day:
+            findings.append(Finding("past_growth_table", Level.OK, {"max_day": max_day}))
+    elif house.kind is HouseKind.BROILER:
+        weighed = [r for r in records if r.avg_weight_g is not None]
+        if weighed:
+            avg_w, w_day = weighed[-1].avg_weight_g, weighed[-1].day
+        findings.append(Finding("no_reference_curve", Level.OK, {}))
     else:
         hen_day, hen_day_avg, lay_findings = _layer_production(house, records, latest)
         findings += lay_findings

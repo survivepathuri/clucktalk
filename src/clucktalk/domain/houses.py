@@ -44,4 +44,5 @@ def resolve_house(farm: Farm, reference: str) -> House:
     for house in farm.houses:
         if house.number == number:
             return house
-    raise UnknownHouse(ref, [h.label_en for h in sorted(farm.houses, key=lambda h: h.number)])
+    ordered = sorted(farm.houses, key=lambda h: h.number)
+    raise UnknownHouse(ref, [h.label_en for h in ordered], [h.label_te for h in ordered])

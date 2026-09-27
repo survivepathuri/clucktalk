@@ -54,7 +54,7 @@ Based on Amazon's Alexa+ MCP tool, schema and data design guidance.
 1. One tool = one customer intent; no overlaps. The description says when to call it, why, and what it returns.
 2. One-shot extraction: accept all constraints in one call.
 3. Declare only what you honor. Output matches `outputSchema`; no undeclared fields.
-4. Always return something. Errors are structured (`isError: true`) with a customer-safe message and one next step. Never speak codes, tool names, JSON, or IDs.
+4. Always return something. Errors are structured (`isError: true`) with a customer-safe message and one next step: spoken English in `content`, English + Telugu in `_meta["clucktalk/error"]`, and no `structuredContent` (MCP 2025-11-25: structured results must conform to `outputSchema`). Never speak codes, tool names, JSON, or IDs.
 5. Stable IDs chain tools (`house_id`, `check_id`, `sale_plan_id`, `proposal_id`, `order_id`, `handoff_id`), alongside human labels ("House 2", "the first one").
 6. Synonyms in enums and descriptions: `BV-300/BV300/Babcock`, `Cobb 430/Cobb`, `shed/house/kotam`, `dana/feed`, `bech do/sell`, and Hinglish numbers.
 7. Independent parameters: a correction changes one field.
@@ -75,7 +75,7 @@ Mapped from Amazon's Alexa+ add-on functional requirements.
 | Onboarding | `get_help`; the documented invocation examples work | Golden cases |
 | Transaction flow | Price breakdown (base, GST, delivery, total); explicit "yes"; duplicate detection; modify one field; cancel with confirmation; status; receipt; amount re-validated; idempotency | Lifecycle test |
 | Voice-only | At most 5 options; read-back + "yes"; never refer to a screen | Headless golden cases |
-| Cross-modal | Spoken numbers equal card numbers; no stale card | Automated diff of `text_en` vs `structuredContent` |
+| Cross-modal | Spoken numbers equal card numbers; English and Telugu speak the same numbers; no stale card | Scoped automated check per finding / house (`tests/crossmodal.py`) |
 | Visual | No blank cards; legible; touch = voice; key info above the fold | Screenshot review + accessibility check |
 | Tool validation | Schemas, validation, error contract, stable IDs, synonyms | Contract suite |
 
@@ -88,6 +88,9 @@ Not applicable: account linking, search/discovery, video playback.
 4. **Human approval.** Orders and vet sends need propose → explicit "yes" → confirm, with idempotency keys and duplicate detection.
 5. **Order limit.** An in-server check blocks unusually large orders. The limit is relative to the house's weekly feed use (a flat rupee cap would block normal orders for large houses). Exact rule: to be settled when the order flow is built.
 6. **Honest numbers.** Only sourced figures (see §9), with the formula shown for computed impact numbers.
+7. **Honest time.** "Today" is said only when the latest reading is from today; otherwise "in the latest count". A feed plan built on readings older than a day says so and asks the farmer to check the stock.
+8. **Nothing unknown is called fine.** If no house can be checked, the farm level is `unknown`, never `ok`. A house that fails is listed with its reason; the others are still answered.
+9. **No needless orders.** A reorder is suggested only when the projection shows a shortfall; costs are stated as before GST and delivery.
 
 ## 8. Language
 - Voice in/out: English and Hinglish. Cards: Telugu + English.

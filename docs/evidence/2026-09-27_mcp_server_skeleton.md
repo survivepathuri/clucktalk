@@ -136,6 +136,8 @@ unknown Mcp-Session-Id:                      HTTP 404
 MCP-Protocol-Version: 2026-07-28:            HTTP 400  {"jsonrpc": "2.0", "id": null, "error": {"code": -32600, "message": "Unsupported MCP-Protocol-Version. This server uses 2025-11-25 via initialize."}}
 ```
 ## 8. Error contract on the wire: `get_help` with bad arguments
+> Superseded later on 2026-09-27: error details moved from `structuredContent.error` to `_meta["clucktalk/error"]` (FRICTION_LOG FL-004). Current wire form: `2026-09-27_farm_status_and_feed.md`, sections 6-7.
+
 ```json
 {"jsonrpc":"2.0","id":5,"result":{"content":[{"type":"text","text":"Sorry, I didn't catch all the details for that. Please say that again with a little more detail."}],"structuredContent":{"error":{"message_en":"Sorry, I didn't catch all the details for that.","message_te":"క్షమించండి, దానికి కావలసిన వివరాలు పూర్తిగా అందలేదు.","next_step_en":"Please say that again with a little more detail.","next_step_te":"దయచేసి కొంచెం ఎక్కువ వివరాలతో మళ్ళీ చెప్పండి."}},"isError":true}}
 ```

@@ -26,7 +26,8 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 from clucktalk.config import APP_NAME, ConfigError, Settings, load_settings
 from clucktalk.server.errors import SafeToolErrors
-from clucktalk.server.tools import CapabilityRegistry
+from clucktalk.server.farm_state import DemoFarmSource
+from clucktalk.server.tools import CapabilityRegistry, farm_status, feed
 from clucktalk.server.tools import help as help_tool
 
 logger = logging.getLogger("clucktalk.server")
@@ -43,7 +44,9 @@ if TARGET_PROTOCOL_VERSION != LATEST_HANDSHAKE_VERSION:
     )
 
 
-def build_mcp_server() -> MCPServer:
+def build_mcp_server(source: DemoFarmSource | None = None) -> MCPServer:
+    """``source`` defaults to the demo farm as of today (IST); tests pass one with a fixed clock."""
+    source = source or DemoFarmSource()
     guard = SafeToolErrors()
     server = MCPServer(
         name=APP_NAME,
@@ -53,6 +56,8 @@ def build_mcp_server() -> MCPServer:
         middleware=[guard],
     )
     registry = CapabilityRegistry()
+    farm_status.register(server, registry, source)
+    feed.register(server, registry, source)
     help_tool.register(server, registry)
     guard.bind(server)
     return server

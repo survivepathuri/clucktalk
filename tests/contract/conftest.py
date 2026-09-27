@@ -8,6 +8,7 @@ import threading
 import time
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
+from datetime import date
 from typing import Any
 
 import httpx2
@@ -17,9 +18,12 @@ from mcp.server.mcpserver import MCPServer
 
 from clucktalk.config import load_settings
 from clucktalk.server.app import MCP_PATH, TARGET_PROTOCOL_VERSION, build_app, build_mcp_server
+from clucktalk.server.farm_state import DemoFarmSource
 
 ACCEPT = "application/json, text/event-stream"
 LEAK_SECRET = "internal-detail-7f3a"  # the crash probe raises this; it must never reach the client
+# The seeded demo farm is generated relative to "today"; pin it so the story is fixed in tests.
+FIXED_DAY = date(2026, 9, 29)  # a Tuesday
 
 
 def _free_port() -> int:
@@ -83,7 +87,7 @@ class LiveServer:
 def _start(env: dict[str, str], customize: Callable[[MCPServer], None] | None = None) -> tuple[LiveServer, Callable]:
     port = _free_port()
     settings = load_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_PORT": str(port), **env})
-    server = build_mcp_server()
+    server = build_mcp_server(DemoFarmSource(clock=lambda: FIXED_DAY))
     if customize:
         customize(server)
     config = uvicorn.Config(build_app(settings, server), host=settings.host, port=port, log_level="warning")

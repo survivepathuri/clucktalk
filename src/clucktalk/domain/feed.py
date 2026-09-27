@@ -14,7 +14,7 @@ from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Literal
 
-from clucktalk.domain.errors import InsufficientData, InvalidInput
+from clucktalk.domain.errors import BeyondGrowthTable, InsufficientData, InvalidInput
 from clucktalk.domain.models import Farm, House, HouseKind
 from clucktalk.domain.reference import curve_for
 
@@ -100,7 +100,7 @@ def _per_bird_projection(house: House, as_of: date):
     if house.kind is HouseKind.LAYER:
         recent = records[-LAYER_BASELINE_DAYS:]
         if len(recent) < INTAKE_BASELINE_DAYS:
-            raise InsufficientData(f"a feed plan for {house.label_en}")
+            raise InsufficientData(f"a feed plan for {house.label_en}", f"{house.label_te} దాణా ప్రణాళిక")
         avg = sum(1000 * r.feed_kg / _live_start(house, r.day) for r in recent) / len(recent)
         return (lambda _age: avg), "house_actual", None
 
@@ -133,15 +133,24 @@ def plan_feed(farm: Farm, house: House, as_of: date, horizon_days: int = DEFAULT
         raise InvalidInput(
             f"I can plan feed for {MIN_HORIZON_DAYS} to {MAX_HORIZON_DAYS} days ahead.",
             "How many days should I plan for?",
+            f"నేను {MIN_HORIZON_DAYS} నుండి {MAX_HORIZON_DAYS} రోజుల వరకు దాణా ప్రణాళిక చేయగలను.",
+            "ఎన్ని రోజులకు ప్రణాళిక చేయాలి?",
         )
     if house.live_birds(as_of) == 0:
-        raise InsufficientData(f"a feed plan for {house.label_en}, because no live birds are recorded there")
+        raise InsufficientData(
+            f"a feed plan for {house.label_en}, because no live birds are recorded there",
+            f"{house.label_te} దాణా ప్రణాళిక (అక్కడ బతికి ఉన్న కోళ్లు నమోదు కాలేదు)",
+        )
 
+    max_age = None
+    if house.kind is HouseKind.BROILER:
+        # Checked before any projection: past the table's last day there is no target to scale.
+        max_age = curve_for(house.breed).max_day
+        days_left = max_age - house.age_days(as_of)
+        if days_left < horizon_days:
+            raise BeyondGrowthTable(house.label_en, house.label_te, house.breed, max_age, max(days_left, 0))
     per_bird, basis, scale = _per_bird_projection(house, as_of)
-    max_age = curve_for(house.breed).max_day if house.kind is HouseKind.BROILER else None
     horizon = _project(house, as_of, horizon_days, per_bird, max_age)
-    if len(horizon) < horizon_days:
-        raise InsufficientData(f"a {horizon_days}-day feed plan for {house.label_en} past the end of the growth table")
 
     lookahead = _project(house, as_of, COVERAGE_LOOKAHEAD_DAYS, per_bird, max_age)
     covered, running = 0, 0.0
@@ -158,8 +167,13 @@ def plan_feed(farm: Farm, house: House, as_of: date, horizon_days: int = DEFAULT
     if reorder:
         cover_days = max(horizon_days, farm.supplier_lead_days + SAFETY_DAYS)
         shortfall = sum(n.feed_kg for n in lookahead[:cover_days]) - house.feed_stock_kg
-        order_bags = max(1, math.ceil(shortfall / BAG_KG))
-        order_kg = order_bags * BAG_KG
+        # Never suggest buying feed the numbers don't show is needed. This also covers stock that outlasts
+        # every projectable day (lookahead cut short by the growth table's end): its shortfall is <= 0.
+        if shortfall > 0:
+            order_bags = math.ceil(shortfall / BAG_KG)
+            order_kg = order_bags * BAG_KG
+        else:
+            reorder = False
     cost = (farm.feed_price_per_kg * order_kg).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
 
     phase = change = None

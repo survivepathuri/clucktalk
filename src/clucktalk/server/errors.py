@@ -2,7 +2,9 @@
 
 Every failed tool call returns ``isError: true`` with:
 - ``content``: one customer-safe sentence plus one next step, in English (what Alexa speaks);
-- ``structuredContent.error``: the same message and next step in English and Telugu.
+- ``_meta["clucktalk/error"]``: the same message and next step in English and Telugu;
+- no ``structuredContent``: MCP 2025-11-25 says structured results MUST conform to the tool's outputSchema,
+  with no exemption for errors, and MCP Inspector 2.8.0 enforces that on error results too.
 Never codes, tool names, JSON, IDs, or exception text.
 
 ``SafeToolErrors`` is the backstop for failures the tool did not describe itself: argument validation
@@ -21,19 +23,20 @@ from mcp.server.context import CallNext, HandlerResult
 from mcp.server.mcpserver import MCPServer
 from mcp_types import CallToolResult, TextContent
 
+from clucktalk.domain.errors import DomainError
 from clucktalk.i18n import BAD_REQUEST_ERROR, BAD_REQUEST_NEXT_STEP, GENERIC_ERROR, GENERIC_NEXT_STEP, Text
 
 logger = logging.getLogger("clucktalk.server")
 
-ERROR_KEY = "error"
+ERROR_META_KEY = "clucktalk/error"  # _meta key: prefix "clucktalk/" + name (MCP _meta naming)
 
 
 def error_result(message: Text, next_step: Text) -> CallToolResult:
     """The only way CluckTalk builds a failed tool result."""
     return CallToolResult(
         content=[TextContent(type="text", text=f"{message.en} {next_step.en}")],
-        structured_content={
-            ERROR_KEY: {
+        meta={
+            ERROR_META_KEY: {
                 "message_en": message.en,
                 "message_te": message.te,
                 "next_step_en": next_step.en,
@@ -44,6 +47,11 @@ def error_result(message: Text, next_step: Text) -> CallToolResult:
     )
 
 
+def domain_error_result(err: DomainError) -> CallToolResult:
+    """A described domain failure (unknown shed, too few records, ...) in the same contract shape."""
+    return error_result(Text(err.customer_message, err.customer_message_te), Text(err.next_step, err.next_step_te))
+
+
 def _wire(result: CallToolResult) -> dict[str, Any]:
     """Wire form for a 2025-11-25 connection. A middleware result bypasses the SDK's per-version shaping
     (mcp/server/runner.py: "trusted to return its own well-formed result"), so drop the 2026-era
@@ -52,8 +60,8 @@ def _wire(result: CallToolResult) -> dict[str, Any]:
 
 
 def is_contract_error(result: CallToolResult) -> bool:
-    sc = result.structured_content
-    return bool(result.is_error) and isinstance(sc, dict) and isinstance(sc.get(ERROR_KEY), dict)
+    meta = result.meta
+    return bool(result.is_error) and isinstance(meta, dict) and isinstance(meta.get(ERROR_META_KEY), dict)
 
 
 class SafeToolErrors:
