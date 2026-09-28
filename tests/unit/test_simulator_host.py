@@ -86,6 +86,27 @@ def test_sandbox_csp_adds_declared_https_origins_and_drops_anything_else():
         assert bad not in csp, bad
 
 
+def test_strict_sandbox_csp_is_the_spec_default_without_a_font_src():
+    """Strict mode = a host that applies the spec default literally: font-src falls back to default-src 'none'."""
+    csp = dict(d.split(" ", 1) for d in sandbox_csp(None, strict=True).split("; "))
+    assert "font-src" not in csp
+    assert csp["default-src"] == "'none'"
+    assert {k: csp[k] for k in ("script-src", "style-src", "img-src", "media-src", "connect-src")} == {
+        "script-src": "'self' 'unsafe-inline'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data:",
+        "media-src": "'self' data:",
+        "connect-src": "'none'",
+    }
+
+
+def test_strict_sandbox_csp_allows_fonts_only_from_declared_origins():
+    csp = sandbox_csp({"resourceDomains": ["https://fonts.example", "http://insecure.example"]}, strict=True)
+    directives = dict(d.split(" ", 1) for d in csp.split("; "))
+    assert directives["font-src"] == "https://fonts.example"  # no 'self', no data:
+    assert "insecure" not in csp
+
+
 def test_simulator_refuses_live_mode_until_aws_setup():
     with pytest.raises(ConfigError, match="AWS setup"):
         load_simulator_settings({})

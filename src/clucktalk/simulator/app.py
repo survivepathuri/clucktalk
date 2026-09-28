@@ -83,10 +83,14 @@ def _origins(values: Any) -> list[str]:
     return good
 
 
-def sandbox_csp(declared: dict[str, Any] | None, ancestors: tuple[str, ...] = ()) -> str:
+def sandbox_csp(declared: dict[str, Any] | None, ancestors: tuple[str, ...] = (), *, strict: bool = False) -> str:
     """The spec's restrictive default, plus declared origins. One addition the spec's default lacks:
     ``font-src 'self' data:``, as in the ext-apps reference host (FRICTION_LOG FL-007), so a card can bundle a
     font inline. Nothing from the network is allowed unless the card declares it.
+
+    ``strict=True`` drops that addition and behaves like a host that applies the spec's default literally: fonts
+    load only from declared ``resourceDomains`` (the spec maps them to ``font-src``), so inlined data: fonts are
+    blocked (``font-src`` falls back to ``default-src 'none'``). Used to test a card's font fallback.
 
     Two host-side hardenings: ``form-action 'none'`` (``default-src`` does not cover form posts, so a card could
     otherwise post to the Simulator's own API) and ``frame-ancestors`` limited to the Simulator page, so no other
@@ -97,13 +101,17 @@ def sandbox_csp(declared: dict[str, Any] | None, ancestors: tuple[str, ...] = ()
     frame = " ".join(_origins(declared.get("frameDomains"))) or "'none'"
     base = " ".join(_origins(declared.get("baseUriDomains"))) or "'self'"
     embedders = " ".join(ancestors) or "'none'"
+    if strict:
+        fonts = [f"font-src {res}"] if res else []  # no directive: falls back to default-src 'none'
+    else:
+        fonts = [f"font-src 'self' data: {res}".strip()]
     directives = [
         "default-src 'none'",
         f"script-src 'self' 'unsafe-inline' {res}".strip(),
         f"style-src 'self' 'unsafe-inline' {res}".strip(),
         f"img-src 'self' data: {res}".strip(),
         f"media-src 'self' data: {res}".strip(),
-        f"font-src 'self' data: {res}".strip(),
+        *fonts,
         f"connect-src {connect}",
         f"frame-src {frame}",
         f"base-uri {base}",
@@ -202,7 +210,9 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
         return FileResponse(
             STATIC / "sandbox.html",
             headers={
-                "content-security-policy": sandbox_csp(declared, tuple(sorted(settings.origins))),
+                "content-security-policy": sandbox_csp(
+                    declared, tuple(sorted(settings.origins)), strict=request.query_params.get("strict") == "1"
+                ),
                 "cache-control": "no-store",
             },
         )

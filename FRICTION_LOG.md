@@ -114,3 +114,13 @@ Expected vs actual: Expected an Alexa+ MCP Apps rendering profile. Actual: Alexa
 Severity: Medium
 Workaround: The card is responsive and was checked at 1024x600, 960x600, 960x480 and a 390x844 phone in the Simulator; tap-to-call is optional (voice gives the same answer).
 Actionable suggestion: Publish an "MCP Apps on Alexa+" page: container dimensions per device class, supported `ui/*` requests and notifications, CSP and font policy (Indic scripts), and whether card-initiated `tools/call` is allowed.
+
+### FL-010: No doc says whether a CSP-blocked `@font-face` source falls through to the next one; had to test it
+Date: 2026-09-28
+Tool / service: MCP Apps extension spec 2026-01-26 (CSP, `resourceDomains`); MDN `@font-face` `src` and CSP `font-src` pages; Google Chrome 153.0.8010.53
+Task attempted: Plan how the card keeps its bundled Telugu font on a host that applies the spec's default CSP literally (FL-007): inlined `data:` font first, a declared https copy second.
+Steps taken: Read the spec (`resourceDomains` maps to `font-src`; hosts "MUST NOT allow undeclared domains") and MDN (`font-src` falls back to `default-src`; the browser uses "the first one it can successfully activate"). Neither says whether a source blocked by CSP counts as a failed source. Built a strict-CSP mode into the Simulator's sandbox proxy and a probe (docs/evidence/2026-09-28_strict_csp.md), ran it in headless Chrome.
+Expected vs actual: Expected a documented answer. Actual: none found; the answer had to come from a test. Chrome 153 falls through: `font-src` violation for `data`, then the https entry loads; on a permissive CSP the https copy is never fetched. Other engines (WebKit, Firefox) and the Alexa+ renderer are untested.
+Severity: Low
+Workaround: Tested it; the card will list the inlined font first and the declared https copy second.
+Actionable suggestion: MCP Apps spec: a short "Fonts" note in the CSP section (how a view should ship a custom or non-Latin font under the default CSP, and whether hosts should provide Indic fonts via `styles.css.fonts`). MDN: state in `@font-face` `src` that a source blocked by CSP is treated like a failed load.

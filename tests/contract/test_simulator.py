@@ -213,3 +213,13 @@ def test_sandbox_is_served_with_the_spec_csp(sim):
     r = httpx2.get(sim.base.replace("127.0.0.1", "localhost") + "/sandbox", headers={"host": f"localhost:{sim.port}"})
     assert r.status_code == 200
     assert r.headers["content-security-policy"] == sandbox_csp({}, (sim.origin, f"http://localhost:{sim.port}"))
+
+
+def test_sandbox_strict_mode_serves_the_strict_csp(sim):
+    r = httpx2.get(
+        sim.base.replace("127.0.0.1", "localhost") + "/sandbox?strict=1", headers={"host": f"localhost:{sim.port}"}
+    )
+    assert r.status_code == 200
+    csp = r.headers["content-security-policy"]
+    assert csp == sandbox_csp({}, (sim.origin, f"http://localhost:{sim.port}"), strict=True)
+    assert "font-src" not in csp

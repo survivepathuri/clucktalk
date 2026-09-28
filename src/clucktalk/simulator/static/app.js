@@ -12,7 +12,7 @@ const PRESETS = {
 };
 const $ = (id) => document.getElementById(id);
 const state = {
-  device: "show", preset: "show-1024x600", theme: "dark", sound: true, delay: 0, busy: false,
+  device: "show", preset: "show-1024x600", theme: "dark", sound: true, delay: 0, strictCsp: false, busy: false,
   interimAfter: 1000, turnNo: 0, card: null, server: null,
 };
 window.__clucktalk = { turns: [] };   // read-only record of turns (for automated end-to-end checks)
@@ -175,11 +175,11 @@ class CardHost {
     this.frame = document.createElement("iframe");
     this.frame.setAttribute("sandbox", "allow-scripts allow-same-origin");   // spec: the proxy needs both
     this.frame.setAttribute("title", "CluckTalk card");
-    this.frame.src = `${this.origin}/sandbox?csp=${encodeURIComponent(JSON.stringify(csp))}`;
+    this.frame.src = `${this.origin}/sandbox?csp=${encodeURIComponent(JSON.stringify(csp))}${state.strictCsp ? "&strict=1" : ""}`;
     this.onMessage = (e) => this.handle(e);
     window.addEventListener("message", this.onMessage);
     $("cardhost").replaceChildren(this.frame);
-    entry.line("kv", `card: ${content.uri} in sandbox ${this.origin} (CSP ${Object.keys(csp).length ? "declared" : "spec default + font-src data:"})`);
+    entry.line("kv", `card: ${content.uri} in sandbox ${this.origin} (CSP: ${state.strictCsp ? "strict spec default" : "spec default + font-src data:"}${Object.keys(csp).length ? " + declared " + JSON.stringify(csp) : ""})`);
     // No blank cards (fail loud): if the card has not rendered in time, say so and show the text answer.
     this.watchdog = setTimeout(() => {
       if (this.rendered || state.card !== this) return;
@@ -415,6 +415,7 @@ $("theme").addEventListener("change", (e) => {
   if (state.card) state.card.sendContext({ theme: state.theme });
 });
 $("delay").addEventListener("change", (e) => { state.delay = Number(e.target.value); });
+$("csp").addEventListener("change", (e) => { state.strictCsp = e.target.value === "strict"; });  // applies to the next card
 
 // URL options make screenshots reproducible, e.g. ?device=show&preset=phone-390x844&dev=1&sound=0
 function applyQuery() {
@@ -423,6 +424,7 @@ function applyQuery() {
   if (PRESETS[q.get("preset")]) { state.preset = q.get("preset"); $("preset").value = state.preset; }
   if (q.get("theme") === "light") { state.theme = "light"; $("theme").value = "light"; $("screen").dataset.theme = "light"; }
   if (q.get("sound") === "0") $("sound").click();
+  if (q.get("csp") === "strict") { state.strictCsp = true; $("csp").value = "strict"; }
   if (q.get("dev") === "1") $("dev-toggle").click();
 }
 
