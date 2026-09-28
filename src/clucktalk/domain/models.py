@@ -13,6 +13,31 @@ class HouseKind(StrEnum):
     LAYER = "layer"
 
 
+class TreatmentKind(StrEnum):
+    MEDICINE = "medicine"
+    VACCINE = "vaccine"
+
+
+MAX_TREATMENT_NAME = 80
+MAX_TREATMENT_NOTE = 200
+
+
+@dataclass(frozen=True)
+class Treatment:
+    """A medicine or vaccine given to a house that day, by name only. There is deliberately no dose field:
+    CluckTalk never stores or suggests doses (docs/DESIGN.md §7 rule 3, §13.2)."""
+
+    kind: TreatmentKind
+    name: str
+    note: str | None = None
+
+    def __post_init__(self) -> None:
+        if not self.name.strip() or len(self.name) > MAX_TREATMENT_NAME:
+            raise ValueError(f"treatment name must be 1-{MAX_TREATMENT_NAME} characters")
+        if self.note is not None and len(self.note) > MAX_TREATMENT_NOTE:
+            raise ValueError(f"treatment note must be at most {MAX_TREATMENT_NOTE} characters")
+
+
 @dataclass(frozen=True)
 class DailyRecord:
     """One day's readings for one house, as the farmer (or a sensor) logged them."""
@@ -22,6 +47,8 @@ class DailyRecord:
     feed_kg: float  # feed consumed that day by the whole house
     avg_weight_g: float | None = None  # broilers: sample-weighing day only
     eggs: int | None = None  # layers only
+    weight_sample_birds: int | None = None  # how many birds were weighed for avg_weight_g, when the farmer says
+    treatments: tuple[Treatment, ...] = ()
 
     def __post_init__(self) -> None:
         if self.deaths < 0 or self.feed_kg < 0:
@@ -30,6 +57,11 @@ class DailyRecord:
             raise ValueError(f"{self.day}: avg_weight_g must be > 0")
         if self.eggs is not None and self.eggs < 0:
             raise ValueError(f"{self.day}: eggs must be >= 0")
+        if self.weight_sample_birds is not None:
+            if self.avg_weight_g is None:
+                raise ValueError(f"{self.day}: weight_sample_birds needs avg_weight_g")
+            if self.weight_sample_birds <= 0:
+                raise ValueError(f"{self.day}: weight_sample_birds must be > 0")
 
 
 @dataclass(frozen=True)

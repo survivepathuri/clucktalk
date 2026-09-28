@@ -9,7 +9,7 @@ import pytest
 from clucktalk.config import ConfigError
 from clucktalk.simulator.__main__ import load_simulator_settings
 from clucktalk.simulator.app import sandbox_csp
-from clucktalk.simulator.intents import match
+from clucktalk.simulator.intents import match, yes_no
 
 
 @pytest.mark.parametrize(
@@ -30,6 +30,16 @@ from clucktalk.simulator.intents import match
         ("how much dana do I need", "plan_feed", {}),
         ("What can you do?", "get_help", {}),
         ("help", "get_help", {}),
+        # Farm mode (docs/DESIGN.md §13.1): the words pick the mode; the server confirms with a read-back
+        ("Switch my farm to contract farming", "set_farm_mode", {"mode": "contract"}),
+        ("change to company farming", "set_farm_mode", {"mode": "contract"}),
+        ("we are integration farm now", "set_farm_mode", {"mode": "contract"}),
+        ("Alexa, ask CluckTalk to switch to independent farming", "set_farm_mode", {"mode": "independent"}),
+        ("make it my own farm", "set_farm_mode", {"mode": "independent"}),
+        ("What kind of farm is this?", "get_farm_profile", {}),
+        ("am I contract or independent", "get_farm_profile", {}),
+        # Review 2026-09-28: "own" alone is not a farm mode
+        ("change the feed in my own shed 2", "plan_feed", {"house": "shed 2"}),
     ],
 )
 def test_utterance_to_tool(utterance, tool, args):
@@ -122,3 +132,30 @@ def test_simulator_settings():
         load_simulator_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_SIMULATOR_PORT": "8765"})
     with pytest.raises(ConfigError, match="port"):
         load_simulator_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_SIMULATOR_PORT": "99999"})
+
+
+@pytest.mark.parametrize(
+    ("utterance", "answer"),
+    [
+        ("yes", "yes"), ("Yes.", "yes"), ("haan", "yes"), ("haan ji", "yes"), ("avunu", "yes"),
+        ("no", "no"), ("nahi", "no"), ("vaddu", "no"), ("cancel", "no"),
+        # Not an explicit answer: never sent as one (docs/DESIGN.md §5.1)
+        ("yes and how is shed two", None), ("maybe", None), ("how is shed two doing", None), ("", None),
+        ("ha", None),  # review: too short to count as an explicit yes (could be a laugh)
+    ],
+)  # fmt: skip
+def test_only_a_whole_yes_or_no_counts_as_an_answer(utterance, answer):
+    assert yes_no(utterance) == answer
+
+
+def test_a_bare_yes_is_not_an_intent():
+    assert match("yes") is None and match("haan") is None
+
+
+@pytest.mark.parametrize(
+    "utterance", ["we're not a contract farm", "don't switch to contract", "never change to independent farming"]
+)
+def test_a_negated_mode_sentence_never_starts_a_switch(utterance):
+    """Review 2026-09-28 (Low): negations matched as a switch request."""
+    intent = match(utterance)
+    assert intent is None or intent.tool != "set_farm_mode"

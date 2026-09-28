@@ -77,3 +77,27 @@ class BeyondGrowthTable(InsufficientData):
 
 class InvalidInput(DomainError):
     pass
+
+
+class AnswerWithoutProposal(DomainError):
+    """A yes/no arrived without the request it answers (docs/DESIGN.md §5.1)."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "There's nothing waiting for your yes or no right now, so nothing changed.",
+            "Tell me again what you'd like to change.",
+            "ఇప్పుడు మీ 'అవును' లేదా 'వద్దు' కోసం ఏదీ ఎదురుచూడటం లేదు, కాబట్టి ఏమీ మారలేదు.",
+            "మీరు ఏమి మార్చాలనుకుంటున్నారో మళ్ళీ చెప్పండి.",
+        )
+
+
+class MissingAnswer(DomainError):
+    """A request ID arrived without the farmer's yes or no (docs/DESIGN.md §5.1)."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "I didn't catch whether that was a yes or a no, so nothing changed.",
+            "Please say yes or no.",
+            "అది 'అవును'నా 'వద్దు'నా అని నాకు అర్థం కాలేదు, కాబట్టి ఏమీ మారలేదు.",
+            "దయచేసి 'అవును' లేదా 'వద్దు' అని చెప్పండి.",
+        )

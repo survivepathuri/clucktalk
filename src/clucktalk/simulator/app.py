@@ -34,7 +34,7 @@ from starlette.staticfiles import StaticFiles
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from clucktalk.config import APP_NAME
-from clucktalk.simulator.intents import match, normalise
+from clucktalk.simulator.intents import Intent, match, normalise, yes_no
 from clucktalk.simulator.mcp_client import Exchange, McpClient, McpUnavailable
 
 logger = logging.getLogger("clucktalk.simulator")
@@ -47,6 +47,7 @@ FALLBACK_SPEECH = (
     f"for a feed plan, or what {APP_NAME} can do."
 )
 UNAVAILABLE_SPEECH = f"Sorry, {APP_NAME} isn't responding right now. Please try again in a moment."
+NOTHING_TO_ANSWER_SPEECH = "There's nothing waiting for a yes or no right now. What would you like to do?"
 PROTOCOL_ERROR_SPEECH = f"Sorry, {APP_NAME} couldn't do that just now. Please try again in a moment."
 VIEW_METHODS = {"tools/call", "resources/read"}  # what a card may ask the host to forward (spec: standard messages)
 
@@ -187,6 +188,8 @@ def _mcp_ms(exchanges: list[Exchange]) -> float:
 def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> ASGIApp:
     mcp = client or McpClient(settings.mcp_url, settings.auth_token)
     lock = asyncio.Lock()  # one conversation at a time, like one device
+    pending: dict[str, Any] = {}  # the one read-back awaiting the farmer's yes/no: tool, arguments, proposal_id
+    turns = [0]  # turn counter: a read-back only becomes pending if no newer turn started meanwhile
 
     @asynccontextmanager
     async def lifespan(_app: Starlette) -> AsyncIterator[None]:
@@ -242,7 +245,16 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
         utterance = body.get("utterance", "")[:500]
         device = "dot" if body.get("device") == "dot" else "show"
         delay = max(0, min(delay_raw or 0, MAX_SIMULATED_DELAY_MS))
-        intent = match(utterance)
+        # docs/DESIGN.md §5.1: a bare yes/no answers the pending read-back (same tool + proposal_id + answer).
+        # Anything else moves on, so the old read-back can no longer be confirmed from here.
+        answer, awaiting = yes_no(utterance), dict(pending)
+        pending.clear()
+        turns[0] += 1
+        this_turn = turns[0]
+        intent = match(utterance) if answer is None else None
+        if answer is not None and awaiting:
+            args = {**awaiting["arguments"], "proposal_id": awaiting["proposal_id"], "answer": answer}
+            intent = Intent(awaiting["tool"], args, f"answer '{answer}' to the pending read-back")
         out: dict[str, Any] = {
             "utterance": utterance,
             "normalised": normalise(utterance),
@@ -257,7 +269,7 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
             "timing": {"simulated_delay_ms": delay},
         }
         if intent is None:
-            out.update(kind="fallback", speech=FALLBACK_SPEECH)
+            out.update(kind="fallback", speech=NOTHING_TO_ANSWER_SPEECH if answer is not None else FALLBACK_SPEECH)
         else:
             if delay:
                 await asyncio.sleep(delay / 1000)  # visible test control: labeled in the developer panel
@@ -279,6 +291,15 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
                     result = response["result"]
                     uri = mcp.resource_uri(intent.tool)
                     out.update(kind="tool", result=result, speech=_spoken(result), is_error=bool(result.get("isError")))
+                    sc = result.get("structuredContent") or {}
+                    if (
+                        sc.get("status") == "needs_confirmation"
+                        and isinstance(sc.get("proposal_id"), str)
+                        and this_turn == turns[0]  # the farmer has not moved on while this call ran
+                    ):
+                        change = {k: v for k, v in intent.arguments.items() if k not in ("proposal_id", "answer")}
+                        pending.update(tool=intent.tool, arguments=change, proposal_id=sc["proposal_id"])
+                        out["awaiting_answer"] = True
                     if device == "show" and uri:
                         out["card"] = {"uri": uri, "tool": mcp.tools[intent.tool]}
             except McpUnavailable as err:

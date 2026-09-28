@@ -10,38 +10,69 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 - Status is tracked per string (`data/i18n/telugu_approvals.json`). An approval covers one exact English +
   Telugu pair: any new or changed string, in either language, is **pending** until reviewed again.
 
-**Pending: 26** · Approved: 82
+**Pending: 57** · Approved: 82
 
-## 1. Pending review (26)
+## 1. Pending review (57)
 
 | # | English | Telugu | Where | Reviewer |
 |---|---|---|---|---|
-| 1 | OK | బాగుంది | `src/clucktalk/server/cards/__init__.py:24` |  |
-| 2 | WATCH | గమనించాలి | `src/clucktalk/server/cards/__init__.py:25` |  |
-| 3 | ALERT | శ్రద్ధ అవసరం | `src/clucktalk/server/cards/__init__.py:26` |  |
-| 4 | UNKNOWN | తెలియదు | `src/clucktalk/server/cards/__init__.py:27` |  |
-| 5 | Farm status | ఫారం స్థితి | `src/clucktalk/server/cards/__init__.py:28` |  |
-| 6 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:29` |  |
-| 7 | Deaths today | ఈరోజు మరణాలు | `src/clucktalk/server/cards/__init__.py:30` |  |
-| 8 | Deaths, latest count | తాజా లెక్కలో మరణాలు | `src/clucktalk/server/cards/__init__.py:31` |  |
-| 9 | Feed stock | ఫీడ్ నిల్వ | `src/clucktalk/server/cards/__init__.py:32` |  |
-| 10 | Feed stock, days | ఫీడ్ నిల్వ, రోజులు | `src/clucktalk/server/cards/__init__.py:33` |  |
-| 11 | not known | తెలియదు | `src/clucktalk/server/cards/__init__.py:34` |  |
-| 12 | Average weight | సగటు బరువు | `src/clucktalk/server/cards/__init__.py:35` |  |
-| 13 | Laying | గుడ్ల ఉత్పత్తి | `src/clucktalk/server/cards/__init__.py:36` |  |
-| 14 | {n} days | {n} రోజులు | `src/clucktalk/server/cards/__init__.py:38` |  |
-| 15 | {n} day | {n} రోజు | `src/clucktalk/server/cards/__init__.py:39` |  |
-| 16 | at least {n} days | కనీసం {n} రోజులు | `src/clucktalk/server/cards/__init__.py:40` |  |
-| 17 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:41` |  |
-| 18 | target {n} g | లక్ష్యం {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:42` |  |
-| 19 | {n} birds | {n} కోళ్లు | `src/clucktalk/server/cards/__init__.py:43` |  |
-| 20 | Day {n} | {n}వ రోజు | `src/clucktalk/server/cards/__init__.py:44` |  |
-| 21 | Latest readings: {d} | తాజా రీడింగులు: {d} | `src/clucktalk/server/cards/__init__.py:45` |  |
-| 22 | Tap a shed for details | వివరాల కోసం షెడ్‌ను తాకండి | `src/clucktalk/server/cards/__init__.py:46` |  |
-| 23 | All sheds | అన్ని షెడ్లు | `src/clucktalk/server/cards/__init__.py:47` |  |
-| 24 | Could not check | తనిఖీ చేయలేకపోయాను | `src/clucktalk/server/cards/__init__.py:48` |  |
-| 25 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:49` |  |
-| 26 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:50` |  |
+| 1 | There's nothing waiting for your yes or no right now, so nothing changed. | ఇప్పుడు మీ 'అవును' లేదా 'వద్దు' కోసం ఏదీ ఎదురుచూడటం లేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/domain/errors.py:89` |  |
+| 2 | Tell me again what you'd like to change. | మీరు ఏమి మార్చాలనుకుంటున్నారో మళ్ళీ చెప్పండి. | `src/clucktalk/domain/errors.py:90` |  |
+| 3 | I didn't catch whether that was a yes or a no, so nothing changed. | అది 'అవును'నా 'వద్దు'నా అని నాకు అర్థం కాలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/domain/errors.py:101` |  |
+| 4 | Please say yes or no. | దయచేసి 'అవును' లేదా 'వద్దు' అని చెప్పండి. | `src/clucktalk/domain/errors.py:102` |  |
+| 5 | OK | బాగుంది | `src/clucktalk/server/cards/__init__.py:24` |  |
+| 6 | WATCH | గమనించాలి | `src/clucktalk/server/cards/__init__.py:25` |  |
+| 7 | ALERT | శ్రద్ధ అవసరం | `src/clucktalk/server/cards/__init__.py:26` |  |
+| 8 | UNKNOWN | తెలియదు | `src/clucktalk/server/cards/__init__.py:27` |  |
+| 9 | Farm status | ఫారం స్థితి | `src/clucktalk/server/cards/__init__.py:28` |  |
+| 10 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:29` |  |
+| 11 | Deaths today | ఈరోజు మరణాలు | `src/clucktalk/server/cards/__init__.py:30` |  |
+| 12 | Deaths, latest count | తాజా లెక్కలో మరణాలు | `src/clucktalk/server/cards/__init__.py:31` |  |
+| 13 | Feed stock | ఫీడ్ నిల్వ | `src/clucktalk/server/cards/__init__.py:32` |  |
+| 14 | Feed stock, days | ఫీడ్ నిల్వ, రోజులు | `src/clucktalk/server/cards/__init__.py:33` |  |
+| 15 | not known | తెలియదు | `src/clucktalk/server/cards/__init__.py:34` |  |
+| 16 | Average weight | సగటు బరువు | `src/clucktalk/server/cards/__init__.py:35` |  |
+| 17 | Laying | గుడ్ల ఉత్పత్తి | `src/clucktalk/server/cards/__init__.py:36` |  |
+| 18 | {n} days | {n} రోజులు | `src/clucktalk/server/cards/__init__.py:38` |  |
+| 19 | {n} day | {n} రోజు | `src/clucktalk/server/cards/__init__.py:39` |  |
+| 20 | at least {n} days | కనీసం {n} రోజులు | `src/clucktalk/server/cards/__init__.py:40` |  |
+| 21 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:41` |  |
+| 22 | target {n} g | లక్ష్యం {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:42` |  |
+| 23 | {n} birds | {n} కోళ్లు | `src/clucktalk/server/cards/__init__.py:43` |  |
+| 24 | Day {n} | {n}వ రోజు | `src/clucktalk/server/cards/__init__.py:44` |  |
+| 25 | Latest readings: {d} | తాజా రీడింగులు: {d} | `src/clucktalk/server/cards/__init__.py:45` |  |
+| 26 | Tap a shed for details | వివరాల కోసం షెడ్‌ను తాకండి | `src/clucktalk/server/cards/__init__.py:46` |  |
+| 27 | All sheds | అన్ని షెడ్లు | `src/clucktalk/server/cards/__init__.py:47` |  |
+| 28 | Could not check | తనిఖీ చేయలేకపోయాను | `src/clucktalk/server/cards/__init__.py:48` |  |
+| 29 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:49` |  |
+| 30 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:50` |  |
+| 31 | Ask me for a feed plan to hear how much feed to ask your supervisor for. | సూపర్‌వైజర్‌ని ఎంత ఫీడ్ అడగాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి. | `src/clucktalk/server/tools/farm_status.py:298` |  |
+| 32 | No need to ask your supervisor for feed yet. | ఇంకా సూపర్‌వైజర్‌ని ఫీడ్ అడగాల్సిన అవసరం లేదు. | `src/clucktalk/server/tools/feed.py:158` |  |
+| 33 | Ask your supervisor for {b} {plural(b, 'bag', 'bags')} of {p.bag_kg} kg now. | ఇప్పుడే మీ సూపర్‌వైజర్‌ని {p.bag_kg} కిలోల {b} బస్తాలు అడగండి. | `src/clucktalk/server/tools/feed.py:161` |  |
+| 34 | {head.en} Ask your supervisor for {b} {plural(b, 'bag', 'bags')} now. | {head.te} ఇప్పుడే సూపర్‌వైజర్‌ని {b} బస్తాలు అడగండి. | `src/clucktalk/server/tools/feed.py:269` |  |
+| 35 | Say a shed number to hear its full feed plan. | పూర్తి ఫీడ్ ప్లాన్ కోసం షెడ్ నంబర్ చెప్పండి. | `src/clucktalk/server/tools/feed.py:315` |  |
+| 36 | Your farm is set up as a contract farm: your company supplies the feed, so feed plans tell you how many bags to ask your supervisor for, without prices. | మీ ఫారం కాంట్రాక్ట్ ఫారంగా సెట్ అయి ఉంది: ఫీడ్ మీ కంపెనీ ఇస్తుంది, కాబట్టి ఫీడ్ ప్లాన్ ధరలు లేకుండా, సూపర్‌వైజర్‌ని ఎన్ని బస్తాలు అడగాలో చెబుతుంది. | `src/clucktalk/server/tools/profile.py:34` |  |
+| 37 | Your farm is set up as an independent farm: you buy your own feed, so feed plans include a simulated price. | మీ ఫారం సొంత ఫారంగా సెట్ అయి ఉంది: ఫీడ్ మీరే కొంటారు, కాబట్టి ఫీడ్ ప్లాన్‌లో అంచనా ధర (డెమో) కూడా ఉంటుంది. | `src/clucktalk/server/tools/profile.py:38` |  |
+| 38 | To change it, say: switch to contract farming. | మార్చాలంటే 'switch to contract farming' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:44` |  |
+| 39 | To change it, say: switch to independent farming. | మార్చాలంటే 'switch to independent farming' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:48` |  |
+| 40 | Switch your farm to contract farming? Then I'll stop suggesting feed purchases and prices, and tell you how many bags to ask your supervisor for. Say yes to confirm, or no to keep it as it is. | మీ ఫారంను కాంట్రాక్ట్ ఫారంగా మార్చాలా? అప్పుడు ఫీడ్ కొనుగోలు, ధరలు చెప్పను; సూపర్‌వైజర్‌ని ఎన్ని బస్తాలు అడగాలో చెబుతాను. మార్చాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:55` |  |
+| 41 | Switch your farm to independent farming? Then I'll plan feed purchases with a simulated price. Say yes to confirm, or no to keep it as it is. | మీ ఫారంను సొంత ఫారంగా మార్చాలా? అప్పుడు అంచనా ధర (డెమో)తో ఫీడ్ కొనుగోలు ప్లాన్ చెబుతాను. మార్చాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:61` |  |
+| 42 | Your farm is now set up as a contract farm. | మీ ఫారం ఇప్పుడు కాంట్రాక్ట్ ఫారంగా సెట్ అయింది. | `src/clucktalk/server/tools/profile.py:65` |  |
+| 43 | Your farm is now set up as an independent farm. | మీ ఫారం ఇప్పుడు సొంత ఫారంగా సెట్ అయింది. | `src/clucktalk/server/tools/profile.py:66` |  |
+| 44 | Your farm is already set up as a contract farm, so nothing changed. | మీ ఫారం ఇప్పటికే కాంట్రాక్ట్ ఫారంగా ఉంది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:71` |  |
+| 45 | Your farm is already set up as an independent farm, so nothing changed. | మీ ఫారం ఇప్పటికే సొంత ఫారంగా ఉంది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:75` |  |
+| 46 | Your farm stays a contract farm. | మీ ఫారం కాంట్రాక్ట్ ఫారంగానే ఉంటుంది. | `src/clucktalk/server/tools/profile.py:79` |  |
+| 47 | Your farm stays an independent farm. | మీ ఫారం సొంత ఫారంగానే ఉంటుంది. | `src/clucktalk/server/tools/profile.py:80` |  |
+| 48 | Done. | సరే. | `src/clucktalk/server/tools/profile.py:82` |  |
+| 49 | Okay, nothing changed. | సరే, ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:83` |  |
+| 50 | That change was made earlier and has been changed again since. | ఆ మార్పు ఇంతకుముందే జరిగింది, తర్వాత మళ్ళీ మార్చబడింది. | `src/clucktalk/server/tools/profile.py:86` |  |
+| 51 | That request timed out, so nothing changed. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:89` |  |
+| 52 | That request was replaced by a newer one, so nothing changed. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:92` |  |
+| 53 | That's different from what I read back, so nothing changed yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:96` |  |
+| 54 | I couldn't find that request, so nothing changed. | ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:98` |  |
+| 55 | That request was already cancelled, so nothing changed. | ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:101` |  |
+| 56 | That change was already made earlier, so saying no now doesn't undo it. | ఆ మార్పు ఇంతకుముందే జరిగిపోయింది, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు. | `src/clucktalk/server/tools/profile.py:105` |  |
+| 57 | Contract or independent farm | కాంట్రాక్ట్ లేదా సొంత ఫారం | `src/clucktalk/server/tools/profile.py:277` |  |
 
 ## 2. Approved (82)
 
@@ -62,7 +93,7 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 | 13 | I can plan feed for {MIN_HORIZON_DAYS} to {MAX_HORIZON_DAYS} days ahead. | నేను {MIN_HORIZON_DAYS} నుండి {MAX_HORIZON_DAYS} రోజుల వరకు ఫీడ్ ప్లాన్ చేయగలను. | `src/clucktalk/domain/feed.py:136` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 14 | How many days should I plan for? | ఎన్ని రోజులకు ప్రణాళిక చేయాలి? | `src/clucktalk/domain/feed.py:137` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 15 | a feed plan for {house.label_en}, because no live birds are recorded there | {house.label_te} ఫీడ్ ప్లాన్ (అక్కడ బతికి ఉన్న కోళ్లు నమోదు కాలేదు) | `src/clucktalk/domain/feed.py:142` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 16 | House {self.number} | షెడ్ {self.number} | `src/clucktalk/domain/models.py:66` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 16 | House {self.number} | షెడ్ {self.number} | `src/clucktalk/domain/models.py:98` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 17 | the status of {house.label_en} | {house.label_te} స్థితి | `src/clucktalk/domain/status.py:196` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 18 | the status of {house.label_en}, because no live birds are recorded there | {house.label_te} స్థితి (అక్కడ బతికి ఉన్న కోళ్లు నమోదు కాలేదు) | `src/clucktalk/domain/status.py:201` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 19 | Sorry, I couldn't do that just now. | క్షమించండి, ఇప్పుడు అది చేయలేకపోయాను. | `src/clucktalk/i18n/__init__.py:18` | Pathuri Venkateswara Rao | 2026-09-27 |
@@ -79,56 +110,56 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 | 30 | Friday | శుక్రవారం | `src/clucktalk/server/render.py:14` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 31 | Saturday | శనివారం | `src/clucktalk/server/render.py:14` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 32 | Sunday | ఆదివారం | `src/clucktalk/server/render.py:14` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 33 | {h.label_en} is doing well. | {h.label_te} బాగుంది. | `src/clucktalk/server/tools/farm_status.py:118` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 34 | {h.label_en} needs a closer look. | {h.label_te} ని కొంచెం గమనించాలి. | `src/clucktalk/server/tools/farm_status.py:119` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 35 | {h.label_en} needs attention now. | {h.label_te} కి వెంటనే శ్రద్ధ అవసరం. | `src/clucktalk/server/tools/farm_status.py:120` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 36 | No readings for {d} {plural(d, 'day', 'days')}. | {d} రోజులుగా రీడింగులు లేవు. | `src/clucktalk/server/tools/farm_status.py:132` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 37 | Total losses are {num(pct)}% of the birds placed. | వేసిన కోళ్లలో మొత్తం {num(pct)}% చనిపోయాయి. | `src/clucktalk/server/tools/farm_status.py:137` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 38 | {num(deaths)} birds died {when.en}, after hardly any deaths this past week. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి; గత వారం దాదాపు ఏవీ చనిపోలేదు. | `src/clucktalk/server/tools/farm_status.py:144` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 39 | {num(deaths)} birds died {when.en}, against about {num(base)} a day this past week. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు {num(base)}. | `src/clucktalk/server/tools/farm_status.py:147` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 40 | Birds ate {drop}% less than expected: {got} g per bird against {exp} g. | కోళ్లు అంచనా కంటే {drop}% తక్కువ తిన్నాయి: ఒక్కో కోడికి {got} గ్రా., అంచనా {exp} గ్రా. | `src/clucktalk/server/tools/farm_status.py:156` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 41 | Average weight is {num(w)} g, {pct}% of the {breed} target of {num(tgt)} g. | సగటు బరువు {num(w)} గ్రా., {breed} లక్ష్యం {num(tgt)} గ్రా.లో {pct}%. | `src/clucktalk/server/tools/farm_status.py:165` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 42 | Feed conversion is {num(fcr)}, above the target of {num(tgt)}. | FCR {num(fcr)}, లక్ష్యం {num(tgt)} కంటే ఎక్కువ. | `src/clucktalk/server/tools/farm_status.py:170` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 43 | Laying is {num(pct)}% {when.en}, down {num(drop)} points from the {LAYING_AVG_DAYS}-day average of {num(avg)}%. | {when.te} గుడ్ల ఉత్పత్తి {num(pct)}%, {LAYING_AVG_DAYS} రోజుల సగటు {num(avg)}% కంటే {num(drop)} పాయింట్లు తక్కువ. | `src/clucktalk/server/tools/farm_status.py:181` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 44 | The flock is past day {md} of the {breed} growth table, so weight is not compared to a target. | బ్యాచ్ {breed} పెరుగుదల పట్టికలోని {md}వ రోజు దాటింది, కాబట్టి బరువును లక్ష్యంతో పోల్చలేదు. | `src/clucktalk/server/tools/farm_status.py:188` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 45 | I have no verified {breed} growth standard, so weight and feed are not compared to a target. | {breed} కి ధృవీకరించిన పెరుగుదల ప్రమాణం లేదు, కాబట్టి బరువు, ఫీడ్‌ను లక్ష్యంతో పోల్చలేదు. | `src/clucktalk/server/tools/farm_status.py:192` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 46 | today | ఈరోజు | `src/clucktalk/server/tools/farm_status.py:200` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 47 | in the latest count | తాజా లెక్కలో | `src/clucktalk/server/tools/farm_status.py:200` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 48 | There is no feed stock left. | ఫీడ్ నిల్వ అయిపోయింది. | `src/clucktalk/server/tools/farm_status.py:205` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 49 | Feed stock runs out by tomorrow. | ఫీడ్ నిల్వ రేపటికే అయిపోతుంది. | `src/clucktalk/server/tools/farm_status.py:207` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 50 | Feed stock lasts about {days} {plural(days, 'day', 'days')}. | ఫీడ్ నిల్వ సుమారు {days} రోజులు సరిపోతుంది. | `src/clucktalk/server/tools/farm_status.py:210` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 51 | Day {out.age_days}, {num(out.live_birds)} birds | {out.age_days}వ రోజు, {num(out.live_birds)} కోళ్లు | `src/clucktalk/server/tools/farm_status.py:268` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 52 | , average weight {num(avg_w)} g against the {out.breed} target of {num(tgt_w)} g | , సగటు బరువు {num(avg_w)} గ్రా. ({out.breed} లక్ష్యం {num(tgt_w)} గ్రా.) | `src/clucktalk/server/tools/farm_status.py:271` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 53 | , average weight {num(avg_w)} g | , సగటు బరువు {num(avg_w)} గ్రా. | `src/clucktalk/server/tools/farm_status.py:274` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 54 | {num(out.live_birds)} birds | {num(out.live_birds)} కోళ్లు | `src/clucktalk/server/tools/farm_status.py:277` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 55 | , laying {num(hen_day)}% {when.en} | , {when.te} గుడ్ల ఉత్పత్తి {num(hen_day)}% | `src/clucktalk/server/tools/farm_status.py:281` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 56 | Please check the birds today and call your vet if deaths continue. | దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ డాక్టర్‌కి ఫోన్ చేయండి. | `src/clucktalk/server/tools/farm_status.py:289` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 57 | Ask me for a feed plan to hear how much to order. | ఎంత ఆర్డర్ చేయాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి. | `src/clucktalk/server/tools/farm_status.py:293` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 58 | Here's your farm today. | ఈరోజు మీ ఫారం స్థితి. | `src/clucktalk/server/tools/farm_status.py:337` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 59 | There are more houses; ask about one by shed number. | ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి. | `src/clucktalk/server/tools/farm_status.py:352` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 60 | How a shed is doing | షెడ్ ఎలా ఉందో | `src/clucktalk/server/tools/farm_status.py:403` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 61 | pre-starter | ప్రీ-స్టార్టర్ | `src/clucktalk/server/tools/feed.py:37` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 62 | starter | స్టార్టర్ | `src/clucktalk/server/tools/feed.py:37` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 63 | finisher | ఫినిషర్ | `src/clucktalk/server/tools/feed.py:37` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 64 | enough until the {p.breed} growth table ends in {d} {plural(d, 'day', 'days')}. | {p.breed} పెరుగుదల పట్టిక ముగిసే {d} రోజుల వరకు సరిపోతుంది. | `src/clucktalk/server/tools/feed.py:136` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 65 | enough for at least {d} {plural(d, 'day', 'days')}. | కనీసం {d} రోజులు సరిపోతుంది. | `src/clucktalk/server/tools/feed.py:139` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 66 | not enough for tomorrow. | రేపటికి సరిపోదు. | `src/clucktalk/server/tools/feed.py:141` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 67 | enough for about {d} {plural(d, 'day', 'days')}, until {weekday_en(last)}. | సుమారు {d} రోజులు, {weekday_te(last)} వరకు సరిపోతుంది. | `src/clucktalk/server/tools/feed.py:146` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 68 | enough for about {d} days. | సుమారు {d} రోజులు సరిపోతుంది. | `src/clucktalk/server/tools/feed.py:148` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 69 | No reorder needed yet. | ఇంకా ఆర్డర్ అవసరం లేదు. | `src/clucktalk/server/tools/feed.py:153` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 70 | Order {b} {plural(b, 'bag', 'bags')} of {p.bag_kg} kg now: about {rupees(p.suggested_order_cost_inr)} before GST and delivery, at the simulated price of {rupees(p.feed_price_per_kg_inr)} a kilo. | ఇప్పుడే {p.bag_kg} కిలోల {b} బస్తాలు ఆర్డర్ చేయండి: అంచనా ధర (డెమో) కిలోకు {rupees(p.feed_price_per_kg_inr)} ప్రకారం సుమారు {rupees(p.suggested_order_cost_inr)} (జీఎస్‌టీ, డెలివరీ కాకుండా). | `src/clucktalk/server/tools/feed.py:158` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 71 | tomorrow needs about {num(out.need_kg)} kg of feed. | రేపటికి సుమారు {num(out.need_kg)} కిలోల ఫీడ్ కావాలి. | `src/clucktalk/server/tools/feed.py:208` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 72 | the next {h} days need about {num(out.need_kg)} kg of feed. | రాబోయే {h} రోజులకు సుమారు {num(out.need_kg)} కిలోల ఫీడ్ కావాలి. | `src/clucktalk/server/tools/feed.py:212` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 73 | {out.label_en}: {need.en} You have {num(out.stock_kg)} kg, {cover.en} | {out.label_te}: {need.te} మీ దగ్గర {num(out.stock_kg)} కిలోలు ఉన్నాయి; ఇది {cover.te} | `src/clucktalk/server/tools/feed.py:218` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 74 | My latest reading for {out.label_en} is {d} days old, so please check the stock count. | {out.label_te} తాజా రీడింగ్ {d} రోజుల క్రితం తీసుకున్నది, కాబట్టి దయచేసి నిల్వను ఒకసారి చూసుకోండి. | `src/clucktalk/server/tools/feed.py:227` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 75 | Switch from {change.from_phase} to {change.to_phase} feed in {n} {plural(n, 'day', 'days')}. | {n} రోజుల్లో {PHASE_TE[change.from_phase]} ఫీడ్ నుండి {PHASE_TE[change.to_phase]} ఫీడ్‌కు మార్చండి. | `src/clucktalk/server/tools/feed.py:235` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 76 | This uses the {out.breed} standard because there are only a few records. | రికార్డులు తక్కువగా ఉన్నందున ఇది {out.breed} ప్రమాణం ఆధారంగా లెక్కించబడింది. | `src/clucktalk/server/tools/feed.py:242` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 77 | {p.label_en}: stock is {cover.en} | {p.label_te}: ఫీడ్ నిల్వ {cover.te} | `src/clucktalk/server/tools/feed.py:252` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 78 | {head.en} Order {b} {plural(b, 'bag', 'bags')} now. | {head.te} ఇప్పుడే {b} బస్తాలు ఆర్డర్ చేయండి. | `src/clucktalk/server/tools/feed.py:258` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 79 | Feed check for every house. | అన్ని షెడ్ల ఫీడ్ తనిఖీ. | `src/clucktalk/server/tools/feed.py:288` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 80 | There are more houses; ask about one by shed number. | ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి. | `src/clucktalk/server/tools/feed.py:294` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 81 | Say a shed number to hear its full feed plan and the simulated cost. | పూర్తి ఫీడ్ ప్లాన్, అంచనా ధర (డెమో) కోసం షెడ్ నంబర్ చెప్పండి. | `src/clucktalk/server/tools/feed.py:300` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 82 | Feed stock and reorder | ఫీడ్ నిల్వ, ఆర్డర్ | `src/clucktalk/server/tools/feed.py:335` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 33 | {h.label_en} is doing well. | {h.label_te} బాగుంది. | `src/clucktalk/server/tools/farm_status.py:119` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 34 | {h.label_en} needs a closer look. | {h.label_te} ని కొంచెం గమనించాలి. | `src/clucktalk/server/tools/farm_status.py:120` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 35 | {h.label_en} needs attention now. | {h.label_te} కి వెంటనే శ్రద్ధ అవసరం. | `src/clucktalk/server/tools/farm_status.py:121` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 36 | No readings for {d} {plural(d, 'day', 'days')}. | {d} రోజులుగా రీడింగులు లేవు. | `src/clucktalk/server/tools/farm_status.py:133` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 37 | Total losses are {num(pct)}% of the birds placed. | వేసిన కోళ్లలో మొత్తం {num(pct)}% చనిపోయాయి. | `src/clucktalk/server/tools/farm_status.py:138` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 38 | {num(deaths)} birds died {when.en}, after hardly any deaths this past week. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి; గత వారం దాదాపు ఏవీ చనిపోలేదు. | `src/clucktalk/server/tools/farm_status.py:145` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 39 | {num(deaths)} birds died {when.en}, against about {num(base)} a day this past week. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు {num(base)}. | `src/clucktalk/server/tools/farm_status.py:148` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 40 | Birds ate {drop}% less than expected: {got} g per bird against {exp} g. | కోళ్లు అంచనా కంటే {drop}% తక్కువ తిన్నాయి: ఒక్కో కోడికి {got} గ్రా., అంచనా {exp} గ్రా. | `src/clucktalk/server/tools/farm_status.py:157` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 41 | Average weight is {num(w)} g, {pct}% of the {breed} target of {num(tgt)} g. | సగటు బరువు {num(w)} గ్రా., {breed} లక్ష్యం {num(tgt)} గ్రా.లో {pct}%. | `src/clucktalk/server/tools/farm_status.py:166` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 42 | Feed conversion is {num(fcr)}, above the target of {num(tgt)}. | FCR {num(fcr)}, లక్ష్యం {num(tgt)} కంటే ఎక్కువ. | `src/clucktalk/server/tools/farm_status.py:171` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 43 | Laying is {num(pct)}% {when.en}, down {num(drop)} points from the {LAYING_AVG_DAYS}-day average of {num(avg)}%. | {when.te} గుడ్ల ఉత్పత్తి {num(pct)}%, {LAYING_AVG_DAYS} రోజుల సగటు {num(avg)}% కంటే {num(drop)} పాయింట్లు తక్కువ. | `src/clucktalk/server/tools/farm_status.py:182` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 44 | The flock is past day {md} of the {breed} growth table, so weight is not compared to a target. | బ్యాచ్ {breed} పెరుగుదల పట్టికలోని {md}వ రోజు దాటింది, కాబట్టి బరువును లక్ష్యంతో పోల్చలేదు. | `src/clucktalk/server/tools/farm_status.py:189` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 45 | I have no verified {breed} growth standard, so weight and feed are not compared to a target. | {breed} కి ధృవీకరించిన పెరుగుదల ప్రమాణం లేదు, కాబట్టి బరువు, ఫీడ్‌ను లక్ష్యంతో పోల్చలేదు. | `src/clucktalk/server/tools/farm_status.py:193` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 46 | today | ఈరోజు | `src/clucktalk/server/tools/farm_status.py:201` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 47 | in the latest count | తాజా లెక్కలో | `src/clucktalk/server/tools/farm_status.py:201` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 48 | There is no feed stock left. | ఫీడ్ నిల్వ అయిపోయింది. | `src/clucktalk/server/tools/farm_status.py:206` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 49 | Feed stock runs out by tomorrow. | ఫీడ్ నిల్వ రేపటికే అయిపోతుంది. | `src/clucktalk/server/tools/farm_status.py:208` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 50 | Feed stock lasts about {days} {plural(days, 'day', 'days')}. | ఫీడ్ నిల్వ సుమారు {days} రోజులు సరిపోతుంది. | `src/clucktalk/server/tools/farm_status.py:211` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 51 | Day {out.age_days}, {num(out.live_birds)} birds | {out.age_days}వ రోజు, {num(out.live_birds)} కోళ్లు | `src/clucktalk/server/tools/farm_status.py:269` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 52 | , average weight {num(avg_w)} g against the {out.breed} target of {num(tgt_w)} g | , సగటు బరువు {num(avg_w)} గ్రా. ({out.breed} లక్ష్యం {num(tgt_w)} గ్రా.) | `src/clucktalk/server/tools/farm_status.py:272` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 53 | , average weight {num(avg_w)} g | , సగటు బరువు {num(avg_w)} గ్రా. | `src/clucktalk/server/tools/farm_status.py:275` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 54 | {num(out.live_birds)} birds | {num(out.live_birds)} కోళ్లు | `src/clucktalk/server/tools/farm_status.py:278` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 55 | , laying {num(hen_day)}% {when.en} | , {when.te} గుడ్ల ఉత్పత్తి {num(hen_day)}% | `src/clucktalk/server/tools/farm_status.py:282` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 56 | Please check the birds today and call your vet if deaths continue. | దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ డాక్టర్‌కి ఫోన్ చేయండి. | `src/clucktalk/server/tools/farm_status.py:290` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 57 | Ask me for a feed plan to hear how much to order. | ఎంత ఆర్డర్ చేయాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి. | `src/clucktalk/server/tools/farm_status.py:294` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 58 | Here's your farm today. | ఈరోజు మీ ఫారం స్థితి. | `src/clucktalk/server/tools/farm_status.py:342` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 59 | There are more houses; ask about one by shed number. | ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి. | `src/clucktalk/server/tools/farm_status.py:357` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 60 | How a shed is doing | షెడ్ ఎలా ఉందో | `src/clucktalk/server/tools/farm_status.py:408` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 61 | pre-starter | ప్రీ-స్టార్టర్ | `src/clucktalk/server/tools/feed.py:39` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 62 | starter | స్టార్టర్ | `src/clucktalk/server/tools/feed.py:39` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 63 | finisher | ఫినిషర్ | `src/clucktalk/server/tools/feed.py:39` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 64 | enough until the {p.breed} growth table ends in {d} {plural(d, 'day', 'days')}. | {p.breed} పెరుగుదల పట్టిక ముగిసే {d} రోజుల వరకు సరిపోతుంది. | `src/clucktalk/server/tools/feed.py:139` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 65 | enough for at least {d} {plural(d, 'day', 'days')}. | కనీసం {d} రోజులు సరిపోతుంది. | `src/clucktalk/server/tools/feed.py:142` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 66 | not enough for tomorrow. | రేపటికి సరిపోదు. | `src/clucktalk/server/tools/feed.py:144` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 67 | enough for about {d} {plural(d, 'day', 'days')}, until {weekday_en(last)}. | సుమారు {d} రోజులు, {weekday_te(last)} వరకు సరిపోతుంది. | `src/clucktalk/server/tools/feed.py:149` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 68 | enough for about {d} days. | సుమారు {d} రోజులు సరిపోతుంది. | `src/clucktalk/server/tools/feed.py:151` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 69 | No reorder needed yet. | ఇంకా ఆర్డర్ అవసరం లేదు. | `src/clucktalk/server/tools/feed.py:164` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 70 | Order {b} {plural(b, 'bag', 'bags')} of {p.bag_kg} kg now: about {rupees(p.suggested_order_cost_inr)} before GST and delivery, at the simulated price of {rupees(p.feed_price_per_kg_inr)} a kilo. | ఇప్పుడే {p.bag_kg} కిలోల {b} బస్తాలు ఆర్డర్ చేయండి: అంచనా ధర (డెమో) కిలోకు {rupees(p.feed_price_per_kg_inr)} ప్రకారం సుమారు {rupees(p.suggested_order_cost_inr)} (జీఎస్‌టీ, డెలివరీ కాకుండా). | `src/clucktalk/server/tools/feed.py:168` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 71 | tomorrow needs about {num(out.need_kg)} kg of feed. | రేపటికి సుమారు {num(out.need_kg)} కిలోల ఫీడ్ కావాలి. | `src/clucktalk/server/tools/feed.py:218` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 72 | the next {h} days need about {num(out.need_kg)} kg of feed. | రాబోయే {h} రోజులకు సుమారు {num(out.need_kg)} కిలోల ఫీడ్ కావాలి. | `src/clucktalk/server/tools/feed.py:222` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 73 | {out.label_en}: {need.en} You have {num(out.stock_kg)} kg, {cover.en} | {out.label_te}: {need.te} మీ దగ్గర {num(out.stock_kg)} కిలోలు ఉన్నాయి; ఇది {cover.te} | `src/clucktalk/server/tools/feed.py:228` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 74 | My latest reading for {out.label_en} is {d} days old, so please check the stock count. | {out.label_te} తాజా రీడింగ్ {d} రోజుల క్రితం తీసుకున్నది, కాబట్టి దయచేసి నిల్వను ఒకసారి చూసుకోండి. | `src/clucktalk/server/tools/feed.py:237` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 75 | Switch from {change.from_phase} to {change.to_phase} feed in {n} {plural(n, 'day', 'days')}. | {n} రోజుల్లో {PHASE_TE[change.from_phase]} ఫీడ్ నుండి {PHASE_TE[change.to_phase]} ఫీడ్‌కు మార్చండి. | `src/clucktalk/server/tools/feed.py:245` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 76 | This uses the {out.breed} standard because there are only a few records. | రికార్డులు తక్కువగా ఉన్నందున ఇది {out.breed} ప్రమాణం ఆధారంగా లెక్కించబడింది. | `src/clucktalk/server/tools/feed.py:252` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 77 | {p.label_en}: stock is {cover.en} | {p.label_te}: ఫీడ్ నిల్వ {cover.te} | `src/clucktalk/server/tools/feed.py:262` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 78 | {head.en} Order {b} {plural(b, 'bag', 'bags')} now. | {head.te} ఇప్పుడే {b} బస్తాలు ఆర్డర్ చేయండి. | `src/clucktalk/server/tools/feed.py:273` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 79 | Feed check for every house. | అన్ని షెడ్ల ఫీడ్ తనిఖీ. | `src/clucktalk/server/tools/feed.py:305` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 80 | There are more houses; ask about one by shed number. | ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి. | `src/clucktalk/server/tools/feed.py:311` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 81 | Say a shed number to hear its full feed plan and the simulated cost. | పూర్తి ఫీడ్ ప్లాన్, అంచనా ధర (డెమో) కోసం షెడ్ నంబర్ చెప్పండి. | `src/clucktalk/server/tools/feed.py:319` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 82 | Feed stock and reorder | ఫీడ్ నిల్వ, ఆర్డర్ | `src/clucktalk/server/tools/feed.py:355` | Pathuri Venkateswara Rao | 2026-09-27 |
 
 ## 3. Whole answers as a farmer would hear or read them (demo farm, 2026-09-29)
 

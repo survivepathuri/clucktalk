@@ -17,6 +17,7 @@ from clucktalk.domain.errors import DomainError
 from clucktalk.domain.feed import plan_feed
 from clucktalk.domain.houses import resolve_house
 from clucktalk.domain.models import Farm, House, HouseKind
+from clucktalk.domain.profile import FarmMode
 from clucktalk.domain.status import Finding, Level, house_status
 from clucktalk.i18n import Text
 from clucktalk.server.cards import FARM_STATUS_URI, farm_status_html
@@ -292,16 +293,20 @@ FEED_PLAN_HINT = Text(
     "Ask me for a feed plan to hear how much to order.",
     "ఎంత ఆర్డర్ చేయాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి.",
 )
+FEED_PLAN_HINT_CONTRACT = Text(  # contract farm: the company supplies feed (docs/DESIGN.md §13.1)
+    "Ask me for a feed plan to hear how much feed to ask your supervisor for.",
+    "సూపర్‌వైజర్‌ని ఎంత ఫీడ్ అడగాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి.",
+)
 
 
-def _closing(spoken: list[FindingOut]) -> list[Text]:
+def _closing(spoken: list[FindingOut], contract: bool) -> list[Text]:
     """Follow-up steps only for findings that were actually read out."""
     codes = {f.code for f in spoken}
     extra = []
     if "mortality_spike" in codes:
         extra.append(SAFETY_STEP)
     if "feed_stock_low" in codes:
-        extra.append(FEED_PLAN_HINT)
+        extra.append(FEED_PLAN_HINT_CONTRACT if contract else FEED_PLAN_HINT)
     return extra
 
 
@@ -351,7 +356,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
             parts.append(
                 Text("There are more houses; ask about one by shed number.", "ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి.")
             )
-    parts += _closing(spoken)
+    parts += _closing(spoken, source.profile().mode is FarmMode.CONTRACT)
     level = min((h.level for h in houses), key=lambda lv: order[lv], default="unknown")
     if unavailable and level == "ok":
         level = "watch"  # some houses could not be checked: not everything is known to be fine

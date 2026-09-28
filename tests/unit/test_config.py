@@ -44,3 +44,13 @@ def test_non_local_host_requires_auth_token():
 def test_origin_allow_list_is_parsed():
     s = load_settings({"CLUCKTALK_ALLOWED_ORIGINS": " http://a.test , http://b.test ,"})
     assert s.allowed_origins == ("http://a.test", "http://b.test")
+
+
+def test_state_path_default_relative_and_suffix():
+    """Review 2026-09-28 (Low): server and reset-demo must resolve the same file from any working directory."""
+    from clucktalk.config import DEFAULT_STATE_PATH, REPO_ROOT
+
+    assert load_settings({}).state_path == DEFAULT_STATE_PATH
+    assert load_settings({"CLUCKTALK_STATE_PATH": "x/state.sqlite3"}).state_path == REPO_ROOT / "x" / "state.sqlite3"
+    with pytest.raises(ConfigError, match="sqlite3"):
+        load_settings({"CLUCKTALK_STATE_PATH": "notes.txt"})

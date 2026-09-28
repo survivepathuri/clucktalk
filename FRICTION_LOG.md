@@ -124,3 +124,13 @@ Expected vs actual: Expected a documented answer. Actual: none found; the answer
 Severity: Low
 Workaround: Tested it; the card will list the inlined font first and the declared https copy second.
 Actionable suggestion: MCP Apps spec: a short "Fonts" note in the CSP section (how a view should ship a custom or non-Latin font under the default CSP, and whether hosts should provide Indic fonts via `styles.css.fonts`). MDN: state in `@font-face` `src` that a source blocked by CSP is treated like a failed load.
+
+### FL-011: Two in-flight requests with the same JSON-RPC id on one session: the SDK silently never answers one
+Date: 2026-09-28
+Tool / service: MCP Python SDK `mcp` 2.2.0, server Streamable HTTP transport (`json_response=True`), protocol 2025-11-25
+Task attempted: Contract test that a repeated "yes" (the same `set_farm_mode` confirmation sent 5 times at once, as a retrying host might) is applied only once.
+Steps taken: 5 concurrent `tools/call` POSTs on one `Mcp-Session-Id`, all with JSON-RPC `id: 2` (a test-client mistake). Repeated with a read-only tool, and with distinct ids.
+Expected vs actual: Expected every POST to be answered, or a JSON-RPC error for the duplicate id. Actual: only 1-2 of the 5 POSTs got a response; the others hung until the client's 10 s timeout, with no server log line, for read-only tools too. With distinct ids all 5 answered in 13-29 ms. Cause in source: `mcp/server/streamable_http.py` stores each POST's response stream in `self._request_streams[request_id]` (line 645) without checking for an in-flight request with that id, so the later POST overwrites the earlier one's stream. The spec forbids reusing an id in a session, so the client was wrong, but the failure is a silent hang.
+Severity: Low
+Workaround: The test client now gives every concurrent request its own id. CluckTalk's confirmation flow still applied the change exactly once in the hanging run (1 applied, the answered repeats replayed).
+Actionable suggestion: Reject a request whose id is already in flight on the session with a JSON-RPC error (-32600, "duplicate request id") instead of overwriting the pending stream, and log a warning.

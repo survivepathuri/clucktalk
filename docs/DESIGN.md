@@ -42,7 +42,7 @@ Planned next (§13): farm profile (contract or independent), voice record book, 
 - Amazon's integration guidance asks for an MCP round trip under **500 ms** and an interim "still working" message when work is slower. So no agent or LLM call runs inside a synchronous tool.
 - Briefings are precomputed on a schedule or on new readings.
 - Health triage is asynchronous: `start_health_check` returns a `check_id`, status `analyzing`, and an interim message; `get_health_check` returns the result.
-- Orders and vet sends: propose → explicit "yes" → confirm, chained by IDs.
+- Changes (farm mode, records, orders, supervisor requests, vet sends): propose → explicit "yes" → apply, chained by a `proposal_id` passed back to the same tool (§5.1).
 - Deterministic math (feed plan, profit forecast, sell-now-or-wait) runs directly on the fast path.
 
 ## 4. MCP transport security
@@ -65,6 +65,15 @@ Based on Amazon's Alexa+ MCP tool, schema and data design guidance.
 
 Every tool result carries `text_en` + `text_te` + `structuredContent`, plus `_meta.ui.resourceUri` when a card exists.
 
+### 5.1 Confirmation pattern (one pattern for every change)
+Every tool that changes something uses this pattern and no other: farm mode, contract terms, record-book entries, feed orders, feed requests to the supervisor, vet handoffs. There are no separate confirm tools.
+1. **Propose**: the farmer's request calls the action's own tool with its arguments and no `proposal_id`. Nothing changes. The result reads the change back in full by voice, with `status: "needs_confirmation"`, a `proposal_id` and its expiry (10 minutes).
+2. **Answer**: the host asks the farmer. It calls the **same tool** with the same arguments plus `proposal_id` and `answer: "yes"` on yes (haan, avunu) or `answer: "no"` on no (nahi, vaddu). A card tap never stands in for a spoken "yes" (§15).
+3. **Apply only an exact match**: the change is applied only if the proposal exists, belongs to this farm and this tool, is pending and unexpired, and the arguments equal what was read back. If the arguments differ, nothing changes and a new read-back is returned (a correction is a new proposal).
+4. **Idempotent**: repeating a confirmed `proposal_id` returns the same outcome and never applies twice. An expired, cancelled or superseded proposal changes nothing, says so, and returns a fresh read-back.
+5. **One pending proposal per farm and tool**: a new proposal supersedes the older one.
+6. **Audit trail**: proposals stay in the state store with their payload, status and timestamps.
+
 ## 6. Behavior requirements
 Mapped from Amazon's Alexa+ add-on functional requirements.
 
@@ -86,7 +95,7 @@ Not applicable: account linking, search/discovery, video playback.
 1. **Fail loud, never fake.** Works correctly > visible fallback with warning > clear error. Never substitute sample data when a real call fails. Mock mode only when `MOCK_BEDROCK=true` is set explicitly, with a visible "Demo data" badge.
 2. **Simulated data is labeled.** Market rates, sensors, supplier, SMS, and payments are always shown as "Simulated".
 3. **Health.** Triage language with confidence and a vet disclaimer. No drug names or doses. A suspected notifiable disease (e.g., avian influenza) gets no diagnosis: isolate, stop bird movement, report to a vet / the State Animal Husbandry Department, and offer a vet handoff.
-4. **Human approval.** Orders and vet sends need propose → explicit "yes" → confirm, with idempotency keys and duplicate detection.
+4. **Human approval.** Every change needs propose → explicit "yes" → apply, per the one confirmation pattern (§5.1): proposal IDs, idempotency and duplicate detection.
 5. **Order limit.** An in-server check blocks unusually large orders. The limit is relative to the house's weekly feed use (a flat rupee cap would block normal orders for large houses). Exact rule: to be settled when the order flow is built.
 6. **Honest numbers.** Only sourced figures (see §9), with the formula shown for computed impact numbers.
 7. **Honest time.** "Today" is said only when the latest reading is from today; otherwise "in the latest count". A feed plan built on readings older than a day says so and asks the farmer to check the stock.
@@ -148,17 +157,19 @@ The product name lives in one config constant (`APP_NAME` in `src/clucktalk/conf
 | Poor Telugu quality | Native-speaker review of fixed strings | Review |
 
 ## 13. Planned: farm modes, record book, earnings, vaccination
-Status: designed, not built. Each follows §5–§7; the rules below are specific to these features.
+Status: §13.1 mode switching is built; everything else here is designed, not built. Each follows §5–§7; the rules below are specific to these features.
 
 ### 13.1 Farm profile: contract or independent
 Most Indian broiler farms grow birds under contract: the integrator supplies chicks, feed, medicines and vet services and markets the birds; the farmer provides the shed and labour and is paid a growing charge linked to FCR and mortality (see `docs/SOURCES.md`).
-- `mode: contract | independent`, set by the farmer with read-back and "yes".
-- Contract mode: no sale planning and no feed purchasing. A low-stock answer offers a **feed request to the supervisor** (propose → "yes" → send; the message service is simulated and labeled).
+- `mode: contract | independent`, set by the farmer with read-back and "yes" (§5.1): `get_farm_profile`, `set_farm_mode` (built). The demo farm starts as independent.
+- Contract mode: no sale planning and no feed purchasing. Feed answers name the bags to ask the supervisor for, with no price (the company supplies feed). Sending a **feed request to the supervisor** (propose → "yes" → send; simulated, labeled) is planned.
+- Contract terms (base rate, standard FCR, mortality allowance, incentive and deduction rates) are entered by the farmer with `set_contract_terms` (planned; one intent: saving the farmer's contract terms).
 - Independent mode: sell-now-or-wait and feed orders with confirmation.
+- State lives in a local SQLite file behind a `Store` interface (`clucktalk.store`), so a cloud store can replace it; `python tasks.py reset-demo` restores the seeded story.
 
 ### 13.2 Voice record book
 - One utterance, all fields (§5 rule 2): deaths, feed used (bags or kg), weight sample, medicine or vaccine given. Farmer vocabulary includes Hinglish (*mar gaye* died, *dana* feed, *bori* bag, *teeka* vaccine, *dawai* medicine).
-- Nothing is saved until the farmer hears it read back and says "yes"; a correction changes one field (§5 rule 7); proposals carry IDs and are idempotent.
+- Nothing is saved until the farmer hears it read back and says "yes" (§5.1); a correction changes one field (§5 rule 7); proposals carry IDs and are idempotent. Medicines and vaccines are stored by name and note only, never with a dose.
 - The record book becomes the primary data source; a bilingual batch-end summary can be handed to the company.
 
 ### 13.3 Contract earnings tracker
@@ -189,7 +200,8 @@ Built on the MCP Apps extension (`io.modelcontextprotocol/ui`, stable spec 2026-
 A local web app (`python tasks.py run`, http://127.0.0.1:8766/) standing in for an Alexa+ device and host while no Alexa+ device can load the add-on locally.
 - **Device modes**: Echo Show (voice + card) and Echo Dot (voice only: no card is requested or rendered; answers must be complete by voice). Screen presets from Amazon's APL docs: 1024×600 (original Echo Show viewport, 160 dpi), 960×600 dp (1280×800 px hub at 213 dpi), 960×480 dp (inside the `hubLandscapeSmall` range, Echo Show 5 class), plus a 390×844 phone (typical size, not from Amazon docs) for the Alexa app. Alexa+ does not publish MCP App container sizes (FRICTION_LOG FL-009), so cards are responsive.
 - **Voice**: input via the browser's speech recognition (en-IN) with a text box fallback; Chrome's recogniser is an online service, so voice input is the one part of demo mode that needs the network, and errors say so. Output via the browser's speech synthesis (an en-IN voice when installed); Amazon Polly replaces it in live mode (AWS setup task).
-- **Host (mock mode)**: a rule-based intent matcher (`clucktalk.simulator.intents`) picks the tool and passes the farmer's shed words through unchanged; the server resolves them. No rule → a host fallback sentence and no MCP call. The live host (Bedrock Converse tool use) is not built; live mode refuses to start.
+- **Host (mock mode)**: a rule-based intent matcher (`clucktalk.simulator.intents`) picks the tool and passes the farmer's shed words through unchanged; the server resolves them. No rule → a host fallback sentence and no MCP call.
+- **Yes / no (§5.1)**: after a read-back (`status: "needs_confirmation"`), the host remembers that one tool call and its `proposal_id`. Only a whole-utterance answer (yes, haan, avunu / no, nahi, vaddu) is sent, as the same tool with `proposal_id` + `answer`. Any other utterance drops the pending read-back; a yes with nothing pending makes no tool call. The live host (Bedrock Converse tool use) is not built; live mode refuses to start.
 - **MCP client**: raw JSON-RPC over Streamable HTTP, protocol 2025-11-25, advertising the Apps extension; the developer panel shows every request and response with timings.
 - **Card hosting per the spec**: a web host MUST render views through a sandbox proxy on a different origin. The page runs on one loopback name and loads `/sandbox` from the other (127.0.0.1 ↔ localhost), with `sandbox="allow-scripts allow-same-origin"`. The proxy's CSP header is the spec's restrictive default plus declared https origins only, plus `font-src 'self' data:` as in the ext-apps reference host (FL-007). A developer-panel control (**Card CSP (fonts)**, or `?csp=strict`) switches to a strict host: the spec default only, fonts only from declared `resourceDomains`, so a card's font fallback can be tested (docs/evidence/2026-09-28_strict_csp.md). The proxy CSP also sets `form-action 'none'` and `frame-ancestors` (the Simulator page only), and the proxy accepts only the page on its own port. Messages are origin-checked in both directions. A card may only ask the host to forward `tools/call` of **the tool that owns the card** (so a tap can never stand in for a spoken "yes") and `resources/read` of `ui://` resources.
 - **No blank cards**: if a card has not rendered within 3 s, the host shows the labeled text answer and logs the failure; a card whose `ui/initialize` fails shows the bilingual generic error.

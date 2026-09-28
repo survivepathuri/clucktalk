@@ -1,8 +1,9 @@
 """``plan_feed``: feed needed over the next days, how long stock lasts, and whether to reorder (docs/DESIGN.md §5).
 
-Planning only: nothing is ordered here (orders need propose -> "yes" -> confirm, docs/DESIGN.md §7 rule 4).
-The feed price is simulated and said so in both languages. Same build order as get_farm_status:
-domain plan -> rounded output model -> text rendered from the output model only.
+Planning only: nothing is ordered here (changes need propose -> "yes" -> apply, docs/DESIGN.md §5.1).
+The feed price is simulated and said so in both languages. On a contract farm the company supplies feed, so the
+plan names the bags to ask the supervisor for and carries no price (docs/DESIGN.md §13.1).
+Same build order as get_farm_status: domain plan -> rounded output model -> text rendered from the output model only.
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ from clucktalk.domain.feed import (
 )
 from clucktalk.domain.houses import resolve_house
 from clucktalk.domain.models import Farm, House
+from clucktalk.domain.profile import FarmMode
 from clucktalk.domain.thresholds import STALE_AFTER_DAYS
 from clucktalk.i18n import Text
 from clucktalk.server.errors import domain_error_result
@@ -75,8 +77,8 @@ class HouseFeedPlanOut(BaseModel):
     bag_kg: int
     suggested_order_bags: int
     suggested_order_kg: int
-    feed_price_per_kg_inr: float
-    suggested_order_cost_inr: int
+    feed_price_per_kg_inr: float | None  # None on a contract farm: the company supplies feed
+    suggested_order_cost_inr: int | None
     price_is_simulated: bool
     current_phase: str | None
     phase_change: PhaseChangeOut | None
@@ -101,6 +103,7 @@ class FeedPlanOutput(BaseModel):
     text_te: str
     demo_data: bool
     as_of: str
+    farm_mode: Literal["contract", "independent"]
     plans: list[HouseFeedPlanOut]
     unavailable: list[HouseUnavailableOut]
 
@@ -109,7 +112,7 @@ DESCRIPTION = (
     "Use when the farmer asks about feed (dana) for a house (shed, kotam) or the farm: how much is needed in the "
     "coming days, how long the stock lasts, whether to reorder, and when the broiler feed phase changes. Give "
     "`house` for one house (omit for every house) and optionally `horizon_days`. Plans only; it never places an "
-    "order. Prices are simulated."
+    "order. Prices are simulated. On a contract farm it names the bags to ask the supervisor for, without prices."
 )
 HOUSE_PARAM = Field(
     default=None,
@@ -148,10 +151,17 @@ def _cover(p: HouseFeedPlanOut, as_of: date) -> Text:
     return Text(f"enough for about {d} days.", f"సుమారు {d} రోజులు సరిపోతుంది.")
 
 
-def _order(p: HouseFeedPlanOut) -> Text:
+def _order(p: HouseFeedPlanOut, contract: bool) -> Text:
+    b = p.suggested_order_bags
+    if contract:
+        if not p.reorder_needed:
+            return Text("No need to ask your supervisor for feed yet.", "ఇంకా సూపర్‌వైజర్‌ని ఫీడ్ అడగాల్సిన అవసరం లేదు.")
+        return Text(
+            f"Ask your supervisor for {b} {plural(b, 'bag', 'bags')} of {p.bag_kg} kg now.",
+            f"ఇప్పుడే మీ సూపర్‌వైజర్‌ని {p.bag_kg} కిలోల {b} బస్తాలు అడగండి.",
+        )
     if not p.reorder_needed:
         return Text("No reorder needed yet.", "ఇంకా ఆర్డర్ అవసరం లేదు.")
-    b = p.suggested_order_bags
     return Text(
         f"Order {b} {plural(b, 'bag', 'bags')} of {p.bag_kg} kg now: about {rupees(p.suggested_order_cost_inr)} "
         f"before GST and delivery, at the simulated price of {rupees(p.feed_price_per_kg_inr)} a kilo.",
@@ -161,7 +171,7 @@ def _order(p: HouseFeedPlanOut) -> Text:
     )
 
 
-def _house_plan(farm: Farm, house: House, as_of: date, horizon_days: int) -> HouseFeedPlanOut:
+def _house_plan(farm: Farm, house: House, as_of: date, horizon_days: int, contract: bool) -> HouseFeedPlanOut:
     plan = plan_feed(farm, house, as_of, horizon_days)
     latest = house.records_until(as_of)[-1].day  # plan_feed refuses a house with no records
     change = None
@@ -193,9 +203,9 @@ def _house_plan(farm: Farm, house: House, as_of: date, horizon_days: int) -> Hou
         bag_kg=BAG_KG,
         suggested_order_bags=plan.suggested_order_bags,
         suggested_order_kg=plan.suggested_order_kg,
-        feed_price_per_kg_inr=float(plan.feed_price_per_kg),
-        suggested_order_cost_inr=int(plan.suggested_order_cost_inr),
-        price_is_simulated=True,
+        feed_price_per_kg_inr=None if contract else float(plan.feed_price_per_kg),
+        suggested_order_cost_inr=None if contract else int(plan.suggested_order_cost_inr),
+        price_is_simulated=not contract,  # no price at all on a contract farm, so nothing simulated to flag
         current_phase=plan.current_phase,
         phase_change=change,
         daily=[
@@ -217,7 +227,7 @@ def _house_plan(farm: Farm, house: House, as_of: date, horizon_days: int) -> Hou
             f"{out.label_en}: {need.en} You have {num(out.stock_kg)} kg, {cover.en}",
             f"{out.label_te}: {need.te} మీ దగ్గర {num(out.stock_kg)} కిలోలు ఉన్నాయి; ఇది {cover.te}",
         ),
-        _order(out),
+        _order(out, contract),
     ]
     if out.days_since_record > STALE_AFTER_DAYS:
         d = out.days_since_record
@@ -247,12 +257,17 @@ def _house_plan(farm: Farm, house: House, as_of: date, horizon_days: int) -> Hou
     return out
 
 
-def _short(p: HouseFeedPlanOut, as_of: date) -> Text:
+def _short(p: HouseFeedPlanOut, as_of: date, contract: bool) -> Text:
     cover = _cover(p, as_of)
     head = Text(f"{p.label_en}: stock is {cover.en}", f"{p.label_te}: ఫీడ్ నిల్వ {cover.te}")
     if not p.reorder_needed:
         return head
     b = p.suggested_order_bags
+    if contract:
+        return Text(
+            f"{head.en} Ask your supervisor for {b} {plural(b, 'bag', 'bags')} now.",
+            f"{head.te} ఇప్పుడే సూపర్‌వైజర్‌ని {b} బస్తాలు అడగండి.",
+        )
     return Text(
         f"{head.en} Order {b} {plural(b, 'bag', 'bags')} now.",
         f"{head.te} ఇప్పుడే {b} బస్తాలు ఆర్డర్ చేయండి.",
@@ -261,16 +276,18 @@ def _short(p: HouseFeedPlanOut, as_of: date) -> Text:
 
 def build_plan(source: DemoFarmSource, house_ref: str | None, horizon_days: int) -> FeedPlanOutput:
     farm, as_of = source.snapshot()
+    mode = source.profile().mode
+    contract = mode is FarmMode.CONTRACT
     house_ref = whole_farm_or(house_ref)
     if house_ref is not None:
-        out = _house_plan(farm, resolve_house(farm, house_ref), as_of, horizon_days)
+        out = _house_plan(farm, resolve_house(farm, house_ref), as_of, horizon_days, contract)
         plans, unavailable = [out], []
         parts = [Text(out.summary_en, out.summary_te)]
     else:
         plans, unavailable = [], []
         for house in sorted(farm.houses, key=lambda h: h.number):
             try:
-                plans.append(_house_plan(farm, house, as_of, horizon_days))
+                plans.append(_house_plan(farm, house, as_of, horizon_days, contract))
             except DomainError as err:
                 unavailable.append(
                     HouseUnavailableOut(
@@ -286,7 +303,7 @@ def build_plan(source: DemoFarmSource, house_ref: str | None, horizon_days: int)
                 )
         plans.sort(key=lambda p: (not p.reorder_needed, p.days_covered, p.number))
         parts = [Text("Feed check for every house.", "అన్ని షెడ్ల ఫీడ్ తనిఖీ.")]
-        items = [_short(p, as_of) for p in plans]
+        items = [_short(p, as_of, contract) for p in plans]
         items += [unavailable_text(u) for u in unavailable]
         parts += items[:MAX_SPOKEN_HOUSES]  # voice-only: at most 5 houses read out, planned or not
         if len(items) > MAX_SPOKEN_HOUSES:
@@ -295,7 +312,9 @@ def build_plan(source: DemoFarmSource, house_ref: str | None, horizon_days: int)
             )
         if any(p.reorder_needed for p in plans):
             parts.append(
-                Text(
+                Text("Say a shed number to hear its full feed plan.", "పూర్తి ఫీడ్ ప్లాన్ కోసం షెడ్ నంబర్ చెప్పండి.")
+                if contract
+                else Text(
                     "Say a shed number to hear its full feed plan and the simulated cost.",
                     "పూర్తి ఫీడ్ ప్లాన్, అంచనా ధర (డెమో) కోసం షెడ్ నంబర్ చెప్పండి.",
                 )
@@ -305,6 +324,7 @@ def build_plan(source: DemoFarmSource, house_ref: str | None, horizon_days: int)
         text_te=" ".join(p.te for p in parts),
         demo_data=source.demo_data,
         as_of=as_of.isoformat(),
+        farm_mode=mode.value,
         plans=plans,
         unavailable=unavailable,
     )

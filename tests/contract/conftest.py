@@ -8,7 +8,7 @@ import threading
 import time
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from typing import Any
 
 import httpx2
@@ -18,7 +18,7 @@ from mcp.server.mcpserver import MCPServer
 
 from clucktalk.config import load_settings
 from clucktalk.server.app import MCP_PATH, TARGET_PROTOCOL_VERSION, build_app, build_mcp_server
-from clucktalk.server.farm_state import DemoFarmSource
+from clucktalk.server.farm_state import IST, DemoFarmSource
 
 ACCEPT = "application/json, text/event-stream"
 LEAK_SECRET = "internal-detail-7f3a"  # the crash probe raises this; it must never reach the client
@@ -84,10 +84,14 @@ class LiveServer:
         return r.json()
 
 
-def _start(env: dict[str, str], customize: Callable[[MCPServer], None] | None = None) -> tuple[LiveServer, Callable]:
+def _start(
+    env: dict[str, str],
+    customize: Callable[[MCPServer], None] | None = None,
+    source: DemoFarmSource | None = None,
+) -> tuple[LiveServer, Callable]:
     port = _free_port()
     settings = load_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_PORT": str(port), **env})
-    server = build_mcp_server(DemoFarmSource(clock=lambda: FIXED_DAY))
+    server = build_mcp_server(source or DemoFarmSource(clock=lambda: FIXED_DAY))
     if customize:
         customize(server)
     config = uvicorn.Config(build_app(settings, server), host=settings.host, port=port, log_level="warning")
@@ -124,6 +128,34 @@ def live() -> Iterator[LiveServer]:
 def live_with_probe() -> Iterator[LiveServer]:
     srv, stop = _start({}, customize=_add_crash_probe)
     yield srv
+    stop()
+
+
+class Clock:
+    """Wall clock a test can move (proposal expiry, docs/DESIGN.md §5.1)."""
+
+    def __init__(self) -> None:
+        self.t = datetime(2026, 9, 29, 10, 0, tzinfo=IST)
+
+    def __call__(self) -> datetime:
+        return self.t
+
+
+@dataclass
+class Fresh:
+    live: LiveServer
+    source: DemoFarmSource
+    clock: Clock
+
+
+@pytest.fixture
+def fresh() -> Iterator[Fresh]:
+    """A server with its own empty state store, for tests that change farm state (the session servers stay
+    read-only, so their tests never depend on order)."""
+    clock = Clock()
+    source = DemoFarmSource(clock=lambda: FIXED_DAY, now=clock)
+    srv, stop = _start({}, source=source)
+    yield Fresh(srv, source, clock)
     stop()
 
 

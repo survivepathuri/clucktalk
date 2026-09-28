@@ -15,6 +15,7 @@ from __future__ import annotations
 import hmac
 import json
 import logging
+import sqlite3
 import sys
 
 from mcp.server.apps import Apps
@@ -28,8 +29,10 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from clucktalk.config import APP_NAME, ConfigError, Settings, load_settings
 from clucktalk.server.errors import SafeToolErrors
 from clucktalk.server.farm_state import DemoFarmSource
-from clucktalk.server.tools import CapabilityRegistry, farm_status, feed
+from clucktalk.server.tools import CapabilityRegistry, farm_status, feed, profile
 from clucktalk.server.tools import help as help_tool
+from clucktalk.store import StoreError
+from clucktalk.store.sqlite import SqliteStore
 
 logger = logging.getLogger("clucktalk.server")
 
@@ -61,6 +64,7 @@ def build_mcp_server(source: DemoFarmSource | None = None) -> MCPServer:
         extensions=[apps],
     )
     feed.register(server, registry, source)
+    profile.register(server, registry, source)
     help_tool.register(server, registry)
     guard.bind(server)
     return server
@@ -150,10 +154,17 @@ def main() -> int:
 
     import uvicorn
 
+    try:
+        store = SqliteStore(settings.state_path)
+    except (StoreError, sqlite3.Error, OSError) as exc:  # fail loud: never run without the farmer's saved state
+        print(f"State store error ({settings.state_path}): {exc}", file=sys.stderr)
+        return 2
+    server = build_mcp_server(DemoFarmSource(store=store))
     print(f"{APP_NAME} MCP server | mode: DEMO DATA (MOCK_BEDROCK=true) | protocol {TARGET_PROTOCOL_VERSION}")
     print(f"Endpoint: http://{settings.host}:{settings.port}{MCP_PATH}")
     print(f"Allowed browser origins: {', '.join(settings.allowed_origins)}")
-    uvicorn.run(build_app(settings), host=settings.host, port=settings.port, log_level="info")
+    print(f"Farm state: {settings.state_path} (python tasks.py reset-demo restores the demo story)")
+    uvicorn.run(build_app(settings, server), host=settings.host, port=settings.port, log_level="info")
     return 0
 
 

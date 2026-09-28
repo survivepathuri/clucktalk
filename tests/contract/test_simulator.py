@@ -223,3 +223,43 @@ def test_sandbox_strict_mode_serves_the_strict_csp(sim):
     csp = r.headers["content-security-policy"]
     assert csp == sandbox_csp({}, (sim.origin, f"http://localhost:{sim.port}"), strict=True)
     assert "font-src" not in csp
+
+
+@pytest.fixture
+def sim_fresh(fresh) -> Iterator[Sim]:
+    """A Simulator on a server with its own state store, for turns that change the farm."""
+    s, stop = _run(SimulatorSettings(port=_free_port(), mcp_url=fresh.live.url, auth_token=None))
+    yield s
+    stop()
+
+
+def test_spoken_mode_switch_needs_yes_and_yes_goes_to_the_same_tool_with_the_id(sim_fresh):
+    """docs/DESIGN.md §5.1 end to end through the host: read-back, then "haan" answers it."""
+    first = sim_fresh.turn("Switch my farm to contract farming")
+    assert first["intent"]["tool"] == "set_farm_mode" and first["intent"]["arguments"] == {"mode": "contract"}
+    sc = first["result"]["structuredContent"]
+    assert sc["status"] == "needs_confirmation" and first["awaiting_answer"] is True
+    assert first["speech"].startswith("Switch your farm to contract farming?")
+    yes = sim_fresh.turn("haan")
+    assert yes["intent"]["tool"] == "set_farm_mode"
+    assert yes["intent"]["arguments"] == {"mode": "contract", "proposal_id": sc["proposal_id"], "answer": "yes"}
+    assert yes["result"]["structuredContent"]["status"] == "changed"
+    assert "contract farm" in sim_fresh.turn("What kind of farm is this?")["speech"]
+    assert "Ask your supervisor for" in sim_fresh.turn("feed plan for shed two")["speech"]
+
+
+def test_no_keeps_the_farm_and_a_later_yes_answers_nothing(sim_fresh):
+    sim_fresh.turn("change to contract farming")
+    no = sim_fresh.turn("nahi")
+    assert no["intent"]["arguments"]["answer"] == "no"
+    assert no["result"]["structuredContent"]["status"] == "cancelled"
+    late = sim_fresh.turn("yes")
+    assert late["kind"] == "fallback" and late["exchanges"] == []  # nothing pending: no tool call at all
+    assert "independent farm" in sim_fresh.turn("am I contract or independent")["speech"]
+
+
+def test_moving_on_drops_the_pending_read_back(sim_fresh):
+    sim_fresh.turn("switch to contract farming")
+    sim_fresh.turn("how is shed two doing")  # the farmer moved on
+    stray = sim_fresh.turn("yes")
+    assert stray["kind"] == "fallback" and stray["exchanges"] == []

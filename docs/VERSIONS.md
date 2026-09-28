@@ -29,6 +29,8 @@ Every version below was checked on the date shown, from the command or source na
 | `pydantic` | 2.13.5 | pinned | PyPI JSON: classifiers include 3.14 |
 | `uvicorn` | 0.54.0 | pinned | PyPI JSON: classifiers include 3.14 |
 
+State store (2026-09-28): Python's built-in `sqlite3` module, no new package. The bundled SQLite library is **3.50.4** in the project's Python 3.13.15 (`.venv\Scripts\python -c "import sqlite3; print(sqlite3.sqlite_version)"`). Used: `connect(check_same_thread=False, isolation_level=None)`, `BEGIN IMMEDIATE` / `COMMIT` / `ROLLBACK`, `Row` factory. Nothing newer than SQLite 3.x basics.
+
 Full app dependency set (transitive included) is pinned in `requirements.txt`; on 2026-09-27 it matched `pip freeze` of the venv exactly (dev tools excluded). Notable transitive packages: `starlette` 1.7.0 (imported directly for ASGI types), `jsonschema` 4.26.0 (imported directly for argument validation), `httpx2` 2.13.1 (the SDK's HTTP client; also used by the contract tests).
 
 ## npm packages

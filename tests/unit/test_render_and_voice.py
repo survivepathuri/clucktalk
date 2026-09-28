@@ -9,6 +9,7 @@ from decimal import Decimal
 import pytest
 
 from clucktalk.domain.errors import InsufficientData, UnknownHouse
+from clucktalk.domain.profile import demo_default_profile
 from clucktalk.server.render import indian_group, num, rupees, weekday_en, weekday_te
 from clucktalk.server.tools.farm_status import MAX_SPOKEN_HOUSES, build_status
 from clucktalk.server.tools.feed import build_plan
@@ -62,6 +63,9 @@ class _Source:
 
     def snapshot(self):
         return self._farm, self._as_of
+
+    def profile(self):  # the demo farm's starting profile (independent)
+        return demo_default_profile(self._farm.farm_id)
 
 
 def _seven_layer_houses():

@@ -6,6 +6,7 @@ Windows (cmd):
     python tasks.py eval-fast   Golden eval suite in mock mode, no AWS needed
     python tasks.py serve       Start only the MCP server (demo data, http://127.0.0.1:8765/mcp)
     python tasks.py run         Start the local demo (Simulator + MCP server, mock mode)
+    python tasks.py reset-demo  Delete the local farm state (.local/), so the demo story starts fresh
 
 Every step prints PASS / FAIL / SKIP, and the run exits non-zero if any step fails.
 A skipped step is always shown with its reason. Nothing is silently skipped (Rule 6).
@@ -212,6 +213,34 @@ def run() -> int:
                     p.kill()
 
 
+def reset_demo() -> int:
+    """Delete the local farm state (profile, proposals, records), so the demo tells its seeded story again."""
+    sys.path.insert(0, str(ROOT / "src"))
+    from clucktalk.config import ConfigError, load_settings  # stdlib-only module: safe outside the venv
+
+    try:
+        path = load_settings().state_path  # config accepts only a .sqlite3 file, so nothing else can be deleted
+    except ConfigError as exc:
+        print(f"reset-demo: configuration error: {exc}", file=sys.stderr)
+        return 2
+    targets = [p for p in (path, path.with_name(path.name + "-journal")) if p.exists()]
+    if not targets:
+        print(f"reset-demo: nothing to reset ({path} does not exist).")
+        return 0
+    for target in targets:
+        try:
+            target.unlink()
+        except PermissionError:
+            print(
+                f"reset-demo: {target} is in use. Stop the running demo (Ctrl+C), then run reset-demo again.",
+                file=sys.stderr,
+            )
+            return 1
+        print(f"reset-demo: deleted {target}")
+    print("reset-demo: done. The next start tells the seeded demo story (independent farm).")
+    return 0
+
+
 def _not_built_yet(command: str) -> int:
     print(
         f"'{command}' is not implemented yet: the application code does not exist.\n"
@@ -227,6 +256,7 @@ COMMANDS = {
     "serve": serve,
     "eval-fast": lambda: _not_built_yet("eval-fast"),
     "run": run,
+    "reset-demo": reset_demo,
 }
 
 

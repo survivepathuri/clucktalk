@@ -136,10 +136,10 @@ def test_tools_declare_farmer_synonyms_and_limits(live):
     assert "dana" in tools["plan_feed"]["description"]
 
 
-def test_help_now_lists_both_farm_tools(live):
+def test_help_lists_the_farm_tools(live):
     sid, _ = live.initialize()
     caps = _ok(live, sid, "get_help")["structuredContent"]["capabilities"]
-    assert [c["tool_name"] for c in caps] == ["get_farm_status", "plan_feed"]
+    assert [c["tool_name"] for c in caps] == ["get_farm_status", "plan_feed", "set_farm_mode"]
 
 
 @pytest.mark.parametrize(("tool", "args"), [("get_farm_status", None), ("plan_feed", None)])

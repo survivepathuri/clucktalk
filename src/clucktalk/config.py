@@ -18,6 +18,8 @@ TAGLINE_EN = "The voice farm manager for India's poultry farmers."
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
+# Local farm state (profile, proposals, records). .local/ is gitignored; `python tasks.py reset-demo` deletes it.
+DEFAULT_STATE_PATH = REPO_ROOT / ".local" / "clucktalk.sqlite3"
 
 _TRUE = {"true", "1", "yes"}
 _FALSE = {"false", "0", "no"}
@@ -36,6 +38,7 @@ class Settings:
     allowed_origins: tuple[str, ...]
     auth_token: str | None
     aws_region: str | None
+    state_path: Path = DEFAULT_STATE_PATH
 
     @property
     def is_local(self) -> bool:
@@ -62,6 +65,18 @@ def _parse_port(env: Mapping[str, str], name: str, default: int) -> int:
     return int(raw)
 
 
+def _state_path(raw: str) -> Path:
+    """A relative path is taken from the repo root, so the server and reset-demo agree whatever the working
+    directory; it must be a .sqlite3 file (reset-demo deletes only such a file)."""
+    if not raw:
+        return DEFAULT_STATE_PATH
+    path = Path(raw)
+    path = path if path.is_absolute() else REPO_ROOT / path
+    if path.suffix != ".sqlite3":
+        raise ConfigError(f"CLUCKTALK_STATE_PATH={raw!r} must name a .sqlite3 file.")
+    return path
+
+
 def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     """Read settings from ``env`` (defaults to ``os.environ``).
 
@@ -85,4 +100,5 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         allowed_origins=origins or (f"http://127.0.0.1:{port}", f"http://localhost:{port}"),
         auth_token=auth_token,
         aws_region=env.get("AWS_REGION", "").strip() or None,
+        state_path=_state_path(env.get("CLUCKTALK_STATE_PATH", "").strip()),
     )

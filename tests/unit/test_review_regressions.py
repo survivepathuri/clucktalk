@@ -10,6 +10,7 @@ import pytest
 
 from clucktalk.domain.errors import BeyondGrowthTable, InsufficientData, NoReferenceCurve
 from clucktalk.domain.feed import plan_feed
+from clucktalk.domain.profile import demo_default_profile
 from clucktalk.server.tools.farm_status import MAX_SPOKEN_HOUSES, build_status
 from clucktalk.server.tools.feed import build_plan
 from tests.crossmodal import tool_output_problems
@@ -24,6 +25,9 @@ class _Source:
 
     def snapshot(self):
         return self._farm, self._as_of
+
+    def profile(self):  # the demo farm's starting profile (independent)
+        return demo_default_profile(self._farm.farm_id)
 
 
 def _steady_layer(number=1, days=10, stock_kg=5000.0):

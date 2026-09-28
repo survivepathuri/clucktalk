@@ -142,6 +142,12 @@ def main() -> int:
                 ("tools/call plan_feed (shed two)", tool("plan_feed", {"house": "shed two"})),
                 ("tools/call plan_feed (whole farm)", tool("plan_feed", {})),
                 ("tools/call get_help", tool("get_help", {})),
+                ("tools/call get_farm_profile", tool("get_farm_profile", {})),
+                # Each call supersedes the previous proposal and stores a new one: the write path's heavy case.
+                (
+                    "tools/call set_farm_mode (propose: 2 writes + read-back)",
+                    tool("set_farm_mode", {"mode": "contract"}),
+                ),
                 ("resources/read farm-status card (~385 KB)", call("resources/read", {"uri": FARM_STATUS_URI})),
             ]
             for name, fn in measured:
