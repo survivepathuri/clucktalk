@@ -177,5 +177,28 @@ account owner agrees. Results 2026-09-28 (CLI 2.37.4; account IDs never recorded
 | **Quotas** | `aws service-quotas list-service-quotas` vs `list-aws-default-service-quotas`, service `bedrock` | **0 in this account** for every requests/tokens-per-minute quota of Sonnet 5, Haiku 4.5, Nova Lite, Nova 2 Lite, Nova Pro (defaults are large, e.g. Sonnet 5 cross-Region TPM 6,000,000, L-D4FBCF4E). Live calls cannot work until raised (FRICTION_LOG FL-014) |
 | Polly | `aws polly describe-voices --language-code en-IN` | Kajal (neural, generative), Aditi and Raveena (standard); `te-IN`: none |
 
+### 5.1 Quota re-check after AWS Support reply (2026-09-29, FRICTION_LOG FL-016)
+
+Support closed both quota cases 28–29 Sep: "Bedrock access has been enabled ... granted access to reduced quotas.
+Some higher-tier foundation models may not be available." Re-ran the same read-only quota comparison (CLI 2.37.4,
+`--profile clucktalk --region us-east-1`) rather than trusting the reply's wording:
+
+| Model | Cross-region requests/min: applied (default) | Cross-region tokens/min: applied (default) | Marketplace agreement | Callable? |
+|---|---|---|---|---|
+| Amazon Nova 2 Lite | 20 (2,000) | 8,000,000 (8,000,000) | `AVAILABLE` | **Yes** — real nonzero quota + agreement in place. Not yet proven with a live call. |
+| Anthropic Claude Haiku 4.5 | 10 (10,000) | 5,000,000 (5,000,000) | `NOT_AVAILABLE` | **No** — quota is now real (was 0), but the Marketplace agreement for Anthropic models still isn't created, which is the current blocker (same root cause as the 28 Sep `get-foundation-model-availability` row above). |
+| Anthropic Claude Sonnet 5 | not found (no per-request quota listed) | 0 (6,000,000) | `NOT_AVAILABLE` | **No** — still 0 on the path CluckTalk would call (`us.`/`global.` inference profile); this is the "higher-tier" model the reply says may not be available. |
+
+One more Sonnet 5 quota exists, `[bedrock-mantle endpoint] Input/Output tokens per minute for Claude Sonnet 5`,
+applied = default (3,000,000 / 300,000, not reduced) — an unfamiliar quota name not documented anywhere seen so
+far, and not the cross-region inference-profile path this project uses. Not relied on; flagged for one WebSearch
+if Sonnet 5 access is still needed later.
+
+**Read-only conclusion**: Nova 2 Lite is the only one of the three with both a real quota and an active Marketplace
+agreement. Haiku 4.5's quota is fixed but it's still blocked by the missing Anthropic Marketplace agreement (needs
+the account owner to accept it in the Bedrock console "Model access" page — a separate step from quota, costs
+nothing). Sonnet 5 needs both the agreement and a further quota increase. No live Converse call made (Rule 4/6:
+verify before claiming; a real call needs the account owner's go-ahead per the AWS checkpoint plan).
+
 Unused permission found: `billing:GetSellerOfRecord` has no CLI command; drop it from the inline policy at the next
 permission-set review.

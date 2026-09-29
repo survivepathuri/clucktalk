@@ -67,8 +67,17 @@ plan PAID/ACTIVE; Claude models in us-east-1 are inference-profile only; profile
 Nova models accessible, Claude agreement not yet created; **all inference quotas for these models are 0** (blocker,
 FRICTION_LOG FL-014); Polly Kajal neural available.
 
-Still to verify: quotas after the increase request; a first real Converse call; Guardrails and Knowledge Bases on S3
-Vectors in us-east-1, plus S3 Vectors pricing (Rule 1 alternative to AOSS).
+Re-checked 2026-09-29 after AWS Support's quota-case replies (docs/AWS_SETUP.md §5.1, FRICTION_LOG FL-016):
+**Nova 2 Lite now has a real applied quota** (20 requests/min, 8M tokens/min cross-region; reduced from the
+2,000/8M defaults) and its Marketplace agreement is `AVAILABLE` — the only one of the three ready for a live call,
+not yet proven with one. **Haiku 4.5's quota is also fixed** (10 requests/min, 5M tokens/min), but its Anthropic
+Marketplace agreement is still `NOT_AVAILABLE`, which now the blocker, not quota. **Sonnet 5 cross-region tokens/min
+is still 0** (default 6,000,000) and its agreement is also `NOT_AVAILABLE` — matches Support's "some higher-tier
+foundation models may not be available at this access level."
+
+Still to verify: the Anthropic Marketplace agreement (console "Model access" page, account owner only); a first real
+Converse call (Nova 2 Lite first, since it's the only model both quota- and agreement-ready); Guardrails and
+Knowledge Bases on S3 Vectors in us-east-1, plus S3 Vectors pricing (Rule 1 alternative to AOSS).
 
 ## SDK behaviors verified in source (mcp 2.2.0, 2026-09-27)
 Each one shaped the server design; the contract tests pin them.
