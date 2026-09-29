@@ -134,3 +134,43 @@ Expected vs actual: Expected every POST to be answered, or a JSON-RPC error for 
 Severity: Low
 Workaround: The test client now gives every concurrent request its own id. CluckTalk's confirmation flow still applied the change exactly once in the hanging run (1 applied, the answered repeats replayed).
 Actionable suggestion: Reject a request whose id is already in flight on the session with a JSON-RPC error (-32600, "duplicate request id") instead of overwriting the pending stream, and log a warning.
+
+### FL-012: New-account setup: the recommended CLI identity silently depends on the account plan; Bedrock-on-Free-plan is undocumented
+Date: 2026-09-28
+Tool / service: AWS Billing (Free vs Paid account plan), AWS IAM Identity Center, AWS CLI v2 guide, Amazon Bedrock model access
+Task attempted: Plan a least-privilege, key-free CLI identity for a brand-new account and check that Bedrock (Anthropic models) is usable, from AWS docs only.
+Steps taken: Read the AWS CLI guide (recommends IAM Identity Center), the Identity Center instance comparison, the Billing "Choosing a plan" page and the Bedrock "Request access to models" page.
+Expected vs actual: Expected one page to say what a new Free-plan account must do. Actual: the CLI guide recommends Identity Center; the Identity Center page shows that only an organization instance (in an AWS Organizations management account) gives "single sign-on access to your AWS accounts"; the Billing page says Free plans "automatically upgrade to paid plan if you join AWS Organizations", and are "not eligible for other promotional credits". So following the recommended CLI setup changes the account plan, which no setup page mentions. Separately, the Bedrock model-access page requires AWS Marketplace permissions and a "valid payment method ... for AWS Marketplace purchases" for third-party models, and the Billing page says Free plans exclude "certain AWS Marketplace offers that can incur charges", but no page states whether Anthropic models on Bedrock work on a Free-plan account.
+Severity: Medium
+Workaround: Check the account plan first; decide on the Paid plan knowingly (budget alerts set), then use an Identity Center organization instance. Verify Bedrock access with a real call rather than from docs.
+Actionable suggestion: Add a "new account" note to the CLI and Identity Center getting-started pages (enabling Organizations upgrades a Free-plan account), and a table in the Billing plan page listing which Bedrock model providers are usable on the Free plan.
+
+### FL-013: AWS India (AISPL) account: plan not shown in the console; Claude-on-Bedrock and credit rules scattered or missing
+Date: 2026-09-28
+Tool / service: AWS Billing console (AWS India / AISPL account), AWS Knowledge Center, Amazon Bedrock (Anthropic via AWS Marketplace), AWS promotional credits
+Task attempted: Confirm the account plan, and whether Claude on Bedrock and promotional credits work for a new AWS India account.
+Steps taken: Owner checked Billing home, Free Tier, Credits and Account pages; I read the AWS India differences article, the "turn on Anthropic models" article, the credits docs, and searched docs.aws.amazon.com and re:Post.
+Expected vs actual: Expected the console to show "Free plan" or "Paid plan" as the Billing docs describe ("You can monitor your credit balance and free account plan information in the AWS Billing and Cost Management console home"). Actual: none of those pages shows a plan or an "Upgrade plan" option; credits show ($120 active). The AWS India differences article lists INR billing and manual Marketplace payments but not the Marketplace/RBI card problem, which is only in the Bedrock-Anthropic article ("your Marketplace subscription can fail and model access isn't turned on"; pay manually "within one hour"). No page says whether promotional credits apply to Marketplace-billed Bedrock models or behave differently on AISPL accounts; re:Post has open community questions about exactly this.
+Severity: Medium
+Workaround: Check the plan with `aws freetier get-account-plan-state` after CLI login; set Pay by Invoice before the first Claude call; check each credit's "Applicable products"; keep Amazon Nova (not sold via Marketplace) as a fallback host model.
+Actionable suggestion: Show the account plan on the Billing home for every account (or explain why it is absent for AISPL accounts); add the Marketplace/RBI note and a "credits vs Marketplace-billed Bedrock models" answer to the AWS India differences article.
+
+### FL-014: New account: Bedrock reports models "AVAILABLE" but every inference quota is 0
+Date: 2026-09-28
+Tool / service: Amazon Bedrock (us-east-1), Service Quotas, AWS CLI 2.37.4; new Paid-plan AWS India account
+Task attempted: Read-only check that the host model candidates can be called before the first (paid) request.
+Steps taken: `aws bedrock get-foundation-model-availability` for Nova Lite, Nova 2 Lite, Claude Sonnet 5, Claude Haiku 4.5; then `aws service-quotas list-service-quotas` vs `list-aws-default-service-quotas` for service code `bedrock`.
+Expected vs actual: Expected a model that reports `agreementAvailability: AVAILABLE`, `authorizationStatus: AUTHORIZED`, `entitlementAvailability: AVAILABLE` (Nova Lite, Nova 2 Lite) to be callable. Actual: the account's applied value is 0 for every on-demand, cross-region and global cross-region requests-per-minute and tokens-per-minute quota of all four models, while the AWS defaults are large (e.g. Claude Sonnet 5 cross-region tokens per minute: default 6,000,000, account 0; Nova Lite on-demand requests per minute: default 2,000, account 0, not adjustable). Nothing in the model availability response or the model access docs mentions it; only a quota-by-quota comparison shows it.
+Severity: High (blocks every live Bedrock call; the fix goes through quota requests / AWS Support with unknown lead time)
+Workaround: Request increases for the adjustable quotas and open a Support case for the non-adjustable zeros; keep demo mode (no AWS) as the working path meanwhile.
+Actionable suggestion: Return a quota status in `GetFoundationModelAvailability` (or a field such as `inferenceQuotaAvailability: ZERO`), show "your account's quota for this model is 0" on the model catalog page, and document the new-account quota policy with the expected path to normal limits.
+
+### FL-015: CLI billing call says "IAM user access not activated" to an IAM Identity Center role
+Date: 2026-09-28
+Tool / service: AWS CLI 2.37.4 `aws billing get-credits`, IAM Identity Center permission set with `billing:GetCredits`
+Task attempted: Read the account's credits from the CLI with a least-privilege SSO role.
+Steps taken: `aws billing get-credits --account-id <id> --start-date <epoch>` with profile `clucktalk` (role CluckTalkVerify, which allows `billing:GetCredits`).
+Expected vs actual: Expected the credits, or an error naming the account setting to change. Actual: `AccessDeniedException ... IAM user access not activated`. The caller is not an IAM user; the needed switch is the account setting "IAM user and role access to Billing information" (root only), which the message does not name.
+Severity: Low
+Workaround: Read credits in the Billing console as root; activation is optional for this project.
+Actionable suggestion: Name the setting and where to turn it on in the error ("IAM user and role access to Billing information is off for this account; the root user can activate it on the Account page").

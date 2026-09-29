@@ -79,6 +79,18 @@ class InvalidInput(DomainError):
     pass
 
 
+class NotSoldByWeight(DomainError):
+    """Sale-day planning compares a live weight against a market price; layers are not sold that way."""
+
+    def __init__(self, label_en: str, label_te: str) -> None:
+        super().__init__(
+            f"{label_en} is a layer flock, so sell-day planning by live weight doesn't apply to it.",
+            "Ask me about its egg production or feed instead.",
+            f"{label_te} గుడ్ల మంద, కాబట్టి బరువు ఆధారంగా అమ్మకం రోజు ప్రణాళిక దీనికి వర్తించదు.",
+            "బదులుగా గుడ్ల ఉత్పత్తి లేదా ఫీడ్ గురించి అడగండి.",
+        )
+
+
 class AnswerWithoutProposal(DomainError):
     """A yes/no arrived without the request it answers (docs/DESIGN.md §5.1)."""
 

@@ -90,6 +90,7 @@ def build_demo_farm(as_of: date, path: Path = DEMO_FARM_PATH) -> Farm:
             houses=tuple(houses),
             feed_price_per_kg=Decimal(raw["simulated"]["feed_price_per_kg_inr"]),
             supplier_lead_days=raw["simulated"]["supplier_lead_days"],
+            live_bird_price_per_kg=Decimal(raw["simulated"]["live_bird_price_per_kg_inr"]),
         )
     except KeyError as exc:
         raise ValueError(f"{path.name}: missing required field {exc}") from exc

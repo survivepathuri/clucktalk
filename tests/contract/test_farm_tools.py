@@ -139,7 +139,13 @@ def test_tools_declare_farmer_synonyms_and_limits(live):
 def test_help_lists_the_farm_tools(live):
     sid, _ = live.initialize()
     caps = _ok(live, sid, "get_help")["structuredContent"]["capabilities"]
-    assert [c["tool_name"] for c in caps] == ["get_farm_status", "plan_feed", "set_farm_mode"]
+    assert [c["tool_name"] for c in caps] == [
+        "get_farm_status",
+        "plan_sale",
+        "plan_feed",
+        "set_farm_mode",
+        "set_contract_terms",
+    ]
 
 
 @pytest.mark.parametrize(("tool", "args"), [("get_farm_status", None), ("plan_feed", None)])

@@ -9,6 +9,16 @@ Every number CluckTalk uses is either **sourced** (cited below), **computed** (f
 | Cumulative mortality thresholds 5% / 10% | jebas.org/ojs/index.php/jebas/article/view/832 (2023): farms < 5% mortality more profitable than > 10% (docs/DESIGN.md §9) | Watch / alert thresholds | `src/clucktalk/domain/thresholds.py` |
 | Mortality spike, feed-drop, weight, FCR-margin, laying-drop thresholds | **CluckTalk heuristics**, not veterinary standards | Early-warning flags; user text must not present them as standards | `src/clucktalk/domain/thresholds.py` |
 
+## Sale-day plan (docs/DESIGN.md §12.4, added 2026-09-29)
+| Used for | Source | How used |
+|---|---|---|
+| Ross 308 target weight and daily intake by age (same table as feed planning) | Aviagen, *Ross 308 / 308 FF Broiler: Performance Objectives 2022*, cited above | Per-day marginal weight gain and feed cost |
+| Broiler-first scope decision, contract-mode growing-charge evidence (each extra day raises FCR, so the integrator's own per-kg rate falls) | P.V.K. Sasidhar and M. Suvedi, MEAS Evaluation Report 2015 (2015 example terms only, never presented as current), cited above | `set_contract_terms` lets the farmer enter their own base rate/FCR/incentive/deduction; the formula (rate falls per 0.1 FCR worse than standard) is CluckTalk's own calculator, not a claim about any real contract |
+| Contract farming: keeping birds past the agreed lift date raises mortality and FCR at the farmer's cost | Hennessey et al., PLOS ONE 2025, cited above | Reason text for the contract-mode "ask your supervisor to lift on time" evidence |
+| Simulated default live-bird price ₹95/kg | [Onmanorama, 1 Sep 2026](https://www.onmanorama.com/news/kerala/2026/09/01/broiler-chicken-prices-low.html): Kerala farm-gate live broiler price ₹76/kg (reported as a record low) vs ₹110–130/kg live retail, same article | A verified real range for choosing a plausible, clearly-labeled simulated default; the farmer's own stated rate always overrides it |
+
+Poultry Bazaar's daily rate sheet (poultrybazaar.net) was checked but not cited: its rate table loads values dynamically and no actual number could be read from the page, so no figure from it is used.
+
 ## Breeds without a cited curve
 - **Cobb 430**: no public performance table found (search 2026-09-27). Weight- and feed-vs-target comparisons are refused with a clear message (`NoReferenceCurve`), never substituted.
 - **BV-300** (layer): no public standard found yet. Layer status and feed plans use the house's own records only.

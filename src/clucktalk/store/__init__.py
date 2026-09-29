@@ -11,7 +11,7 @@ from contextlib import AbstractContextManager
 from typing import Protocol
 
 from clucktalk.domain.models import DailyRecord
-from clucktalk.domain.profile import FarmProfile
+from clucktalk.domain.profile import ContractTerms, FarmProfile
 from clucktalk.domain.proposals import Proposal
 
 
@@ -27,6 +27,10 @@ class Store(Protocol):
     def get_profile(self, farm_id: str) -> FarmProfile | None: ...
 
     def save_profile(self, profile: FarmProfile) -> None: ...
+
+    def get_contract_terms(self, farm_id: str) -> ContractTerms | None: ...
+
+    def save_contract_terms(self, terms: ContractTerms) -> None: ...
 
     def add_proposal(self, proposal: Proposal) -> None: ...
 

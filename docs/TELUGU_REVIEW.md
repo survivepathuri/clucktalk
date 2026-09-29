@@ -10,71 +10,113 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 - Status is tracked per string (`data/i18n/telugu_approvals.json`). An approval covers one exact English +
   Telugu pair: any new or changed string, in either language, is **pending** until reviewed again.
 
-**Pending: 57** · Approved: 82
+**Pending: 99** · Approved: 83
 
-## 1. Pending review (57)
+## 1. Pending review (99)
 
 | # | English | Telugu | Where | Reviewer |
 |---|---|---|---|---|
-| 1 | There's nothing waiting for your yes or no right now, so nothing changed. | ఇప్పుడు మీ 'అవును' లేదా 'వద్దు' కోసం ఏదీ ఎదురుచూడటం లేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/domain/errors.py:89` |  |
-| 2 | Tell me again what you'd like to change. | మీరు ఏమి మార్చాలనుకుంటున్నారో మళ్ళీ చెప్పండి. | `src/clucktalk/domain/errors.py:90` |  |
-| 3 | I didn't catch whether that was a yes or a no, so nothing changed. | అది 'అవును'నా 'వద్దు'నా అని నాకు అర్థం కాలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/domain/errors.py:101` |  |
-| 4 | Please say yes or no. | దయచేసి 'అవును' లేదా 'వద్దు' అని చెప్పండి. | `src/clucktalk/domain/errors.py:102` |  |
-| 5 | OK | బాగుంది | `src/clucktalk/server/cards/__init__.py:24` |  |
-| 6 | WATCH | గమనించాలి | `src/clucktalk/server/cards/__init__.py:25` |  |
-| 7 | ALERT | శ్రద్ధ అవసరం | `src/clucktalk/server/cards/__init__.py:26` |  |
-| 8 | UNKNOWN | తెలియదు | `src/clucktalk/server/cards/__init__.py:27` |  |
-| 9 | Farm status | ఫారం స్థితి | `src/clucktalk/server/cards/__init__.py:28` |  |
-| 10 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:29` |  |
-| 11 | Deaths today | ఈరోజు మరణాలు | `src/clucktalk/server/cards/__init__.py:30` |  |
-| 12 | Deaths, latest count | తాజా లెక్కలో మరణాలు | `src/clucktalk/server/cards/__init__.py:31` |  |
-| 13 | Feed stock | ఫీడ్ నిల్వ | `src/clucktalk/server/cards/__init__.py:32` |  |
-| 14 | Feed stock, days | ఫీడ్ నిల్వ, రోజులు | `src/clucktalk/server/cards/__init__.py:33` |  |
-| 15 | not known | తెలియదు | `src/clucktalk/server/cards/__init__.py:34` |  |
-| 16 | Average weight | సగటు బరువు | `src/clucktalk/server/cards/__init__.py:35` |  |
-| 17 | Laying | గుడ్ల ఉత్పత్తి | `src/clucktalk/server/cards/__init__.py:36` |  |
-| 18 | {n} days | {n} రోజులు | `src/clucktalk/server/cards/__init__.py:38` |  |
-| 19 | {n} day | {n} రోజు | `src/clucktalk/server/cards/__init__.py:39` |  |
-| 20 | at least {n} days | కనీసం {n} రోజులు | `src/clucktalk/server/cards/__init__.py:40` |  |
-| 21 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:41` |  |
-| 22 | target {n} g | లక్ష్యం {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:42` |  |
-| 23 | {n} birds | {n} కోళ్లు | `src/clucktalk/server/cards/__init__.py:43` |  |
-| 24 | Day {n} | {n}వ రోజు | `src/clucktalk/server/cards/__init__.py:44` |  |
-| 25 | Latest readings: {d} | తాజా రీడింగులు: {d} | `src/clucktalk/server/cards/__init__.py:45` |  |
-| 26 | Tap a shed for details | వివరాల కోసం షెడ్‌ను తాకండి | `src/clucktalk/server/cards/__init__.py:46` |  |
-| 27 | All sheds | అన్ని షెడ్లు | `src/clucktalk/server/cards/__init__.py:47` |  |
-| 28 | Could not check | తనిఖీ చేయలేకపోయాను | `src/clucktalk/server/cards/__init__.py:48` |  |
-| 29 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:49` |  |
-| 30 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:50` |  |
-| 31 | Ask me for a feed plan to hear how much feed to ask your supervisor for. | సూపర్‌వైజర్‌ని ఎంత ఫీడ్ అడగాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి. | `src/clucktalk/server/tools/farm_status.py:298` |  |
-| 32 | No need to ask your supervisor for feed yet. | ఇంకా సూపర్‌వైజర్‌ని ఫీడ్ అడగాల్సిన అవసరం లేదు. | `src/clucktalk/server/tools/feed.py:158` |  |
-| 33 | Ask your supervisor for {b} {plural(b, 'bag', 'bags')} of {p.bag_kg} kg now. | ఇప్పుడే మీ సూపర్‌వైజర్‌ని {p.bag_kg} కిలోల {b} బస్తాలు అడగండి. | `src/clucktalk/server/tools/feed.py:161` |  |
-| 34 | {head.en} Ask your supervisor for {b} {plural(b, 'bag', 'bags')} now. | {head.te} ఇప్పుడే సూపర్‌వైజర్‌ని {b} బస్తాలు అడగండి. | `src/clucktalk/server/tools/feed.py:269` |  |
-| 35 | Say a shed number to hear its full feed plan. | పూర్తి ఫీడ్ ప్లాన్ కోసం షెడ్ నంబర్ చెప్పండి. | `src/clucktalk/server/tools/feed.py:315` |  |
-| 36 | Your farm is set up as a contract farm: your company supplies the feed, so feed plans tell you how many bags to ask your supervisor for, without prices. | మీ ఫారం కాంట్రాక్ట్ ఫారంగా సెట్ అయి ఉంది: ఫీడ్ మీ కంపెనీ ఇస్తుంది, కాబట్టి ఫీడ్ ప్లాన్ ధరలు లేకుండా, సూపర్‌వైజర్‌ని ఎన్ని బస్తాలు అడగాలో చెబుతుంది. | `src/clucktalk/server/tools/profile.py:34` |  |
-| 37 | Your farm is set up as an independent farm: you buy your own feed, so feed plans include a simulated price. | మీ ఫారం సొంత ఫారంగా సెట్ అయి ఉంది: ఫీడ్ మీరే కొంటారు, కాబట్టి ఫీడ్ ప్లాన్‌లో అంచనా ధర (డెమో) కూడా ఉంటుంది. | `src/clucktalk/server/tools/profile.py:38` |  |
-| 38 | To change it, say: switch to contract farming. | మార్చాలంటే 'switch to contract farming' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:44` |  |
-| 39 | To change it, say: switch to independent farming. | మార్చాలంటే 'switch to independent farming' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:48` |  |
-| 40 | Switch your farm to contract farming? Then I'll stop suggesting feed purchases and prices, and tell you how many bags to ask your supervisor for. Say yes to confirm, or no to keep it as it is. | మీ ఫారంను కాంట్రాక్ట్ ఫారంగా మార్చాలా? అప్పుడు ఫీడ్ కొనుగోలు, ధరలు చెప్పను; సూపర్‌వైజర్‌ని ఎన్ని బస్తాలు అడగాలో చెబుతాను. మార్చాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:55` |  |
-| 41 | Switch your farm to independent farming? Then I'll plan feed purchases with a simulated price. Say yes to confirm, or no to keep it as it is. | మీ ఫారంను సొంత ఫారంగా మార్చాలా? అప్పుడు అంచనా ధర (డెమో)తో ఫీడ్ కొనుగోలు ప్లాన్ చెబుతాను. మార్చాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:61` |  |
-| 42 | Your farm is now set up as a contract farm. | మీ ఫారం ఇప్పుడు కాంట్రాక్ట్ ఫారంగా సెట్ అయింది. | `src/clucktalk/server/tools/profile.py:65` |  |
-| 43 | Your farm is now set up as an independent farm. | మీ ఫారం ఇప్పుడు సొంత ఫారంగా సెట్ అయింది. | `src/clucktalk/server/tools/profile.py:66` |  |
-| 44 | Your farm is already set up as a contract farm, so nothing changed. | మీ ఫారం ఇప్పటికే కాంట్రాక్ట్ ఫారంగా ఉంది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:71` |  |
-| 45 | Your farm is already set up as an independent farm, so nothing changed. | మీ ఫారం ఇప్పటికే సొంత ఫారంగా ఉంది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:75` |  |
-| 46 | Your farm stays a contract farm. | మీ ఫారం కాంట్రాక్ట్ ఫారంగానే ఉంటుంది. | `src/clucktalk/server/tools/profile.py:79` |  |
-| 47 | Your farm stays an independent farm. | మీ ఫారం సొంత ఫారంగానే ఉంటుంది. | `src/clucktalk/server/tools/profile.py:80` |  |
-| 48 | Done. | సరే. | `src/clucktalk/server/tools/profile.py:82` |  |
-| 49 | Okay, nothing changed. | సరే, ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:83` |  |
-| 50 | That change was made earlier and has been changed again since. | ఆ మార్పు ఇంతకుముందే జరిగింది, తర్వాత మళ్ళీ మార్చబడింది. | `src/clucktalk/server/tools/profile.py:86` |  |
-| 51 | That request timed out, so nothing changed. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:89` |  |
-| 52 | That request was replaced by a newer one, so nothing changed. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:92` |  |
-| 53 | That's different from what I read back, so nothing changed yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:96` |  |
-| 54 | I couldn't find that request, so nothing changed. | ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:98` |  |
-| 55 | That request was already cancelled, so nothing changed. | ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:101` |  |
-| 56 | That change was already made earlier, so saying no now doesn't undo it. | ఆ మార్పు ఇంతకుముందే జరిగిపోయింది, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు. | `src/clucktalk/server/tools/profile.py:105` |  |
-| 57 | Contract or independent farm | కాంట్రాక్ట్ లేదా సొంత ఫారం | `src/clucktalk/server/tools/profile.py:277` |  |
+| 1 | {label_en} is a layer flock, so sell-day planning by live weight doesn't apply to it. | {label_te} గుడ్ల మంద, కాబట్టి బరువు ఆధారంగా అమ్మకం రోజు ప్రణాళిక దీనికి వర్తించదు. | `src/clucktalk/domain/errors.py:89` |  |
+| 2 | Ask me about its egg production or feed instead. | బదులుగా గుడ్ల ఉత్పత్తి లేదా ఫీడ్ గురించి అడగండి. | `src/clucktalk/domain/errors.py:90` |  |
+| 3 | There's nothing waiting for your yes or no right now, so nothing changed. | ఇప్పుడు మీ 'అవును' లేదా 'వద్దు' కోసం ఏదీ ఎదురుచూడటం లేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/domain/errors.py:101` |  |
+| 4 | Tell me again what you'd like to change. | మీరు ఏమి మార్చాలనుకుంటున్నారో మళ్ళీ చెప్పండి. | `src/clucktalk/domain/errors.py:102` |  |
+| 5 | I didn't catch whether that was a yes or a no, so nothing changed. | అది 'అవును'నా 'వద్దు'నా అని నాకు అర్థం కాలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/domain/errors.py:113` |  |
+| 6 | Please say yes or no. | దయచేసి 'అవును' లేదా 'వద్దు' అని చెప్పండి. | `src/clucktalk/domain/errors.py:114` |  |
+| 7 | OK | బాగుంది | `src/clucktalk/server/cards/__init__.py:26` |  |
+| 8 | WATCH | గమనించాలి | `src/clucktalk/server/cards/__init__.py:27` |  |
+| 9 | ALERT | శ్రద్ధ అవసరం | `src/clucktalk/server/cards/__init__.py:28` |  |
+| 10 | UNKNOWN | తెలియదు | `src/clucktalk/server/cards/__init__.py:29` |  |
+| 11 | Farm status | ఫారం స్థితి | `src/clucktalk/server/cards/__init__.py:30` |  |
+| 12 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:31` |  |
+| 13 | Deaths today | ఈరోజు మరణాలు | `src/clucktalk/server/cards/__init__.py:32` |  |
+| 14 | Deaths, latest count | తాజా లెక్కలో మరణాలు | `src/clucktalk/server/cards/__init__.py:33` |  |
+| 15 | Feed stock | ఫీడ్ నిల్వ | `src/clucktalk/server/cards/__init__.py:34` |  |
+| 16 | Feed stock, days | ఫీడ్ నిల్వ, రోజులు | `src/clucktalk/server/cards/__init__.py:35` |  |
+| 17 | not known | తెలియదు | `src/clucktalk/server/cards/__init__.py:36` |  |
+| 18 | Average weight | సగటు బరువు | `src/clucktalk/server/cards/__init__.py:37` |  |
+| 19 | Laying | గుడ్ల ఉత్పత్తి | `src/clucktalk/server/cards/__init__.py:38` |  |
+| 20 | {n} days | {n} రోజులు | `src/clucktalk/server/cards/__init__.py:40` |  |
+| 21 | {n} day | {n} రోజు | `src/clucktalk/server/cards/__init__.py:41` |  |
+| 22 | at least {n} days | కనీసం {n} రోజులు | `src/clucktalk/server/cards/__init__.py:42` |  |
+| 23 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:43` |  |
+| 24 | target {n} g | లక్ష్యం {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:44` |  |
+| 25 | {n} birds | {n} కోళ్లు | `src/clucktalk/server/cards/__init__.py:45` |  |
+| 26 | Day {n} | {n}వ రోజు | `src/clucktalk/server/cards/__init__.py:46` |  |
+| 27 | Latest readings: {d} | తాజా రీడింగులు: {d} | `src/clucktalk/server/cards/__init__.py:47` |  |
+| 28 | Tap a shed for details | వివరాల కోసం షెడ్‌ను తాకండి | `src/clucktalk/server/cards/__init__.py:48` |  |
+| 29 | All sheds | అన్ని షెడ్లు | `src/clucktalk/server/cards/__init__.py:49` |  |
+| 30 | Could not check | తనిఖీ చేయలేకపోయాను | `src/clucktalk/server/cards/__init__.py:50` |  |
+| 31 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:51` |  |
+| 32 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:52` |  |
+| 33 | Sell-day plan | అమ్మకం రోజు ప్రణాళిక | `src/clucktalk/server/cards/__init__.py:67` |  |
+| 34 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:68` |  |
+| 35 | Simulated price | అంచనా ధర (డెమో) | `src/clucktalk/server/cards/__init__.py:69` |  |
+| 36 | Best day | మంచి రోజు | `src/clucktalk/server/cards/__init__.py:70` |  |
+| 37 | Today | ఈరోజు | `src/clucktalk/server/cards/__init__.py:71` |  |
+| 38 | Break-even | బ్రేక్-ఈవెన్ | `src/clucktalk/server/cards/__init__.py:72` |  |
+| 39 | Net vs today | ఈరోజుతో పోలిస్తే నికరం | `src/clucktalk/server/cards/__init__.py:73` |  |
+| 40 | Weight | బరువు | `src/clucktalk/server/cards/__init__.py:74` |  |
+| 41 | Growing charge | గ్రోయింగ్ ఛార్జ్ | `src/clucktalk/server/cards/__init__.py:76` |  |
+| 42 | Save your contract terms to see the growing charge | గ్రోయింగ్ ఛార్జ్ చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయండి | `src/clucktalk/server/cards/__init__.py:78` |  |
+| 43 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:80` |  |
+| 44 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:81` |  |
+| 45 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:84` |  |
+| 46 | That request timed out, so nothing changed. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:32` |  |
+| 47 | That request was replaced by a newer one, so nothing changed. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:35` |  |
+| 48 | That's different from what I read back, so nothing changed yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:39` |  |
+| 49 | I couldn't find that request, so nothing changed. | ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:41` |  |
+| 50 | That request was already cancelled, so nothing changed. | ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:44` |  |
+| 51 | Those terms were already saved earlier, so saying no now doesn't undo it. | ఆ నిబంధనలు ఇంతకుముందే సేవ్ అయ్యాయి, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు. | `src/clucktalk/server/tools/contract_terms.py:48` |  |
+| 52 | Okay, nothing changed. | సరే, ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:51` |  |
+| 53 | Save your contract terms: {rupees(base)} per kg at FCR {fcr}, mortality allowance {allow}%, {rupees(inc)} more per kg for every 0.1 better FCR, {rupees(ded)} less per kg for every 0.1 worse FCR. Say yes to confirm, or no to keep it as it is. | మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయాలా: FCR {fcr} వద్ద కిలోకు {rupees(base)}, మరణాల మినహాయింపు {allow}%, ప్రతి 0.1 మెరుగైన FCRకి కిలోకు {rupees(inc)} ఎక్కువ, ప్రతి 0.1 తక్కువ FCRకి కిలోకు {rupees(ded)} తక్కువ. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/contract_terms.py:108` |  |
+| 54 | Those are already your saved contract terms, so nothing changed. | ఇవి ఇప్పటికే మీ సేవ్ చేసిన కాంట్రాక్ట్ నిబంధనలు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:198` |  |
+| 55 | Done. Your contract terms are saved. | సరే. మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ అయ్యాయి. | `src/clucktalk/server/tools/contract_terms.py:221` |  |
+| 56 | Save your contract terms | మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయండి | `src/clucktalk/server/tools/contract_terms.py:271` |  |
+| 57 | Ask me for a feed plan to hear how much feed to ask your supervisor for. | సూపర్‌వైజర్‌ని ఎంత ఫీడ్ అడగాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి. | `src/clucktalk/server/tools/farm_status.py:298` |  |
+| 58 | No need to ask your supervisor for feed yet. | ఇంకా సూపర్‌వైజర్‌ని ఫీడ్ అడగాల్సిన అవసరం లేదు. | `src/clucktalk/server/tools/feed.py:158` |  |
+| 59 | Ask your supervisor for {b} {plural(b, 'bag', 'bags')} of {p.bag_kg} kg now. | ఇప్పుడే మీ సూపర్‌వైజర్‌ని {p.bag_kg} కిలోల {b} బస్తాలు అడగండి. | `src/clucktalk/server/tools/feed.py:161` |  |
+| 60 | {head.en} Ask your supervisor for {b} {plural(b, 'bag', 'bags')} now. | {head.te} ఇప్పుడే సూపర్‌వైజర్‌ని {b} బస్తాలు అడగండి. | `src/clucktalk/server/tools/feed.py:269` |  |
+| 61 | Say a shed number to hear its full feed plan. | పూర్తి ఫీడ్ ప్లాన్ కోసం షెడ్ నంబర్ చెప్పండి. | `src/clucktalk/server/tools/feed.py:315` |  |
+| 62 | Your farm is set up as a contract farm: your company supplies the feed, so feed plans tell you how many bags to ask your supervisor for, without prices. | మీ ఫారం కాంట్రాక్ట్ ఫారంగా సెట్ అయి ఉంది: ఫీడ్ మీ కంపెనీ ఇస్తుంది, కాబట్టి ఫీడ్ ప్లాన్ ధరలు లేకుండా, సూపర్‌వైజర్‌ని ఎన్ని బస్తాలు అడగాలో చెబుతుంది. | `src/clucktalk/server/tools/profile.py:33` |  |
+| 63 | Your farm is set up as an independent farm: you buy your own feed, so feed plans include a simulated price. | మీ ఫారం సొంత ఫారంగా సెట్ అయి ఉంది: ఫీడ్ మీరే కొంటారు, కాబట్టి ఫీడ్ ప్లాన్‌లో అంచనా ధర (డెమో) కూడా ఉంటుంది. | `src/clucktalk/server/tools/profile.py:37` |  |
+| 64 | To change it, say: switch to contract farming. | మార్చాలంటే 'switch to contract farming' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:43` |  |
+| 65 | To change it, say: switch to independent farming. | మార్చాలంటే 'switch to independent farming' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:47` |  |
+| 66 | Switch your farm to contract farming? Then I'll stop suggesting feed purchases and prices, and tell you how many bags to ask your supervisor for. Say yes to confirm, or no to keep it as it is. | మీ ఫారంను కాంట్రాక్ట్ ఫారంగా మార్చాలా? అప్పుడు ఫీడ్ కొనుగోలు, ధరలు చెప్పను; సూపర్‌వైజర్‌ని ఎన్ని బస్తాలు అడగాలో చెబుతాను. మార్చాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:54` |  |
+| 67 | Switch your farm to independent farming? Then I'll plan feed purchases with a simulated price. Say yes to confirm, or no to keep it as it is. | మీ ఫారంను సొంత ఫారంగా మార్చాలా? అప్పుడు అంచనా ధర (డెమో)తో ఫీడ్ కొనుగోలు ప్లాన్ చెబుతాను. మార్చాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:60` |  |
+| 68 | Your farm is now set up as a contract farm. | మీ ఫారం ఇప్పుడు కాంట్రాక్ట్ ఫారంగా సెట్ అయింది. | `src/clucktalk/server/tools/profile.py:64` |  |
+| 69 | Your farm is now set up as an independent farm. | మీ ఫారం ఇప్పుడు సొంత ఫారంగా సెట్ అయింది. | `src/clucktalk/server/tools/profile.py:65` |  |
+| 70 | Your farm is already set up as a contract farm, so nothing changed. | మీ ఫారం ఇప్పటికే కాంట్రాక్ట్ ఫారంగా ఉంది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:70` |  |
+| 71 | Your farm is already set up as an independent farm, so nothing changed. | మీ ఫారం ఇప్పటికే సొంత ఫారంగా ఉంది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:74` |  |
+| 72 | Your farm stays a contract farm. | మీ ఫారం కాంట్రాక్ట్ ఫారంగానే ఉంటుంది. | `src/clucktalk/server/tools/profile.py:78` |  |
+| 73 | Your farm stays an independent farm. | మీ ఫారం సొంత ఫారంగానే ఉంటుంది. | `src/clucktalk/server/tools/profile.py:79` |  |
+| 74 | Done. | సరే. | `src/clucktalk/server/tools/profile.py:81` |  |
+| 75 | Okay, nothing changed. | సరే, ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:82` |  |
+| 76 | That change was made earlier and has been changed again since. | ఆ మార్పు ఇంతకుముందే జరిగింది, తర్వాత మళ్ళీ మార్చబడింది. | `src/clucktalk/server/tools/profile.py:85` |  |
+| 77 | That request timed out, so nothing changed. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:88` |  |
+| 78 | That request was replaced by a newer one, so nothing changed. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:91` |  |
+| 79 | That's different from what I read back, so nothing changed yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:95` |  |
+| 80 | I couldn't find that request, so nothing changed. | ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:97` |  |
+| 81 | That request was already cancelled, so nothing changed. | ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:100` |  |
+| 82 | That change was already made earlier, so saying no now doesn't undo it. | ఆ మార్పు ఇంతకుముందే జరిగిపోయింది, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు. | `src/clucktalk/server/tools/profile.py:104` |  |
+| 83 | Your contract terms are saved, so plan_sale can show the growing charge. | మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ అయ్యాయి, కాబట్టి ప్లాన్ సేల్ గ్రోయింగ్ ఛార్జ్ చూపగలదు. | `src/clucktalk/server/tools/profile.py:175` |  |
+| 84 | Say your contract terms to see the growing charge in the sale plan. | సేల్ ప్లాన్‌లో గ్రోయింగ్ ఛార్జ్ చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు చెప్పండి. | `src/clucktalk/server/tools/profile.py:180` |  |
+| 85 | Contract or independent farm | కాంట్రాక్ట్ లేదా సొంత ఫారం | `src/clucktalk/server/tools/profile.py:292` |  |
+| 86 | tomorrow | రేపు | `src/clucktalk/server/tools/sale.py:169` |  |
+| 87 | {d.weekday_en} ({d.in_days} days from now) | {d.weekday_te} ({d.in_days} రోజుల్లో) | `src/clucktalk/server/tools/sale.py:170` |  |
+| 88 | {out.label_en}: selling today is best. Each extra day would lose value. | {out.label_te}: ఈరోజే అమ్మడం మంచిది. ప్రతి అదనపు రోజు నష్టమే. | `src/clucktalk/server/tools/sale.py:178` |  |
+| 89 | {out.label_en}: best to sell {lab.en}, about {rupees(diff)} more than selling today. | {out.label_te}: {lab.te} అమ్మడం మంచిది, ఈరోజు అమ్మడం కంటే సుమారు {rupees(diff)} ఎక్కువ. | `src/clucktalk/server/tools/sale.py:185` |  |
+| 90 | {head.en} From {lab.en}, one more day starts to cost more feed than the weight it adds. | {head.te} {lab.te} నుండి, ఒక్క రోజు ఎక్కువగా ఉంచితే అది జోడించే బరువు కంటే ఫీడ్ ఖర్చు ఎక్కువవుతుంది. | `src/clucktalk/server/tools/sale.py:192` |  |
+| 91 | {lab.en}: {num(d.weight_g)} g, net {rupees(d.net_vs_today_inr)} vs today | {lab.te}: {num(d.weight_g)} గ్రా., ఈరోజుతో పోలిస్తే నికరం {rupees(d.net_vs_today_inr)} | `src/clucktalk/server/tools/sale.py:205` |  |
+| 92 | Simulated price {rupees(out.live_price_per_kg_inr)} per kg; say today's rate to use it instead. | అంచనా ధర (డెమో) కిలోకు {rupees(out.live_price_per_kg_inr)}; బదులుగా ఈరోజు రేటు చెప్పండి. | `src/clucktalk/server/tools/sale.py:211` |  |
+| 93 | {out.label_en}: FCR is about {today.fcr} today; keeping the birds longer raises it (about {later.fcr} by {_day_label(later).en}). | {out.label_te}: ఈరోజు FCR సుమారు {today.fcr}; కోళ్లను ఎక్కువ రోజులు ఉంచితే అది పెరుగుతుంది ({_day_label(later).te} నాటికి సుమారు {later.fcr}). | `src/clucktalk/server/tools/sale.py:221` |  |
+| 94 | Say set_contract_terms with your rate to see how this changes your growing charge. | మీ గ్రోయింగ్ ఛార్జ్ ఎలా మారుతుందో చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు చెప్పండి. | `src/clucktalk/server/tools/sale.py:227` |  |
+| 95 | Your growing charge today is about {rupees(charge_today)}; by {_day_label(later).en} it would be about {rupees(charge_later)}, based on your own terms. | ఈరోజు మీ గ్రోయింగ్ ఛార్జ్ సుమారు {rupees(charge_today)}; {_day_label(later).te} నాటికి మీ నిబంధనల ప్రకారం సుమారు {rupees(charge_later)} అవుతుంది. | `src/clucktalk/server/tools/sale.py:234` |  |
+| 96 | Show this to your supervisor to ask for the birds to be lifted on time. | కోళ్లను సకాలంలో తీసుకెళ్లమని మీ సూపర్‌వైజర్‌ని అడగడానికి ఇది చూపించండి. | `src/clucktalk/server/tools/sale.py:239` |  |
+| 97 | Sell-day check for your broiler sheds. | మీ బ్రాయిలర్ షెడ్ల అమ్మకం రోజు తనిఖీ. | `src/clucktalk/server/tools/sale.py:316` |  |
+| 98 | No broiler sheds to check. | తనిఖీ చేయడానికి బ్రాయిలర్ షెడ్లు లేవు. | `src/clucktalk/server/tools/sale.py:320` |  |
+| 99 | When to sell | ఎప్పుడు అమ్మాలో | `src/clucktalk/server/tools/sale.py:366` |  |
 
-## 2. Approved (82)
+## 2. Approved (83)
 
 | # | English | Telugu | Where | Reviewed by | Date |
 |---|---|---|---|---|---|
@@ -89,10 +131,10 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 | 9 | Ask me for {days_left} {'day' if days_left == 1 else 'days'} or fewer. | {days_left} రోజులు లేదా అంతకంటే తక్కువకు అడగండి. | `src/clucktalk/domain/errors.py:63` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 10 | {label_en} has reached the end of the {breed} growth table (day {max_day}), so I can't project its feed. | {label_te} {breed} పెరుగుదల పట్టిక చివరి రోజు ({max_day}) కి చేరింది, కాబట్టి ఫీడ్‌ను అంచనా వేయలేను. | `src/clucktalk/domain/errors.py:71` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 11 | Ask me how the shed is doing instead. | బదులుగా షెడ్ ఎలా ఉందో అడగండి. | `src/clucktalk/domain/errors.py:72` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 12 | a feed plan for {house.label_en} | {house.label_te} ఫీడ్ ప్లాన్ | `src/clucktalk/domain/feed.py:103` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 13 | I can plan feed for {MIN_HORIZON_DAYS} to {MAX_HORIZON_DAYS} days ahead. | నేను {MIN_HORIZON_DAYS} నుండి {MAX_HORIZON_DAYS} రోజుల వరకు ఫీడ్ ప్లాన్ చేయగలను. | `src/clucktalk/domain/feed.py:136` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 14 | How many days should I plan for? | ఎన్ని రోజులకు ప్రణాళిక చేయాలి? | `src/clucktalk/domain/feed.py:137` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 15 | a feed plan for {house.label_en}, because no live birds are recorded there | {house.label_te} ఫీడ్ ప్లాన్ (అక్కడ బతికి ఉన్న కోళ్లు నమోదు కాలేదు) | `src/clucktalk/domain/feed.py:142` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 12 | a feed plan for {house.label_en} | {house.label_te} ఫీడ్ ప్లాన్ | `src/clucktalk/domain/feed.py:104` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 13 | I can plan feed for {MIN_HORIZON_DAYS} to {MAX_HORIZON_DAYS} days ahead. | నేను {MIN_HORIZON_DAYS} నుండి {MAX_HORIZON_DAYS} రోజుల వరకు ఫీడ్ ప్లాన్ చేయగలను. | `src/clucktalk/domain/feed.py:137` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 14 | How many days should I plan for? | ఎన్ని రోజులకు ప్రణాళిక చేయాలి? | `src/clucktalk/domain/feed.py:138` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 15 | a feed plan for {house.label_en}, because no live birds are recorded there | {house.label_te} ఫీడ్ ప్లాన్ (అక్కడ బతికి ఉన్న కోళ్లు నమోదు కాలేదు) | `src/clucktalk/domain/feed.py:143` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 16 | House {self.number} | షెడ్ {self.number} | `src/clucktalk/domain/models.py:98` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 17 | the status of {house.label_en} | {house.label_te} స్థితి | `src/clucktalk/domain/status.py:196` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 18 | the status of {house.label_en}, because no live birds are recorded there | {house.label_te} స్థితి (అక్కడ బతికి ఉన్న కోళ్లు నమోదు కాలేదు) | `src/clucktalk/domain/status.py:201` | Pathuri Venkateswara Rao | 2026-09-27 |
@@ -160,6 +202,7 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 | 80 | There are more houses; ask about one by shed number. | ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి. | `src/clucktalk/server/tools/feed.py:311` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 81 | Say a shed number to hear its full feed plan and the simulated cost. | పూర్తి ఫీడ్ ప్లాన్, అంచనా ధర (డెమో) కోసం షెడ్ నంబర్ చెప్పండి. | `src/clucktalk/server/tools/feed.py:319` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 82 | Feed stock and reorder | ఫీడ్ నిల్వ, ఆర్డర్ | `src/clucktalk/server/tools/feed.py:355` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 83 | today | ఈరోజు | `src/clucktalk/server/tools/sale.py:167` | Pathuri Venkateswara Rao | 2026-09-27 |
 
 ## 3. Whole answers as a farmer would hear or read them (demo farm, 2026-09-29)
 
@@ -168,10 +211,10 @@ Check that each sentence reads naturally as a whole, not only string by string.
 | # | Answer | English | Telugu | Reviewer |
 |---|---|---|---|---|
 | 1 | get_help (no farm tools registered) | I'm CluckTalk, your poultry farm helper. My farm tools are still being set up, so right now I can only explain what I do. | నేను కోడి మిత్ర, మీ కోళ్ల ఫారం సహాయకుడిని. నా ఫారం సేవలు ఇంకా సిద్ధమవుతున్నాయి, కాబట్టి ప్రస్తుతం నేను ఏమి చేస్తానో మాత్రమే చెప్పగలను. |  |
-| 2 | get_farm_status, whole farm | Here's your farm today. House 2 needs attention now. 26 birds died today, against about 4 a day this past week. House 1 is doing well. House 3 is doing well. Please check the birds today and call your vet if deaths continue. | ఈరోజు మీ ఫారం స్థితి. షెడ్ 2 కి వెంటనే శ్రద్ధ అవసరం. ఈరోజు 26 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 4. షెడ్ 1 బాగుంది. షెడ్ 3 బాగుంది. దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ డాక్టర్‌కి ఫోన్ చేయండి. |  |
+| 2 | get_farm_status, whole farm | Here's your farm today. House 2 needs attention now. 26 birds died today, against about 4 a day this past week. House 3 needs attention now. 18 birds died today, against about 6 a day this past week. House 1 is doing well. Please check the birds today and call your vet if deaths continue. | ఈరోజు మీ ఫారం స్థితి. షెడ్ 2 కి వెంటనే శ్రద్ధ అవసరం. ఈరోజు 26 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 4. షెడ్ 3 కి వెంటనే శ్రద్ధ అవసరం. ఈరోజు 18 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 6. షెడ్ 1 బాగుంది. దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ డాక్టర్‌కి ఫోన్ చేయండి. |  |
 | 3 | get_farm_status, House 1 | House 1 is doing well. Day 34, 4,862 birds, average weight 1,568 g against the Ross 308 target of 1,616 g. | షెడ్ 1 బాగుంది. 34వ రోజు, 4,862 కోళ్లు, సగటు బరువు 1,568 గ్రా. (Ross 308 లక్ష్యం 1,616 గ్రా.). |  |
 | 4 | get_farm_status, House 2 | House 2 needs attention now. Day 23, 3,883 birds, average weight 941 g against the Ross 308 target of 1,012 g. 26 birds died today, against about 4 a day this past week. Birds ate 18% less than expected: 93 g per bird against 114 g. Feed stock lasts about 2 days. Please check the birds today and call your vet if deaths continue. Ask me for a feed plan to hear how much to order. | షెడ్ 2 కి వెంటనే శ్రద్ధ అవసరం. 23వ రోజు, 3,883 కోళ్లు, సగటు బరువు 941 గ్రా. (Ross 308 లక్ష్యం 1,012 గ్రా.). ఈరోజు 26 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 4. కోళ్లు అంచనా కంటే 18% తక్కువ తిన్నాయి: ఒక్కో కోడికి 93 గ్రా., అంచనా 114 గ్రా. ఫీడ్ నిల్వ సుమారు 2 రోజులు సరిపోతుంది. దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ డాక్టర్‌కి ఫోన్ చేయండి. ఎంత ఆర్డర్ చేయాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి. |  |
-| 5 | get_farm_status, House 3 | House 3 is doing well. 2,868 birds, laying 88% today. | షెడ్ 3 బాగుంది. 2,868 కోళ్లు, ఈరోజు గుడ్ల ఉత్పత్తి 88%. |  |
-| 6 | plan_feed, whole farm, 7 days | Feed check for every house. House 2: stock is enough for about 2 days, until Thursday. Order 51 bags now. House 1: stock is enough for about 5 days, until Sunday. House 3: stock is enough for about 10 days. Say a shed number to hear its full feed plan and the simulated cost. | అన్ని షెడ్ల ఫీడ్ తనిఖీ. షెడ్ 2: ఫీడ్ నిల్వ సుమారు 2 రోజులు, గురువారం వరకు సరిపోతుంది. ఇప్పుడే 51 బస్తాలు ఆర్డర్ చేయండి. షెడ్ 1: ఫీడ్ నిల్వ సుమారు 5 రోజులు, ఆదివారం వరకు సరిపోతుంది. షెడ్ 3: ఫీడ్ నిల్వ సుమారు 10 రోజులు సరిపోతుంది. పూర్తి ఫీడ్ ప్లాన్, అంచనా ధర (డెమో) కోసం షెడ్ నంబర్ చెప్పండి. |  |
+| 5 | get_farm_status, House 3 | House 3 needs attention now. Day 44, 4,377 birds, average weight 2,998 g against the Ross 308 target of 2,998 g. 18 birds died today, against about 6 a day this past week. Please check the birds today and call your vet if deaths continue. | షెడ్ 3 కి వెంటనే శ్రద్ధ అవసరం. 44వ రోజు, 4,377 కోళ్లు, సగటు బరువు 2,998 గ్రా. (Ross 308 లక్ష్యం 2,998 గ్రా.). ఈరోజు 18 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 6. దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ డాక్టర్‌కి ఫోన్ చేయండి. |  |
+| 6 | plan_feed, whole farm, 7 days | Feed check for every house. House 2: stock is enough for about 2 days, until Thursday. Order 51 bags now. House 3: stock is enough for about 4 days, until Saturday. House 1: stock is enough for about 5 days, until Sunday. Say a shed number to hear its full feed plan and the simulated cost. | అన్ని షెడ్ల ఫీడ్ తనిఖీ. షెడ్ 2: ఫీడ్ నిల్వ సుమారు 2 రోజులు, గురువారం వరకు సరిపోతుంది. ఇప్పుడే 51 బస్తాలు ఆర్డర్ చేయండి. షెడ్ 3: ఫీడ్ నిల్వ సుమారు 4 రోజులు, శనివారం వరకు సరిపోతుంది. షెడ్ 1: ఫీడ్ నిల్వ సుమారు 5 రోజులు, ఆదివారం వరకు సరిపోతుంది. పూర్తి ఫీడ్ ప్లాన్, అంచనా ధర (డెమో) కోసం షెడ్ నంబర్ చెప్పండి. |  |
 | 7 | plan_feed, House 2, 7 days | House 2: the next 7 days need about 3,438 kg of feed. You have 900 kg, enough for about 2 days, until Thursday. Order 51 bags of 50 kg now: about ₹98,175 before GST and delivery, at the simulated price of ₹38.50 a kilo. Switch from starter to finisher feed in 6 days. | షెడ్ 2: రాబోయే 7 రోజులకు సుమారు 3,438 కిలోల ఫీడ్ కావాలి. మీ దగ్గర 900 కిలోలు ఉన్నాయి; ఇది సుమారు 2 రోజులు, గురువారం వరకు సరిపోతుంది. ఇప్పుడే 50 కిలోల 51 బస్తాలు ఆర్డర్ చేయండి: అంచనా ధర (డెమో) కిలోకు ₹38.50 ప్రకారం సుమారు ₹98,175 (జీఎస్‌టీ, డెలివరీ కాకుండా). 6 రోజుల్లో స్టార్టర్ ఫీడ్ నుండి ఫినిషర్ ఫీడ్‌కు మార్చండి. |  |
-| 8 | plan_feed, House 3, 7 days | House 3: the next 7 days need about 2,246 kg of feed. You have 3,500 kg, enough for about 10 days. No reorder needed yet. | షెడ్ 3: రాబోయే 7 రోజులకు సుమారు 2,246 కిలోల ఫీడ్ కావాలి. మీ దగ్గర 3,500 కిలోలు ఉన్నాయి; ఇది సుమారు 10 రోజులు సరిపోతుంది. ఇంకా ఆర్డర్ అవసరం లేదు. |  |
+| 8 | plan_feed, House 3, 7 days | House 3: the next 7 days need about 6,748 kg of feed. You have 4,200 kg, enough for about 4 days, until Saturday. No reorder needed yet. | షెడ్ 3: రాబోయే 7 రోజులకు సుమారు 6,748 కిలోల ఫీడ్ కావాలి. మీ దగ్గర 4,200 కిలోలు ఉన్నాయి; ఇది సుమారు 4 రోజులు, శనివారం వరకు సరిపోతుంది. ఇంకా ఆర్డర్ అవసరం లేదు. |  |

@@ -12,10 +12,14 @@ import secrets
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from enum import StrEnum
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
+
+from pydantic import StringConstraints
 
 PROPOSAL_TTL = timedelta(minutes=10)
 PROPOSAL_ID_PATTERN = r"^prop_[0-9a-f]{16}$"
+# Shared tool-parameter type: every confirmation-pattern tool (docs/DESIGN.md §5.1) takes proposal_id like this.
+ProposalId = Annotated[str, StringConstraints(pattern=PROPOSAL_ID_PATTERN)]
 
 Answer = Literal["yes", "no"]
 # Why a second call could not apply the proposal it names (spoken, so the farmer knows nothing changed).

@@ -1,0 +1,388 @@
+<!doctype html>
+<!--
+  CluckTalk sell-day plan card: an MCP App view (MCP Apps spec 2026-01-26, text/html;profile=mcp-app).
+  Source template. scripts/build_cards.py inlines the font and labels and writes
+  src/clucktalk/server/cards/sale_plan.html (the file the server serves). Edit this file, then rebuild.
+
+  Rules (docs/DESIGN.md §6, §12.4, §14):
+  - Every number shown comes verbatim from the tool's structuredContent, formatted like the spoken answer.
+    No arithmetic on data here (the bar widths below are a display-only scale, not new numbers).
+  - Best day and break-even day are marked with a label AND a shape, never colour alone.
+  - No external requests (the spec's default CSP allows none): font and labels are inlined at build time.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Sell-day plan</title>
+<style>
+/*@FONT_FACES@*/
+:root {
+  --bg: #f6f4ef; --surface: #ffffff; --text: #17191c; --muted: #4a5058; --line: #d9d5cc;
+  --pos: #1d6b30; --pos-bg: #e2f3e5; --neg: #a3211a; --neg-bg: #fde5e3; --best: #1557b0; --best-bg: #e6eefc;
+  --badge-bg: #1f2a44; --badge-text: #ffffff; --focus: #1557b0; --unknown: #3f4854; --unknown-bg: #e7eaee;
+  --en: system-ui, "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif;
+  --te: "Noto Sans Telugu CT", "Nirmala UI", "Gautami", "Noto Sans Telugu", sans-serif;
+}
+:root[data-theme="dark"] {
+  --bg: #0f1317; --surface: #1a2027; --text: #f3f4f6; --muted: #b9c1cb; --line: #333c47;
+  --pos: #86dc97; --pos-bg: #173522; --neg: #ff9a90; --neg-bg: #43191a; --best: #8ab4ff; --best-bg: #16233d;
+  --badge-bg: #ffd36b; --badge-text: #17191c; --focus: #8ab4ff; --unknown: #c9d1db; --unknown-bg: #2a323c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--en); }
+body { padding: 16px 20px 14px; line-height: 1.25; -webkit-text-size-adjust: 100%; }
+:lang(te) { font-family: var(--te); line-height: 1.45; }
+button { font: inherit; color: inherit; }
+button:focus-visible, .row:focus-visible { outline: 4px solid var(--focus); outline-offset: 2px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.brand { font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: .02em; white-space: nowrap; }
+.brand span[lang="te"] { font-weight: 400; }
+.badge { background: var(--badge-bg); color: var(--badge-text); border-radius: 999px; padding: 6px 14px;
+  font-size: 16px; font-weight: 700; white-space: nowrap; }
+.titlerow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 6px; flex-wrap: wrap; }
+h1 { font-size: 26px; margin: 0; font-weight: 700; }
+h1 [lang="te"] { font-weight: 600; font-size: 23px; }
+.meta { font-size: 16px; color: var(--muted); margin-bottom: 10px; }
+.price { font-size: 15px; color: var(--muted); margin-bottom: 12px; }
+
+.say { font-size: 18px; margin-bottom: 12px; }
+.say [lang="te"] { display: block; font-size: 17px; color: var(--muted); margin-top: 2px; }
+
+.chart { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.bar-row { display: grid; grid-template-columns: 108px 1fr 96px; align-items: center; gap: 10px; }
+.bar-label { font-size: 14px; color: var(--muted); text-align: right; white-space: nowrap; }
+.bar-label.best { color: var(--best); font-weight: 800; }
+.bar-track { position: relative; height: 26px; background: var(--line); border-radius: 6px; overflow: visible; }
+.bar-mid { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; background: var(--muted); }
+.bar-fill { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; }
+.bar-fill.pos { background: var(--pos); left: 50%; }
+.bar-fill.neg { background: var(--neg); right: 50%; }
+.bar-row.best .bar-track { outline: 3px solid var(--best); outline-offset: 2px; border-radius: 8px; }
+.bar-row.breakeven .bar-track::after { content: ""; position: absolute; top: -6px; bottom: -6px; right: 0;
+  border-right: 3px dashed var(--neg); }
+.bar-value { font-size: 15px; font-variant-numeric: tabular-nums; }
+.bar-value.pos { color: var(--pos); } .bar-value.neg { color: var(--neg); }
+
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.dot.best { background: none; border: 3px solid var(--best); }
+.dot.breakeven { background: none; border-right: 3px dashed var(--neg); width: 3px; }
+
+.detail { background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 12px 16px;
+  margin-bottom: 12px; }
+.detail .row { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; font-size: 15px; }
+.detail .row .l { color: var(--muted); }
+.hint { font-size: 15px; color: var(--muted); margin-top: 4px; }
+
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.list li button { width: 100%; text-align: left; background: var(--surface); border: 2px solid var(--line);
+  border-radius: 14px; padding: 12px 16px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
+.list .hname { font-size: 20px; font-weight: 800; }
+.list .hname [lang="te"] { font-weight: 600; font-size: 18px; }
+
+.center { min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 10px; font-size: 22px; }
+.center svg { width: 56px; height: 56px; }
+.msg { max-width: 640px; }
+.msg p { margin: 6px 0; font-size: 21px; }
+.msg p[lang="te"] { font-size: 19px; }
+.action { display: inline-flex; align-items: center; gap: 10px; min-height: 56px; padding: 10px 22px;
+  border-radius: 999px; border: 2px solid var(--text); background: var(--surface); font-size: 19px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; }
+
+@media (max-width: 640px) {
+  body { padding: 12px 12px 10px; }
+  h1 { font-size: 22px; } h1 [lang="te"] { font-size: 19px; }
+  .bar-row { grid-template-columns: 84px 1fr 76px; }
+  .bar-label { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<main id="root" aria-live="polite">
+  <div class="center"><span data-l="loading"></span></div>
+</main>
+<script>
+"use strict";
+const L = "@LABELS@";
+const APP = "@APP@";
+const SERVER_DEMO = "@SERVER_DEMO@";  // stamped by the server at startup: badge on every card, errors too
+const NUM_FIXTURES = "@NUM_FIXTURES@";  // [value, Python render.num(value)] pairs, written at build time
+const SPEC_VERSION = "2026-01-26";
+const TOOL = "plan_sale";
+const ERROR_META_KEY = "clucktalk/error";
+
+// ---------- MCP Apps messaging (JSON-RPC 2.0 over postMessage; spec "Transport Layer") ----------
+let nextId = 1;
+const pending = new Map();
+function request(method, params) {
+  const id = nextId++;
+  window.parent.postMessage({ jsonrpc: "2.0", id, method, params }, "*");
+  return new Promise((resolve, reject) => {
+    pending.set(id, { resolve, reject });
+    setTimeout(() => { if (pending.delete(id)) reject(new Error(method + " timed out")); }, method === "ui/initialize" ? 5000 : 15000);
+  });
+}
+function notify(method, params) { window.parent.postMessage({ jsonrpc: "2.0", method, params }, "*"); }
+function log(level, data) { notify("notifications/message", { level, logger: "clucktalk.card", data }); }
+
+let hostContext = {};
+let lastResult = null;
+
+window.addEventListener("message", (event) => {
+  if (event.source !== window.parent) return;
+  const m = event.data;
+  if (!m || m.jsonrpc !== "2.0") return;
+  if (m.id != null && m.method === undefined) {
+    const p = pending.get(m.id);
+    if (!p) return;
+    pending.delete(m.id);
+    if (m.error) p.reject(new Error(m.error.message || "request failed")); else p.resolve(m.result);
+    return;
+  }
+  switch (m.method) {
+    case "ui/notifications/tool-input": break;
+    case "ui/notifications/tool-result": render(m.params); break;
+    case "ui/notifications/tool-cancelled": renderMessage(L.sorry, L.generic_error, L.generic_next); break;
+    case "ui/notifications/host-context-changed": applyContext(m.params || {}); break;
+    case "ui/resource-teardown": window.parent.postMessage({ jsonrpc: "2.0", id: m.id, result: {} }, "*"); break;
+    case "ping": window.parent.postMessage({ jsonrpc: "2.0", id: m.id, result: {} }, "*"); break;
+  }
+});
+
+function applyContext(ctx) {
+  hostContext = Object.assign({}, hostContext, ctx);
+  const theme = hostContext.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  document.documentElement.dataset.theme = theme;
+}
+
+let lastSize = "";
+function reportSize() {
+  const w = Math.ceil(document.documentElement.scrollWidth), h = Math.ceil(document.documentElement.scrollHeight);
+  const key = w + "x" + h;
+  if (key !== lastSize) { lastSize = key; notify("ui/notifications/size-changed", { width: w, height: h }); }
+}
+
+// ---------- formatting: must match clucktalk.server.render.num (spoken form) ----------
+function indianGroup(intStr) {
+  const neg = intStr.startsWith("-"); let s = neg ? intStr.slice(1) : intStr;
+  if (s.length <= 3) return (neg ? "-" : "") + s;
+  let head = s.slice(0, -3); const tail = s.slice(-3); const pairs = [];
+  while (head.length > 2) { pairs.unshift(head.slice(-2)); head = head.slice(0, -2); }
+  return (neg ? "-" : "") + [head, ...pairs, tail].join(",");
+}
+function num(x) {
+  const s = String(x);
+  if (!s.includes(".")) return indianGroup(s);
+  const [whole, frac] = s.split(".");
+  return indianGroup(whole) + "." + frac;
+}
+function rupees(x) { return "₹" + num(x); }
+function numSelfTest() {
+  const bad = NUM_FIXTURES.filter(([v, want]) => num(v) !== want).map(([v, want]) => [v, want, num(v)]);
+  if (bad.length) log("error", { event: "num-mismatch", message: "card number format differs from the server", cases: bad });
+}
+
+// ---------- DOM helpers ----------
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+function bi(t, sep) { return [el("span", { lang: "en" }, t.en), sep === undefined ? " · " : sep, el("span", { lang: "te" }, t.te)]; }
+function stacked(t, cls) { return el("div", { class: cls }, el("span", { lang: "en" }, t.en), el("span", { lang: "te" }, t.te)); }
+
+const ICONS = {
+  unknown: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M9 9.2a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.9v.6" fill="none" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.8" r="1.5" fill="var(--bg)"/></svg>',
+  back: '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+function icon(name) { const s = el("span", { "aria-hidden": "true", style: "display:inline-flex" }); s.innerHTML = ICONS[name]; return s; }
+
+function header(sc) {
+  return el("div", { class: "top" },
+    el("div", { class: "brand", "data-xm-skip": true }, el("span", { lang: "en" }, APP.name), " · ", el("span", { lang: "te" }, APP.name_te)),
+    SERVER_DEMO === true || (sc && sc.demo_data) ? el("div", { class: "badge", role: "note" }, bi(L.demo_badge)) : null);
+}
+function dateText(iso) { const [y, m, d] = iso.split("-"); return d + "-" + m + "-" + y; }
+
+// ---------- one shed's chart + detail ----------
+// The printed/tagged number is always the exact structuredContent value (cross-modal rule); for contract mode
+// that is the absolute growing charge, so the bar widths below are scaled from it directly (never a derived delta).
+function barValue(hc, d) { return hc.farm_mode === "independent" ? d.net_vs_today_inr : d.growing_charge_inr; }
+
+function chart(hc, path) {
+  const field = hc.farm_mode === "independent" ? ".net_vs_today_inr" : ".growing_charge_inr";
+  const values = hc.days.map((d) => barValue(hc, d)).filter((v) => v != null);
+  const independent = hc.farm_mode === "independent";
+  // independent: a centred +/- bar around "same as today" (0). contract: a left-anchored bar spanning the
+  // days' own min..max range, since a growing charge has no natural zero -- only "more" or "less" than the others.
+  const scale = Math.max(1, ...values.map((v) => Math.abs(v)));
+  const lo = Math.min(...values), hi = Math.max(...values), range = Math.max(1, hi - lo);
+  const rows = hc.days.map((d, i) => {
+    const v = barValue(hc, d);
+    const cls = ["bar-row"];
+    if (i === hc.best_day_index) cls.push("best");
+    if (hc.break_even_day_index != null && i === hc.break_even_day_index) cls.push("breakeven");
+    let fill = null;
+    if (v != null) {
+      if (independent) {
+        const pct = Math.min(50, Math.round((Math.abs(v) / scale) * 50));
+        fill = el("div", { class: "bar-fill " + (v >= 0 ? "pos" : "neg"), style: `width:${pct}%` });
+      } else {
+        const pct = Math.max(4, Math.round(((v - lo) / range) * 100));
+        fill = el("div", { class: "bar-fill pos", style: `left:0;width:${pct}%` });
+      }
+    }
+    return el("div", { class: cls.join(" ") },
+      el("div", { class: "bar-label" + (i === hc.best_day_index ? " best" : "") }, i === 0 ? bi(L.today, "") : dayLabelEn(hc, i)),
+      el("div", { class: "bar-track" }, independent ? el("div", { class: "bar-mid" }) : null, fill),
+      v == null ? el("div", { class: "bar-value" }, "—") :
+        el("div", { class: "bar-value " + (independent ? (v >= 0 ? "pos" : "neg") : "pos"), "data-field": path + ".days." + i + field }, rupees(v)));
+  });
+  return el("div", { class: "chart" }, rows);
+}
+function dayLabelEn(hc, i) { if (i === 0) return "Today"; if (i === 1) return "Tomorrow"; return hc.days[i].weekday_en; }
+function dayLabelTe(hc, i) { if (i === 0) return "ఈరోజు"; if (i === 1) return "రేపు"; return hc.days[i].weekday_te; }
+
+function legend(hc) {
+  const items = [el("span", {}, el("span", { class: "dot best" }), bi(L.best_day, " "))];
+  if (hc.break_even_day_index != null) items.push(el("span", {}, el("span", { class: "dot breakeven" }), bi(L.break_even, " ")));
+  return el("div", { class: "legend" }, items);
+}
+
+function detail(hc, i) {
+  const d = hc.days[i];
+  const rows = [
+    [L.weight, `${num(d.weight_g)} g`],
+    hc.farm_mode === "independent" ? [L.net_vs_today, rupees(d.net_vs_today_inr)] : null,
+    d.fcr != null ? [L.fcr, String(d.fcr)] : null,
+    hc.farm_mode === "contract" && d.growing_charge_inr != null ? [L.growing_charge, rupees(d.growing_charge_inr)] : null,
+  ].filter(Boolean);
+  return el("div", { class: "detail" }, rows.map(([lab, val]) =>
+    el("div", { class: "row" }, stacked(lab, "l"), el("div", {}, val))));
+}
+
+function houseView(hc, sc, path) {
+  const root = el("main", { id: "root", class: "house" });
+  root.append(header(sc));
+  root.append(el("div", { class: "titlerow" }, el("h1", {}, bi({ en: hc.label_en, te: hc.label_te })),
+    el("span", { style: "color:var(--muted)", "data-xm-skip": true }, hc.breed)));
+  root.append(el("div", { class: "meta", "data-xm-skip": true }, dateText(sc.as_of)));
+  if (hc.farm_mode === "independent") {
+    root.append(el("div", { class: "price" }, bi({ en: L.simulated_price.en + ": " + rupees(hc.live_price_per_kg_inr) + "/kg", te: L.simulated_price.te + ": " + rupees(hc.live_price_per_kg_inr) + "/kg" })));
+  } else if (!hc.has_contract_terms) {
+    root.append(el("div", { class: "price" }, bi(L.no_terms_hint)));
+  }
+  root.append(stacked({ en: hc.text_en, te: hc.text_te }, "say"));
+  root.append(legend(hc));
+  root.append(chart(hc, path));
+  root.append(detail(hc, hc.best_day_index != null ? hc.best_day_index : 0));  // contract mode: no best day; show today
+  return root;
+}
+
+function farmView(sc) {
+  const root = el("main", { id: "root", class: "farm" });
+  root.append(header(sc));
+  root.append(el("div", { class: "titlerow" }, el("h1", {}, bi(L.sale_title)),
+    el("span", { style: "color:var(--muted)", "data-xm-skip": true }, dateText(sc.as_of))));
+  root.append(stacked({ en: sc.text_en, te: sc.text_te }, "say"));
+  const list = el("ul", { class: "list" });
+  sc.plans.forEach((p) => {
+    // Contract mode has no "best day" (that is a market-price notion the farmer isn't paid): show the FCR trend
+    // label instead. Independent mode: "best day" today, or the weekday it falls on.
+    const sub = p.best_day_index == null ? bi(L.fcr, " ")
+      : p.best_day_index === 0 ? bi(L.best_day, " ")
+      : bi({ en: dayLabelEn(p, p.best_day_index), te: dayLabelTe(p, p.best_day_index) }, " ");
+    const li = el("li", {}, el("button", { type: "button", onclick: () => call({ house: p.house_id }) },
+      el("div", { class: "hname" }, bi({ en: p.label_en, te: p.label_te })),
+      el("div", { style: "color:var(--muted);font-size:15px" }, sub)));
+    list.append(li);
+  });
+  root.append(list);
+  return root;
+}
+
+function errorView(result) {
+  const meta = (result._meta || {})[ERROR_META_KEY];
+  const text = (result.content || []).filter((c) => c.type === "text").map((c) => c.text).join(" ");
+  return messageView(L.sorry,
+    meta ? { en: meta.message_en, te: meta.message_te } : { en: text || L.generic_error.en, te: L.generic_error.te },
+    meta ? { en: meta.next_step_en, te: meta.next_step_te } : L.generic_next);
+}
+function messageView(title, message, next) {
+  const root = el("main", { id: "root" });
+  root.append(header(lastResult && lastResult.structuredContent));
+  root.append(el("div", { class: "center" }, el("span", { style: "color:var(--unknown)" }, icon("unknown")),
+    el("h1", {}, bi(title)),
+    el("div", { class: "msg" },
+      message ? [el("p", { lang: "en" }, message.en), message.te ? el("p", { lang: "te" }, message.te) : null] : null,
+      next ? [el("p", { lang: "en" }, next.en), el("p", { lang: "te" }, next.te)] : null)));
+  return root;
+}
+function renderMessage(title, message, next) { swap(messageView(title, message, next), "message"); }
+
+function swap(root, view) {
+  document.getElementById("root").replaceWith(root);
+  reportSize();
+  const clone = root.cloneNode(true);
+  clone.querySelectorAll("[data-xm-skip]").forEach((n) => n.remove());
+  const parts = [];
+  const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) parts.push(walker.currentNode.nodeValue);
+  const fields = [...root.querySelectorAll("[data-field]")].map((n) => ({ path: n.dataset.field, shown: n.textContent }));
+  log("info", { event: "rendered", view, text: parts.join(" "), fields });
+}
+
+function render(result) {
+  lastResult = result;
+  const sc = result && result.structuredContent;
+  if (!result || result.isError || !sc) { swap(errorView(result || {}), "error"); return; }
+  const single = sc.plans.length === 1 && sc.unavailable.length === 0;
+  swap(single ? houseView(sc.plans[0], sc, "plans.0") : farmView(sc), single ? "house" : "farm");
+}
+
+async function call(args) {
+  try { render(await request("tools/call", { name: TOOL, arguments: args })); }
+  catch (err) {
+    log("error", { event: "tools/call failed", message: String(err && err.message) });
+    render({ isError: true, content: [], _meta: { [ERROR_META_KEY]: {
+      message_en: L.generic_error.en, message_te: L.generic_error.te,
+      next_step_en: L.generic_next.en, next_step_te: L.generic_next.te } } });
+  }
+}
+
+function start() {
+  document.querySelectorAll("[data-l]").forEach((n) => n.replaceChildren(...bi(L[n.dataset.l])));
+  applyContext({});
+  new ResizeObserver(reportSize).observe(document.documentElement);
+  request("ui/initialize", {
+    appInfo: { name: APP.name + " sell-day plan card", version: "1" },
+    appCapabilities: { availableDisplayModes: ["inline"] },
+    protocolVersion: SPEC_VERSION,
+  }).then((res) => {
+    applyContext((res && res.hostContext) || {});
+    notify("ui/notifications/initialized", {});
+  }).catch((err) => {
+    log("error", { event: "ui/initialize failed", message: String(err && err.message) });
+    renderMessage(L.sorry, L.generic_error, L.generic_next);
+  });
+  numSelfTest();
+  document.fonts.ready.then(() => {
+    if (!document.fonts.check('16px "Noto Sans Telugu CT"', "తెలుగు")) {
+      log("warning", { event: "font", message: "Bundled Noto Sans Telugu did not load (host CSP?); using a system Telugu font." });
+    }
+  });
+}
+start();
+</script>
+</body>
+</html>

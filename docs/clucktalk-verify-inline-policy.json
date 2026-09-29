@@ -1,0 +1,28 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadAccountPlanAndCredits",
+      "Effect": "Allow",
+      "Action": [
+        "freetier:GetAccountPlanState",
+        "billing:GetCredits",
+        "billing:GetSellerOfRecord"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "NoLargeBedrockSpend",
+      "Effect": "Deny",
+      "Action": [
+        "bedrock:CreateProvisionedModelThroughput",
+        "bedrock:CreateModelCustomizationJob",
+        "bedrock:CreateModelInvocationJob",
+        "bedrock:CreateModelImportJob",
+        "bedrock:CreateCustomModelDeployment",
+        "bedrock:CreateMarketplaceModelEndpoint"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

@@ -18,6 +18,8 @@ from clucktalk.i18n import GENERIC_ERROR, GENERIC_NEXT_STEP, Text
 CARDS_DIR = Path(__file__).resolve().parent
 FARM_STATUS_URI = "ui://clucktalk/farm-status.html"
 FARM_STATUS_FILE = CARDS_DIR / "farm_status.html"
+SALE_PLAN_URI = "ui://clucktalk/sale-plan.html"
+SALE_PLAN_FILE = CARDS_DIR / "sale_plan.html"
 
 # Status is always an icon AND a word, never colour alone (docs/DESIGN.md §14).
 FARM_STATUS_LABELS: dict[str, Text] = {
@@ -58,3 +60,33 @@ def farm_status_html() -> str:
     if not FARM_STATUS_FILE.exists():
         raise RuntimeError(f"{FARM_STATUS_FILE} is missing. Rebuild it: .venv\\Scripts\\python scripts\\build_cards.py")
     return FARM_STATUS_FILE.read_text(encoding="utf-8")
+
+
+# Sell-day plan card (docs/DESIGN.md §12.4): a simple per-day bar chart, best day highlighted, break-even marked.
+SALE_PLAN_LABELS: dict[str, Text] = {
+    "sale_title": Text("Sell-day plan", "అమ్మకం రోజు ప్రణాళిక"),
+    "demo_badge": Text("Demo data", "డెమో డేటా"),
+    "simulated_price": Text("Simulated price", "అంచనా ధర (డెమో)"),
+    "best_day": Text("Best day", "మంచి రోజు"),
+    "today": Text("Today", "ఈరోజు"),
+    "break_even": Text("Break-even", "బ్రేక్-ఈవెన్"),
+    "net_vs_today": Text("Net vs today", "ఈరోజుతో పోలిస్తే నికరం"),
+    "weight": Text("Weight", "బరువు"),
+    "fcr": Text("FCR", "FCR"),
+    "growing_charge": Text("Growing charge", "గ్రోయింగ్ ఛార్జ్"),
+    "no_terms_hint": Text(
+        "Save your contract terms to see the growing charge", "గ్రోయింగ్ ఛార్జ్ చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయండి"
+    ),
+    "grams_n": Text("{n} g", "{n} గ్రా."),
+    "sorry": Text("Sorry", "క్షమించండి"),
+    "generic_error": GENERIC_ERROR,
+    "generic_next": GENERIC_NEXT_STEP,
+    "loading": Text("Loading", "లోడ్ అవుతోంది"),
+}
+
+
+def sale_plan_html() -> str:
+    """The built sale-plan card. Missing file = broken checkout: fail loud at startup (Rule 6)."""
+    if not SALE_PLAN_FILE.exists():
+        raise RuntimeError(f"{SALE_PLAN_FILE} is missing. Rebuild it: .venv\\Scripts\\python scripts\\build_cards.py")
+    return SALE_PLAN_FILE.read_text(encoding="utf-8")

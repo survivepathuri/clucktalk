@@ -49,7 +49,7 @@ def test_utterance_to_tool(utterance, tool, args):
     assert intent.rule  # the developer panel always shows why
 
 
-@pytest.mark.parametrize("utterance", ["", "   ", "Should I sell my birds now?", "play some music", "Alexa"])
+@pytest.mark.parametrize("utterance", ["", "   ", "What's the weather today?", "play some music", "Alexa"])
 def test_no_rule_no_tool(utterance):
     """Unbuilt or out-of-scope requests get the host fallback, never a guessed tool call."""
     assert match(utterance) is None

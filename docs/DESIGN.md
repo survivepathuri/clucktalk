@@ -4,11 +4,15 @@ The engineering design behind CluckTalk. Code comments cite this file as `docs/D
 **Status**: this document describes the target design. What actually works, with evidence, is recorded in the README and the eval table; nothing here claims a feature is finished.
 
 ## 1. Product
-CluckTalk (Telugu subtitle "కోడి మిత్ర") is an Alexa+ add-on for small and medium Indian poultry farms (broiler and layer, 500–20,000 birds): a self-hosted MCP server plus an Agent Skill.
+CluckTalk (Telugu subtitle "కోడి మిత్ర") is an Alexa+ add-on for small and medium Indian **broiler** farms
+(500–20,000 birds): a self-hosted MCP server plus an Agent Skill. **Broiler-first** (decided 2026-09-29): the
+hackathon build and demo target broiler farmers only. The domain layer still supports layer flocks generically
+(§13.1's `HouseKind.LAYER`, egg-production status and feed planning), and nothing here removes that code, but the
+seeded demo farm, `get_help`, and the video use broiler houses only. Layer farming is a README roadmap item.
 The farmer speaks English or Hinglish, often with busy hands. CluckTalk answers by voice (complete on a screenless device) and shows bilingual Telugu + English cards (MCP Apps) on screen devices.
 
-Planned tool intents (one intent per tool, see §5): farm status per house, health triage (async), vet handoff, feed planning, profit forecast, sell-now-or-wait, farm memory, daily briefing, feed orders with confirmation, and "what can you do?".
-Planned next (§13): farm profile (contract or independent), voice record book, contract earnings tracker, vaccination planner and vaccine-day coach.
+Planned tool intents (one intent per tool, see §5): farm status per house, health triage (async), vet handoff, feed planning, sell-day plan, farm memory, daily briefing, feed orders with confirmation, and "what can you do?".
+Planned next (§13): farm profile (contract or independent, **built**), voice record book, contract earnings tracker (**terms storage built**, the full tracker with sensitivity/what-if is later), vaccination planner and vaccine-day coach.
 
 ## 2. Architecture
 
@@ -157,14 +161,14 @@ The product name lives in one config constant (`APP_NAME` in `src/clucktalk/conf
 | Poor Telugu quality | Native-speaker review of fixed strings | Review |
 
 ## 13. Planned: farm modes, record book, earnings, vaccination
-Status: §13.1 mode switching is built; everything else here is designed, not built. Each follows §5–§7; the rules below are specific to these features.
+Status: §13.1 mode switching and contract-terms storage are built (plus `plan_sale`, §16); everything else here is designed, not built. Each follows §5–§7; the rules below are specific to these features.
 
 ### 13.1 Farm profile: contract or independent
 Most Indian broiler farms grow birds under contract: the integrator supplies chicks, feed, medicines and vet services and markets the birds; the farmer provides the shed and labour and is paid a growing charge linked to FCR and mortality (see `docs/SOURCES.md`).
-- `mode: contract | independent`, set by the farmer with read-back and "yes" (§5.1): `get_farm_profile`, `set_farm_mode` (built). The demo farm starts as independent.
-- Contract mode: no sale planning and no feed purchasing. Feed answers name the bags to ask the supervisor for, with no price (the company supplies feed). Sending a **feed request to the supervisor** (propose → "yes" → send; simulated, labeled) is planned.
-- Contract terms (base rate, standard FCR, mortality allowance, incentive and deduction rates) are entered by the farmer with `set_contract_terms` (planned; one intent: saving the farmer's contract terms).
-- Independent mode: sell-now-or-wait and feed orders with confirmation.
+- `mode: contract | independent`, set by the farmer with read-back and "yes" (§5.1): `get_farm_profile`, `set_farm_mode` (built). The demo farm starts as independent; `python tasks.py reset-demo --contract` (planned, 8 Oct) seeds a contract-mode demo scenario for the video.
+- Contract mode: no sale planning and no feed purchasing. Feed answers name the bags to ask the supervisor for, with no price (the company supplies feed). `plan_sale` (§16, built) shows FCR and, once terms are saved, the growing charge instead of a market-price recommendation. Sending a **feed request to the supervisor** (propose → "yes" → send; simulated, labeled) is planned.
+- Contract terms (base rate, standard FCR, mortality allowance, incentive and deduction rates) are entered by the farmer with `set_contract_terms` (**built**: storage only, via the confirmation pattern; the full Contract Earnings Tracker with sensitivity answers is §13.3, planned).
+- Independent mode: `plan_sale` (built, §16) and feed orders with confirmation (order/confirm flow planned).
 - State lives in a local SQLite file behind a `Store` interface (`clucktalk.store`), so a cloud store can replace it; `python tasks.py reset-demo` restores the seeded story.
 
 ### 13.2 Voice record book
@@ -173,7 +177,7 @@ Most Indian broiler farms grow birds under contract: the integrator supplies chi
 - The record book becomes the primary data source; a bilingual batch-end summary can be handed to the company.
 
 ### 13.3 Contract earnings tracker
-- Projected growing charges come only from the contract terms the farmer enters: base rate per kg, standard FCR, mortality allowance, incentive and deduction rates. No company's terms are built in; any example is labeled as an example with its source and year.
+- Projected growing charges come only from the contract terms the farmer enters: base rate per kg, standard FCR, mortality allowance, incentive and deduction rates. No company's terms are built in; any example is labeled as an example with its source and year. **Storage built** (`set_contract_terms`, `ContractTerms.rate_per_kg`, used by `plan_sale` §16); the dedicated tracker tool below (sensitivity, what-if) is planned for 8 Oct.
 - Deterministic fast-path math with the formula shown; sensitivity answers such as "one more percent mortality costs about ₹X"; always labeled "estimate from your contract terms".
 
 ### 13.4 Vaccination planner and vaccine-day coach
@@ -207,3 +211,36 @@ A local web app (`python tasks.py run`, http://127.0.0.1:8766/) standing in for 
 - **No blank cards**: if a card has not rendered within 3 s, the host shows the labeled text answer and logs the failure; a card whose `ui/initialize` fails shows the bilingual generic error.
 - **Continuity rules**: the previous card is torn down (`ui/resource-teardown`) as soon as a new question is asked, so no stale card stays on screen. A turn slower than 1 s shows and speaks "Still working…"; a developer-panel control adds a labeled simulated delay to demonstrate it.
 - **Security**: binds 127.0.0.1; Host header must be one of the two loopback names; POST API calls must come from the page's own origin (Origin equals the requested host) with a JSON body.
+
+## 16. Sale-day plan (`plan_sale`, built 2026-09-29)
+For each broiler shed, for today (d=0) through +10 days (clipped at the cited Ross 308 growth table's last day):
+weight (the shed's own latest weigh-in, scaled forward along the curve's shape; the curve alone only when no
+weigh-in exists yet, `weight_basis="breed_target"`, stated openly), feed cost (reusing `plan_feed`'s own
+actual-vs-target scaling, so the two tools agree), and expected mortality loss (the trailing 7-day daily rate, or
+the trailing 3-day rate if it is higher, "rising"). From these: the day's marginal profit, the best day (highest
+cumulative net vs selling today), and the break-even day (the first day an extra day's feed cost, plus mortality
+loss, exceeds the value of the weight it adds).
+- **Independent farms**: the best day and the ₹ difference vs today; a break-even sentence once one falls inside
+  the horizon. At most 3 days are spoken (today, the best day, the break-even day), and every spoken number is
+  also in `structuredContent` (§6, cross-modal). Live-bird price is simulated and labeled, or the farmer's own
+  stated rate for that call only (never stored).
+- **Contract farms (§13.1, §13.3)**: no market price or ₹ profit number is ever shown (a contract farmer is not
+  paid the open-market rate). Instead: how FCR rises with each extra day, and — once the farmer has saved
+  `set_contract_terms` — the growing charge for the flock that day, computed only from the farmer's own saved
+  rate (`ContractTerms.rate_per_kg`, floored at ₹0), as evidence for asking the supervisor to lift the birds on
+  time. Never a named company's rate (§7 rule 6).
+- **Not for layers**: `NotSoldByWeight` (a live sale needs a weight-vs-price comparison, which egg layers don't
+  have in this model); layer flocks stay supported generically in the domain layer (§1), just not through this
+  tool or the current demo farm.
+- **Card** (`ui://clucktalk/sale-plan.html`): a per-day bar chart (best day outlined, break-even day-marked with a
+  dashed line), tap a shed (whole-farm view) to see its own chart; bilingual, same build pipeline as farm-status
+  (`scripts/build_cards.py`).
+
+## 17. Golden eval suite (`python tasks.py eval-fast`, v0 built 2026-09-29)
+A small, real (not simulated) set of cases in `data/eval/golden_cases.json`, each a real `tools/call` over HTTP
+against a freshly started mock-mode server, checked against literal field values or text substrings
+(`scripts/eval_fast.py`). Writes `docs/EVALS.md` with a real pass/fail count; never fakes a score (Rule 6).
+v0 covers a handful of read-only, single-call cases (farm status, feed reorder, and `plan_sale`'s before /
+at / after break-even and rising-mortality stories); contract-mode's multi-step confirmation flow is covered by
+the contract test suite instead, since this runner is single-call by design. Extended to the full 45-case suite,
+covering every P0 feature, on the 11 Oct task (`private/WEEK2_PLAN.md`).

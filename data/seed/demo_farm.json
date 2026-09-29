@@ -6,8 +6,9 @@
   "location": "Eluru district, Andhra Pradesh",
   "simulated": {
     "feed_price_per_kg_inr": "38.50",
+    "live_bird_price_per_kg_inr": "95.00",
     "supplier_lead_days": 2,
-    "note": "Feed price and supplier are simulated and labeled as such in every answer."
+    "note": "Feed price, live-bird price and supplier are simulated and labeled as such in every answer."
   },
   "houses": [
     {
@@ -39,15 +40,19 @@
     {
       "house_id": "house-3",
       "number": 3,
-      "kind": "layer",
-      "breed": "BV-300",
-      "placed_days_ago": 150,
-      "age_at_placement_days": 126,
-      "birds_placed": 3000,
-      "feed_stock_kg": 3500,
-      "profile": {"feed_g_per_bird": 112, "hen_day_pct": 88.0, "lay_start_age_days": 140, "daily_mortality_pct": 0.03},
-      "story": "Steady layer flock: the calm baseline.",
-      "events": []
+      "kind": "broiler",
+      "breed": "Ross 308",
+      "placed_days_ago": 44,
+      "age_at_placement_days": 0,
+      "birds_placed": 4500,
+      "feed_stock_kg": 4200,
+      "profile": {"intake_factor": 1.0, "weight_factor": 1.0, "daily_mortality_pct": 0.04, "weigh_every_days": 7},
+      "story": "Near market weight, on target, but mortality has risen the last 3 days: the plan_sale example.",
+      "events": [
+        {"days_ago": 2, "deaths": 15},
+        {"days_ago": 1, "deaths": 16},
+        {"days_ago": 0, "deaths": 18}
+      ]
     }
   ]
 }

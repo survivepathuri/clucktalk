@@ -29,7 +29,7 @@ Every version below was checked on the date shown, from the command or source na
 | `pydantic` | 2.13.5 | pinned | PyPI JSON: classifiers include 3.14 |
 | `uvicorn` | 0.54.0 | pinned | PyPI JSON: classifiers include 3.14 |
 
-State store (2026-09-28): Python's built-in `sqlite3` module, no new package. The bundled SQLite library is **3.50.4** in the project's Python 3.13.15 (`.venv\Scripts\python -c "import sqlite3; print(sqlite3.sqlite_version)"`). Used: `connect(check_same_thread=False, isolation_level=None)`, `BEGIN IMMEDIATE` / `COMMIT` / `ROLLBACK`, `Row` factory. Nothing newer than SQLite 3.x basics.
+State store (2026-09-28): Python's built-in `sqlite3` module, no new package. The bundled SQLite library is **3.50.4** in the project's Python 3.13.15 (`.venv\Scripts\python -c "import sqlite3; print(sqlite3.sqlite_version)"`). Used: `connect(check_same_thread=False, isolation_level=None)`, `BEGIN IMMEDIATE` / `COMMIT` / `ROLLBACK`, `Row` factory. Nothing newer than SQLite 3.x basics. Schema bumped to **v2** on 2026-09-29 (added `contract_terms`); an older `.local/clucktalk.sqlite3` fails loud at startup and `python tasks.py reset-demo` clears it.
 
 Full app dependency set (transitive included) is pinned in `requirements.txt`; on 2026-09-27 it matched `pip freeze` of the venv exactly (dev tools excluded). Notable transitive packages: `starlette` 1.7.0 (imported directly for ASGI types), `jsonschema` 4.26.0 (imported directly for argument validation), `httpx2` 2.13.1 (the SDK's HTTP client; also used by the contract tests).
 
@@ -54,13 +54,21 @@ MODERN_PROTOCOL_VERSIONS    = 2026-07-28                                        
 - A newer protocol, **2026-07-28**, exists and is stateless (no `initialize`). Amazon's Alexa+ docs target 2025-11-25. **Decision: stay on 2025-11-25** unless Amazon's current Alexa+ docs say otherwise; a contract test will assert the negotiated version.
 - SDK 2.2.0 ships MCP Apps server support in-core (`mcp.server.apps`: `Apps` extension, `_meta.ui.resourceUri`, `text/html;profile=mcp-app`). The source comment says the TypeScript SDK ships it as the separate `@modelcontextprotocol/ext-apps` package, which the card side uses.
 
-## Not yet verified: moved to the "AWS setup" task (no AWS account yet; user decision 2026-09-27)
+## AWS setup task (started 2026-09-28): see docs/AWS_SETUP.md
 
-Development continues mock-first. In the AWS setup task: verify which region supports **every** AgentCore feature we use (Runtime, Memory, Observability; P1: Gateway, Policy, Evaluations), then recommend one.
+Region check from AWS docs (2026-09-28, sources in docs/AWS_SETUP.md §1): us-east-1, us-west-2 and ap-south-1 all
+have every AgentCore feature we use (Runtime, Memory, Gateway, Identity, Observability, Policy, Evaluations), S3
+Vectors, Titan Text Embeddings V2 and Polly neural (en-IN Kajal). Claude Sonnet 5 / Opus 5.5 are in-Region only in
+us-east-1 (Geo in us-west-2, Global only in ap-south-1). Recommended: **us-east-1**.
 
-- AWS region with Bedrock, Guardrails, AgentCore Runtime/Memory/Observability, and S3 Vectors all available
-- Bedrock model access enabled for the chosen host and multimodal models (model IDs)
-- S3 Vectors as a Bedrock Knowledge Base vector store, plus its pricing (Rule 1 alternative to AOSS)
+Verified in the account 2026-09-28 (AWS CLI **2.37.4**, profile `clucktalk`; full table in docs/AWS_SETUP.md §5):
+plan PAID/ACTIVE; Claude models in us-east-1 are inference-profile only; profile IDs listed from the account
+(`us.anthropic.claude-sonnet-5`, `us.anthropic.claude-haiku-4-5-20251001-v1:0`, `us.amazon.nova-2-lite-v1:0`, …);
+Nova models accessible, Claude agreement not yet created; **all inference quotas for these models are 0** (blocker,
+FRICTION_LOG FL-014); Polly Kajal neural available.
+
+Still to verify: quotas after the increase request; a first real Converse call; Guardrails and Knowledge Bases on S3
+Vectors in us-east-1, plus S3 Vectors pricing (Rule 1 alternative to AOSS).
 
 ## SDK behaviors verified in source (mcp 2.2.0, 2026-09-27)
 Each one shaped the server design; the contract tests pin them.

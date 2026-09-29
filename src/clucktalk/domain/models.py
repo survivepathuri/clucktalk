@@ -115,6 +115,7 @@ class Farm:
     houses: tuple[House, ...]
     feed_price_per_kg: Decimal  # simulated market price, labeled as such in every output
     supplier_lead_days: int  # simulated supplier
+    live_bird_price_per_kg: Decimal  # simulated default; a farmer's spoken rate overrides it per call
 
     def __post_init__(self) -> None:
         ids = [h.house_id for h in self.houses]
@@ -123,3 +124,5 @@ class Farm:
             raise ValueError(f"{self.farm_id}: house IDs and numbers must be unique")
         if self.feed_price_per_kg <= 0 or self.supplier_lead_days < 0:
             raise ValueError(f"{self.farm_id}: feed price must be > 0 and lead time >= 0")
+        if self.live_bird_price_per_kg <= 0:
+            raise ValueError(f"{self.farm_id}: live_bird_price_per_kg must be > 0")

@@ -110,7 +110,10 @@ function say(who, cls, text) {
 }
 
 // ------------------------------------------------------------------ cross-modal check (docs/DESIGN.md §6)
-const NUM = /(?<![\w.\-])\d[\d,]*(?:\.\d+)?/g;
+// A leading "-" is part of the number (so plan_sale's negative day-by-day figures match as one token, not a
+// split "-42,630" -> stray "630"), but only when it is a minus sign, not an ID separator ("house-2" must stay
+// unmatched): excluded when preceded by a word/dot char directly, or by a word/dot char then "-".
+const NUM = /(?<![\w.]|[\w.]-)-?\d[\d,]*(?:\.\d+)?/g;
 function namesOf(obj, out = new Set()) {
   if (Array.isArray(obj)) obj.forEach((v) => namesOf(v, out));
   else if (obj && typeof obj === "object") for (const [k, v] of Object.entries(obj)) { if (k === "breed" && typeof v === "string") out.add(v); namesOf(v, out); }

@@ -14,20 +14,26 @@ import threading
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import date, datetime
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
 from clucktalk.domain.models import DailyRecord, Treatment, TreatmentKind
-from clucktalk.domain.profile import FarmMode, FarmProfile
+from clucktalk.domain.profile import ContractTerms, FarmMode, FarmProfile
 from clucktalk.domain.proposals import Proposal, ProposalStatus, canonical
 from clucktalk.store import StoreError
 
 MEMORY = ":memory:"
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"  # v2 (2026-09-29): + contract_terms table
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS profiles (
     farm_id TEXT PRIMARY KEY, mode TEXT NOT NULL, set_by TEXT NOT NULL, updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS contract_terms (
+    farm_id TEXT PRIMARY KEY, base_rate_per_kg TEXT NOT NULL, standard_fcr TEXT NOT NULL,
+    mortality_allowance_pct TEXT NOT NULL, incentive_per_kg_per_fcr_point TEXT NOT NULL,
+    deduction_per_kg_per_fcr_point TEXT NOT NULL, updated_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS proposals (
     proposal_id TEXT PRIMARY KEY, farm_id TEXT NOT NULL, tool TEXT NOT NULL, arguments TEXT NOT NULL,
@@ -144,6 +150,38 @@ class SqliteStore:
             self._db.execute(
                 "INSERT OR REPLACE INTO profiles (farm_id, mode, set_by, updated_at) VALUES (?, ?, ?, ?)",
                 (profile.farm_id, profile.mode.value, profile.set_by, _iso(profile.updated_at)),
+            )
+
+    def get_contract_terms(self, farm_id: str) -> ContractTerms | None:
+        with self._lock:
+            row = self._db.execute("SELECT * FROM contract_terms WHERE farm_id = ?", (farm_id,)).fetchone()
+        if row is None:
+            return None
+        return ContractTerms(
+            farm_id=row["farm_id"],
+            base_rate_per_kg=Decimal(row["base_rate_per_kg"]),
+            standard_fcr=Decimal(row["standard_fcr"]),
+            mortality_allowance_pct=Decimal(row["mortality_allowance_pct"]),
+            incentive_per_kg_per_fcr_point=Decimal(row["incentive_per_kg_per_fcr_point"]),
+            deduction_per_kg_per_fcr_point=Decimal(row["deduction_per_kg_per_fcr_point"]),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+        )
+
+    def save_contract_terms(self, terms: ContractTerms) -> None:
+        with self.atomic():
+            self._db.execute(
+                "INSERT OR REPLACE INTO contract_terms (farm_id, base_rate_per_kg, standard_fcr, "
+                "mortality_allowance_pct, incentive_per_kg_per_fcr_point, deduction_per_kg_per_fcr_point, "
+                "updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    terms.farm_id,
+                    str(terms.base_rate_per_kg),
+                    str(terms.standard_fcr),
+                    str(terms.mortality_allowance_pct),
+                    str(terms.incentive_per_kg_per_fcr_point),
+                    str(terms.deduction_per_kg_per_fcr_point),
+                    _iso(terms.updated_at),
+                ),
             )
 
     # -- proposals -----------------------------------------------------------------------------------------------

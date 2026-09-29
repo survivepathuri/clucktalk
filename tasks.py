@@ -161,6 +161,12 @@ def serve() -> int:
         return 0
 
 
+def eval_fast() -> int:
+    """Golden eval suite (mock mode, no AWS): scripts/eval_fast.py."""
+    _require_venv()
+    return _run([VENV_PY, "-B", ROOT / "scripts" / "eval_fast.py"])
+
+
 def _wait_for_port(port: int, proc: subprocess.Popen, seconds: float = 20) -> bool:
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
@@ -254,7 +260,7 @@ COMMANDS = {
     "setup": setup,
     "check": check,
     "serve": serve,
-    "eval-fast": lambda: _not_built_yet("eval-fast"),
+    "eval-fast": eval_fast,
     "run": run,
     "reset-demo": reset_demo,
 }

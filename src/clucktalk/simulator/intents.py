@@ -45,6 +45,9 @@ PROFILE = re.compile(
 YES = re.compile(r"^(?:yes|yeah|yep|yes please|haan|haan ji|ji haan|han ji|avunu|confirm|yes confirm)$")
 NO = re.compile(r"^(?:no|nope|no thanks|nahi|nahin|na|vaddu|cancel|don't|do not)$")
 FEED = re.compile(r"\b(?:feed|dana|daana|bags?|bori|stock|reorder)\b")
+# Sale-day plan (docs/DESIGN.md §12.4). "rate is 95" carries a farmer-given live price to plan_sale.
+SELL = re.compile(r"\b(?:sell|selling|bech|bech do|bechna|bechu|kab bechun|kab bechu)\b")
+RATE_VALUE = re.compile(r"\b(?:rate is|rate|market rate is|market rate|price is|price)\s+(\d+(?:\.\d+)?)\b")
 STATUS = re.compile(
     r"\b(?:how(?:'s| is| are)?|status|doing|kaisa|kaise|kaisi|haal|check|update|report|going|problem)\b"
 )
@@ -101,6 +104,13 @@ def match(utterance: str) -> Intent | None:
         return Intent("get_farm_profile", {}, "farm mode: 'what kind of farm' / 'contract or independent'")
     house = house_phrase(text)
     args = {"house": house} if house else {}
+    if SELL.search(text) or RATE_VALUE.search(text):
+        sale_args = dict(args)
+        rate = RATE_VALUE.search(text)
+        if rate:
+            sale_args["live_price_per_kg"] = float(rate.group(1))
+        rule = "sell: 'sell' / 'bech' / 'kab bechun'" + (" + rate" if rate else "") + (" + shed" if house else "")
+        return Intent("plan_sale", sale_args, rule)
     if FEED.search(text):
         return Intent("plan_feed", args, "feed: 'feed' / 'dana' / 'bags' / 'stock'" + (" + shed" if house else ""))
     if house:

@@ -5,11 +5,12 @@ from __future__ import annotations
 import sqlite3
 from dataclasses import fields
 from datetime import date, datetime, timedelta, timezone
+from decimal import Decimal
 
 import pytest
 
 from clucktalk.domain.models import DailyRecord, Treatment, TreatmentKind
-from clucktalk.domain.profile import FarmMode, FarmProfile
+from clucktalk.domain.profile import ContractTerms, FarmMode, FarmProfile
 from clucktalk.domain.proposals import ProposalStatus, new_proposal
 from clucktalk.store import StoreError
 from clucktalk.store.sqlite import SqliteStore
@@ -26,6 +27,18 @@ def test_profile_round_trip_and_replace():
     s.save_profile(FarmProfile("farm-1", FarmMode.INDEPENDENT, "farmer", T0 + timedelta(hours=1)))
     assert s.get_profile("farm-1").mode is FarmMode.INDEPENDENT
     assert s.get_profile("farm-2") is None
+
+
+def test_contract_terms_round_trip_and_replace():
+    s = SqliteStore()
+    assert s.get_contract_terms("farm-1") is None
+    t1 = ContractTerms("farm-1", Decimal("92"), Decimal("1.85"), Decimal("5"), Decimal("2"), Decimal("3"), T0)
+    s.save_contract_terms(t1)
+    assert s.get_contract_terms("farm-1") == t1
+    t2 = ContractTerms("farm-1", Decimal("95"), Decimal("1.8"), Decimal("5"), Decimal("2"), Decimal("3"), T0)
+    s.save_contract_terms(t2)
+    assert s.get_contract_terms("farm-1") == t2
+    assert s.get_contract_terms("farm-2") is None
 
 
 def test_proposal_round_trip_pending_query_and_update():

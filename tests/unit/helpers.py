@@ -63,7 +63,7 @@ def broiler_house(
     )
 
 
-def farm_with(*houses: House, price: str = "40.00", lead_days: int = 2) -> Farm:
+def farm_with(*houses: House, price: str = "40.00", lead_days: int = 2, live_price: str = "95.00") -> Farm:
     return Farm(
         farm_id="farm-test",
         name="Test Farm",
@@ -71,4 +71,5 @@ def farm_with(*houses: House, price: str = "40.00", lead_days: int = 2) -> Farm:
         houses=houses,
         feed_price_per_kg=Decimal(price),
         supplier_lead_days=lead_days,
+        live_bird_price_per_kg=Decimal(live_price),
     )

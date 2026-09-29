@@ -94,8 +94,9 @@ def _daily_mortality_rate(house: House, as_of: date) -> float:
     return sum(r.deaths for r in recent) / len(recent) / live
 
 
-def _per_bird_projection(house: House, as_of: date):
-    """Return (fn(age)->grams per bird per day, basis, intake_scale)."""
+def per_bird_projection(house: House, as_of: date):
+    """Return (fn(age)->grams per bird per day, basis, intake_scale). Public: reused by domain/sale.py, which
+    needs the same actual-vs-target scaling for broilers so its feed cost matches plan_feed's own projection."""
     records = house.records_until(as_of)
     if house.kind is HouseKind.LAYER:
         recent = records[-LAYER_BASELINE_DAYS:]
@@ -149,7 +150,7 @@ def plan_feed(farm: Farm, house: House, as_of: date, horizon_days: int = DEFAULT
         days_left = max_age - house.age_days(as_of)
         if days_left < horizon_days:
             raise BeyondGrowthTable(house.label_en, house.label_te, house.breed, max_age, max(days_left, 0))
-    per_bird, basis, scale = _per_bird_projection(house, as_of)
+    per_bird, basis, scale = per_bird_projection(house, as_of)
     horizon = _project(house, as_of, horizon_days, per_bird, max_age)
 
     lookahead = _project(house, as_of, COVERAGE_LOOKAHEAD_DAYS, per_bird, max_age)

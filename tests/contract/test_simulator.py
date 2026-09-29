@@ -109,7 +109,7 @@ def test_unknown_shed_is_spoken_safely(sim):
 
 
 def test_no_matching_tool_gets_the_host_fallback_and_no_mcp_call(sim):
-    out = sim.turn("Should I sell my birds now?")
+    out = sim.turn("What's the weather today?")
     assert out["kind"] == "fallback" and out["speech"] == FALLBACK_SPEECH
     assert out["exchanges"] == [] and out["intent"] is None
 

@@ -7,6 +7,7 @@ import pytest
 
 from clucktalk.domain.feed import plan_feed
 from clucktalk.domain.houses import resolve_house
+from clucktalk.domain.sale import plan_sale
 from clucktalk.domain.status import Level, house_status
 from clucktalk.seed import DEMO_FARM_PATH, build_demo_farm
 
@@ -37,12 +38,28 @@ def test_story_shed_two_needs_attention(as_of):
 
 
 @pytest.mark.parametrize("as_of", DAYS)
-def test_story_other_houses_are_calm(as_of):
+def test_story_house_one_is_calm(as_of):
     farm = build_demo_farm(as_of)
-    for number in (1, 3):
-        house = resolve_house(farm, f"house {number}")
-        assert house_status(house, as_of).level is Level.OK
-        assert not plan_feed(farm, house, as_of).reorder_needed
+    house = resolve_house(farm, "house 1")
+    assert house_status(house, as_of).level is Level.OK
+    assert not plan_feed(farm, house, as_of).reorder_needed
+
+
+@pytest.mark.parametrize("as_of", DAYS)
+def test_story_house_three_is_near_market_age_with_rising_mortality(as_of):
+    """House 3 (added 2026-09-29, broiler-first): on target for weight, but 3 days of rising deaths make
+    plan_sale's own math say sell now (docs/DESIGN.md §12.4) -- the get_farm_status alert and the sale
+    plan agree because both read the same records."""
+    farm = build_demo_farm(as_of)
+    house = resolve_house(farm, "house 3")
+    status = house_status(house, as_of)
+    assert status.level is Level.ALERT
+    assert "mortality_spike" in {f.code for f in status.findings}
+    assert not plan_feed(farm, house, as_of).reorder_needed
+    plan = plan_sale(farm, house, as_of)
+    assert plan.mortality_rising
+    assert plan.best_day_index == 0
+    assert plan.break_even_day_index == 1
 
 
 def test_every_house_is_current():

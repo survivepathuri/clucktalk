@@ -12,11 +12,11 @@ from typing import Annotated, Any, Literal
 
 from mcp.server.mcpserver import MCPServer
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field
 
 from clucktalk.domain.errors import DomainError
 from clucktalk.domain.profile import FarmMode, FarmProfile
-from clucktalk.domain.proposals import PROPOSAL_ID_PATTERN, PROPOSAL_TTL, Answer, Proposal, Reason
+from clucktalk.domain.proposals import PROPOSAL_TTL, Answer, Proposal, ProposalId, Reason
 from clucktalk.i18n import Text
 from clucktalk.server.confirm import ConfirmFlow
 from clucktalk.server.errors import domain_error_result
@@ -25,7 +25,6 @@ from clucktalk.server.tools import Capability, CapabilityRegistry
 
 TOOL = "set_farm_mode"
 ModeName = Literal["contract", "independent"]
-ProposalId = Annotated[str, StringConstraints(pattern=PROPOSAL_ID_PATTERN)]
 
 PROFILE_TEXT = {
     FarmMode.CONTRACT: Text(
@@ -123,6 +122,7 @@ class FarmProfileOutput(BaseModel):
     mode: ModeName
     set_by: Literal["demo_default", "farmer"]
     updated_at: str | None  # ISO 8601 with offset; None until the farmer changes it
+    has_contract_terms: bool  # contract mode only: whether set_contract_terms has been saved
 
 
 class SetFarmModeOutput(BaseModel):
@@ -166,7 +166,21 @@ ANSWER_PARAM = Field(
 
 def build_profile(source: DemoFarmSource) -> FarmProfileOutput:
     p = source.profile()
+    has_terms = source.store.get_contract_terms(source.farm_id) is not None
     text = _join(PROFILE_TEXT[p.mode], SWITCH_HINT[_other(p.mode)])
+    if p.mode is FarmMode.CONTRACT:
+        note = (
+            Text(
+                "Your contract terms are saved, so plan_sale can show the growing charge.",
+                "మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ అయ్యాయి, కాబట్టి ప్లాన్ సేల్ గ్రోయింగ్ ఛార్జ్ చూపగలదు.",
+            )
+            if has_terms
+            else Text(
+                "Say your contract terms to see the growing charge in the sale plan.",
+                "సేల్ ప్లాన్‌లో గ్రోయింగ్ ఛార్జ్ చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు చెప్పండి.",
+            )
+        )
+        text = _join(text, note)
     return FarmProfileOutput(
         text_en=text.en,
         text_te=text.te,
@@ -174,6 +188,7 @@ def build_profile(source: DemoFarmSource) -> FarmProfileOutput:
         mode=p.mode.value,
         set_by=p.set_by,
         updated_at=None if p.updated_at is None else p.updated_at.isoformat(),
+        has_contract_terms=has_terms,
     )
 
 

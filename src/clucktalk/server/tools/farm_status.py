@@ -102,7 +102,7 @@ class FarmStatusOutput(BaseModel):
 
 DESCRIPTION = (
     "Use when the farmer asks how a house (shed, kotam) or the whole farm is doing: deaths, feed intake, weight "
-    "vs breed target, laying rate, and whether feed stock is running low. Give `house` for one house; omit it "
+    "vs breed target, and whether feed stock is running low. Give `house` for one house; omit it "
     "for every house, worst first. Returns a short spoken summary plus the same numbers for the card."
 )
 HOUSE_PARAM = Field(

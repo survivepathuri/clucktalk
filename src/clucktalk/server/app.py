@@ -29,7 +29,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from clucktalk.config import APP_NAME, ConfigError, Settings, load_settings
 from clucktalk.server.errors import SafeToolErrors
 from clucktalk.server.farm_state import DemoFarmSource
-from clucktalk.server.tools import CapabilityRegistry, farm_status, feed, profile
+from clucktalk.server.tools import CapabilityRegistry, contract_terms, farm_status, feed, profile, sale
 from clucktalk.server.tools import help as help_tool
 from clucktalk.store import StoreError
 from clucktalk.store.sqlite import SqliteStore
@@ -55,6 +55,7 @@ def build_mcp_server(source: DemoFarmSource | None = None) -> MCPServer:
     registry = CapabilityRegistry()
     apps = Apps()  # MCP Apps extension: card-bearing tools + their ui:// resources (docs/DESIGN.md §14)
     farm_status.register(apps, registry, source)
+    sale.register(apps, registry, source)
     server = MCPServer(
         name=APP_NAME,
         title=APP_NAME,
@@ -65,6 +66,7 @@ def build_mcp_server(source: DemoFarmSource | None = None) -> MCPServer:
     )
     feed.register(server, registry, source)
     profile.register(server, registry, source)
+    contract_terms.register(server, registry, source)
     help_tool.register(server, registry)
     guard.bind(server)
     return server
