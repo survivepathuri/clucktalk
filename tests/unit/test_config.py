@@ -54,3 +54,27 @@ def test_state_path_default_relative_and_suffix():
     assert load_settings({"CLUCKTALK_STATE_PATH": "x/state.sqlite3"}).state_path == REPO_ROOT / "x" / "state.sqlite3"
     with pytest.raises(ConfigError, match="sqlite3"):
         load_settings({"CLUCKTALK_STATE_PATH": "notes.txt"})
+
+
+def test_ai_daily_cap_defaults_to_the_hard_cap_and_can_only_go_lower():
+    """User decision 2026-09-29: hard cap 100 model calls/day; a lower cap may be configured, never a higher one."""
+    assert load_settings({}).ai_max_calls_per_day == 100
+    assert load_settings({"CLUCKTALK_AI_MAX_CALLS_PER_DAY": "20"}).ai_max_calls_per_day == 20
+    for bad in ("101", "-1", "lots"):
+        with pytest.raises(ConfigError, match="CLUCKTALK_AI_MAX_CALLS_PER_DAY"):
+            load_settings({"CLUCKTALK_AI_MAX_CALLS_PER_DAY": bad})
+
+
+def test_live_ai_needs_an_explicit_setting_model_and_region():
+    """Mock stays the default; live AI (demo farm + Nova) only via MOCK_BEDROCK=false given explicitly."""
+    from clucktalk.config import require_live_ai
+
+    with pytest.raises(ConfigError, match="MOCK_BEDROCK"):
+        require_live_ai(load_settings({}))  # unset is not an explicit choice
+    with pytest.raises(ConfigError, match="BEDROCK_MODEL_ID"):
+        require_live_ai(load_settings({"MOCK_BEDROCK": "false", "AWS_REGION": "us-east-1"}))
+    with pytest.raises(ConfigError, match="AWS_REGION"):
+        require_live_ai(load_settings({"MOCK_BEDROCK": "false", "BEDROCK_MODEL_ID": "m"}))
+    live = load_settings({"MOCK_BEDROCK": "false", "BEDROCK_MODEL_ID": "m", "AWS_REGION": "us-east-1"})
+    require_live_ai(live)
+    assert live.bedrock_model_id == "m" and not live.mock_bedrock

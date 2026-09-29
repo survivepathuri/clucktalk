@@ -25,11 +25,11 @@ Every version below was checked on the date shown, from the command or source na
 | `pytest` | 9.1.1 | pinned (`requirements-dev.txt`) | `pip index versions pytest`; installed in `.venv`; harness tests ran on 3.14.5 and again on 3.13.15 |
 | `strands-agents` | 1.57.1 | verified | PyPI JSON: classifiers include 3.14 |
 | `bedrock-agentcore` | 1.23.1 | verified | PyPI JSON: classifiers list 3.10–3.13 (no 3.14). Resolved by using Python 3.13 for the project |
-| `boto3` | 1.43.103 | verified | PyPI JSON: classifiers include 3.14 |
+| `boto3` | 1.43.103 | **pinned** (`requirements.txt`, 2026-09-29) with botocore 1.43.104, s3transfer 0.19.2, jmespath 1.1.0, python-dateutil 2.9.0.post0, six 1.17.0, urllib3 2.8.0 (`pip check` clean) | Converse `toolConfig.toolChoice` (`auto`/`any`/`tool`) and `ImageBlock` (png/jpeg/gif/webp) read in the installed `botocore/data/bedrock-runtime/2023-09-30/service-2.json.gz`; `botocore.stub.Stubber` used in tests. Live check: docs/AWS_SETUP.md §5.3 |
 | `pydantic` | 2.13.5 | pinned | PyPI JSON: classifiers include 3.14 |
 | `uvicorn` | 0.54.0 | pinned | PyPI JSON: classifiers include 3.14 |
 
-State store (2026-09-28): Python's built-in `sqlite3` module, no new package. The bundled SQLite library is **3.50.4** in the project's Python 3.13.15 (`.venv\Scripts\python -c "import sqlite3; print(sqlite3.sqlite_version)"`). Used: `connect(check_same_thread=False, isolation_level=None)`, `BEGIN IMMEDIATE` / `COMMIT` / `ROLLBACK`, `Row` factory. Nothing newer than SQLite 3.x basics. Schema bumped to **v2** on 2026-09-29 (added `contract_terms`); an older `.local/clucktalk.sqlite3` fails loud at startup and `python tasks.py reset-demo` clears it.
+State store (2026-09-28): Python's built-in `sqlite3` module, no new package. The bundled SQLite library is **3.50.4** in the project's Python 3.13.15 (`.venv\Scripts\python -c "import sqlite3; print(sqlite3.sqlite_version)"`). Used: `connect(check_same_thread=False, isolation_level=None)`, `BEGIN IMMEDIATE` / `COMMIT` / `ROLLBACK`, `Row` factory. Nothing newer than SQLite 3.x basics. Schema bumped to **v2** on 2026-09-29 (added `contract_terms`), then **v3** the same day (health checks, vet handoffs, AI call ledger); an older `.local/clucktalk.sqlite3` fails loud at startup and `python tasks.py reset-demo` clears it.
 
 Full app dependency set (transitive included) is pinned in `requirements.txt`; on 2026-09-27 it matched `pip freeze` of the venv exactly (dev tools excluded). Notable transitive packages: `starlette` 1.7.0 (imported directly for ASGI types), `jsonschema` 4.26.0 (imported directly for argument validation), `httpx2` 2.13.1 (the SDK's HTTP client; also used by the contract tests).
 

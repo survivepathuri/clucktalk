@@ -26,10 +26,20 @@ from mcp_types.version import HANDSHAKE_PROTOCOL_VERSIONS, LATEST_HANDSHAKE_VERS
 from starlette.datastructures import Headers
 from starlette.types import ASGIApp, Receive, Scope, Send
 
+from clucktalk.agents import AiServices, demo_ai, live_ai
 from clucktalk.config import APP_NAME, ConfigError, Settings, load_settings
 from clucktalk.server.errors import SafeToolErrors
 from clucktalk.server.farm_state import DemoFarmSource
-from clucktalk.server.tools import CapabilityRegistry, contract_terms, farm_status, feed, profile, records, sale
+from clucktalk.server.tools import (
+    CapabilityRegistry,
+    contract_terms,
+    farm_status,
+    feed,
+    health,
+    profile,
+    records,
+    sale,
+)
 from clucktalk.server.tools import help as help_tool
 from clucktalk.store import StoreError
 from clucktalk.store.sqlite import SqliteStore
@@ -48,9 +58,11 @@ if TARGET_PROTOCOL_VERSION != LATEST_HANDSHAKE_VERSION:
     )
 
 
-def build_mcp_server(source: DemoFarmSource | None = None) -> MCPServer:
-    """``source`` defaults to the demo farm as of today (IST); tests pass one with a fixed clock."""
+def build_mcp_server(source: DemoFarmSource | None = None, ai: AiServices | None = None) -> MCPServer:
+    """``source`` defaults to the demo farm as of today (IST); tests pass one with a fixed clock. ``ai`` defaults
+    to demo mode (no model calls); ``main`` passes live AI only when chosen explicitly (docs/DESIGN.md §18)."""
     source = source or DemoFarmSource()
+    ai = ai or demo_ai()
     guard = SafeToolErrors()
     registry = CapabilityRegistry()
     apps = Apps()  # MCP Apps extension: card-bearing tools + their ui:// resources (docs/DESIGN.md §14)
@@ -68,6 +80,7 @@ def build_mcp_server(source: DemoFarmSource | None = None) -> MCPServer:
     profile.register(server, registry, source)
     contract_terms.register(server, registry, source)
     records.register(server, registry, source)
+    health.register(server, registry, source, ai)
     help_tool.register(server, registry)
     guard.bind(server)
     return server
@@ -147,14 +160,6 @@ def main() -> int:
     except ConfigError as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 2
-    if not settings.mock_bedrock:
-        print(
-            "Live mode (MOCK_BEDROCK is not true) needs the AWS setup, which is not done yet.\n"
-            "For the local demo, set MOCK_BEDROCK=true (python tasks.py serve does this).",
-            file=sys.stderr,
-        )
-        return 2
-
     import uvicorn
 
     try:
@@ -162,8 +167,22 @@ def main() -> int:
     except (StoreError, sqlite3.Error, OSError) as exc:  # fail loud: never run without the farmer's saved state
         print(f"State store error ({settings.state_path}): {exc}", file=sys.stderr)
         return 2
-    server = build_mcp_server(DemoFarmSource(store=store))
-    print(f"{APP_NAME} MCP server | mode: DEMO DATA (MOCK_BEDROCK=true) | protocol {TARGET_PROTOCOL_VERSION}")
+    source = DemoFarmSource(store=store)
+    if settings.mock_bedrock:
+        ai, mode = demo_ai(), "DEMO DATA (MOCK_BEDROCK=true), AI off (demo rules)"
+    else:
+        # Live AI on the synthetic demo farm: only on an explicit MOCK_BEDROCK=false + model + Region.
+        try:
+            ai = live_ai(settings, store, source.now)
+        except ConfigError as exc:
+            print(f"Configuration error: {exc}", file=sys.stderr)
+            return 2
+        mode = (
+            f"DEMO FARM DATA + LIVE AI ({settings.bedrock_model_id}, {settings.aws_region}, "
+            f"cap {settings.ai_max_calls_per_day} calls/day)"
+        )
+    server = build_mcp_server(source, ai)
+    print(f"{APP_NAME} MCP server | mode: {mode} | protocol {TARGET_PROTOCOL_VERSION}")
     print(f"Endpoint: http://{settings.host}:{settings.port}{MCP_PATH}")
     print(f"Allowed browser origins: {', '.join(settings.allowed_origins)}")
     print(f"Farm state: {settings.state_path} (python tasks.py reset-demo restores the demo story)")

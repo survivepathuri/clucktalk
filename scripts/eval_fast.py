@@ -22,16 +22,21 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT))  # tests.fakes: the fixture models for fault cases
 
 import httpx2  # noqa: E402
 import uvicorn  # noqa: E402
 
+from clucktalk.agents import AiServices  # noqa: E402
+from clucktalk.agents.runner import ThreadRunner  # noqa: E402
 from clucktalk.config import load_settings  # noqa: E402
-from clucktalk.server.app import MCP_PATH, TARGET_PROTOCOL_VERSION, build_app  # noqa: E402
+from clucktalk.server.app import MCP_PATH, TARGET_PROTOCOL_VERSION, build_app, build_mcp_server  # noqa: E402
+from tests.fakes import FIXTURES  # noqa: E402
 
 CASES_PATH = ROOT / "data" / "eval" / "golden_cases.json"
 EVALS_MD = ROOT / "docs" / "EVALS.md"
 HEADERS = {"content-type": "application/json", "accept": "application/json, text/event-stream"}
+POLL_SECONDS = 10  # an agent's slow path must finish within this (demo rules take milliseconds)
 
 
 def _free_port() -> int:
@@ -40,9 +45,14 @@ def _free_port() -> int:
         return s.getsockname()[1]
 
 
-def _serve(port: int):
+def _serve(port: int, fixture: str | None = None):
+    """A fresh mock-mode server (its own in-memory state). ``fixture`` swaps the demo rules for a test model."""
     settings = load_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_PORT": str(port)})
-    uv = uvicorn.Server(uvicorn.Config(build_app(settings), host="127.0.0.1", port=port, log_level="warning"))
+    server = None
+    if fixture is not None:
+        server = build_mcp_server(ai=AiServices(model=FIXTURES[fixture](), budget=None, runner=ThreadRunner()))
+    app = build_app(settings, server)
+    uv = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=uv.run, daemon=True)
     thread.start()
     deadline = time.monotonic() + 15
@@ -106,44 +116,74 @@ _OPS = {
 }
 
 
-def _check_case(client: httpx2.Client, url: str, headers: dict[str, str], case: dict[str, Any]) -> tuple[bool, str]:
-    body = {
-        "jsonrpc": "2.0",
-        "id": 2,
-        "method": "tools/call",
-        "params": {"name": case["tool"], "arguments": case["args"]},
-    }
+def _resolve(value: Any, saved: dict[str, Any]) -> Any:
+    """ "$name" in a step's arguments is a value saved by an earlier step."""
+    if isinstance(value, str) and value.startswith("$"):
+        return saved[value[1:]]
+    if isinstance(value, dict):
+        return {k: _resolve(v, saved) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_resolve(v, saved) for v in value]
+    return value
+
+
+def _call(client: httpx2.Client, url: str, headers: dict[str, str], tool: str, args: dict[str, Any]):
+    body = {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": tool, "arguments": args}}
     r = client.post(url, headers=headers, json=body)
     if r.status_code != 200:
-        return False, f"HTTP {r.status_code}: {r.text[:200]}"
+        return None, f"HTTP {r.status_code}: {r.text[:200]}"
     result = r.json().get("result", {})
     if result.get("isError"):
-        return False, f"tool returned isError: {result.get('content')}"
-    sc = result.get("structuredContent", {})
-    for check in case["checks"]:
-        try:
-            actual = _get(sc, check["field"])
-        except (KeyError, IndexError, TypeError) as exc:
-            return False, f"{check['field']}: {exc}"
-        if not _OPS[check["op"]](actual, check["value"]):
-            return False, f"{check['field']} {check['op']} {check['value']!r}: actual {actual!r}"
+        return None, f"tool returned isError: {result.get('content')}"
+    return result.get("structuredContent", {}), ""
+
+
+def _check_case(client: httpx2.Client, url: str, headers: dict[str, str], case: dict[str, Any]) -> tuple[bool, str]:
+    """A case is one call (``tool``/``args``/``checks``) or ordered ``steps`` on one session."""
+    steps = case.get("steps") or [{"tool": case["tool"], "args": case["args"], "checks": case["checks"]}]
+    saved: dict[str, Any] = {}
+    for n, step in enumerate(steps, 1):
+        where = f"step {n} ({step['tool']}): " if len(steps) > 1 else ""
+        args = _resolve(step.get("args", {}), saved)
+        poll = step.get("poll_until")
+        deadline = time.monotonic() + POLL_SECONDS
+        while True:
+            sc, error = _call(client, url, headers, step["tool"], args)
+            if sc is None:
+                return False, where + error
+            if poll is None or _OPS[poll["op"]](_get(sc, poll["field"]), poll["value"]):
+                break
+            if time.monotonic() > deadline:
+                return False, f"{where}{poll['field']} still {_get(sc, poll['field'])!r} after {POLL_SECONDS}s"
+            time.sleep(0.1)
+        for check in step.get("checks", []):
+            try:
+                actual = _get(sc, check["field"])
+            except (KeyError, IndexError, TypeError) as exc:
+                return False, f"{where}{check['field']}: {exc}"
+            if not _OPS[check["op"]](actual, check["value"]):
+                return False, f"{where}{check['field']} {check['op']} {check['value']!r}: actual {actual!r}"
+        for name, field in step.get("save", {}).items():
+            saved[name] = _get(sc, field)
     return True, ""
 
 
 def main() -> int:
     cases = json.loads(CASES_PATH.read_text(encoding="utf-8"))["cases"]
-    port = _free_port()
-    stop = _serve(port)
-    rows: list[tuple[str, bool, str]] = []
-    try:
-        with httpx2.Client(timeout=10) as client:
-            url = f"http://127.0.0.1:{port}{MCP_PATH}"
-            headers = _session(client, url)
-            for case in cases:
-                ok, detail = _check_case(client, url, headers, case)
-                rows.append((case["id"], ok, detail))
-    finally:
-        stop()
+    results: dict[str, tuple[bool, str]] = {}
+    # One fresh server per model fixture (None = the demo rules), so fixture cases never share state.
+    for fixture in dict.fromkeys(c.get("model_fixture") for c in cases):
+        port = _free_port()
+        stop = _serve(port, fixture)
+        try:
+            with httpx2.Client(timeout=10) as client:
+                url = f"http://127.0.0.1:{port}{MCP_PATH}"
+                headers = _session(client, url)
+                for case in (c for c in cases if c.get("model_fixture") == fixture):
+                    results[case["id"]] = _check_case(client, url, headers, case)
+        finally:
+            stop()
+    rows: list[tuple[str, bool, str]] = [(c["id"], *results[c["id"]]) for c in cases]
 
     passed = sum(1 for _, ok, _ in rows if ok)
     print()
@@ -156,7 +196,8 @@ def main() -> int:
         "# Golden eval results (v0)",
         "",
         f"Run {datetime.now().astimezone().isoformat(timespec='seconds')}, mock mode (`MOCK_BEDROCK=true`), "
-        f"no AWS. `python tasks.py eval-fast`. Extended to the full 45-case suite on the 11 Oct task.",
+        f"no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers "
+        f"'routine' to everything or always fails (tests/fakes.py). Extended to the full suite on the 11 Oct task.",
         "",
         "| Case | Result | Detail |",
         "|---|---|---|",

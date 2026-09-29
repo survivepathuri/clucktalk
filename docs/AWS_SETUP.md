@@ -228,5 +228,22 @@ similar size) call is in the same range. Total for both: well under $0.001.
 response CluckTalk has ever received. Haiku 4.5 and Sonnet 5 remain blocked on the Marketplace agreement /
 quota gaps in §5.1.
 
+### 5.3 Spike: forced tool choice and image input on Nova 2 Lite (2026-09-29, user-approved, 2 of max 10 calls)
+
+Before building the triage agent (docs/DESIGN.md §18), two one-off paid calls with boto3 1.43.103
+(`converse`, `us.amazon.nova-2-lite-v1:0`, us-east-1, `temperature 0`, `maxTokens 100`, an enum-only tool schema,
+`toolChoice: {"tool": {"name": "report_colours"}}`). The images were synthetic colour patterns generated locally,
+not photos.
+
+| # | Input | Result | Tokens in / out | latencyMs |
+|---|---|---|---|---|
+| 1 | Text only ("left half red, right half blue") | Forced `toolUse`, `{"left": "red", "right": "blue"}`, `stopReason: tool_use` | 997 / 35 | 584 |
+| 2 | 64x64 PNG (left RGB 220,30,30; right RGB 30,60,220) | Forced `toolUse` accepted with the image, but `{"left": "red", "right": "white"}`: **wrong** on the blue half | 1,231 / 35 | 456 |
+
+Conclusions: forced tool choice works (text and image); an enum-only tool definition adds about 950 input tokens;
+a tiny image adds about 234. The spike **stopped at call 2** on the first wrong answer, as agreed (FRICTION_LOG
+FL-020). Photo triage (step 1B) is tested on real, licensed photos at a realistic resolution before any claim.
+Cost at the unofficial prices in §5.2: about $0.0008 for both calls.
+
 Unused permission found: `billing:GetSellerOfRecord` has no CLI command; drop it from the inline policy at the next
 permission-set review.

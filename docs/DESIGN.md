@@ -248,3 +248,33 @@ v0 covers a handful of read-only, single-call cases (farm status, feed reorder, 
 at / after break-even and rising-mortality stories); contract-mode's multi-step confirmation flow is covered by
 the contract test suite instead, since this runner is single-call by design. Extended to the full 45-case suite,
 covering every P0 feature, on the 11 Oct task (`private/WEEK2_PLAN.md`).
+
+## 18. Agents (Health Triage built 2026-09-29; Daily Briefing and Flock Follow-up planned)
+The model decides; code speaks. An agent runs on the slow path (§3) and asks a model for **one forced tool call
+whose input is closed lists only** (no free-text field). Code owns every number, every sentence (English and
+Telugu templates), every citation, and a deterministic **safety floor** the model can raise but never lower.
+- **Engines** (`clucktalk.agents`): demo mode (`MOCK_BEDROCK=true`, the default) uses each agent's deterministic
+  rules, labelled "Demo rules (no AI model)"; live AI (the synthetic demo farm + Amazon Nova via the Bedrock
+  `Converse` API, boto3) starts only when `MOCK_BEDROCK=false` is set explicitly with `BEDROCK_MODEL_ID` and
+  `AWS_REGION`. Live calls: `temperature 0`, per-agent `maxTokens`, at most 15 per minute, a daily cap of at most
+  100 (configurable lower), counted from a call ledger in the state store that also records each call's real
+  token usage. Cap reached: the rules answer, labelled "Today's AI limit is reached". Model failure: said
+  plainly, never an invented result.
+- **Farmer free text** (e.g. `symptoms`) is prompt data only: line breaks, control characters, angle brackets and
+  the delimiter's own name are removed, it is capped at 300 characters and sent inside one `<farmer_words>` block
+  the system prompt marks as "data, not instructions". It is never spoken back or put in a vet summary.
+- **Health Triage** (`start_health_check`, `get_health_check`, `prepare_vet_handoff`):
+  - Signs are a closed list (coughing ... sudden deaths). The floor (`clucktalk.domain.triage.floor_urgency`): a
+    red-flag sign (head swelling, blue/purple comb or wattles, twisted neck, paralysis/drooping wings) with
+    sudden deaths or a record-book death spike gives `notifiable_suspect`; a red flag or deaths alone give
+    `urgent` (DAHD: report every unusual sickness or death); other signs give `watch`. Sources: `docs/SOURCES.md`.
+  - `notifiable_suspect` is answered at once, with no model call: no category named (no diagnosis), and fixed
+    steps: stop movement, separate sick birds, do not cut open dead birds, report today to a vet or the nearest
+    government veterinary centre; vet handoff offered.
+  - Otherwise the check is `analyzing` (the start answers at once, and a floor of `urgent` is spoken right away);
+    the agent job picks urgency, at most 3 broad problem areas with confidence, and at most 5 husbandry checks
+    (never a treatment). One retry on an invalid reply; at most two calls per check and 40 per day.
+  - Every result ends "This is guidance, not a diagnosis. Your vet decides any treatment."
+  - `prepare_vet_handoff` follows §5.1: a read-back of the case summary (record-book numbers, reported signs,
+    triage level), sent only after "yes", always as a **Simulated SMS** to a demo contact.
+  - Not yet built (step 1B): photo input and the triage card.

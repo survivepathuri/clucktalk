@@ -23,6 +23,18 @@ Poultry Bazaar's daily rate sheet (poultrybazaar.net) was checked but not cited:
 - **Cobb 430**: no public performance table found (search 2026-09-27). Weight- and feed-vs-target comparisons are refused with a clear message (`NoReferenceCurve`), never substituted.
 - **BV-300** (layer): no public standard found yet. Layer status and feed plans use the house's own records only.
 
+## Health triage (docs/DESIGN.md §18, added 2026-09-29)
+Used by `clucktalk.domain.triage` (`RED_FLAG_SIGNS`, `floor_urgency`, `SOURCES`, the fixed protocol steps). Each was
+read before it was cited. The safety floor itself is CluckTalk's own heuristic built on these published warning
+signs; it is triage, never a diagnosis, and never names a medicine or dose.
+
+| Source | Status and what it supports |
+|---|---|
+| Govt. of India, Dept. of Animal Husbandry & Dairying, *Action Plan for Prevention, Control & Containment of Avian Influenza (Revised 2021)*; read from the state mirror megahvt.gov.in/notification/revised_AI_Action_Plan_2021.pdf (official listing: dahd.gov.in, "Avian Influenza") | **Verified** (PDF text extracted, pp. 39-40 of the PDF). "Swelling around the eyes, neck, head, nasal discharge, discoloration of the wattles, combs, legs, drop in egg production, sudden weakness, drooping wings and lack of movement among birds are the warning signs." "Every unusual sickness or death of birds should be immediately reported to the nearest veterinary center." Also: "CAUTION: DO NOT OPEN ANY BIRD SUSPECTED FOR AI" (the "do not cut open dead birds" step) and "Bury the dead birds properly". |
+| WOAH, *Newcastle disease*, woah.org/en/disease/newcastle-disease/ | **Verified.** "respiratory signs – gasping, coughing, sneezing and rales"; "nervous signs – tremors, paralyzed wings and legs, twisted necks, circling, spasms, and paralysis"; ND in its highly pathogenic form "must be reported to WOAH". |
+| USDA APHIS, *How To Spot Sickness*, aphis.usda.gov/livestock-poultry-disease/avian/defend-the-flock/signs-illness | **Verified.** Lists "Sudden death", "Swelling of the head, neck, eyelids, comb, wattles, or shanks", "Purple discoloration of the wattles, comb, or legs", "Twisting of the head and neck (torticollis)"; "Report any sick or dying birds". The US reporting route is not used; India's is the DAHD line above. |
+| D.E. Swayne, *Avian Influenza in Poultry and Wild Birds*, Merck Veterinary Manual (last updated May 2026) | **Verified**, background only (not in the code's `SOURCES`): "cyanosis and edema of the head, comb, wattles"; nervous signs "torticollis ... paralysis, and drooping wings"; "Suspected outbreaks should be reported to appropriate regulatory authorities." |
+
 ## Sources for planned features (docs/DESIGN.md §13), checked 2026-09-27
 Status: **verified** = fetched and the cited point was found in the text; **not verified** = could not be read.
 Nothing below is used in code yet. When it is, the exact passage and the file that uses it are added here.

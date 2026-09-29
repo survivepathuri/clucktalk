@@ -21,6 +21,9 @@ DATA_DIR = REPO_ROOT / "data"
 # Local farm state (profile, proposals, records). .local/ is gitignored; `python tasks.py reset-demo` deletes it.
 DEFAULT_STATE_PATH = REPO_ROOT / ".local" / "clucktalk.sqlite3"
 
+# Hard cap on live model calls per day (user decision 2026-09-29): a lower cap may be configured, never a higher one.
+AI_HARD_DAILY_CAP = 100
+
 _TRUE = {"true", "1", "yes"}
 _FALSE = {"false", "0", "no"}
 _LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
@@ -39,6 +42,9 @@ class Settings:
     auth_token: str | None
     aws_region: str | None
     state_path: Path = DEFAULT_STATE_PATH
+    mock_bedrock_given: bool = False  # MOCK_BEDROCK was set explicitly (live AI needs an explicit "false")
+    bedrock_model_id: str | None = None
+    ai_max_calls_per_day: int = AI_HARD_DAILY_CAP
 
     @property
     def is_local(self) -> bool:
@@ -101,4 +107,35 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         auth_token=auth_token,
         aws_region=env.get("AWS_REGION", "").strip() or None,
         state_path=_state_path(env.get("CLUCKTALK_STATE_PATH", "").strip()),
+        mock_bedrock_given=env.get("MOCK_BEDROCK", "").strip() != "",
+        bedrock_model_id=env.get("BEDROCK_MODEL_ID", "").strip() or None,
+        ai_max_calls_per_day=_ai_cap(env.get("CLUCKTALK_AI_MAX_CALLS_PER_DAY", "").strip()),
     )
+
+
+def _ai_cap(raw: str) -> int:
+    if raw == "":
+        return AI_HARD_DAILY_CAP
+    if not raw.isdigit() or int(raw) > AI_HARD_DAILY_CAP:
+        raise ConfigError(
+            f"CLUCKTALK_AI_MAX_CALLS_PER_DAY={raw!r} must be a whole number from 0 to {AI_HARD_DAILY_CAP} "
+            "(the hard cap; it can only be lowered)."
+        )
+    return int(raw)
+
+
+def require_live_ai(settings: Settings) -> None:
+    """Live AI (the synthetic demo farm + Amazon Nova via Bedrock) starts only on an explicit choice. Mock mode
+    (MOCK_BEDROCK=true) stays the default the task runner sets; an unset MOCK_BEDROCK is not a choice."""
+    if settings.mock_bedrock:
+        return
+    if not settings.mock_bedrock_given:
+        raise ConfigError(
+            "MOCK_BEDROCK is not set. Use MOCK_BEDROCK=true for the demo (no AWS), or MOCK_BEDROCK=false with "
+            "BEDROCK_MODEL_ID and AWS_REGION for live AI."
+        )
+    missing = [
+        n for n, v in (("BEDROCK_MODEL_ID", settings.bedrock_model_id), ("AWS_REGION", settings.aws_region)) if not v
+    ]
+    if missing:
+        raise ConfigError(f"Live AI (MOCK_BEDROCK=false) needs {' and '.join(missing)}.")

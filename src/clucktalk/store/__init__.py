@@ -8,11 +8,13 @@ inside the 500 ms tool budget (Rule 4).
 from __future__ import annotations
 
 from contextlib import AbstractContextManager
-from typing import Protocol
+from datetime import date, datetime
+from typing import Any, Protocol
 
 from clucktalk.domain.models import DailyRecord
 from clucktalk.domain.profile import ContractTerms, FarmProfile
 from clucktalk.domain.proposals import Proposal
+from clucktalk.domain.triage import HealthCheck, VetHandoff
 
 
 class StoreError(RuntimeError):
@@ -49,3 +51,35 @@ class Store(Protocol):
     def records(self, farm_id: str, house_id: str) -> tuple[DailyRecord, ...]:
         """Saved records for one house, sorted by day."""
         ...
+
+    def add_health_check(self, check: HealthCheck) -> None: ...
+
+    def update_health_check(self, check: HealthCheck) -> None:
+        """Save a check's new status and result (its input and floor never change)."""
+        ...
+
+    def get_health_check(self, check_id: str) -> HealthCheck | None: ...
+
+    def latest_health_check(self, farm_id: str, house_id: str) -> HealthCheck | None: ...
+
+    def add_handoff(self, handoff: VetHandoff) -> None: ...
+
+    def handoff_for_check(self, check_id: str) -> VetHandoff | None: ...
+
+    def add_ai_call(
+        self,
+        at: datetime,
+        agent: str,
+        engine: str,
+        model_id: str | None,
+        input_tokens: int,
+        output_tokens: int,
+        latency_ms: int,
+        outcome: str,
+    ) -> None:
+        """One live model call's real usage: the ledger behind the daily cap and every published cost figure."""
+        ...
+
+    def ai_calls(self, day: date) -> list[dict[str, Any]]: ...
+
+    def count_ai_calls(self, day: date, agent: str | None = None) -> int: ...

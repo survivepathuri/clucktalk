@@ -21,10 +21,21 @@ from typing import Any
 from clucktalk.domain.models import DailyRecord, Treatment, TreatmentKind
 from clucktalk.domain.profile import ContractTerms, FarmMode, FarmProfile
 from clucktalk.domain.proposals import Proposal, ProposalStatus, canonical
+from clucktalk.domain.triage import (
+    CheckStatus,
+    HealthCheck,
+    VetHandoff,
+    floor_from_dict,
+    floor_to_dict,
+    input_from_dict,
+    input_to_dict,
+    result_from_dict,
+    result_to_dict,
+)
 from clucktalk.store import StoreError
 
 MEMORY = ":memory:"
-SCHEMA_VERSION = "2"  # v2 (2026-09-29): + contract_terms table
+SCHEMA_VERSION = "3"  # v2 (2026-09-29): + contract_terms; v3 (2026-09-29): + health checks, handoffs, AI ledger
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS profiles (
@@ -44,6 +55,21 @@ CREATE TABLE IF NOT EXISTS records (
     farm_id TEXT NOT NULL, house_id TEXT NOT NULL, day TEXT NOT NULL, record TEXT NOT NULL,
     PRIMARY KEY (farm_id, house_id, day)
 );
+CREATE TABLE IF NOT EXISTS health_checks (
+    check_id TEXT PRIMARY KEY, farm_id TEXT NOT NULL, house_id TEXT NOT NULL, created_at TEXT NOT NULL,
+    status TEXT NOT NULL, input TEXT NOT NULL, floor TEXT NOT NULL, result TEXT, updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS health_checks_by_house ON health_checks (farm_id, house_id, created_at);
+CREATE TABLE IF NOT EXISTS vet_handoffs (
+    handoff_id TEXT PRIMARY KEY, farm_id TEXT NOT NULL, check_id TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL,
+    message_en TEXT NOT NULL, message_te TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS ai_calls (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT NOT NULL, day TEXT NOT NULL, agent TEXT NOT NULL,
+    engine TEXT NOT NULL, model_id TEXT, input_tokens INTEGER NOT NULL, output_tokens INTEGER NOT NULL,
+    latency_ms INTEGER NOT NULL, outcome TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ai_calls_by_day ON ai_calls (day, agent);
 """
 
 
@@ -259,3 +285,134 @@ class SqliteStore:
                 "SELECT record FROM records WHERE farm_id = ? AND house_id = ? ORDER BY day", (farm_id, house_id)
             ).fetchall()
         return tuple(record_from_json(r["record"]) for r in rows)
+
+    # -- health checks and vet handoffs (docs/DESIGN.md §18) ----------------------------------------------------
+    @staticmethod
+    def _check(row: sqlite3.Row) -> HealthCheck:
+        return HealthCheck(
+            check_id=row["check_id"],
+            farm_id=row["farm_id"],
+            house_id=row["house_id"],
+            created_at=datetime.fromisoformat(row["created_at"]),
+            status=CheckStatus(row["status"]),
+            input=input_from_dict(json.loads(row["input"])),
+            floor=floor_from_dict(json.loads(row["floor"])),
+            result=None if row["result"] is None else result_from_dict(json.loads(row["result"])),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+        )
+
+    def add_health_check(self, check: HealthCheck) -> None:
+        with self.atomic():
+            self._db.execute(
+                "INSERT INTO health_checks (check_id, farm_id, house_id, created_at, status, input, floor, result, "
+                "updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    check.check_id,
+                    check.farm_id,
+                    check.house_id,
+                    _iso(check.created_at),
+                    check.status.value,
+                    canonical(input_to_dict(check.input)),
+                    canonical(floor_to_dict(check.floor)),
+                    None if check.result is None else canonical(result_to_dict(check.result)),
+                    _iso(check.updated_at),
+                ),
+            )
+
+    def update_health_check(self, check: HealthCheck) -> None:
+        with self.atomic():
+            cur = self._db.execute(
+                "UPDATE health_checks SET status = ?, result = ?, updated_at = ? WHERE check_id = ?",
+                (
+                    check.status.value,
+                    None if check.result is None else canonical(result_to_dict(check.result)),
+                    _iso(check.updated_at),
+                    check.check_id,
+                ),
+            )
+            if cur.rowcount != 1:
+                raise StoreError(f"health check {check.check_id} does not exist")
+
+    def get_health_check(self, check_id: str) -> HealthCheck | None:
+        with self._lock:
+            row = self._db.execute("SELECT * FROM health_checks WHERE check_id = ?", (check_id,)).fetchone()
+        return None if row is None else self._check(row)
+
+    def latest_health_check(self, farm_id: str, house_id: str) -> HealthCheck | None:
+        with self._lock:
+            row = self._db.execute(
+                "SELECT * FROM health_checks WHERE farm_id = ? AND house_id = ? "
+                "ORDER BY created_at DESC, rowid DESC LIMIT 1",
+                (farm_id, house_id),
+            ).fetchone()
+        return None if row is None else self._check(row)
+
+    def add_handoff(self, handoff: VetHandoff) -> None:
+        with self.atomic():
+            self._db.execute(
+                "INSERT INTO vet_handoffs (handoff_id, farm_id, check_id, created_at, message_en, message_te) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (
+                    handoff.handoff_id,
+                    handoff.farm_id,
+                    handoff.check_id,
+                    _iso(handoff.created_at),
+                    handoff.message_en,
+                    handoff.message_te,
+                ),
+            )
+
+    def handoff_for_check(self, check_id: str) -> VetHandoff | None:
+        with self._lock:
+            row = self._db.execute("SELECT * FROM vet_handoffs WHERE check_id = ?", (check_id,)).fetchone()
+        if row is None:
+            return None
+        return VetHandoff(
+            row["handoff_id"],
+            row["farm_id"],
+            row["check_id"],
+            datetime.fromisoformat(row["created_at"]),
+            row["message_en"],
+            row["message_te"],
+        )
+
+    # -- AI call ledger: every live model call's real usage; the daily cap counts from it -----------------------
+    def add_ai_call(
+        self,
+        at: datetime,
+        agent: str,
+        engine: str,
+        model_id: str | None,
+        input_tokens: int,
+        output_tokens: int,
+        latency_ms: int,
+        outcome: str,
+    ) -> None:
+        with self.atomic():
+            self._db.execute(
+                "INSERT INTO ai_calls (at, day, agent, engine, model_id, input_tokens, output_tokens, latency_ms, "
+                "outcome) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    _iso(at),
+                    at.date().isoformat(),
+                    agent,
+                    engine,
+                    model_id,
+                    input_tokens,
+                    output_tokens,
+                    latency_ms,
+                    outcome,
+                ),
+            )
+
+    def ai_calls(self, day: date) -> list[dict[str, Any]]:
+        with self._lock:
+            rows = self._db.execute("SELECT * FROM ai_calls WHERE day = ? ORDER BY id", (day.isoformat(),)).fetchall()
+        return [dict(r) for r in rows]
+
+    def count_ai_calls(self, day: date, agent: str | None = None) -> int:
+        sql, args = "SELECT COUNT(*) FROM ai_calls WHERE day = ?", [day.isoformat()]
+        if agent is not None:
+            sql, args = sql + " AND agent = ?", [*args, agent]
+        with self._lock:
+            return self._db.execute(sql, args).fetchone()[0]

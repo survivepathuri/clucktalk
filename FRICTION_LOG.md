@@ -233,3 +233,13 @@ Expected vs actual: Expected either a clean JSON file or a clear top-level error
 Severity: Medium
 Workaround: Re-ran the identical call with `PYTHONIOENCODING=utf-8 PYTHONUTF8=1` set (the CLI is Python-based) — clean output, exit 0, full `usage` block.
 Actionable suggestion: The AWS CLI should default to UTF-8 for redirected/non-console output on Windows (or document the `PYTHONIOENCODING`/`PYTHONUTF8` workaround prominently), and should not leave a partially-written file with no error marker when serialization fails mid-stream — either write to a temp file and rename on success, or fail before writing anything.
+
+### FL-020: Nova 2 Lite accepts image input with a forced tool call, but misread a solid blue area as "white" on a tiny synthetic image
+Date: 2026-09-29
+Tool / service: Amazon Bedrock Runtime `Converse` (boto3 1.43.103), `us.amazon.nova-2-lite-v1:0`, us-east-1
+Task attempted: Verify, before building photo triage, that Nova 2 Lite takes image input together with a forced `toolChoice` (botocore documents `toolChoice` only as "If supported by model").
+Steps taken: Two one-off paid calls (a budgeted spike). Call 1, text only, `toolChoice: {"tool": {"name": "report_colours"}}`, enum-only schema: correct `toolUse` (`left: red, right: blue`), 997 input / 35 output tokens. Call 2: the same tool plus a synthetic 64x64 PNG generated locally (left half RGB 220,30,30; right half RGB 30,60,220), `temperature 0`.
+Expected vs actual: Expected `left: red, right: blue`. Actual: a well-formed forced `toolUse` with `left: red, right: white` (1,231 input / 35 output tokens, 456 ms). Image input and forced tool use both work; the colour answer for a flat, saturated blue area was wrong. One sample at a very small resolution, so this is an observation, not a benchmark.
+Severity: Low (for CluckTalk: photo triage was already designed as advisory, below a deterministic safety floor)
+Workaround: Photo findings may only add signs, never lower urgency; the spike was stopped at this first wrong answer, as agreed. Photo triage (step 1B) will be tested on real, licensed photos at a realistic resolution before any claim is made.
+Actionable suggestion: Document minimum/recommended image resolution for Nova 2 Lite image understanding, and state in the Converse `toolChoice` docs which models support the `tool` choice (it worked here, but the API reference only says "if supported by model").

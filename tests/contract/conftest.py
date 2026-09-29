@@ -16,6 +16,7 @@ import pytest
 import uvicorn
 from mcp.server.mcpserver import MCPServer
 
+from clucktalk.agents import AiServices
 from clucktalk.config import load_settings
 from clucktalk.server.app import MCP_PATH, TARGET_PROTOCOL_VERSION, build_app, build_mcp_server
 from clucktalk.server.farm_state import IST, DemoFarmSource
@@ -88,10 +89,11 @@ def _start(
     env: dict[str, str],
     customize: Callable[[MCPServer], None] | None = None,
     source: DemoFarmSource | None = None,
+    ai: AiServices | None = None,
 ) -> tuple[LiveServer, Callable]:
     port = _free_port()
     settings = load_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_PORT": str(port), **env})
-    server = build_mcp_server(source or DemoFarmSource(clock=lambda: FIXED_DAY))
+    server = build_mcp_server(source or DemoFarmSource(clock=lambda: FIXED_DAY), ai)
     if customize:
         customize(server)
     config = uvicorn.Config(build_app(settings, server), host=settings.host, port=port, log_level="warning")

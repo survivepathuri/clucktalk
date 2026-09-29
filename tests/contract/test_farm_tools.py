@@ -147,6 +147,8 @@ def test_help_lists_the_farm_tools(live):
         "set_contract_terms",
         "get_record_book",
         "log_daily_record",
+        "start_health_check",
+        "prepare_vet_handoff",
     ]
 
 

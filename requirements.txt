@@ -31,3 +31,11 @@ sse-starlette==3.4.11
 truststore==0.10.4
 typing-inspection==0.4.4
 typing_extensions==4.16.0
+# Live AI (docs/DESIGN.md §18): boto3 for Bedrock Runtime Converse; installed and verified 2026-09-29.
+boto3==1.43.103
+botocore==1.43.104
+jmespath==1.1.0
+python-dateutil==2.9.0.post0
+s3transfer==0.19.2
+six==1.17.0
+urllib3==2.8.0

@@ -227,3 +227,62 @@ def test_a_weight_without_a_bird_count_still_reaches_the_tools_own_clarifying_er
     intent = match("house 2 average weight 1800 grams")
     assert intent.tool == "log_daily_record"
     assert intent.arguments == {"house": "house 2", "avg_weight_g": 1800.0}
+
+
+@pytest.mark.parametrize(
+    ("utterance", "args"),
+    [
+        # Health triage (docs/DESIGN.md §18): the farmer's words map onto closed-list signs; their own words go too
+        ("Shed 2 birds are coughing and not eating", {"house": "shed 2", "signs": ["coughing", "not_eating"]}),
+        ("kotam do mein khansi aur dast", {"house": "kotam do", "signs": ["coughing", "diarrhoea"]}),
+        (
+            "house two swollen heads and blue combs, birds dying suddenly",
+            {"house": "house two", "signs": ["swollen_head", "discoloured_comb", "sudden_deaths"]},
+        ),
+        ("shed one birds panting a lot", {"house": "shed one", "signs": ["panting"]}),
+        ("shed 3 twisted neck and drooping wings", {"house": "shed 3", "signs": ["twisted_neck", "paralysis"]}),
+    ],
+)
+def test_signs_of_illness_start_a_health_check(utterance, args):
+    intent = match(utterance)
+    assert intent.tool == "start_health_check"
+    assert {k: intent.arguments[k] for k in ("house", "signs")} == args
+    assert intent.arguments["symptoms"]  # the farmer's own words, for the agent's delimited data block
+
+
+@pytest.mark.parametrize(
+    ("utterance", "tool", "args"),
+    [
+        ("is the shed 2 health check ready", "get_health_check", {"house": "shed 2"}),
+        ("what did the health check find for house two", "get_health_check", {"house": "house two"}),
+        ("send the shed 2 health check to my vet", "prepare_vet_handoff", {"house": "shed 2"}),
+        ("shed two report vet ko bhej do", "prepare_vet_handoff", {"house": "shed two"}),
+    ],
+)
+def test_health_check_follow_ups(utterance, tool, args):
+    intent = match(utterance)
+    assert (intent.tool, intent.arguments) == (tool, args)
+
+
+def test_signs_without_a_shed_are_not_guessed():
+    assert match("birds are coughing") is None  # the host asks which shed rather than guessing
+
+
+def test_a_dose_question_never_reaches_a_record_or_a_number():
+    intent = match("shed 2 birds coughing, which antibiotic and how many ml should I give")
+    assert intent.tool == "start_health_check"
+    assert "treatments" not in intent.arguments
+
+
+@pytest.mark.parametrize(
+    "utterance",
+    [
+        "do a health check on shed 2, birds are coughing",
+        "shed 2 ki jaanch karo, murgi khansi",
+        "shed 2 birds coughing, send doctor",
+    ],
+)
+def test_signs_win_over_result_and_vet_words(utterance):
+    """Rule 11 finding 4: a sick-bird report must start a check, never lose its signs to a follow-up intent."""
+    intent = match(utterance)
+    assert intent.tool == "start_health_check" and "coughing" in intent.arguments["signs"]

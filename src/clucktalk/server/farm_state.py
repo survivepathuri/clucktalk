@@ -1,7 +1,7 @@
 """Where tools get the farm from. Precomputed per day, so tools only read (docs/DESIGN.md §3; Rule 4).
 
 Demo mode only: the fictional seeded farm, labeled ``demo_data=True`` in every tool result (Rule 6).
-Live mode has no source yet; ``clucktalk.server.app.main`` refuses to start without MOCK_BEDROCK=true.
+There is no live farm source: live AI mode (docs/DESIGN.md §18) also runs on this synthetic demo farm.
 What the farmer changes (farm profile, proposals awaiting "yes") lives in the state store (clucktalk.store).
 """
 

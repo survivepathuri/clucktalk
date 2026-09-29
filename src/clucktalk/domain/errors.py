@@ -191,3 +191,27 @@ class MissingAnswer(DomainError):
             "అది 'అవును'నా 'వద్దు'నా అని నాకు అర్థం కాలేదు, కాబట్టి ఏమీ మారలేదు.",
             "దయచేసి 'అవును' లేదా 'వద్దు' అని చెప్పండి.",
         )
+
+
+class NothingToCheck(DomainError):
+    """start_health_check with no sign and no description (docs/DESIGN.md §18)."""
+
+    def __init__(self, label_en: str, label_te: str) -> None:
+        super().__init__(
+            f"I didn't catch any sign of illness to check for {label_en}.",
+            "Tell me what you see, for example coughing, swelling of the head, or birds not eating.",
+            f"{label_te} కోసం తనిఖీ చేయడానికి జబ్బు లక్షణం ఏదీ అందలేదు.",
+            "మీరు ఏమి చూస్తున్నారో చెప్పండి, ఉదాహరణకు దగ్గు, తల వాపు, లేదా కోళ్లు మేత తినకపోవడం.",
+        )
+
+
+class NoHealthCheck(DomainError):
+    """No health check exists for that shed (or that check belongs to another shed or farm)."""
+
+    def __init__(self, label_en: str, label_te: str) -> None:
+        super().__init__(
+            f"I don't have a health check for {label_en} yet.",
+            "Tell me what signs you see in that shed, and I'll check it.",
+            f"{label_te} కి ఇంకా ఆరోగ్య తనిఖీ లేదు.",
+            "ఆ షెడ్‌లో మీరు చూస్తున్న లక్షణాలు చెప్పండి, నేను తనిఖీ చేస్తాను.",
+        )

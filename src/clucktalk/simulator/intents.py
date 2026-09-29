@@ -143,6 +143,37 @@ def record_fields(text: str, house: str | None) -> tuple[dict, list[str]]:
     return fields, matched
 
 
+# Health triage (docs/DESIGN.md §18): farmer words -> the closed list of signs start_health_check accepts. The
+# farmer's whole utterance also goes along as `symptoms` (prompt data for the agent, never spoken back).
+SIGN_WORDS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("coughing", re.compile(r"\b(?:cough\w*|khansi|khaansi|khasi)\b")),
+    ("sneezing", re.compile(r"\b(?:sneez\w*|chheenk\w*|cheenk\w*)\b")),
+    ("gasping", re.compile(r"\b(?:gasp\w*|breathing (?:hard|problem)|saans)\b")),
+    ("nasal_discharge", re.compile(r"\b(?:runny nose|nasal discharge|naak beh\w*)\b")),
+    ("swollen_head", re.compile(r"\b(?:swollen (?:heads?|face|eyes)|swelling|head swell\w*|sujan)\b")),
+    (
+        "discoloured_comb",
+        re.compile(r"\b(?:(?:blue|purple|black) (?:combs?|wattles?|legs?)|combs? (?:is |are )?(?:blue|purple))\b"),
+    ),
+    ("twisted_neck", re.compile(r"\b(?:twist\w* necks?|necks? twist\w*|gardan (?:mud\w*|tedhi))\b")),
+    ("paralysis", re.compile(r"\b(?:paraly\w*|drooping wings?|wings? drooping|legs? not working)\b")),
+    ("diarrhoea", re.compile(r"\b(?:diarr?h?o?ea|loose droppings|dast|patli beet)\b")),
+    ("not_eating", re.compile(r"\b(?:not eating|stopped eating|off feed|khana nahi\w*|dana nahi\w*)\b")),
+    ("dull", re.compile(r"\b(?:dull|huddl\w*|sust|lazy)\b")),
+    ("lame", re.compile(r"\b(?:lame\w*|limp\w*|langd\w*)\b")),
+    ("panting", re.compile(r"\b(?:panting|pant|hanf\w*)\b")),
+    ("sudden_deaths", re.compile(r"\b(?:dying suddenly|suddenly dying|sudden deaths?|died suddenly|achanak mar\w*)\b")),
+)
+HEALTH_RESULT = re.compile(
+    r"\b(?:health check|check (?:is )?ready|what did (?:the|my) (?:health )?check|triage result|jaanch)\b"
+)
+VET_HANDOFF = re.compile(r"\b(?:send|bhej\w*)\b.*\b(?:vet|doctor|daktar)\b|\b(?:vet|doctor)\b.*\bbhej\w*\b")
+
+
+def health_signs(text: str) -> list[str]:
+    return [sign for sign, pattern in SIGN_WORDS if pattern.search(text)]
+
+
 @dataclass(frozen=True)
 class Intent:
     tool: str
@@ -195,6 +226,16 @@ def match(utterance: str) -> Intent | None:
         return Intent("get_record_book", {}, "record book: 'record book' / 'who's logged' / 'what's logged'")
     house = house_phrase(text)
     args = {"house": house} if house else {}
+    signs = health_signs(text)
+    if house and signs:
+        # Signs of illness come first: a sick-bird report must never become a silent log, a "get result" or a
+        # vet send without its check (Rule 11 review 2026-09-29).
+        rule = "health: signs (" + ", ".join(signs) + ") + shed"
+        return Intent("start_health_check", {**args, "signs": signs, "symptoms": utterance.strip()[:300]}, rule)
+    if house and VET_HANDOFF.search(text):
+        return Intent("prepare_vet_handoff", args, "vet handoff: 'send ... vet' / 'vet ko bhej' + shed")
+    if house and HEALTH_RESULT.search(text):
+        return Intent("get_health_check", args, "health result: 'health check' / 'check ready' + shed")
     if house:
         fields, matched = record_fields(text, house)
         if fields:
