@@ -70,6 +70,42 @@
       "checks": [
         {"field": "text_en", "op": "contains", "value": "sell"}
       ]
+    },
+    {
+      "id": "record-book-log-report-read-back",
+      "description": "log_daily_record propose-only (docs/DESIGN.md §5.1: read back before anything is saved; a two-call confirm flow isn't covered by this single-call runner, same as contract-mode plan_sale).",
+      "tool": "log_daily_record",
+      "args": {"house": "shed 1", "deaths": 5, "feed_bags": 3},
+      "checks": [
+        {"field": "status", "op": "eq", "value": "needs_confirmation"},
+        {"field": "proposed.deaths", "op": "eq", "value": 5},
+        {"field": "proposed.feed_bags", "op": "eq", "value": 3},
+        {"field": "text_en", "op": "contains", "value": "5 died"},
+        {"field": "text_en", "op": "contains", "value": "3 bags of feed"}
+      ]
+    },
+    {
+      "id": "record-book-no-dose-ever",
+      "description": "A medicine/vaccine is read back by name only, never a dose (CLAUDE.md safety rule; Treatment has no dose field).",
+      "tool": "log_daily_record",
+      "args": {"house": "shed 1", "treatments": [{"kind": "vaccine", "name": "Newcastle"}]},
+      "checks": [
+        {"field": "status", "op": "eq", "value": "needs_confirmation"},
+        {"field": "proposed.treatments.0.name", "op": "eq", "value": "Newcastle"},
+        {"field": "text_en", "op": "not_contains", "value": "dose"},
+        {"field": "text_en", "op": "not_contains", "value": "ml"}
+      ]
+    },
+    {
+      "id": "record-book-nothing-logged-yet",
+      "description": "A fresh demo farm: get_record_book shows every house still unlogged today.",
+      "tool": "get_record_book",
+      "args": {},
+      "checks": [
+        {"field": "houses_logged", "op": "eq", "value": 0},
+        {"field": "houses_total", "op": "eq", "value": 3},
+        {"field": "text_en", "op": "contains", "value": "No entry yet for House 1 today."}
+      ]
     }
   ]
 }

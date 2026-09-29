@@ -40,6 +40,52 @@ from clucktalk.simulator.intents import match, yes_no
         ("am I contract or independent", "get_farm_profile", {}),
         # Review 2026-09-28: "own" alone is not a farm mode
         ("change the feed in my own shed 2", "plan_feed", {"house": "shed 2"}),
+        # Voice record book (docs/DESIGN.md §13.2): a stated number is what makes it a report, not a question.
+        ("House 2, 3 birds died today", "log_daily_record", {"house": "house 2", "deaths": 3}),
+        ("3 birds died in house 2", "log_daily_record", {"house": "house 2", "deaths": 3}),
+        ("house two mar gaye 3", "log_daily_record", {"house": "house two", "deaths": 3}),
+        ("shed 1 no deaths today", "log_daily_record", {"house": "shed 1", "deaths": 0}),
+        ("gave 2 bags of feed to house 1", "log_daily_record", {"house": "house 1", "feed_bags": 2.0}),
+        ("fed 2 bags to shed 1 today", "log_daily_record", {"house": "shed 1", "feed_bags": 2.0}),
+        (
+            "House 2, 3 died and 2 bags of feed today",
+            "log_daily_record",
+            {"house": "house 2", "deaths": 3, "feed_bags": 2.0},
+        ),
+        (
+            "house 2, no deaths, 3 bags of feed",
+            "log_daily_record",
+            {"house": "house 2", "deaths": 0, "feed_bags": 3.0},
+        ),
+        (
+            "house 3 average weight 1800 grams from 10 birds weighed",
+            "log_daily_record",
+            {"house": "house 3", "avg_weight_g": 1800.0, "weight_sample_birds": 10},
+        ),
+        (
+            "house 2, gave Newcastle vaccine",
+            "log_daily_record",
+            {"house": "house 2", "treatments": [{"kind": "vaccine", "name": "Newcastle"}]},
+        ),
+        (
+            "shed 3 gave Amoxicillin medicine",
+            "log_daily_record",
+            {"house": "shed 3", "treatments": [{"kind": "medicine", "name": "Amoxicillin"}]},
+        ),
+        ("record book", "get_record_book", {}),
+        ("who has logged today", "get_record_book", {}),
+        ("what's logged today", "get_record_book", {}),
+        # A question, not a report: no number given, so this stays plan_feed, never log_daily_record.
+        ("how much feed does shed 2 need", "plan_feed", {"house": "shed 2"}),
+        # Rule 11 review 2026-09-29: DESIGN.md §13.2 lists "feed used (bags or kg)"; kg used to fall through to
+        # the generic FEED trigger and silently become a plan_feed question instead of a report.
+        ("gave 100 kg of feed to house 1", "log_daily_record", {"house": "house 1", "feed_bags": 2.0}),
+        # A multi-word treatment name, and a dose-shaped word rejected as a name rather than stored.
+        (
+            "house 2, gave Newcastle disease vaccine",
+            "log_daily_record",
+            {"house": "house 2", "treatments": [{"kind": "vaccine", "name": "Newcastle Disease"}]},
+        ),
     ],
 )
 def test_utterance_to_tool(utterance, tool, args):
@@ -159,3 +205,25 @@ def test_a_negated_mode_sentence_never_starts_a_switch(utterance):
     """Review 2026-09-28 (Low): negations matched as a switch request."""
     intent = match(utterance)
     assert intent is None or intent.tool != "set_farm_mode"
+
+
+def test_a_dose_word_is_never_stored_as_a_treatment_name():
+    """Rule 11 review 2026-09-29: "gave 5 ml vaccine" used to store name="Ml"."""
+    intent = match("house 1 gave 5 ml vaccine")
+    assert intent is None or "treatments" not in intent.arguments
+
+
+def test_a_treatment_without_a_real_name_is_never_guessed():
+    """ "gave the vaccine" has no name to record; falls back rather than inventing one (docs/DESIGN.md §5 rule 4:
+    never guess)."""
+    intent = match("house 1 gave the vaccine")
+    assert intent is None or intent.tool != "log_daily_record"
+
+
+def test_a_weight_without_a_bird_count_still_reaches_the_tools_own_clarifying_error():
+    """Rule 11 review 2026-09-29: dropping the weight silently sent a weight-only report to get_farm_status
+    instead. Sending avg_weight_g alone reaches log_daily_record, which asks for the bird count itself
+    (WeightSampleNeedsBirdCount) rather than the host guessing one or staying silent."""
+    intent = match("house 2 average weight 1800 grams")
+    assert intent.tool == "log_daily_record"
+    assert intent.arguments == {"house": "house 2", "avg_weight_g": 1800.0}

@@ -263,3 +263,27 @@ def test_moving_on_drops_the_pending_read_back(sim_fresh):
     sim_fresh.turn("how is shed two doing")  # the farmer moved on
     stray = sim_fresh.turn("yes")
     assert stray["kind"] == "fallback" and stray["exchanges"] == []
+
+
+def test_a_reported_record_needs_a_yes_then_shows_up_in_the_record_book(sim_fresh):
+    """docs/DESIGN.md §13.2 end to end through the host: report, read-back, "haan", then get_record_book."""
+    first = sim_fresh.turn("House 1, 3 birds died and 2 bags of feed today")
+    assert first["intent"]["tool"] == "log_daily_record"
+    assert first["intent"]["arguments"] == {"house": "house 1", "deaths": 3, "feed_bags": 2.0}
+    sc = first["result"]["structuredContent"]
+    assert sc["status"] == "needs_confirmation" and first["awaiting_answer"] is True
+    assert "3 died" in first["speech"] and "2 bags of feed" in first["speech"]
+
+    yes = sim_fresh.turn("haan")
+    assert yes["intent"]["tool"] == "log_daily_record"
+    assert yes["intent"]["arguments"] == {
+        **first["intent"]["arguments"],
+        "proposal_id": sc["proposal_id"],
+        "answer": "yes",
+    }
+    assert yes["result"]["structuredContent"]["status"] == "changed"
+
+    book = sim_fresh.turn("record book")
+    assert book["intent"] == {"tool": "get_record_book", "arguments": {}, "rule": book["intent"]["rule"]}
+    entry = next(e for e in book["result"]["structuredContent"]["entries"] if e["number"] == 1)
+    assert entry["logged"] is True and entry["record"]["deaths"] == 3
