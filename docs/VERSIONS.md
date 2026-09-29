@@ -75,9 +75,14 @@ Marketplace agreement is still `NOT_AVAILABLE`, which now the blocker, not quota
 is still 0** (default 6,000,000) and its agreement is also `NOT_AVAILABLE` — matches Support's "some higher-tier
 foundation models may not be available at this access level."
 
-Still to verify: the Anthropic Marketplace agreement (console "Model access" page, account owner only); a first real
-Converse call (Nova 2 Lite first, since it's the only model both quota- and agreement-ready); Guardrails and
-Knowledge Bases on S3 Vectors in us-east-1, plus S3 Vectors pricing (Rule 1 alternative to AOSS).
+Still to verify: the Anthropic Marketplace agreement (console "Model access" page, account owner only); Guardrails
+and Knowledge Bases on S3 Vectors in us-east-1, plus S3 Vectors pricing (Rule 1 alternative to AOSS).
+
+**First live Converse call, 2026-09-29** (docs/AWS_SETUP.md §5.2): Nova 2 Lite (`us.amazon.nova-2-lite-v1:0`,
+us-east-1) answered a real prompt — the account-verification gate (FL-018) had cleared. 57 input + 14 output
+tokens, ≈$0.00005. A second, unrelated CLI bug found in the same step: the AWS CLI on Windows crashes writing a
+response containing certain Unicode (an emoji) to a redirected file (FL-019; workaround: `PYTHONIOENCODING=utf-8`).
+Haiku 4.5 and Sonnet 5 are still not callable (Marketplace agreement / quota gaps above).
 
 ## SDK behaviors verified in source (mcp 2.2.0, 2026-09-27)
 Each one shaped the server design; the contract tests pin them.

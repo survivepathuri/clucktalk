@@ -197,8 +197,36 @@ if Sonnet 5 access is still needed later.
 **Read-only conclusion**: Nova 2 Lite is the only one of the three with both a real quota and an active Marketplace
 agreement. Haiku 4.5's quota is fixed but it's still blocked by the missing Anthropic Marketplace agreement (needs
 the account owner to accept it in the Bedrock console "Model access" page — a separate step from quota, costs
-nothing). Sonnet 5 needs both the agreement and a further quota increase. No live Converse call made (Rule 4/6:
-verify before claiming; a real call needs the account owner's go-ahead per the AWS checkpoint plan).
+nothing). Sonnet 5 needs both the agreement and a further quota increase.
+
+### 5.2 First live Converse call: Nova 2 Lite (2026-09-29, user-approved, two attempts)
+
+First attempt (before 1:30 PM IST, user-approved): `AccessDeniedException`, "account is currently being
+verified" (FRICTION_LOG FL-018). Second attempt, on the user's "retry Nova" ~2 hours later:
+
+```
+aws bedrock-runtime converse --model-id "us.amazon.nova-2-lite-v1:0" \
+  --messages '[{"role":"user","content":[{"text":"Say hello to a poultry farmer in one short sentence."}]}]' \
+  --inference-config '{"maxTokens":50}' --region us-east-1 --profile clucktalk
+```
+
+**Succeeded** — the account-verification gate had cleared. Response: `"Hi there! How's the flock doing today?"`
+(`stopReason: end_turn`). `usage`: 57 input tokens, 14 output tokens, 71 total. `metrics.latencyMs`: 450.
+
+The first sub-attempt's response also reached the API successfully (confirmed by the exit code and partial
+output) but the AWS CLI crashed serializing it to a file — the reply apparently included a 🐔 emoji, and the
+CLI's default Windows output encoding can't represent it, truncating the file silently (FRICTION_LOG FL-019).
+Re-ran with `PYTHONIOENCODING=utf-8 PYTHONUTF8=1` for a clean capture (a second, separately-billed call; both
+were tiny, see cost below).
+
+**Cost** (third-party-aggregated pricing, not confirmed on the static AWS pricing page — official page renders
+its price table via JS, unreachable by a plain fetch): Nova 2 Lite on-demand ≈ $0.0003 / 1,000 input tokens,
+$0.0025 / 1,000 output tokens. The captured call (57 in, 14 out) costs ≈ **$0.00005**; the first (uncaptured,
+similar size) call is in the same range. Total for both: well under $0.001.
+
+**Checkpoint status**: Bedrock is now provably callable end to end for Nova 2 Lite — the first live model
+response CluckTalk has ever received. Haiku 4.5 and Sonnet 5 remain blocked on the Marketplace agreement /
+quota gaps in §5.1.
 
 Unused permission found: `billing:GetSellerOfRecord` has no CLI command; drop it from the inline policy at the next
 permission-set review.
