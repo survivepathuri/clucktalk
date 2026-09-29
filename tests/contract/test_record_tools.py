@@ -1,0 +1,217 @@
+"""log_daily_record over real HTTP (docs/DESIGN.md §5.1 confirmation pattern, §13.4 record book).
+Each test gets a fresh server and store (FIXED_DAY = 2026-09-29, a Tuesday)."""
+
+from __future__ import annotations
+
+import re
+import time
+
+import jsonschema
+import pytest
+
+from clucktalk.domain.proposals import PROPOSAL_TTL
+from tests.contract.test_farm_tools import SCREEN_WORDS, SCREEN_WORDS_TE
+from tests.contract.test_tools import _assert_contract_error, _call, _tools
+from tests.crossmodal import spoken_numbers, unbacked_numbers
+
+DOSE_WORDS = ("dose", "ml", "mg", "cc")
+
+
+def _ok(live, sid, name, args=None, schemas=None):
+    result = _call(live, sid, name, args)["result"]
+    assert result.get("isError") in (None, False), result
+    sc = result["structuredContent"]
+    assert [c["text"] for c in result["content"] if c["type"] == "text"] == [sc["text_en"]]
+    assert sc["demo_data"] is True and sc["text_te"].strip() and sc["text_te"] != sc["text_en"]
+    if schemas is not None:
+        jsonschema.validate(sc, schemas[name])
+    for text in (sc["text_en"], sc["text_te"]):
+        for word in SCREEN_WORDS + SCREEN_WORDS_TE:
+            assert word not in text.lower(), f"voice text must not refer to a screen: {word!r} in {text!r}"
+        assert "prop_" not in text, "proposal IDs are for tools, never spoken"
+    assert unbacked_numbers(sc, sc["text_en"], sc["text_te"]) == []
+    assert sorted(spoken_numbers(sc["text_en"], set())) == sorted(spoken_numbers(sc["text_te"], set()))
+    return sc
+
+
+def _session(fresh):
+    sid, _ = fresh.live.initialize()
+    return sid, {n: t["outputSchema"] for n, t in _tools(fresh.live, sid).items()}
+
+
+def test_tool_declares_the_fields_synonyms_and_two_call_pattern(live):
+    sid, _ = live.initialize()
+    tool = _tools(live, sid)["log_daily_record"]
+    assert tool["annotations"]["readOnlyHint"] is False and tool["annotations"]["idempotentHint"] is True
+    props = tool["inputSchema"]["properties"]
+    assert tool["inputSchema"]["required"] == ["house"]
+    assert {"yes", "no"} == set(next(s for s in props["answer"]["anyOf"] if "enum" in s)["enum"])
+    assert next(s for s in props["proposal_id"]["anyOf"] if s.get("type") == "string")["pattern"]
+    treatment_ref = props["treatments"]["anyOf"][0]["items"]["$ref"].rsplit("/", 1)[-1]
+    treatment_kind = tool["inputSchema"]["$defs"][treatment_ref]["properties"]["kind"]["enum"]
+    assert set(treatment_kind) == {"medicine", "vaccine"}
+    assert "dose" not in tool["outputSchema"]["$defs"]["TreatmentOut"]["properties"]
+    for word in ("mar gaye", "dana", "bori", "teeka", "dawai", "haan", "nahi", "dose", "two calls", "proposal_id"):
+        assert word in tool["description"], word
+
+
+def test_a_new_day_needs_a_yes_before_anything_is_saved(fresh):
+    live = fresh.live
+    sid, schemas = _session(fresh)
+    args = {"house": "shed 2", "deaths": 3, "feed_bags": 2}
+    first = _ok(live, sid, "log_daily_record", args, schemas)
+    assert first["status"] == "needs_confirmation" and first["proposal_id"].startswith("prop_")
+    assert first["expires_in_minutes"] == 10 and first["record"] is None
+    assert first["proposed"]["deaths"] == 3 and first["proposed"]["feed_bags"] == 2
+    assert "3 died" in first["text_en"] and "2 bags of feed" in first["text_en"]
+
+    confirm_args = {**args, "proposal_id": first["proposal_id"], "answer": "yes"}
+    done = _ok(live, sid, "log_daily_record", confirm_args, schemas)
+    assert (done["status"], done["replayed"]) == ("changed", False)
+    assert done["record"]["deaths"] == 3 and done["record"]["feed_bags"] == 2
+    assert done["text_en"] == "Done. Saved for House 2, today."
+
+    read = _ok(live, sid, "log_daily_record", {"house": "shed 2"})
+    assert read["status"] == "already_set" and read["record"]["deaths"] == 3
+
+
+def test_a_correction_changes_only_the_field_given(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    first_args = {"house": "shed 2", "deaths": 5, "feed_bags": 2}
+    pid = _ok(live, sid, "log_daily_record", first_args)["proposal_id"]
+    _ok(live, sid, "log_daily_record", {**first_args, "proposal_id": pid, "answer": "yes"})
+
+    correction = {"house": "shed 2", "deaths": 7}
+    fix_pid = _ok(live, sid, "log_daily_record", correction)["proposal_id"]
+    fixed = _ok(live, sid, "log_daily_record", {**correction, "proposal_id": fix_pid, "answer": "yes"})
+    assert fixed["record"]["deaths"] == 7 and fixed["record"]["feed_bags"] == 2  # feed carried over
+    assert "House 2 already has a record for today" not in fixed["text_en"]  # only spoken before the "yes"
+
+
+def test_repeating_the_same_yes_never_applies_twice(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    args = {"house": "shed 2", "deaths": 3}
+    pid = _ok(live, sid, "log_daily_record", args)["proposal_id"]
+    confirm = {**args, "proposal_id": pid, "answer": "yes"}
+    first = _ok(live, sid, "log_daily_record", confirm)
+    second = _ok(live, sid, "log_daily_record", confirm)
+    assert (first["replayed"], second["replayed"]) == (False, True)
+    assert first["record"] == second["record"]
+
+
+def test_no_keeps_nothing_saved(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    args = {"house": "shed 2", "deaths": 3}
+    pid = _ok(live, sid, "log_daily_record", args)["proposal_id"]
+    out = _ok(live, sid, "log_daily_record", {**args, "proposal_id": pid, "answer": "no"})
+    assert out["status"] == "cancelled" and out["record"] is None
+
+
+def test_a_weight_sample_needs_the_bird_count_too(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    result = _call(live, sid, "log_daily_record", {"house": "shed 2", "avg_weight_g": 1850})["result"]
+    _assert_contract_error(result)
+    assert "how many birds were weighed" in result["_meta"]["clucktalk/error"]["message_en"]
+
+
+def test_nothing_given_on_an_unlogged_day_is_a_domain_error(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    result = _call(live, sid, "log_daily_record", {"house": "shed 2"})["result"]
+    _assert_contract_error(result)
+    assert "didn't catch anything to record" in result["_meta"]["clucktalk/error"]["message_en"]
+
+
+def test_a_future_day_is_refused(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    result = _call(live, sid, "log_daily_record", {"house": "shed 2", "deaths": 1, "day": "2026-09-30"})["result"]
+    _assert_contract_error(result)
+    assert "future" in result["_meta"]["clucktalk/error"]["message_en"]
+
+
+def test_a_day_before_placement_is_refused(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    result = _call(live, sid, "log_daily_record", {"house": "shed 2", "deaths": 1, "day": "2000-01-01"})["result"]
+    _assert_contract_error(result)
+    assert "wasn't placed yet" in result["_meta"]["clucktalk/error"]["message_en"]
+
+
+def test_a_plain_iso_date_string_is_accepted_for_an_earlier_unlogged_day(fresh):
+    live = fresh.live
+    sid, schemas = _session(fresh)
+    args = {"house": "shed 2", "day": "2026-09-27", "deaths": 2}
+    out = _ok(live, sid, "log_daily_record", args, schemas)
+    assert out["status"] == "needs_confirmation" and out["proposed"]["day"] == "2026-09-27"
+    assert "on Sunday" in out["text_en"]
+
+
+def test_a_medicine_or_vaccine_is_stored_by_name_only_never_a_dose(fresh):
+    live = fresh.live
+    sid, schemas = _session(fresh)
+    args = {
+        "house": "shed 2",
+        "treatments": [{"kind": "vaccine", "name": "Newcastle"}, {"kind": "medicine", "name": "Amoxicillin"}],
+    }
+    out = _ok(live, sid, "log_daily_record", args, schemas)
+    pid = out["proposal_id"]
+    done = _ok(live, sid, "log_daily_record", {**args, "proposal_id": pid, "answer": "yes"})
+    assert [t["name"] for t in done["record"]["treatments"]] == ["Newcastle", "Amoxicillin"]
+    for text in (done["text_en"], done["text_te"], str(done["record"])):
+        for word in DOSE_WORDS:
+            assert not re.search(rf"\b{word}\b", text.lower()), f"a dose-shaped word leaked into: {text!r}"
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        {"house": "shed 2", "answer": "yes"},  # a yes with nothing to answer
+        {"house": "shed 2", "proposal_id": "prop_0123456789abcdef"},  # an ID without the farmer's answer
+        {"house": "shed 2", "deaths": -1},  # negative deaths
+        {"house": "shed 2", "treatments": [{"kind": "dose", "name": "X"}]},  # not a real treatment kind
+        {"deaths": 1},  # no house at all
+    ],
+)
+def test_malformed_requests_are_contract_errors_and_change_nothing(fresh, args):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    result = _call(live, sid, "log_daily_record", args)["result"]
+    _assert_contract_error(result)
+
+
+def test_an_unknown_house_is_a_domain_error_naming_the_real_sheds(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    result = _call(live, sid, "log_daily_record", {"house": "shed 9", "deaths": 1})["result"]
+    _assert_contract_error(result)
+    assert "House 1" in result["_meta"]["clucktalk/error"]["next_step_en"]
+
+
+def test_a_late_yes_changes_nothing_and_asks_again(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    args = {"house": "shed 2", "deaths": 3}
+    pid = _ok(live, sid, "log_daily_record", args)["proposal_id"]
+    fresh.clock.t += PROPOSAL_TTL
+    late = _ok(live, sid, "log_daily_record", {**args, "proposal_id": pid, "answer": "yes"})
+    assert (late["status"], late["reason"], late["record"]) == ("needs_confirmation", "expired", None)
+
+
+def test_latency_p95_under_500ms(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    import statistics
+
+    samples = []
+    for _ in range(40):
+        t0 = time.perf_counter()
+        _ok(live, sid, "log_daily_record", {"house": "shed 2", "deaths": 1})  # each propose supersedes the last
+        samples.append((time.perf_counter() - t0) * 1000)
+    p95 = statistics.quantiles(samples, n=20)[18]
+    print(f"\nlog_daily_record HTTP round trip: p50 {statistics.median(samples):.1f} ms, p95 {p95:.1f} ms (n=40)")
+    assert p95 < 500

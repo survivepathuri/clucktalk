@@ -4,6 +4,8 @@ Telugu: review status per string in docs/TELUGU_REVIEW.md."""
 
 from __future__ import annotations
 
+from datetime import date
+
 
 class DomainError(Exception):
     def __init__(self, customer_message: str, next_step: str, customer_message_te: str, next_step_te: str) -> None:
@@ -101,6 +103,51 @@ class AnswerWithoutProposal(DomainError):
             "ఇప్పుడు మీ 'అవును' లేదా 'వద్దు' కోసం ఏదీ ఎదురుచూడటం లేదు, కాబట్టి ఏమీ మారలేదు.",
             "మీరు ఏమి మార్చాలనుకుంటున్నారో మళ్ళీ చెప్పండి.",
         )
+
+
+class NothingToRecord(DomainError):
+    """log_daily_record was called with every field empty (docs/DESIGN.md §13.4)."""
+
+    def __init__(self, label_en: str, label_te: str) -> None:
+        super().__init__(
+            f"I didn't catch anything to record for {label_en}.",
+            "Tell me deaths, feed bags, a weight sample, or a medicine or vaccine given.",
+            f"{label_te} కోసం రికార్డ్ చేయడానికి ఏమీ అందలేదు.",
+            "మరణాలు, ఫీడ్ బస్తాలు, బరువు నమూనా, లేదా ఇచ్చిన మందు లేదా వ్యాక్సిన్ చెప్పండి.",
+        )
+
+
+class WeightSampleNeedsBirdCount(DomainError):
+    """An average weight without how many birds were weighed can't be stored (docs/DESIGN.md §13.4)."""
+
+    def __init__(self, label_en: str, label_te: str) -> None:
+        super().__init__(
+            f"I have an average weight for {label_en} but not how many birds were weighed.",
+            "Tell me how many birds you weighed to get that average.",
+            f"{label_te} సగటు బరువు నాకు వచ్చింది, కానీ ఎన్ని కోళ్లను తూచారో తెలియలేదు.",
+            "ఆ సగటు కోసం ఎన్ని కోళ్లను తూచారో చెప్పండి.",
+        )
+
+
+class RecordDayOutOfRange(DomainError):
+    """A record day must be on or after the house's placement day, and never in the future."""
+
+    def __init__(self, label_en: str, label_te: str, day: date, as_of: date) -> None:
+        if day > as_of:
+            super().__init__(
+                f"I can't log a record for {label_en} in the future.",
+                "Tell me about today or an earlier day.",
+                f"{label_te} కి భవిష్యత్తు రోజుకు రికార్డ్ నమోదు చేయలేను.",
+                "ఈరోజు లేదా అంతకుముందు రోజు గురించి చెప్పండి.",
+            )
+        else:
+            super().__init__(
+                f"{label_en} wasn't placed yet on that day, so I can't log a record for it.",
+                "Tell me about a day on or after the house started.",
+                f"ఆ రోజుకి {label_te} ఇంకా వేయలేదు, కాబట్టి రికార్డ్ నమోదు చేయలేను.",
+                "ఇంటి ప్రారంభమైన రోజు లేదా తర్వాతి రోజు గురించి చెప్పండి.",
+            )
+        self.day = day
 
 
 class MissingAnswer(DomainError):

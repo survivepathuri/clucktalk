@@ -161,7 +161,7 @@ The product name lives in one config constant (`APP_NAME` in `src/clucktalk/conf
 | Poor Telugu quality | Native-speaker review of fixed strings | Review |
 
 ## 13. Planned: farm modes, record book, earnings, vaccination
-Status: §13.1 mode switching and contract-terms storage are built (plus `plan_sale`, §16); everything else here is designed, not built. Each follows §5–§7; the rules below are specific to these features.
+Status: §13.1 mode switching and contract-terms storage are built (plus `plan_sale`, §16); §13.2's `log_daily_record` propose/confirm flow is built (the record book becoming the primary data source, and its Simulator/golden-case wiring, are not yet); everything else here is designed, not built. Each follows §5–§7; the rules below are specific to these features.
 
 ### 13.1 Farm profile: contract or independent
 Most Indian broiler farms grow birds under contract: the integrator supplies chicks, feed, medicines and vet services and markets the birds; the farmer provides the shed and labour and is paid a growing charge linked to FCR and mortality (see `docs/SOURCES.md`).
@@ -174,6 +174,7 @@ Most Indian broiler farms grow birds under contract: the integrator supplies chi
 ### 13.2 Voice record book
 - One utterance, all fields (§5 rule 2): deaths, feed used (bags or kg), weight sample, medicine or vaccine given. Farmer vocabulary includes Hinglish (*mar gaye* died, *dana* feed, *bori* bag, *teeka* vaccine, *dawai* medicine).
 - Nothing is saved until the farmer hears it read back and says "yes" (§5.1); a correction changes one field (§5 rule 7); proposals carry IDs and are idempotent. Medicines and vaccines are stored by name and note only, never with a dose.
+- **Built**: `log_daily_record` (one tool, the §5.1 confirmation pattern), `clucktalk.domain.records.merge_daily_record` — a field the farmer doesn't mention this call keeps whatever is already saved for that day (§5 rule 7); given fields (even 0) always overwrite; treatments add to the day rather than replacing it, with exact repeats dropped; `day` defaults to today, backfill to any day on or after the house's placement is allowed. **Not yet built**: the record book as the tools' data source (`get_farm_status` / `plan_sale` still read only the seed), `get_record_book`'s batch-end summary, and Simulator intents / golden cases for this tool.
 - The record book becomes the primary data source; a bilingual batch-end summary can be handed to the company.
 
 ### 13.3 Contract earnings tracker
