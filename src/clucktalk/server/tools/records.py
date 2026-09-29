@@ -9,14 +9,15 @@ Telugu: review status per string in docs/TELUGU_REVIEW.md.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+import re
+from datetime import date, datetime
 from typing import Annotated, Any, Literal
 
 from mcp.server.mcpserver import MCPServer
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field
 
-from clucktalk.domain.errors import DeathsExceedLiveBirds, DomainError, NothingToRecord
+from clucktalk.domain.errors import DeathsExceedLiveBirds, DomainError, DoseNotAllowed, NothingToRecord
 from clucktalk.domain.feed import BAG_KG
 from clucktalk.domain.houses import resolve_house
 from clucktalk.domain.models import DailyRecord, Treatment, TreatmentKind
@@ -32,6 +33,13 @@ from clucktalk.server.tools import Capability, CapabilityRegistry
 TOOL = "log_daily_record"
 TreatmentKindName = Literal["medicine", "vaccine"]
 TREATMENT_LABEL = {"medicine": Text("medicine", "మందు"), "vaccine": Text("vaccine", "వ్యాక్సిన్")}
+# A dose-shaped fragment in a treatment's name or note (Rule 11 review 2026-09-29): free text is otherwise
+# unvalidated, and "never a dose" in the tool description is advisory to an LLM host only, not enforced.
+DOSE_PATTERN = re.compile(
+    r"\b\d+(?:\.\d+)?\s*(?:ml|mg|mcg|cc|iu|units?)\b|\bdose\b|\b(?:twice|once|thrice)\s+(?:daily|a\s+day)\b"
+    r"|\bper\s+(?:bird|liter|litre|kg)\b",
+    re.IGNORECASE,
+)
 
 REASON_TEXT: dict[Reason, Text] = {
     "expired": Text("That request timed out, so nothing changed.", "ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు."),
@@ -201,7 +209,10 @@ def _given_summary(
         )
     for t in treatments or ():
         label = TREATMENT_LABEL[t.kind]
-        parts.append(Text(f"{t.name} {label.en} given", f"{t.name} {label.te} ఇచ్చారు"))
+        # The note's own text isn't spoken (free text could contain a number the card can't back, breaking the
+        # cross-modal rule, docs/DESIGN.md §6); its presence is, so the read-back is still "in full" (§5.1 rule 1).
+        with_note = Text(", with a note", ", ఒక గమనికతో") if getattr(t, "note", None) else Text("", "")
+        parts.append(Text(f"{t.name} {label.en} given{with_note.en}", f"{t.name} {label.te} ఇచ్చారు{with_note.te}"))
     return Text(", ".join(p.en for p in parts), ", ".join(p.te for p in parts))
 
 
@@ -287,9 +298,16 @@ def build_log_record(
     if deaths is None and feed_kg is None and avg_weight_g is None and not treatments_in:
         raise NothingToRecord(house.label_en, house.label_te)
     if deaths is not None:
-        live_before = house.live_birds(record_day - timedelta(days=1))
-        if deaths > live_before:
-            raise DeathsExceedLiveBirds(house.label_en, house.label_te, deaths, live_before)
+        # Bounded against every *other* day's deaths, not just the days before this one: a backdated
+        # correction can push the house's total over birds_placed just as easily as a same-day one, and that
+        # would only surface later as a crash when the overlay rebuilds the House (Rule 11 review 2026-09-29).
+        other_days_deaths = sum(r.deaths for r in house.records if r.day != record_day)
+        max_possible = house.birds_placed - other_days_deaths
+        if deaths > max_possible:
+            raise DeathsExceedLiveBirds(house.label_en, house.label_te, deaths, max_possible)
+    for t in treatments_in or ():
+        if DOSE_PATTERN.search(t.name) or (t.note and DOSE_PATTERN.search(t.note)):
+            raise DoseNotAllowed(house.label_en, house.label_te)
 
     treatments_tuple = (
         None

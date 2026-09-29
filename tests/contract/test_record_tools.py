@@ -196,6 +196,41 @@ def test_a_medicine_or_vaccine_is_stored_by_name_only_never_a_dose(fresh):
             assert not re.search(rf"\b{word}\b", text.lower()), f"a dose-shaped word leaked into: {text!r}"
 
 
+def test_a_dose_in_the_treatment_name_is_rejected(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    args = {"house": "shed 1", "treatments": [{"kind": "vaccine", "name": "Newcastle 5ml"}]}
+    result = _call(live, sid, "log_daily_record", args)["result"]
+    _assert_contract_error(result)
+    assert "never a dose" in result["_meta"]["clucktalk/error"]["message_en"]
+
+
+def test_a_dose_in_the_treatment_note_is_rejected(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    args = {
+        "house": "shed 1",
+        "treatments": [{"kind": "medicine", "name": "Amoxicillin", "note": "give 2ml twice daily"}],
+    }
+    result = _call(live, sid, "log_daily_record", args)["result"]
+    _assert_contract_error(result)
+    assert "never a dose" in result["_meta"]["clucktalk/error"]["message_en"]
+
+
+def test_a_treatment_note_is_acknowledged_in_the_read_back_without_speaking_its_text(fresh):
+    """docs/DESIGN.md §5.1 rule 1: the read-back must be "in full" -- a note is part of what's saved, so its
+    presence is spoken, even though the note's own (unpredictable) text is not (cross-modal safety, §6)."""
+    live = fresh.live
+    sid, _ = _session(fresh)
+    args = {
+        "house": "shed 1",
+        "treatments": [{"kind": "medicine", "name": "Amoxicillin", "note": "given in the morning"}],
+    }
+    out = _ok(live, sid, "log_daily_record", args)
+    assert "with a note" in out["text_en"] and "given in the morning" not in out["text_en"]
+    assert out["proposed"]["treatments"][0]["note"] == "given in the morning"
+
+
 @pytest.mark.parametrize(
     "args",
     [
@@ -252,6 +287,27 @@ def test_a_deaths_count_above_live_birds_is_rejected(fresh):
     result = _call(live, sid, "log_daily_record", {"house": "shed 1", "deaths": 999999})["result"]
     _assert_contract_error(result)
     assert "can't be right" in result["_meta"]["clucktalk/error"]["message_en"]
+
+
+def test_a_backdated_correction_is_bounded_by_every_other_day_too_not_just_the_earlier_ones(fresh):
+    """Rule 11 review 2026-09-29 (Critical): bounding a deaths count only against birds alive *before* that
+    day let a backdated correction push the house's total deaths over birds_placed -- which used to succeed
+    here ("Done. Saved") and only crash later, on the next unrelated tool call, when the overlay rebuilt the
+    House and hit its own "more deaths recorded than birds placed" invariant."""
+    live = fresh.live
+    sid, _ = _session(fresh)
+    today = {"house": "shed 1", "deaths": 3000}  # House 1: 5,000 birds placed, calm (no scripted events)
+    pid = _ok(live, sid, "log_daily_record", today)["proposal_id"]
+    _ok(live, sid, "log_daily_record", {**today, "proposal_id": pid, "answer": "yes"})
+
+    backdated = {"house": "shed 1", "day": "2026-09-24", "deaths": 2500}  # 5 days before today
+    result = _call(live, sid, "log_daily_record", backdated)["result"]
+    _assert_contract_error(result)
+    assert "can't be right" in result["_meta"]["clucktalk/error"]["message_en"]
+
+    # The rejection changed nothing: get_farm_status still works (no invariant broken, no crash).
+    status = _call(live, sid, "get_farm_status", {"house": "shed 1"})["result"]
+    assert status.get("isError") in (None, False), status
 
 
 # -- get_record_book, and the seed-overlay that makes get_farm_status use what was logged -----------------------

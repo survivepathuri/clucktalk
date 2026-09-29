@@ -106,17 +106,34 @@ class AnswerWithoutProposal(DomainError):
 
 
 class DeathsExceedLiveBirds(DomainError):
-    """More deaths than birds alive at the start of that day (docs/DESIGN.md §13.4); the bound uses the
-    house's own history, seed and previously logged days together, once the record book overlay is wired."""
+    """More deaths on one day than the house has room for, counting every *other* day's deaths too — not just
+    the days before it. A backdated correction can invalidate the days after it as well as before (Rule 11
+    review 2026-09-29: bounding only against "birds alive before that day" let a backdated correction push the
+    house's total over birds_placed, which only surfaced as a crash on the next unrelated tool call)."""
 
-    def __init__(self, label_en: str, label_te: str, deaths: int, live_before: int) -> None:
+    def __init__(self, label_en: str, label_te: str, deaths: int, max_possible: int) -> None:
         super().__init__(
-            f"{label_en} only had {live_before} birds alive before that day, so {deaths} deaths can't be right.",
+            f"{label_en} only has room for {max_possible} more deaths that day once every other day is "
+            f"counted, so {deaths} can't be right.",
             "Check the number and try again.",
-            f"ఆ రోజుకు ముందు {label_te}లో {live_before} కోళ్లు మాత్రమే బతికి ఉన్నాయి, కాబట్టి {deaths} మరణాలు సరైనవి కావు.",
+            f"ప్రతి ఇతర రోజునూ లెక్కిస్తే, ఆ రోజు {label_te}కి గరిష్టంగా {max_possible} మరణాలకే చోటుంది, కాబట్టి {deaths} సరైనవి కావు.",
             "సంఖ్యను సరిచూసి మళ్ళీ చెప్పండి.",
         )
-        self.values = {"deaths": deaths, "live_before": live_before}
+        self.values = {"deaths": deaths, "max_possible": max_possible}
+
+
+class DoseNotAllowed(DomainError):
+    """A medicine/vaccine name or note looked like it carried a dose (CLAUDE.md/docs/DESIGN.md §7 rule 3: no
+    drug names or doses; Treatment has no dose field by design, but free-text name/note could still smuggle
+    one in — Rule 11 review 2026-09-29)."""
+
+    def __init__(self, label_en: str, label_te: str) -> None:
+        super().__init__(
+            f"I only record the name of a medicine or vaccine for {label_en}, never a dose.",
+            "Follow the label or your vet/company for the dose; tell me just the name.",
+            f"{label_te} కోసం మందు లేదా వ్యాక్సిన్ పేరు మాత్రమే నమోదు చేస్తాను, డోస్ కాదు.",
+            "డోస్ కోసం లేబుల్ లేదా మీ వెట్/కంపెనీని అనుసరించండి; పేరు మాత్రమే చెప్పండి.",
+        )
 
 
 class NothingToRecord(DomainError):
