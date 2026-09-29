@@ -174,3 +174,52 @@ Expected vs actual: Expected the credits, or an error naming the account setting
 Severity: Low
 Workaround: Read credits in the Billing console as root; activation is optional for this project.
 Actionable suggestion: Name the setting and where to turn it on in the error ("IAM user and role access to Billing information is off for this account; the root user can activate it on the Account page").
+
+### FL-016: AWS Support enabled Bedrock access with "reduced quotas"; still no number, so a quota re-check is required, not just a re-read of the reply
+Date: 2026-09-29
+Tool / service: AWS Support (Service Quota increase cases, opened after FL-014, two cases for Bedrock inference quotas)
+Task attempted: Get Bedrock inference quotas for Claude Haiku 4.5, Sonnet 5 and Nova 2 Lite above 0 in us-east-1.
+Steps taken: Two Support cases (opened ~28 Sep) replied 28–29 Sep: "Your Amazon Bedrock access has been enabled in the US East (N. Virginia) Region. You can begin using supported models immediately. Your account has been granted access to reduced quotas. Some higher-tier foundation models may not be available at this access level."
+Expected vs actual: Expected either the new quota numbers or a list of which models are now enabled. Actual: the reply confirms access is "enabled" and quotas are "reduced" but states no numbers and no model list, so it cannot be used on its own to know which of Haiku 4.5 / Sonnet 5 / Nova 2 Lite are callable — only a fresh `list-service-quotas` call (or a real Converse call) can confirm that, same as FL-014.
+Re-checked same day with the CLI (docs/AWS_SETUP.md §5.1): **Nova 2 Lite** got a real nonzero quota (20 req/min,
+8M tokens/min, reduced from 2,000/8M) and already has its Marketplace agreement — callable, not yet call-tested.
+**Haiku 4.5** also got a real nonzero quota (10 req/min, 5M tokens/min) but its Marketplace agreement is still
+`NOT_AVAILABLE` — the quota fix didn't unblock it; the agreement is now the blocker. **Sonnet 5** cross-region
+tokens/min is still 0 (default 6,000,000) and its agreement is also `NOT_AVAILABLE` — the "higher-tier" model
+the reply warned about.
+Severity: Low
+Workaround: Re-run the FL-014 quota comparison after the reply, per model, before assuming any model is callable;
+also check `get-foundation-model-availability`'s `agreementAvailability` — a fixed quota does not imply a usable
+Marketplace agreement.
+Actionable suggestion: Support replies to Bedrock quota-increase cases should include the new applied quota value(s)
+per model and note whether the Marketplace agreement is still needed separately, not just "reduced quotas".
+
+### FL-018: First real Converse call (Nova 2 Lite, quota + agreement both green) still denied — a third, undocumented "account verification" gate
+Date: 2026-09-29
+Tool / service: Amazon Bedrock Runtime, `aws bedrock-runtime converse`, us-east-1, profile `clucktalk`
+Task attempted: One real (paid) Converse call to Amazon Nova 2 Lite, the one model confirmed both quota-ready and
+agreement-ready (FL-016), to prove live Bedrock access end to end, with the account owner's explicit go-ahead.
+Steps taken: `aws bedrock-runtime converse --model-id us.amazon.nova-2-lite-v1:0 --messages '[{"role":"user","content":[{"text":"Say hello to a poultry farmer in one short sentence."}]}]' --inference-config '{"maxTokens":50}' --region us-east-1 --profile clucktalk`. One attempt, no retry loop.
+Expected vs actual: Expected a response (the model's quota was nonzero and its Marketplace agreement `AVAILABLE`).
+Actual: `AccessDeniedException`: "Your account is currently being verified. Verification normally takes less than
+2 hours. Until your account is verified, you may not have access to this operation. If you are still receiving
+this message after more than 2 hours, please let us know by writing to aws-verification@amazon.com." This is a
+third gate never mentioned by `get-foundation-model-availability`, `list-service-quotas`, or the two Support
+replies (FL-014, FL-016) — none of those surfaces "account verification" as a state, so a read-only check can
+look fully green and a live call can still fail.
+Severity: Medium
+Workaround: None yet — this is a wait-and-recheck (Amazon's own estimate: under 2 hours; email
+aws-verification@amazon.com if it persists past that).
+Actionable suggestion: Surface "account verification in progress" in `get-foundation-model-availability` or the
+model-access console page (a fourth `verificationStatus` field alongside agreement/authorization/entitlement/
+region), so a new account doesn't have to hit `AccessDeniedException` on a real call to discover it.
+
+### FL-017: Alexa+ docs don't say whether MCP add-ons can send proactive/push notifications, or how they'd distinguish which household member is calling a tool
+Date: 2026-09-29
+Tool / service: Amazon Alexa+ developer docs — `Alexa.ProactiveNotificationSource` (device-apis), MCP Toolkit Overview, MCP Toolkit Account Linking (all under developer.amazon.com/docs/alexaplus)
+Task attempted: Plan an "Owner-Worker mode" (owner assigns tasks by voice while away; a worker at the shed asks "my tasks today?" and marks them done; alerts should reach the owner) without guessing at undocumented behavior.
+Steps taken: Read the Alexa+ `Alexa.ProactiveNotificationSource` page, the MCP Toolkit overview, and the MCP account-linking page.
+Expected vs actual: Expected either an MCP-native way to push a notification to the owner, or documentation of how the OAuth 2.1 payload identifies which household member/device made a tool call. Actual: `Alexa.ProactiveNotificationSource` (push-based `Alexa.ChangeReport` announcements, opt-in required, no announcements 10pm–7am local) is documented only for traditional Smart Home add-ons; neither it nor the MCP Toolkit overview says whether an MCP-based add-on can trigger it. The account-linking page says only that "Alexa includes this access token in every request it sends to your add-on" — it does not say whether the token or any other field distinguishes one household member from another, or mentions Household Profiles/Voice ID at all.
+Severity: Medium
+Workaround: Design alerts as pull-based only (the owner hears them on the next "how is my farm?" / daily briefing, already the plan). Design worker attribution around each person having their own Alexa account/device linked separately (verified: account linking supports one identity per linked account) rather than in-household voice recognition, since the latter is unverified for MCP add-ons.
+Actionable suggestion: Publish whether `Alexa.ProactiveNotificationSource` (or an equivalent) is available to MCP-based add-ons, and document what identity fields (if any) distinguish household members in the OAuth token/request an MCP add-on receives.
