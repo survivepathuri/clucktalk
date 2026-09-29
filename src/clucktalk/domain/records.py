@@ -6,6 +6,7 @@ Pure logic, no I/O: ``clucktalk.server.tools.records`` reads/writes the store ar
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 
 from clucktalk.domain.errors import RecordDayOutOfRange, WeightSampleNeedsBirdCount
@@ -16,6 +17,25 @@ def validate_record_day(house: House, day: date, as_of: date) -> None:
     """A record's day must be on or after the house's placement, and never in the future."""
     if day > as_of or day < house.placed_on:
         raise RecordDayOutOfRange(house.label_en, house.label_te, day, as_of)
+
+
+def overlay_house_records(house: House, overrides: dict[date, DailyRecord]) -> House:
+    """Farmer-logged records (the voice record book) replace the seed's synthetic ones for the same day.
+
+    The demo seed is generated fresh relative to "today" (CLAUDE.md, docs/DESIGN.md §10), so a house's whole
+    placed_on..as_of window slides forward as real days pass. A logged day that has fallen outside that
+    window is left out here rather than raising: `House` would otherwise reject it as predating placement,
+    and a farmer's real record must never crash the farm status a session later. This is a known limitation
+    of the sliding-seed design, not a bug in the record itself (docs/DESIGN.md §13.2)."""
+    if not overrides:
+        return house
+    by_day = {r.day: r for r in house.records}
+    changed = False
+    for day, rec in overrides.items():
+        if day in by_day:  # within the house's current placed_on..as_of window
+            by_day[day] = rec
+            changed = True
+    return replace(house, records=tuple(by_day[d] for d in sorted(by_day))) if changed else house
 
 
 def merge_daily_record(

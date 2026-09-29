@@ -9,14 +9,14 @@ Telugu: review status per string in docs/TELUGU_REVIEW.md.
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Annotated, Any, Literal
 
 from mcp.server.mcpserver import MCPServer
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field
 
-from clucktalk.domain.errors import DomainError, NothingToRecord
+from clucktalk.domain.errors import DeathsExceedLiveBirds, DomainError, NothingToRecord
 from clucktalk.domain.feed import BAG_KG
 from clucktalk.domain.houses import resolve_house
 from clucktalk.domain.models import DailyRecord, Treatment, TreatmentKind
@@ -104,6 +104,34 @@ class LogDailyRecordOutput(BaseModel):
     replayed: bool
 
 
+class RecordBookEntryOut(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    house_id: str
+    number: int
+    label_en: str
+    label_te: str
+    logged: bool
+    record: DailyRecordOut | None
+
+
+class RecordBookOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    text_en: str
+    text_te: str
+    demo_data: bool
+    as_of: str
+    houses_logged: int
+    houses_total: int
+    entries: list[RecordBookEntryOut]
+
+
+BOOK_TOOL = "get_record_book"
+BOOK_DESCRIPTION = (
+    "Use when the farmer asks for today's record-book summary: which houses (sheds, kotams) have a record "
+    "logged for today and which don't yet. Read-only; today, every house. To log a record, use "
+    "log_daily_record instead."
+)
+
 DESCRIPTION = (
     "Use when the farmer reports what happened in a house today (or an earlier day): deaths (mar gaye, mare), "
     "feed given in bags of 50 kg (dana, bori), a weight sample (average weight and how many birds were weighed), "
@@ -177,6 +205,55 @@ def _given_summary(
     return Text(", ".join(p.en for p in parts), ", ".join(p.te for p in parts))
 
 
+def _record_summary(rec: DailyRecord) -> Text:
+    """Every field of an already-saved record, for the record-book summary (unlike ``_given_summary``'s
+    "only what was just said" framing, deaths and feed are always shown since a saved record always has both)."""
+    return _given_summary(
+        rec.deaths, rec.feed_kg / BAG_KG, rec.avg_weight_g, rec.weight_sample_birds, list(rec.treatments)
+    )
+
+
+def build_record_book(source: DemoFarmSource) -> RecordBookOutput:
+    farm, as_of = source.snapshot()
+    entries: list[RecordBookEntryOut] = []
+    house_parts: list[Text] = []
+    for house in sorted(farm.houses, key=lambda h: h.number):
+        stored = next((r for r in source.store.records(farm.farm_id, house.house_id) if r.day == as_of), None)
+        entries.append(
+            RecordBookEntryOut(
+                house_id=house.house_id,
+                number=house.number,
+                label_en=house.label_en,
+                label_te=house.label_te,
+                logged=stored is not None,
+                record=None if stored is None else _out(stored),
+            )
+        )
+        if stored is None:
+            house_parts.append(
+                Text(f"No entry yet for {house.label_en} today.", f"{house.label_te}కి ఈరోజు ఇంకా నమోదు కాలేదు.")
+            )
+        else:
+            summary = _record_summary(stored)
+            house_parts.append(
+                Text(f"{house.label_en} logged: {summary.en}.", f"{house.label_te}: {summary.te} నమోదు అయింది.")
+            )
+    logged = sum(1 for e in entries if e.logged)
+    head = Text(
+        f"{num(logged)} of {num(len(entries))} houses logged today.",
+        f"ఈరోజు {num(len(entries))} షెడ్లలో {num(logged)} నమోదు అయ్యాయి.",
+    )
+    return RecordBookOutput(
+        text_en=" ".join([head.en, *(p.en for p in house_parts)]),
+        text_te=" ".join([head.te, *(p.te for p in house_parts)]),
+        demo_data=source.demo_data,
+        as_of=as_of.isoformat(),
+        houses_logged=logged,
+        houses_total=len(entries),
+        entries=entries,
+    )
+
+
 def build_log_record(
     source: DemoFarmSource,
     flow: ConfirmFlow,
@@ -199,10 +276,20 @@ def build_log_record(
     def stored_for(d: date) -> DailyRecord | None:
         return next((r for r in source.store.records(farm_id, house.house_id) if r.day == d), None)
 
-    existing = stored_for(record_day)
+    def on_file(d: date) -> DailyRecord | None:
+        """What a correction should be layered onto: the farmer's own earlier log for that day if there is
+        one, else the seed's synthetic guess (``house.records`` is already overlaid, farm_state.overlay_records)
+        — never a blank day, so a partial first log (e.g. only deaths) doesn't zero out the day's real feed_kg."""
+        return next((r for r in house.records if r.day == d), None)
+
+    existing = on_file(record_day)
     feed_kg = None if feed_bags is None else feed_bags * BAG_KG
-    if deaths is None and feed_kg is None and avg_weight_g is None and not treatments_in and existing is None:
+    if deaths is None and feed_kg is None and avg_weight_g is None and not treatments_in:
         raise NothingToRecord(house.label_en, house.label_te)
+    if deaths is not None:
+        live_before = house.live_birds(record_day - timedelta(days=1))
+        if deaths > live_before:
+            raise DeathsExceedLiveBirds(house.label_en, house.label_te, deaths, live_before)
 
     treatments_tuple = (
         None
@@ -234,15 +321,13 @@ def build_log_record(
             else tuple(Treatment(TreatmentKind(t["kind"]), t["name"], t["note"]) for t in a["treatments"])
         )
         rec = merge_daily_record(
-            stored_for(d), d, a["deaths"], a["feed_kg"], a["avg_weight_g"], a["weight_sample_birds"], pt,
+            on_file(d), d, a["deaths"], a["feed_kg"], a["avg_weight_g"], a["weight_sample_birds"], pt,
             house.label_en, house.label_te,
         )  # fmt: skip
         source.store.put_record(farm_id, house.house_id, rec)
         return {"day": rec.day.isoformat()}
 
     def in_place() -> bool:
-        if existing is None:
-            return False
         merged = merge_daily_record(
             existing, record_day, deaths, feed_kg, avg_weight_g, weight_sample_birds, treatments_tuple,
             house.label_en, house.label_te,
@@ -313,6 +398,26 @@ def build_log_record(
 
 def register(server: MCPServer, registry: CapabilityRegistry, source: DemoFarmSource) -> None:
     flow = ConfirmFlow(source.store, source.now)
+
+    @server.tool(
+        name=BOOK_TOOL,
+        title="Today's record book",
+        description=BOOK_DESCRIPTION,
+        annotations=ToolAnnotations(read_only_hint=True, idempotent_hint=True, open_world_hint=False),
+    )
+    def get_record_book() -> Annotated[CallToolResult, RecordBookOutput]:
+        out = build_record_book(source)
+        return CallToolResult(
+            content=[TextContent(type="text", text=out.text_en)], structured_content=out.model_dump(mode="json")
+        )
+
+    registry.add(
+        Capability(
+            tool_name=BOOK_TOOL,
+            title=Text("Today's record book", "ఈరోజు రికార్డ్ బుక్"),
+            example_en="Which houses have logged their record today?",
+        )
+    )
 
     @server.tool(
         name=TOOL,

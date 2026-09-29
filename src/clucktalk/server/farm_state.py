@@ -8,10 +8,12 @@ What the farmer changes (farm profile, proposals awaiting "yes") lives in the st
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 
 from clucktalk.domain.models import Farm
 from clucktalk.domain.profile import FarmProfile, demo_default_profile
+from clucktalk.domain.records import overlay_house_records
 from clucktalk.seed import build_demo_farm
 from clucktalk.store import Store
 from clucktalk.store.sqlite import SqliteStore
@@ -26,6 +28,18 @@ def now_ist() -> datetime:
 
 def today_ist() -> date:
     return now_ist().date()
+
+
+def overlay_records(farm: Farm, store: Store) -> Farm:
+    """The voice record book (``log_daily_record``) is now the farm's primary data source: whatever the
+    farmer has logged for a house replaces the seed's synthetic guess for that same day. Applied fresh on
+    every snapshot (cheap: a couple of indexed reads), never cached, so a record logged a moment ago shows up
+    in the very next tool call (docs/DESIGN.md §13.2)."""
+    houses = tuple(
+        overlay_house_records(house, {r.day: r for r in store.records(farm.farm_id, house.house_id)})
+        for house in farm.houses
+    )
+    return replace(farm, houses=houses)
 
 
 class DemoFarmSource:
@@ -45,11 +59,13 @@ class DemoFarmSource:
         self.snapshot()  # build at startup, not on the first tool call
 
     def snapshot(self) -> tuple[Farm, date]:
-        """The farm as of the farmer's today. Rebuilt once when the date changes."""
+        """The farm as of the farmer's today. The seed rebuilds once when the date changes (cached); the
+        record book overlay (``overlay_records``) is re-applied every call, so a record logged a moment ago
+        is never served stale."""
         as_of = self._clock()
         if self._cached is None or self._cached[0] != as_of:
             self._cached = (as_of, build_demo_farm(as_of))
-        return self._cached[1], as_of
+        return overlay_records(self._cached[1], self.store), as_of
 
     @property
     def farm_id(self) -> str:

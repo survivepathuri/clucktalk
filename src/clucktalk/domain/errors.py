@@ -105,6 +105,20 @@ class AnswerWithoutProposal(DomainError):
         )
 
 
+class DeathsExceedLiveBirds(DomainError):
+    """More deaths than birds alive at the start of that day (docs/DESIGN.md §13.4); the bound uses the
+    house's own history, seed and previously logged days together, once the record book overlay is wired."""
+
+    def __init__(self, label_en: str, label_te: str, deaths: int, live_before: int) -> None:
+        super().__init__(
+            f"{label_en} only had {live_before} birds alive before that day, so {deaths} deaths can't be right.",
+            "Check the number and try again.",
+            f"ఆ రోజుకు ముందు {label_te}లో {live_before} కోళ్లు మాత్రమే బతికి ఉన్నాయి, కాబట్టి {deaths} మరణాలు సరైనవి కావు.",
+            "సంఖ్యను సరిచూసి మళ్ళీ చెప్పండి.",
+        )
+        self.values = {"deaths": deaths, "live_before": live_before}
+
+
 class NothingToRecord(DomainError):
     """log_daily_record was called with every field empty (docs/DESIGN.md §13.4)."""
 

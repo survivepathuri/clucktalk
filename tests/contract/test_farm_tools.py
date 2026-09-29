@@ -145,6 +145,7 @@ def test_help_lists_the_farm_tools(live):
         "plan_feed",
         "set_farm_mode",
         "set_contract_terms",
+        "get_record_book",
         "log_daily_record",
     ]
 

@@ -9,7 +9,7 @@ import pytest
 
 from clucktalk.domain.errors import RecordDayOutOfRange, WeightSampleNeedsBirdCount
 from clucktalk.domain.models import DailyRecord, Treatment, TreatmentKind
-from clucktalk.domain.records import merge_daily_record, validate_record_day
+from clucktalk.domain.records import merge_daily_record, overlay_house_records, validate_record_day
 from tests.unit.helpers import D0, broiler_house, layer_house
 
 VACCINE = Treatment(TreatmentKind.VACCINE, "Newcastle")
@@ -110,3 +110,31 @@ def test_validate_record_day_rejects_a_day_before_placement():
     with pytest.raises(RecordDayOutOfRange) as e:
         validate_record_day(house, D0 - timedelta(days=1), D0 + timedelta(days=5))
     assert "wasn't placed yet" in e.value.customer_message
+
+
+def test_overlay_with_no_overrides_returns_the_same_house_unchanged():
+    house = broiler_house(feed_kg=[10.0, 12.0, 14.0])  # D0, D0+1, D0+2
+    assert overlay_house_records(house, {}) is house
+
+
+def test_overlay_replaces_only_the_matching_day():
+    house = broiler_house(feed_kg=[10.0, 12.0, 14.0])
+    override = DailyRecord(D0 + timedelta(days=1), deaths=9, feed_kg=999.0)
+    updated = overlay_house_records(house, {override.day: override})
+    assert updated.records == (house.records[0], override, house.records[2])
+
+
+def test_overlay_ignores_a_day_outside_the_houses_current_window():
+    """The seed's placed_on..as_of window slides with "today" (docs/DESIGN.md §13.2); a logged day that has
+    fallen outside it is dropped rather than crashing the House invariant."""
+    house = broiler_house(feed_kg=[10.0, 12.0, 14.0])  # window is D0..D0+2
+    stale = DailyRecord(D0 + timedelta(days=10), deaths=1, feed_kg=1.0)
+    assert overlay_house_records(house, {stale.day: stale}) is house
+
+
+def test_overlay_applies_in_window_days_and_drops_out_of_window_ones_together():
+    house = broiler_house(feed_kg=[10.0, 12.0, 14.0])
+    in_window = DailyRecord(D0, deaths=2, feed_kg=222.0)
+    stale = DailyRecord(D0 + timedelta(days=10), deaths=1, feed_kg=1.0)
+    updated = overlay_house_records(house, {in_window.day: in_window, stale.day: stale})
+    assert updated.records == (in_window, house.records[1], house.records[2])

@@ -1,20 +1,36 @@
-"""log_daily_record over real HTTP (docs/DESIGN.md §5.1 confirmation pattern, §13.4 record book).
+"""log_daily_record / get_record_book over real HTTP (docs/DESIGN.md §5.1 confirmation pattern, §13.4 record
+book), and the farm_state.py seed-overlay integration that makes logged records the tools' data source.
 Each test gets a fresh server and store (FIXED_DAY = 2026-09-29, a Tuesday)."""
 
 from __future__ import annotations
 
 import re
 import time
+from datetime import date, datetime, timedelta
+from datetime import time as dtime
 
 import jsonschema
 import pytest
 
 from clucktalk.domain.proposals import PROPOSAL_TTL
+from clucktalk.server.farm_state import IST, DemoFarmSource
+from tests.contract.conftest import FIXED_DAY, _start
 from tests.contract.test_farm_tools import SCREEN_WORDS, SCREEN_WORDS_TE
 from tests.contract.test_tools import _assert_contract_error, _call, _tools
 from tests.crossmodal import spoken_numbers, unbacked_numbers
 
 DOSE_WORDS = ("dose", "ml", "mg", "cc")
+
+
+class DayClock:
+    """A test-only clock for a ``DemoFarmSource`` date argument: mutate ``.day`` to move "today" forward,
+    the same way ``fresh.clock.t`` moves the wall clock for proposal expiry (tests/contract/conftest.py)."""
+
+    def __init__(self, day: date) -> None:
+        self.day = day
+
+    def __call__(self) -> date:
+        return self.day
 
 
 def _ok(live, sid, name, args=None, schemas=None):
@@ -71,8 +87,21 @@ def test_a_new_day_needs_a_yes_before_anything_is_saved(fresh):
     assert done["record"]["deaths"] == 3 and done["record"]["feed_bags"] == 2
     assert done["text_en"] == "Done. Saved for House 2, today."
 
-    read = _ok(live, sid, "log_daily_record", {"house": "shed 2"})
-    assert read["status"] == "already_set" and read["record"]["deaths"] == 3
+    book = _ok(live, sid, "get_record_book")
+    entry = next(e for e in book["entries"] if e["number"] == 2)
+    assert entry["logged"] is True and entry["record"]["deaths"] == 3
+
+
+def test_restating_the_same_values_needs_no_new_confirmation(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    args = {"house": "shed 2", "deaths": 3, "feed_bags": 2}
+    pid = _ok(live, sid, "log_daily_record", args)["proposal_id"]
+    _ok(live, sid, "log_daily_record", {**args, "proposal_id": pid, "answer": "yes"})
+
+    repeat = _ok(live, sid, "log_daily_record", args)
+    assert (repeat["status"], repeat["proposal_id"]) == ("already_set", None)
+    assert "already has that recorded" in repeat["text_en"]
 
 
 def test_a_correction_changes_only_the_field_given(fresh):
@@ -214,4 +243,115 @@ def test_latency_p95_under_500ms(fresh):
         samples.append((time.perf_counter() - t0) * 1000)
     p95 = statistics.quantiles(samples, n=20)[18]
     print(f"\nlog_daily_record HTTP round trip: p50 {statistics.median(samples):.1f} ms, p95 {p95:.1f} ms (n=40)")
+    assert p95 < 500
+
+
+def test_a_deaths_count_above_live_birds_is_rejected(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    result = _call(live, sid, "log_daily_record", {"house": "shed 1", "deaths": 999999})["result"]
+    _assert_contract_error(result)
+    assert "can't be right" in result["_meta"]["clucktalk/error"]["message_en"]
+
+
+# -- get_record_book, and the seed-overlay that makes get_farm_status use what was logged -----------------------
+
+
+def test_record_book_declares_read_only_and_todays_scope(live):
+    sid, _ = live.initialize()
+    tool = _tools(live, sid)["get_record_book"]
+    assert tool["annotations"]["readOnlyHint"] is True
+    assert tool["inputSchema"].get("properties", {}) == {}
+    assert "today" in tool["description"]
+
+
+def test_record_book_shows_nothing_logged_before_the_farmer_says_anything(fresh):
+    live = fresh.live
+    sid, schemas = _session(fresh)
+    out = _ok(live, sid, "get_record_book", None, schemas)
+    assert out["houses_total"] == 3 and out["houses_logged"] == 0
+    assert all(e["logged"] is False and e["record"] is None for e in out["entries"])
+    assert "No entry yet for House 1 today." in out["text_en"]
+
+
+def test_record_book_reflects_a_logged_record_immediately_and_leaves_others_alone(fresh):
+    live = fresh.live
+    sid, schemas = _session(fresh)
+    args = {"house": "shed 2", "deaths": 4, "feed_bags": 3}
+    pid = _ok(live, sid, "log_daily_record", args)["proposal_id"]
+    _ok(live, sid, "log_daily_record", {**args, "proposal_id": pid, "answer": "yes"})
+
+    out = _ok(live, sid, "get_record_book", None, schemas)
+    assert out["houses_logged"] == 1 and out["houses_total"] == 3
+    by_number = {e["number"]: e for e in out["entries"]}
+    assert by_number[2]["logged"] is True
+    assert (by_number[2]["record"]["deaths"], by_number[2]["record"]["feed_bags"]) == (4, 3)
+    assert by_number[1]["logged"] is False and by_number[3]["logged"] is False
+    assert "House 2 logged" in out["text_en"] and "No entry yet for House 1" in out["text_en"]
+
+
+def test_get_farm_status_uses_a_logged_record_the_same_day(fresh):
+    """The record book is the primary data source (docs/DESIGN.md §13.2): once logged, get_farm_status must
+    show it, not the seed's synthetic guess for that day."""
+    live = fresh.live
+    sid, _ = _session(fresh)
+    args = {"house": "shed 1", "deaths": 123}
+    pid = _ok(live, sid, "log_daily_record", args)["proposal_id"]
+    _ok(live, sid, "log_daily_record", {**args, "proposal_id": pid, "answer": "yes"})
+
+    result = _call(live, sid, "get_farm_status", {"house": "shed 1"})["result"]
+    assert result.get("isError") in (None, False), result
+    house = result["structuredContent"]["houses"][0]
+    assert house["deaths_latest"] == 123
+
+
+def test_three_days_later_a_logged_spike_still_shows_in_the_trailing_week():
+    """The "three days later" cross-session recall scenario (private/RECORD_BOOK_PLAN.md §3, §5): a farmer's
+    logged record outlives the calendar day it was logged on, because the seed's own placed_on..as_of window
+    slides with "today" (docs/DESIGN.md §13.2) — so this checks the raw logged value, not an age-dependent one."""
+    day_clock = DayClock(FIXED_DAY)
+    now_clock = DayClock(FIXED_DAY)  # only the date matters for get_farm_status; reused as a stand-in wall clock
+    source = DemoFarmSource(clock=day_clock, now=lambda: datetime.combine(now_clock.day, dtime(10, 0), tzinfo=IST))
+    live, stop = _start({}, source=source)
+    try:
+        sid, _ = live.initialize()
+        farm, as_of = source.snapshot()
+        house1 = next(h for h in farm.houses if h.number == 1)
+        spike = house1.records[-1].deaths + 500  # far outside any plausible natural daily count
+        args = {"house": "shed 1", "deaths": spike}
+        pid = _ok(live, sid, "log_daily_record", args)["proposal_id"]
+        _ok(live, sid, "log_daily_record", {**args, "proposal_id": pid, "answer": "yes"})
+
+        def status(house_ref):
+            r = _call(live, sid, "get_farm_status", {"house": house_ref})["result"]
+            assert r.get("isError") in (None, False), r
+            return r["structuredContent"]["houses"][0]
+
+        assert status("shed 1")["deaths_latest"] == spike
+
+        day_clock.day += timedelta(days=3)
+        now_clock.day += timedelta(days=3)
+        later = status("shed 1")
+        assert later["deaths_latest"] != spike  # "today" moved on: this is no longer the latest day
+        assert later["deaths_7d"] >= spike  # but the spike is still inside the trailing 7-day window
+
+        book = _ok(live, sid, "get_record_book")
+        entry = next(e for e in book["entries"] if e["number"] == 1)
+        assert entry["logged"] is False  # a fresh "today" has nothing logged yet
+    finally:
+        stop()
+
+
+def test_record_book_latency_p95_under_500ms(fresh):
+    live = fresh.live
+    sid, _ = _session(fresh)
+    import statistics
+
+    samples = []
+    for _ in range(40):
+        t0 = time.perf_counter()
+        _ok(live, sid, "get_record_book")
+        samples.append((time.perf_counter() - t0) * 1000)
+    p95 = statistics.quantiles(samples, n=20)[18]
+    print(f"\nget_record_book HTTP round trip: p50 {statistics.median(samples):.1f} ms, p95 {p95:.1f} ms (n=40)")
     assert p95 < 500
