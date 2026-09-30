@@ -3,11 +3,11 @@ name = "clucktalk"
 version = "0.0.0"
 description = "CluckTalk: the voice farm manager for India's poultry farmers (Alexa+ MCP add-on)"
 license = "MIT"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 
 [tool.ruff]
 line-length = 120
-target-version = "py313"
+target-version = "py312"
 extend-exclude = ["cdk.out", "node_modules"]
 
 [tool.ruff.lint]

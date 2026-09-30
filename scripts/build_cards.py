@@ -8,8 +8,8 @@ The font is Noto Sans Telugu 2.005 (SIL Open Font License 1.1, see ui/fonts/READ
 The server stamps its own demo/live mode into the placeholder ``"@SERVER_DEMO@"`` at startup, so it stays.
 
 Usage (Windows):
-    .venv\\Scripts\\python scripts\\build_cards.py           rebuild every card
-    .venv\\Scripts\\python scripts\\build_cards.py --check   exit 1 if a built card is out of date (harness test)
+    <venv python> scripts/build_cards.py           rebuild every card
+    <venv python> scripts/build_cards.py --check   exit 1 if a built card is out of date (harness test)
 """
 
 from __future__ import annotations
@@ -103,7 +103,7 @@ def main() -> int:
             target.write_bytes(built)  # bytes: identical LF output on every OS
             print(f"built {target.relative_to(ROOT).as_posix()} ({len(built):,} bytes)")
     if stale:
-        print(f"Out of date: {', '.join(stale)}. Run: .venv\\Scripts\\python scripts\\build_cards.py", file=sys.stderr)
+        print(f"Out of date: {', '.join(stale)}. Run: {sys.executable} scripts/build_cards.py", file=sys.stderr)
         return 1
     if args.check:
         print("cards up to date")

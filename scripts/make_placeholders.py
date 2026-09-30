@@ -5,8 +5,8 @@ block letters, so nobody can mistake it for a real photo of a bird (docs/SOURCES
 They exist only to exercise the photo-input path; they show no bird, sign or disease.
 
 Usage (Windows):
-    .venv\Scripts\python scripts\make_placeholders.py          write the images
-    .venv\Scripts\python scripts\make_placeholders.py --check  exit 1 if a committed image differs (deterministic)
+    <venv python> scripts/make_placeholders.py          write the images
+    <venv python> scripts/make_placeholders.py --check  exit 1 if a committed image differs (deterministic)
 """
 
 from __future__ import annotations

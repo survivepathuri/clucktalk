@@ -2,13 +2,14 @@
 
 Scans every file git would track (tracked + untracked-but-not-ignored), so it runs before the
 first commit too. Exit codes: 0 = clean, 1 = secret found, 2 = scan could not run.
-Usage (Windows):  python scripts\\scan_secrets.py [--root PATH]
+Usage:  python scripts/scan_secrets.py [--root PATH]
 """
 
 from __future__ import annotations
 
 import argparse
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -71,6 +72,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
     args = parser.parse_args(argv)
     root = args.root.resolve()
+
+    if not (root / ".git").exists() or shutil.which("git") is None:
+        print(
+            "SKIPPED: not a git checkout, secret scan not run (no .git directory, or git is not on PATH; "
+            "for example a ZIP download). Clone the repository to run this step.",
+            file=sys.stderr,
+        )
+        return 0
 
     try:
         findings, count = scan(root)

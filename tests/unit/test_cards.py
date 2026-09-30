@@ -74,3 +74,17 @@ def test_card_self_checks_its_number_format_against_the_server():
     fixtures = json.loads(re.search(r"const NUM_FIXTURES = (\[.*?\]);", built).group(1))
     assert fixtures and all(num(v) == want for v, want in fixtures)
     assert "numSelfTest();" in built and '"num-mismatch"' in built
+
+
+def test_missing_built_card_hint_is_os_neutral(monkeypatch):
+    r"""The rebuild hint names the running interpreter, not a hard-coded Windows .venv\Scripts path."""
+    import sys
+
+    from clucktalk.server import cards
+
+    monkeypatch.setattr(cards, "FARM_STATUS_FILE", REPO_ROOT / "does-not-exist.html")
+    with pytest.raises(RuntimeError) as exc:
+        cards.farm_status_html()
+    message = str(exc.value)
+    assert sys.executable in message and "scripts/build_cards.py" in message
+    assert r".venv\Scripts" not in message.replace(sys.executable, "")

@@ -6,7 +6,7 @@ Never invents a score: every row is a real HTTP round trip against the same MCP 
 (CLAUDE.md Rule 5, Rule 6). The demo farm is date-relative, so results do not depend on which day this runs.
 
 Usage (Windows):
-    .venv\\Scripts\\python scripts\\eval_fast.py
+    <venv python> scripts/eval_fast.py
 """
 
 from __future__ import annotations

@@ -10,7 +10,7 @@ Scans:
      prefix, and the Bedrock Knowledge Base storage-type constant.
 
 Exit codes: 0 = clean, 1 = AOSS found, 2 = a scan target could not be read.
-Usage (Windows):  python scripts\\check_no_aoss.py [--root PATH]
+Usage:  python scripts/check_no_aoss.py [--root PATH]
 """
 
 from __future__ import annotations

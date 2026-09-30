@@ -1,6 +1,6 @@
 """docs/TELUGU_REVIEW.md must list every Telugu string currently in the code with its review status, so the
 native-speaker review never works from a stale copy, and any new or changed string is pending until reviewed.
-Regenerate with: .venv/Scripts/python scripts/telugu_review.py"""
+Regenerate with: <venv python> scripts/telugu_review.py"""
 
 import json
 import sys

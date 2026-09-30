@@ -11,10 +11,14 @@ tool's structuredContent, the same values the spoken answer uses (docs/DESIGN.md
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 from clucktalk.domain.photos import LABEL as PHOTO_LABEL
 from clucktalk.i18n import GENERIC_ERROR, GENERIC_NEXT_STEP, Text
+
+# Rebuild hint for a missing built card: the running interpreter is the venv's, on every OS.
+_REBUILD = f"{sys.executable} scripts/build_cards.py"
 
 CARDS_DIR = Path(__file__).resolve().parent
 FARM_STATUS_URI = "ui://clucktalk/farm-status.html"
@@ -63,7 +67,7 @@ FARM_STATUS_LABELS: dict[str, Text] = {
 def farm_status_html() -> str:
     """The built farm-status card. Missing file = broken checkout: fail loud at startup (Rule 6)."""
     if not FARM_STATUS_FILE.exists():
-        raise RuntimeError(f"{FARM_STATUS_FILE} is missing. Rebuild it: .venv\\Scripts\\python scripts\\build_cards.py")
+        raise RuntimeError(f"{FARM_STATUS_FILE} is missing. Rebuild it: {_REBUILD}")
     return FARM_STATUS_FILE.read_text(encoding="utf-8")
 
 
@@ -93,7 +97,7 @@ SALE_PLAN_LABELS: dict[str, Text] = {
 def sale_plan_html() -> str:
     """The built sale-plan card. Missing file = broken checkout: fail loud at startup (Rule 6)."""
     if not SALE_PLAN_FILE.exists():
-        raise RuntimeError(f"{SALE_PLAN_FILE} is missing. Rebuild it: .venv\\Scripts\\python scripts\\build_cards.py")
+        raise RuntimeError(f"{SALE_PLAN_FILE} is missing. Rebuild it: {_REBUILD}")
     return SALE_PLAN_FILE.read_text(encoding="utf-8")
 
 
@@ -126,9 +130,7 @@ HEALTH_CHECK_LABELS: dict[str, Text] = {
 def health_check_html() -> str:
     """The built health-check card. Missing file = broken checkout: fail loud at startup (Rule 6)."""
     if not HEALTH_CHECK_FILE.exists():
-        raise RuntimeError(
-            f"{HEALTH_CHECK_FILE} is missing. Rebuild it: .venv\\Scripts\\python scripts\\build_cards.py"
-        )
+        raise RuntimeError(f"{HEALTH_CHECK_FILE} is missing. Rebuild it: {_REBUILD}")
     return HEALTH_CHECK_FILE.read_text(encoding="utf-8")
 
 
@@ -154,5 +156,5 @@ BRIEFING_LABELS: dict[str, Text] = {
 def briefing_html() -> str:
     """The built briefing card. Missing file = broken checkout: fail loud at startup (Rule 6)."""
     if not BRIEFING_FILE.exists():
-        raise RuntimeError(f"{BRIEFING_FILE} is missing. Rebuild it: .venv\\Scripts\\python scripts\\build_cards.py")
+        raise RuntimeError(f"{BRIEFING_FILE} is missing. Rebuild it: {_REBUILD}")
     return BRIEFING_FILE.read_text(encoding="utf-8")

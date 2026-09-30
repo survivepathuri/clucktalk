@@ -4,8 +4,8 @@ Starts its own MCP server and Simulator (demo data) on free 127.0.0.1 ports, war
 Budget (docs/DESIGN.md §3, Amazon Alexa+ guidance): every MCP round trip under 500 ms.
 
 Usage (Windows):
-    .venv\\Scripts\\python scripts\\latency_report.py            print a Markdown table
-    .venv\\Scripts\\python scripts\\latency_report.py -n 200     more samples per row
+    <venv python> scripts/latency_report.py            print a Markdown table
+    <venv python> scripts/latency_report.py -n 200     more samples per row
 """
 
 from __future__ import annotations

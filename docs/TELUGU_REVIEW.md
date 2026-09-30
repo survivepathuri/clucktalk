@@ -74,72 +74,72 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 | 56 | stop all movement of birds, eggs, litter, vehicles and visitors in or out of the shed | షెడ్ లోపలికి, బయటికి కోళ్లు, గుడ్లు, లిట్టర్, వాహనాలు, సందర్శకుల రాకపోకలు ఆపండి | `src/clucktalk/domain/triage.py:139` |  |
 | 57 | do not cut open dead birds | చనిపోయిన కోళ్లను కోసి తెరవకండి | `src/clucktalk/domain/triage.py:141` |  |
 | 58 | report it today to your vet or the nearest government veterinary centre | ఈరోజే మీ డాక్టర్‌కి లేదా దగ్గరలోని ప్రభుత్వ పశు వైద్యశాలకు తెలియజేయండి | `src/clucktalk/domain/triage.py:144` |  |
-| 59 | OK | బాగుంది | `src/clucktalk/server/cards/__init__.py:31` |  |
-| 60 | WATCH | గమనించాలి | `src/clucktalk/server/cards/__init__.py:32` |  |
-| 61 | ALERT | శ్రద్ధ అవసరం | `src/clucktalk/server/cards/__init__.py:33` |  |
-| 62 | UNKNOWN | తెలియదు | `src/clucktalk/server/cards/__init__.py:34` |  |
-| 63 | Farm status | ఫారం స్థితి | `src/clucktalk/server/cards/__init__.py:35` |  |
-| 64 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:36` |  |
-| 65 | Deaths today | ఈరోజు మరణాలు | `src/clucktalk/server/cards/__init__.py:37` |  |
-| 66 | Deaths, latest count | తాజా లెక్కలో మరణాలు | `src/clucktalk/server/cards/__init__.py:38` |  |
-| 67 | Feed stock | ఫీడ్ నిల్వ | `src/clucktalk/server/cards/__init__.py:39` |  |
-| 68 | Feed stock, days | ఫీడ్ నిల్వ, రోజులు | `src/clucktalk/server/cards/__init__.py:40` |  |
-| 69 | not known | తెలియదు | `src/clucktalk/server/cards/__init__.py:41` |  |
-| 70 | Average weight | సగటు బరువు | `src/clucktalk/server/cards/__init__.py:42` |  |
-| 71 | Laying | గుడ్ల ఉత్పత్తి | `src/clucktalk/server/cards/__init__.py:43` |  |
-| 72 | {n} days | {n} రోజులు | `src/clucktalk/server/cards/__init__.py:45` |  |
-| 73 | {n} day | {n} రోజు | `src/clucktalk/server/cards/__init__.py:46` |  |
-| 74 | at least {n} days | కనీసం {n} రోజులు | `src/clucktalk/server/cards/__init__.py:47` |  |
-| 75 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:48` |  |
-| 76 | target {n} g | లక్ష్యం {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:49` |  |
-| 77 | {n} birds | {n} కోళ్లు | `src/clucktalk/server/cards/__init__.py:50` |  |
-| 78 | Day {n} | {n}వ రోజు | `src/clucktalk/server/cards/__init__.py:51` |  |
-| 79 | Latest readings: {d} | తాజా రీడింగులు: {d} | `src/clucktalk/server/cards/__init__.py:52` |  |
-| 80 | Tap a shed for details | వివరాల కోసం షెడ్‌ను తాకండి | `src/clucktalk/server/cards/__init__.py:53` |  |
-| 81 | All sheds | అన్ని షెడ్లు | `src/clucktalk/server/cards/__init__.py:54` |  |
-| 82 | Could not check | తనిఖీ చేయలేకపోయాను | `src/clucktalk/server/cards/__init__.py:55` |  |
-| 83 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:56` |  |
-| 84 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:57` |  |
-| 85 | Sell-day plan | అమ్మకం రోజు ప్రణాళిక | `src/clucktalk/server/cards/__init__.py:72` |  |
-| 86 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:73` |  |
-| 87 | Simulated price | అంచనా ధర (డెమో) | `src/clucktalk/server/cards/__init__.py:74` |  |
-| 88 | Best day | మంచి రోజు | `src/clucktalk/server/cards/__init__.py:75` |  |
-| 89 | Today | ఈరోజు | `src/clucktalk/server/cards/__init__.py:76` |  |
-| 90 | Break-even | బ్రేక్-ఈవెన్ | `src/clucktalk/server/cards/__init__.py:77` |  |
-| 91 | Net vs today | ఈరోజుతో పోలిస్తే నికరం | `src/clucktalk/server/cards/__init__.py:78` |  |
-| 92 | Weight | బరువు | `src/clucktalk/server/cards/__init__.py:79` |  |
-| 93 | Growing charge | గ్రోయింగ్ ఛార్జ్ | `src/clucktalk/server/cards/__init__.py:81` |  |
-| 94 | Save your contract terms to see the growing charge | గ్రోయింగ్ ఛార్జ్ చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయండి | `src/clucktalk/server/cards/__init__.py:83` |  |
-| 95 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:85` |  |
-| 96 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:86` |  |
-| 97 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:89` |  |
-| 98 | Health check | ఆరోగ్య తనిఖీ | `src/clucktalk/server/cards/__init__.py:104` |  |
-| 99 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:105` |  |
-| 100 | not urgent | అత్యవసరం కాదు | `src/clucktalk/server/cards/__init__.py:106` |  |
-| 101 | watch closely today | ఈరోజు దగ్గరగా గమనించాలి | `src/clucktalk/server/cards/__init__.py:107` |  |
-| 102 | needs a vet today | ఈరోజే డాక్టర్ అవసరం | `src/clucktalk/server/cards/__init__.py:108` |  |
-| 103 | signs of a possible reportable disease | తెలియజేయాల్సిన వ్యాధి లక్షణాలు కావచ్చు | `src/clucktalk/server/cards/__init__.py:109` |  |
-| 104 | Still checking | ఇంకా తనిఖీ చేస్తున్నాను | `src/clucktalk/server/cards/__init__.py:110` |  |
-| 105 | Could not finish | పూర్తి చేయలేకపోయాను | `src/clucktalk/server/cards/__init__.py:111` |  |
-| 106 | Signs reported | చెప్పిన లక్షణాలు | `src/clucktalk/server/cards/__init__.py:112` |  |
-| 107 | The signs fit | లక్షణాలు సరిపోతున్నవి | `src/clucktalk/server/cards/__init__.py:113` |  |
-| 108 | Check first | ముందుగా చూడండి | `src/clucktalk/server/cards/__init__.py:114` |  |
-| 109 | PLACEHOLDER - not a real photo | ప్లేస్‌హోల్డర్ - నిజమైన ఫోటో కాదు | `src/clucktalk/server/cards/__init__.py:116` |  |
-| 110 | Sources | మూలాలు | `src/clucktalk/server/cards/__init__.py:117` |  |
-| 111 | Check again | మళ్ళీ చూడండి | `src/clucktalk/server/cards/__init__.py:118` |  |
-| 112 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:119` |  |
-| 113 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:122` |  |
-| 114 | Daily briefing | రోజువారీ బ్రీఫింగ్ | `src/clucktalk/server/cards/__init__.py:138` |  |
-| 115 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:139` |  |
-| 116 | ALERT | శ్రద్ధ అవసరం | `src/clucktalk/server/cards/__init__.py:140` |  |
-| 117 | WATCH | గమనించాలి | `src/clucktalk/server/cards/__init__.py:141` |  |
-| 118 | REMINDER | గుర్తుచేత | `src/clucktalk/server/cards/__init__.py:142` |  |
-| 119 | Health first | ఆరోగ్యం ముందు | `src/clucktalk/server/cards/__init__.py:143` |  |
-| 120 | Simulated | డెమో అంచనా | `src/clucktalk/server/cards/__init__.py:144` |  |
-| 121 | Previous | వెనుకకు | `src/clucktalk/server/cards/__init__.py:145` |  |
-| 122 | Next | తర్వాత | `src/clucktalk/server/cards/__init__.py:146` |  |
-| 123 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:147` |  |
-| 124 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:150` |  |
+| 59 | OK | బాగుంది | `src/clucktalk/server/cards/__init__.py:35` |  |
+| 60 | WATCH | గమనించాలి | `src/clucktalk/server/cards/__init__.py:36` |  |
+| 61 | ALERT | శ్రద్ధ అవసరం | `src/clucktalk/server/cards/__init__.py:37` |  |
+| 62 | UNKNOWN | తెలియదు | `src/clucktalk/server/cards/__init__.py:38` |  |
+| 63 | Farm status | ఫారం స్థితి | `src/clucktalk/server/cards/__init__.py:39` |  |
+| 64 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:40` |  |
+| 65 | Deaths today | ఈరోజు మరణాలు | `src/clucktalk/server/cards/__init__.py:41` |  |
+| 66 | Deaths, latest count | తాజా లెక్కలో మరణాలు | `src/clucktalk/server/cards/__init__.py:42` |  |
+| 67 | Feed stock | ఫీడ్ నిల్వ | `src/clucktalk/server/cards/__init__.py:43` |  |
+| 68 | Feed stock, days | ఫీడ్ నిల్వ, రోజులు | `src/clucktalk/server/cards/__init__.py:44` |  |
+| 69 | not known | తెలియదు | `src/clucktalk/server/cards/__init__.py:45` |  |
+| 70 | Average weight | సగటు బరువు | `src/clucktalk/server/cards/__init__.py:46` |  |
+| 71 | Laying | గుడ్ల ఉత్పత్తి | `src/clucktalk/server/cards/__init__.py:47` |  |
+| 72 | {n} days | {n} రోజులు | `src/clucktalk/server/cards/__init__.py:49` |  |
+| 73 | {n} day | {n} రోజు | `src/clucktalk/server/cards/__init__.py:50` |  |
+| 74 | at least {n} days | కనీసం {n} రోజులు | `src/clucktalk/server/cards/__init__.py:51` |  |
+| 75 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:52` |  |
+| 76 | target {n} g | లక్ష్యం {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:53` |  |
+| 77 | {n} birds | {n} కోళ్లు | `src/clucktalk/server/cards/__init__.py:54` |  |
+| 78 | Day {n} | {n}వ రోజు | `src/clucktalk/server/cards/__init__.py:55` |  |
+| 79 | Latest readings: {d} | తాజా రీడింగులు: {d} | `src/clucktalk/server/cards/__init__.py:56` |  |
+| 80 | Tap a shed for details | వివరాల కోసం షెడ్‌ను తాకండి | `src/clucktalk/server/cards/__init__.py:57` |  |
+| 81 | All sheds | అన్ని షెడ్లు | `src/clucktalk/server/cards/__init__.py:58` |  |
+| 82 | Could not check | తనిఖీ చేయలేకపోయాను | `src/clucktalk/server/cards/__init__.py:59` |  |
+| 83 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:60` |  |
+| 84 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:61` |  |
+| 85 | Sell-day plan | అమ్మకం రోజు ప్రణాళిక | `src/clucktalk/server/cards/__init__.py:76` |  |
+| 86 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:77` |  |
+| 87 | Simulated price | అంచనా ధర (డెమో) | `src/clucktalk/server/cards/__init__.py:78` |  |
+| 88 | Best day | మంచి రోజు | `src/clucktalk/server/cards/__init__.py:79` |  |
+| 89 | Today | ఈరోజు | `src/clucktalk/server/cards/__init__.py:80` |  |
+| 90 | Break-even | బ్రేక్-ఈవెన్ | `src/clucktalk/server/cards/__init__.py:81` |  |
+| 91 | Net vs today | ఈరోజుతో పోలిస్తే నికరం | `src/clucktalk/server/cards/__init__.py:82` |  |
+| 92 | Weight | బరువు | `src/clucktalk/server/cards/__init__.py:83` |  |
+| 93 | Growing charge | గ్రోయింగ్ ఛార్జ్ | `src/clucktalk/server/cards/__init__.py:85` |  |
+| 94 | Save your contract terms to see the growing charge | గ్రోయింగ్ ఛార్జ్ చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయండి | `src/clucktalk/server/cards/__init__.py:87` |  |
+| 95 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:89` |  |
+| 96 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:90` |  |
+| 97 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:93` |  |
+| 98 | Health check | ఆరోగ్య తనిఖీ | `src/clucktalk/server/cards/__init__.py:108` |  |
+| 99 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:109` |  |
+| 100 | not urgent | అత్యవసరం కాదు | `src/clucktalk/server/cards/__init__.py:110` |  |
+| 101 | watch closely today | ఈరోజు దగ్గరగా గమనించాలి | `src/clucktalk/server/cards/__init__.py:111` |  |
+| 102 | needs a vet today | ఈరోజే డాక్టర్ అవసరం | `src/clucktalk/server/cards/__init__.py:112` |  |
+| 103 | signs of a possible reportable disease | తెలియజేయాల్సిన వ్యాధి లక్షణాలు కావచ్చు | `src/clucktalk/server/cards/__init__.py:113` |  |
+| 104 | Still checking | ఇంకా తనిఖీ చేస్తున్నాను | `src/clucktalk/server/cards/__init__.py:114` |  |
+| 105 | Could not finish | పూర్తి చేయలేకపోయాను | `src/clucktalk/server/cards/__init__.py:115` |  |
+| 106 | Signs reported | చెప్పిన లక్షణాలు | `src/clucktalk/server/cards/__init__.py:116` |  |
+| 107 | The signs fit | లక్షణాలు సరిపోతున్నవి | `src/clucktalk/server/cards/__init__.py:117` |  |
+| 108 | Check first | ముందుగా చూడండి | `src/clucktalk/server/cards/__init__.py:118` |  |
+| 109 | PLACEHOLDER - not a real photo | ప్లేస్‌హోల్డర్ - నిజమైన ఫోటో కాదు | `src/clucktalk/server/cards/__init__.py:120` |  |
+| 110 | Sources | మూలాలు | `src/clucktalk/server/cards/__init__.py:121` |  |
+| 111 | Check again | మళ్ళీ చూడండి | `src/clucktalk/server/cards/__init__.py:122` |  |
+| 112 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:123` |  |
+| 113 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:126` |  |
+| 114 | Daily briefing | రోజువారీ బ్రీఫింగ్ | `src/clucktalk/server/cards/__init__.py:140` |  |
+| 115 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:141` |  |
+| 116 | ALERT | శ్రద్ధ అవసరం | `src/clucktalk/server/cards/__init__.py:142` |  |
+| 117 | WATCH | గమనించాలి | `src/clucktalk/server/cards/__init__.py:143` |  |
+| 118 | REMINDER | గుర్తుచేత | `src/clucktalk/server/cards/__init__.py:144` |  |
+| 119 | Health first | ఆరోగ్యం ముందు | `src/clucktalk/server/cards/__init__.py:145` |  |
+| 120 | Simulated | డెమో అంచనా | `src/clucktalk/server/cards/__init__.py:146` |  |
+| 121 | Previous | వెనుకకు | `src/clucktalk/server/cards/__init__.py:147` |  |
+| 122 | Next | తర్వాత | `src/clucktalk/server/cards/__init__.py:148` |  |
+| 123 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:149` |  |
+| 124 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:152` |  |
 | 125 | Here's your briefing for today. | ఈరోజు మీ బ్రీఫింగ్ ఇది. | `src/clucktalk/server/tools/briefing.py:47` |  |
 | 126 | Here's the rest. | మిగిలినవి ఇవి. | `src/clucktalk/server/tools/briefing.py:48` |  |
 | 127 | Nothing needs your attention today. | ఈరోజు మీ శ్రద్ధ అవసరమయ్యేది ఏమీ లేదు. | `src/clucktalk/server/tools/briefing.py:49` |  |

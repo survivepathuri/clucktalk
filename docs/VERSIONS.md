@@ -7,7 +7,7 @@ Every version below was checked on the date shown, from the command or source na
 
 | Tool | Version | Evidence |
 |---|---|---|
-| **Python (project)** | **3.13.15** (64-bit). The `.venv` is built with it via `py -3.13` | `py install 3.13`, `py list`, `.venv\Scripts\python --version` → 3.13.15 (2026-09-27) |
+| **Python (project)** | **3.12 and 3.13 are the supported versions (CI targets); any other version >= 3.11 is untested** (`tasks.py` warns and continues; below 3.11 it exits). Local dev build: **3.13.15** (64-bit) via `py -3.13`. No 3.13-only syntax is used; 3.12 has not been run yet (to be settled by CI). `requires-python >=3.12`, ruff `target-version py312` | `py install 3.13`, `py list`, `.venv\Scripts\python --version` → 3.13.15 (2026-09-27) |
 | Python (system default) | 3.14.5, kept installed; `python` on PATH | `python --version`, `py list` |
 | pip | 26.1.1 | `pip --version` |
 | Node.js | v24.15.0 | `node --version` |

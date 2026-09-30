@@ -5,11 +5,11 @@ Review status is tracked per string in data/i18n/telugu_approvals.json. An appro
 (English, Telugu) pair, so any new or changed string (either language) is automatically pending.
 
 Usage (Windows):
-    .venv\\Scripts\\python scripts\\telugu_review.py            write docs/TELUGU_REVIEW.md
-    .venv\\Scripts\\python scripts\\telugu_review.py --check    exit 1 if the file is out of date (harness test)
-    .venv\\Scripts\\python scripts\\telugu_review.py --approve-pending --reviewer "NAME" --date YYYY-MM-DD
+    <venv python> scripts/telugu_review.py            write docs/TELUGU_REVIEW.md
+    <venv python> scripts/telugu_review.py --check    exit 1 if the file is out of date (harness test)
+    <venv python> scripts/telugu_review.py --approve-pending --reviewer "NAME" --date YYYY-MM-DD
                                                            record that NAME reviewed every pending string
-    .venv\\Scripts\\python scripts\\telugu_review.py --require-none-pending
+    <venv python> scripts/telugu_review.py --require-none-pending
                                                            exit 1 if any string is pending (submission gate)
 """
 

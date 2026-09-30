@@ -1,7 +1,7 @@
 """CluckTalk task runner: one cross-platform entry point, standard library only (CLAUDE.md Rule 12).
 
-Windows (cmd):
-    python tasks.py setup       Create .venv with Python 3.13 (via the py launcher) and install pinned deps
+Windows (cmd); on Linux/macOS use python3 instead of python:
+    python tasks.py setup       Create .venv with Python 3.12 or 3.13 and install pinned deps
     python tasks.py check       Lint + unit + contract tests + AOSS check + secret scan (Rule 3)
     python tasks.py eval-fast   Golden eval suite in mock mode, no AWS needed
     python tasks.py serve       Start only the MCP server (demo data, http://127.0.0.1:8765/mcp)
@@ -24,14 +24,38 @@ import webbrowser
 from collections.abc import Callable
 from pathlib import Path
 
-REQUIRED_PYTHON = (3, 13)
-REQUIRED_PYTHON_STR = "3.13"
+SUPPORTED_PYTHONS = ((3, 12), (3, 13))  # the tested versions (CI targets)
+MIN_PYTHON = (3, 11)  # below this: refuse; between MIN_PYTHON and the next untested version: warn and continue
+SUPPORTED_STR = " or ".join(f"{major}.{minor}" for major, minor in SUPPORTED_PYTHONS)
+INSTALL_HINT = (
+    f"Install Python {SUPPORTED_STR}: python.org (Windows/macOS), 'brew install python@3.13' (macOS), "
+    "'pyenv install 3.13', or the deadsnakes PPA (Ubuntu)."
+)
 ROOT = Path(__file__).resolve().parent
 VENV = ROOT / ".venv"
 VENV_PY = VENV / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
 DEV_REQUIREMENTS = ROOT / "requirements-dev.txt"
 APP_REQUIREMENTS = ROOT / "requirements.txt"
 PYTEST_NO_TESTS_COLLECTED = 5
+
+
+def python_support(version: tuple[int, int]) -> str:
+    """'supported' (tested), 'untested' (warn, continue; pip fails loudly if a wheel is missing) or 'too_old'."""
+    if tuple(version[:2]) in SUPPORTED_PYTHONS:
+        return "supported"
+    return "untested" if tuple(version[:2]) >= MIN_PYTHON else "too_old"
+
+
+def _warn_untested(version: tuple[int, int], what: str) -> None:
+    print(
+        f"WARNING: untested Python version {version[0]}.{version[1]} ({what}). "
+        f"Tested: {SUPPORTED_STR}. Continuing; if a pinned package has no wheel for it, pip will fail loudly.",
+        flush=True,
+    )
+
+
+def format_hint() -> str:
+    return f"run: {VENV_PY.relative_to(ROOT)} -m ruff format ."
 
 
 def _run(cmd: list[str | Path]) -> int:
@@ -50,35 +74,45 @@ def _venv_python_version() -> tuple[int, int] | None:
 
 
 def _base_python() -> list[str]:
-    """Command that starts the required Python, even when tasks.py runs under another version."""
-    if sys.version_info[:2] == REQUIRED_PYTHON:
+    """Command that starts a supported Python (3.12/3.13); otherwise the current one if >= 3.11, with a warning."""
+    here = sys.version_info[:2]
+    support = python_support(here)
+    if support == "supported":
         return [sys.executable]
     launcher = shutil.which("py")
-    if launcher and subprocess.call([launcher, f"-{REQUIRED_PYTHON_STR}", "-c", ""], stderr=subprocess.DEVNULL) == 0:
-        return [launcher, f"-{REQUIRED_PYTHON_STR}"]
-    unix_name = shutil.which(f"python{REQUIRED_PYTHON_STR}")
-    if unix_name:
-        return [unix_name]
+    for major, minor in reversed(SUPPORTED_PYTHONS):
+        if launcher and subprocess.call([launcher, f"-{major}.{minor}", "-c", ""], stderr=subprocess.DEVNULL) == 0:
+            return [launcher, f"-{major}.{minor}"]
+        unix_name = shutil.which(f"python{major}.{minor}")
+        if unix_name:
+            return [unix_name]
+    if support == "untested":
+        _warn_untested(here, "no Python 3.12 or 3.13 found, using the one running tasks.py")
+        return [sys.executable]
     sys.exit(
-        f"ERROR: Python {REQUIRED_PYTHON_STR} not found. Install it, e.g. on Windows: py install {REQUIRED_PYTHON_STR}"
+        f"ERROR: Python {here[0]}.{here[1]} is too old (need {SUPPORTED_STR}; 3.11+ runs with a warning). "
+        + INSTALL_HINT
     )
 
 
 def _require_venv() -> None:
     version = _venv_python_version()
     if version is None:
-        sys.exit("ERROR: .venv not found. Run 'python tasks.py setup' first.")
-    if version != REQUIRED_PYTHON:
+        sys.exit("ERROR: .venv not found. Run 'python tasks.py setup' first (python3 on Linux/macOS).")
+    support = python_support(version)
+    if support == "too_old":
         sys.exit(
-            f"ERROR: .venv uses Python {version[0]}.{version[1]}, project requires {REQUIRED_PYTHON_STR}. "
+            f"ERROR: .venv uses Python {version[0]}.{version[1]}, project needs {SUPPORTED_STR}. "
             "Run 'python tasks.py setup' to recreate it."
         )
+    if support == "untested":
+        _warn_untested(version, ".venv")
 
 
 def setup() -> int:
     version = _venv_python_version()
-    if version is not None and version != REQUIRED_PYTHON:
-        print(f"Existing .venv uses Python {version[0]}.{version[1]}; recreating it with {REQUIRED_PYTHON_STR} ...")
+    if version is not None and python_support(version) == "too_old":
+        print(f"Existing .venv uses Python {version[0]}.{version[1]}; recreating it ...")
         shutil.rmtree(VENV)
     if not VENV_PY.exists():
         base = _base_python()
@@ -114,7 +148,7 @@ def check() -> int:
             lambda: (
                 ("PASS", "")
                 if _run([VENV_PY, "-m", "ruff", "format", "--check", "."]) == 0
-                else ("FAIL", "run: .venv\\Scripts\\python -m ruff format .")
+                else ("FAIL", format_hint())
             ),
         ),
         ("harness tests", lambda: _pytest_step("harness", "tests/harness")),

@@ -7,14 +7,33 @@ Streamable HTTP) plus an Agent Skill, built for the Alexa+ add-on program.
 > passing check in `python tasks.py check` / `python tasks.py eval-fast`. See `docs/DESIGN.md` for the full design
 > and what is built vs planned, and `docs/EVALS.md` for the current golden-suite score.
 
-## Quick start (Windows, venv only — Docker is optional and never required)
+## Quick start (venv only; Docker is optional and never required)
+
+Needs Python 3.12 or 3.13 (other versions from 3.11 run with a visible "untested" warning). Get it from
+python.org, `brew install python@3.13` (macOS), `pyenv install 3.13`, or the deadsnakes PPA (Ubuntu).
+
+Windows (cmd):
 
 ```
 git clone <this repo>
 cd CluckTalk
-python tasks.py setup    :: creates .venv (Python 3.13) and installs pinned dependencies
+python tasks.py setup    :: creates .venv and installs pinned dependencies
 python tasks.py run      :: starts the MCP server + the Alexa+ Simulator, opens http://127.0.0.1:8766/
 ```
+
+Linux / macOS:
+
+```
+git clone <this repo>
+cd CluckTalk
+python3 tasks.py setup   # creates .venv and installs pinned dependencies
+python3 tasks.py run     # starts the MCP server + the Alexa+ Simulator, opens http://127.0.0.1:8766/
+python3 tasks.py check   # optional: lint + tests + AOSS check + secret scan
+```
+
+Set `CLUCKTALK_NO_BROWSER=1` to stop `run` from opening a browser. Node.js is optional: one card test
+(`test_card_num_matches_the_server_formatter`) is skipped, with a reason, when `node` is not installed. The secret scan
+in `check` needs a git checkout; on a ZIP download it prints "SKIPPED" and the rest of `check` still runs.
 
 Try asking (typed or, if your browser supports it, spoken): *"How is shed two doing?"*, *"When should I sell shed
 one?"*, *"How much feed does shed two need this week?"*, *"Switch my farm to contract farming"*.

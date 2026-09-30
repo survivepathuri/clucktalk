@@ -43,7 +43,8 @@ def test_gitignored_env_file_is_allowed(tmp_path):
     assert scan_secrets.main(["--root", str(repo)]) == 0
 
 
-def test_not_a_git_repo_is_an_error_not_a_pass(tmp_path):
+def test_broken_git_checkout_is_still_an_error_not_a_pass(tmp_path):
+    (tmp_path / ".git").mkdir()  # a .git directory that git cannot read: strict behaviour, not the ZIP skip
     assert scan_secrets.main(["--root", str(tmp_path)]) == 2
 
 
@@ -67,3 +68,22 @@ def test_gitignored_private_notes_are_allowed(tmp_path):
     (repo / "private" / "notes.md").write_text("plan\n", encoding="utf-8")
     (repo / "CLAUDE.local.md").write_text("@private/notes.md\n", encoding="utf-8")
     assert scan_secrets.main(["--root", str(repo)]) == 0
+
+
+def test_not_a_git_checkout_is_skipped_visibly_with_exit_0(tmp_path, capsys):
+    (tmp_path / "config.py").write_text(f'KEY = "{FAKE_AWS_KEY_ID}"\n', encoding="utf-8")  # no .git: ZIP download
+    assert scan_secrets.main(["--root", str(tmp_path)]) == 0
+    assert "SKIPPED: not a git checkout, secret scan not run" in capsys.readouterr().err
+
+
+def test_git_missing_from_path_is_skipped_visibly_with_exit_0(tmp_path, capsys, monkeypatch):
+    repo = _git_repo(tmp_path)
+    monkeypatch.setattr(scan_secrets.shutil, "which", lambda name: None)
+    assert scan_secrets.main(["--root", str(repo)]) == 0
+    assert "SKIPPED" in capsys.readouterr().err
+
+
+def test_git_checkout_stays_strict(tmp_path):
+    repo = _git_repo(tmp_path)
+    (repo / "config.py").write_text(f'KEY = "{FAKE_AWS_KEY_ID}"\n', encoding="utf-8")
+    assert scan_secrets.main(["--root", str(repo)]) == 1
