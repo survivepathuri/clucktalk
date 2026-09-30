@@ -34,6 +34,7 @@ from starlette.staticfiles import StaticFiles
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from clucktalk.config import APP_NAME
+from clucktalk.domain.photos import PHOTO_REFS
 from clucktalk.simulator.intents import Intent, match, normalise, yes_no
 from clucktalk.simulator.mcp_client import Exchange, McpClient, McpUnavailable
 
@@ -238,9 +239,16 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
         started = time.perf_counter()
         body = await _json_object(request)
         delay_raw = body.get("simulate_delay_ms") if body is not None else None
-        if body is None or not isinstance(body.get("utterance", ""), str) or not _is_int_or_none(delay_raw):
+        photo_ref = body.get("photo_ref") if body is not None else None
+        if (
+            body is None
+            or not isinstance(body.get("utterance", ""), str)
+            or not _is_int_or_none(delay_raw)
+            or (photo_ref is not None and photo_ref not in PHOTO_REFS)
+        ):
             return JSONResponse(
-                {"error": "expected {utterance: string, device?, simulate_delay_ms?: int}"}, status_code=400
+                {"error": "expected {utterance: string, device?, simulate_delay_ms?: int, photo_ref?: string}"},
+                status_code=400,
             )
         utterance = body.get("utterance", "")[:500]
         device = "dot" if body.get("device") == "dot" else "show"
@@ -255,6 +263,11 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
         if answer is not None and awaiting:
             args = {**awaiting["arguments"], "proposal_id": awaiting["proposal_id"], "answer": answer}
             intent = Intent(awaiting["tool"], args, f"answer '{answer}' to the pending read-back")
+        if photo_ref and intent is not None and intent.tool == "start_health_check":
+            # The farmer attached a (placeholder) photo to this turn; only a new health check takes it.
+            intent = Intent(
+                intent.tool, {**intent.arguments, "photo_ref": photo_ref}, intent.rule + " + photo attached"
+            )
         out: dict[str, Any] = {
             "utterance": utterance,
             "normalised": normalise(utterance),

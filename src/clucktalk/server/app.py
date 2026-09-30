@@ -68,6 +68,7 @@ def build_mcp_server(source: DemoFarmSource | None = None, ai: AiServices | None
     apps = Apps()  # MCP Apps extension: card-bearing tools + their ui:// resources (docs/DESIGN.md §14)
     farm_status.register(apps, registry, source)
     sale.register(apps, registry, source)
+    health.register_cards(apps, registry, source, ai)
     server = MCPServer(
         name=APP_NAME,
         title=APP_NAME,
@@ -80,7 +81,7 @@ def build_mcp_server(source: DemoFarmSource | None = None, ai: AiServices | None
     profile.register(server, registry, source)
     contract_terms.register(server, registry, source)
     records.register(server, registry, source)
-    health.register(server, registry, source, ai)
+    health.register(server, registry, source)
     help_tool.register(server, registry)
     guard.bind(server)
     return server

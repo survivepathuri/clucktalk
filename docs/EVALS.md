@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-09-29T16:39:00+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite on the 11 Oct task.
+Run 2026-09-30T18:20:01+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite on the 11 Oct task.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -23,5 +23,7 @@ Run 2026-09-29T16:39:00+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | triage-model-failure-fails-loud | PASS | — |
 | vet-handoff-yes-sends-once | PASS | — |
 | vet-handoff-no-sends-nothing | PASS | — |
+| triage-photo-placeholder-changes-nothing | PASS | — |
+| triage-photo-with-red-flags-stays-code-only | PASS | — |
 
-**Score: 19/19**
+**Score: 21/21**

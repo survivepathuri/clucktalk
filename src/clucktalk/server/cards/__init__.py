@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from clucktalk.domain.photos import LABEL as PHOTO_LABEL
 from clucktalk.i18n import GENERIC_ERROR, GENERIC_NEXT_STEP, Text
 
 CARDS_DIR = Path(__file__).resolve().parent
@@ -20,6 +21,8 @@ FARM_STATUS_URI = "ui://clucktalk/farm-status.html"
 FARM_STATUS_FILE = CARDS_DIR / "farm_status.html"
 SALE_PLAN_URI = "ui://clucktalk/sale-plan.html"
 SALE_PLAN_FILE = CARDS_DIR / "sale_plan.html"
+HEALTH_CHECK_URI = "ui://clucktalk/health-check.html"
+HEALTH_CHECK_FILE = CARDS_DIR / "health_check.html"
 
 # Status is always an icon AND a word, never colour alone (docs/DESIGN.md §14).
 FARM_STATUS_LABELS: dict[str, Text] = {
@@ -90,3 +93,38 @@ def sale_plan_html() -> str:
     if not SALE_PLAN_FILE.exists():
         raise RuntimeError(f"{SALE_PLAN_FILE} is missing. Rebuild it: .venv\\Scripts\\python scripts\\build_cards.py")
     return SALE_PLAN_FILE.read_text(encoding="utf-8")
+
+
+# Health-check card (docs/DESIGN.md §18): urgency as an icon AND a word, the signs, what the signs fit, what to check
+# first. Every sentence and number on it comes from the tool's structuredContent; the words below are fixed labels.
+# The urgency words repeat the spoken ones (health.URGENCY_SHORT), so a pair reviewed once counts for both.
+HEALTH_CHECK_LABELS: dict[str, Text] = {
+    "health_title": Text("Health check", "ఆరోగ్య తనిఖీ"),
+    "demo_badge": Text("Demo data", "డెమో డేటా"),
+    "urgency_routine": Text("not urgent", "అత్యవసరం కాదు"),
+    "urgency_watch": Text("watch closely today", "ఈరోజు దగ్గరగా గమనించాలి"),
+    "urgency_urgent": Text("needs a vet today", "ఈరోజే డాక్టర్ అవసరం"),
+    "urgency_notifiable_suspect": Text("signs of a possible reportable disease", "తెలియజేయాల్సిన వ్యాధి లక్షణాలు కావచ్చు"),
+    "status_analyzing": Text("Still checking", "ఇంకా తనిఖీ చేస్తున్నాను"),
+    "status_failed": Text("Could not finish", "పూర్తి చేయలేకపోయాను"),
+    "signs_title": Text("Signs reported", "చెప్పిన లక్షణాలు"),
+    "fits_title": Text("The signs fit", "లక్షణాలు సరిపోతున్నవి"),
+    "checks_title": Text("Check first", "ముందుగా చూడండి"),
+    "photo_title": PHOTO_LABEL,
+    "photo_tile": Text("PLACEHOLDER - not a real photo", "ప్లేస్‌హోల్డర్ - నిజమైన ఫోటో కాదు"),
+    "sources_title": Text("Sources", "మూలాలు"),
+    "check_again": Text("Check again", "మళ్ళీ చూడండి"),
+    "sorry": Text("Sorry", "క్షమించండి"),
+    "generic_error": GENERIC_ERROR,
+    "generic_next": GENERIC_NEXT_STEP,
+    "loading": Text("Loading", "లోడ్ అవుతోంది"),
+}
+
+
+def health_check_html() -> str:
+    """The built health-check card. Missing file = broken checkout: fail loud at startup (Rule 6)."""
+    if not HEALTH_CHECK_FILE.exists():
+        raise RuntimeError(
+            f"{HEALTH_CHECK_FILE} is missing. Rebuild it: .venv\\Scripts\\python scripts\\build_cards.py"
+        )
+    return HEALTH_CHECK_FILE.read_text(encoding="utf-8")

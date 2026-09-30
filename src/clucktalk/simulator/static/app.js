@@ -12,7 +12,7 @@ const PRESETS = {
 };
 const $ = (id) => document.getElementById(id);
 const state = {
-  device: "show", preset: "show-1024x600", theme: "dark", sound: true, delay: 0, strictCsp: false, busy: false,
+  device: "show", preset: "show-1024x600", theme: "dark", sound: true, delay: 0, photo: "", strictCsp: false, busy: false,
   interimAfter: 1000, turnNo: 0, card: null, server: null,
 };
 window.__clucktalk = { turns: [] };   // read-only record of turns (for automated end-to-end checks)
@@ -331,7 +331,7 @@ async function ask(utterance, via) {
   let body;
   try {
     const r = await fetch("/api/turn", { method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ utterance, device: state.device, simulate_delay_ms: state.delay }) });
+      body: JSON.stringify({ utterance, device: state.device, simulate_delay_ms: state.delay, photo_ref: state.photo || null }) });
     body = await r.json();
     if (!r.ok) throw new Error(body.error || "HTTP " + r.status);
   } catch (err) {
@@ -418,6 +418,7 @@ $("theme").addEventListener("change", (e) => {
   if (state.card) state.card.sendContext({ theme: state.theme });
 });
 $("delay").addEventListener("change", (e) => { state.delay = Number(e.target.value); });
+$("photo").addEventListener("change", (e) => { state.photo = e.target.value; });
 $("csp").addEventListener("change", (e) => { state.strictCsp = e.target.value === "strict"; });  // applies to the next card
 
 // URL options make screenshots reproducible, e.g. ?device=show&preset=phone-390x844&dev=1&sound=0

@@ -26,6 +26,8 @@ from clucktalk.agents.triage import floor_only_result, run_triage
 from clucktalk.domain.errors import DomainError, NoHealthCheck, NothingToCheck
 from clucktalk.domain.houses import resolve_house
 from clucktalk.domain.models import House
+from clucktalk.domain.photos import LABEL as PHOTO_LABEL
+from clucktalk.domain.photos import NOT_ANALYZED, PHOTO_REFS
 from clucktalk.domain.proposals import PROPOSAL_TTL, Answer, Proposal, ProposalId, Reason
 from clucktalk.domain.status import house_status
 from clucktalk.domain.triage import (
@@ -46,6 +48,7 @@ from clucktalk.domain.triage import (
     new_handoff_id,
 )
 from clucktalk.i18n import Text
+from clucktalk.server.cards import HEALTH_CHECK_URI, health_check_html
 from clucktalk.server.confirm import ConfirmFlow
 from clucktalk.server.errors import domain_error_result
 from clucktalk.server.farm_state import DemoFarmSource
@@ -75,6 +78,8 @@ SignName = Literal[
     "panting",
     "sudden_deaths",
 ]
+PhotoRef = Literal["placeholder_1", "placeholder_2", "placeholder_3"]
+assert set(PhotoRef.__args__) == set(PHOTO_REFS)  # the schema enum and the placeholder registry stay one list
 assert set(SignName.__args__) == {s.value for s in Sign}  # the schema enum and the domain stay one list
 CheckId = Annotated[str, StringConstraints(pattern=CHECK_ID_PATTERN)]
 
@@ -181,6 +186,17 @@ class EvidenceOut(BaseModel):
     age_days: int | None
 
 
+class PhotoOut(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    ref: str
+    placeholder: Literal[True]  # only placeholder images exist; no real photo has been validated
+    analyzed: Literal[False]  # the photo is recorded and shown as attached, never read (docs/DESIGN.md §18)
+    label_en: str
+    label_te: str
+    note_en: str
+    note_te: str
+
+
 class AiOut(BaseModel):
     model_config = ConfigDict(extra="forbid")
     engine: str
@@ -217,6 +233,7 @@ class HealthCheckOutput(BaseModel):
     checks: list[CodeLabelOut]
     evidence: EvidenceOut
     ai: AiOut
+    photo: PhotoOut | None
     handoff_offered: bool
     disclaimer_en: str
     disclaimer_te: str
@@ -250,7 +267,9 @@ class VetHandoffOutput(BaseModel):
 
 
 # -- building a check -----------------------------------------------------------------------------------------------
-def _input(house: House, as_of, signs: tuple[Sign, ...], symptoms, birds_affected, since_days) -> TriageInput:
+def _input(
+    house: House, as_of, signs: tuple[Sign, ...], symptoms, birds_affected, since_days, photo_ref: str | None = None
+) -> TriageInput:
     """Facts at the moment the check starts, from the record book (code, never the model)."""
     deaths = latest_day = baseline = drop = live = age = None
     spike = False
@@ -282,6 +301,7 @@ def _input(house: House, as_of, signs: tuple[Sign, ...], symptoms, birds_affecte
         mortality_spike=spike,
         feed_drop_pct=drop,
         latest_record_day=latest_day,
+        photo_ref=photo_ref,
     )
 
 
@@ -346,6 +366,8 @@ def _ready_text(check: HealthCheck) -> Text:
             parts.append(Text(f"First, {first.en}.", f"ముందుగా, {first.te}."))
     if r.ai_note == "daily_limit":
         parts.append(DAILY_LIMIT_NOTE)
+    if inp.photo_ref:
+        parts.append(NOT_ANALYZED)
     parts.append(DISCLAIMER)
     if r.urgency >= Urgency.URGENT:
         parts.append(OFFER)
@@ -407,6 +429,8 @@ def _output(
         text = _failed_text(check)
     else:
         text = _analyzing_text(check, first_time)
+    if inp.photo_ref and check.status is not CheckStatus.READY:  # a ready answer already says it (_ready_text)
+        text = _join(text, NOT_ANALYZED)
     ready = check.status is CheckStatus.READY and r is not None
     return HealthCheckOutput(
         text_en=text.en,
@@ -450,6 +474,17 @@ def _output(
             age_days=inp.age_days,
         ),
         ai=_ai_out(check, ai),
+        photo=None
+        if not inp.photo_ref
+        else PhotoOut(
+            ref=inp.photo_ref,
+            placeholder=True,
+            analyzed=False,
+            label_en=PHOTO_LABEL.en,
+            label_te=PHOTO_LABEL.te,
+            note_en=NOT_ANALYZED.en,
+            note_te=NOT_ANALYZED.te,
+        ),
         handoff_offered=(r.urgency if ready else check.floor.urgency) >= Urgency.URGENT,
         disclaimer_en=DISCLAIMER.en,
         disclaimer_te=DISCLAIMER.te,
@@ -465,6 +500,7 @@ def build_start(
     symptoms: str | None,
     birds_affected: int | None,
     since_days: int | None,
+    photo_ref: str | None = None,
 ) -> HealthCheckOutput:
     farm, as_of = source.snapshot()
     house = resolve_house(farm, house_ref)
@@ -472,7 +508,7 @@ def build_start(
     words = symptoms.strip() if symptoms and symptoms.strip() else None
     if not sign_set and words is None:
         raise NothingToCheck(house.label_en, house.label_te)
-    inp = _input(house, as_of, sign_set, words, birds_affected, since_days)
+    inp = _input(house, as_of, sign_set, words, birds_affected, since_days, photo_ref)
     now = source.now()
     with source.store.atomic():
         latest = source.store.latest_health_check(farm.farm_id, house.house_id)
@@ -684,6 +720,11 @@ SYMPTOMS_PARAM = Field(
 )
 AFFECTED_PARAM = Field(default=None, ge=1, description="About how many birds show the signs, if said.")
 SINCE_PARAM = Field(default=None, ge=0, le=60, description="How many days ago it started, if said.")
+PHOTO_PARAM = Field(
+    default=None,
+    description="Optional, demo only: attach one of the placeholder photos. It is recorded and shown as attached, "
+    "never analyzed, and it never changes the result. Leave it out unless the farmer attached a photo.",
+)
 CHECK_PARAM = Field(default=None, description="The check_id from start_health_check.")
 PROPOSAL_PARAM = Field(default=None, description="Only on the second call: the proposal_id from the first call.")
 ANSWER_PARAM = Field(default=None, description="Only on the second call: 'yes' if the farmer said yes, 'no' if no.")
@@ -696,10 +737,20 @@ def _result(out: BaseModel) -> CallToolResult:
     )
 
 
-def register(server: MCPServer | Apps, registry: CapabilityRegistry, source: DemoFarmSource, ai: AiServices) -> None:
-    flow = ConfirmFlow(source.store, source.now)
+def register_cards(apps: Apps, registry: CapabilityRegistry, source: DemoFarmSource, ai: AiServices) -> None:
+    """The two tools that show the triage card (start and get); registered before the server is built."""
+    card = health_check_html().replace('"@SERVER_DEMO@"', "true" if source.demo_data else "false")
+    apps.add_html_resource(
+        HEALTH_CHECK_URI,
+        card,
+        name="health-check-card",
+        title="Health check card",
+        description="Bilingual (Telugu + English) card for health checks: urgency, signs, what to check first.",
+        prefers_border=False,
+    )
 
-    @server.tool(
+    @apps.tool(
+        resource_uri=HEALTH_CHECK_URI,
         name=START_TOOL,
         title="Start a health check",
         description=START_DESCRIPTION,
@@ -713,13 +764,15 @@ def register(server: MCPServer | Apps, registry: CapabilityRegistry, source: Dem
         symptoms: Annotated[str | None, SYMPTOMS_PARAM] = None,
         birds_affected: Annotated[int | None, AFFECTED_PARAM] = None,
         since_days: Annotated[int | None, SINCE_PARAM] = None,
+        photo_ref: Annotated[PhotoRef | None, PHOTO_PARAM] = None,
     ) -> Annotated[CallToolResult, HealthCheckOutput]:
         try:
-            return _result(build_start(source, ai, house, signs, symptoms, birds_affected, since_days))
+            return _result(build_start(source, ai, house, signs, symptoms, birds_affected, since_days, photo_ref))
         except DomainError as err:
             return domain_error_result(err)
 
-    @server.tool(
+    @apps.tool(
+        resource_uri=HEALTH_CHECK_URI,
         name=GET_TOOL,
         title="Health check result",
         description=GET_DESCRIPTION,
@@ -733,6 +786,10 @@ def register(server: MCPServer | Apps, registry: CapabilityRegistry, source: Dem
             return _result(build_get(source, ai, house, check_id))
         except DomainError as err:
             return domain_error_result(err)
+
+
+def register(server: MCPServer, registry: CapabilityRegistry, source: DemoFarmSource) -> None:
+    flow = ConfirmFlow(source.store, source.now)
 
     @server.tool(
         name=HANDOFF_TOOL,

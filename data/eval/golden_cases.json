@@ -754,6 +754,149 @@
           ]
         }
       ]
+    },
+    {
+      "id": "triage-photo-placeholder-changes-nothing",
+      "description": "Heat-stress case with a PLACEHOLDER photo attached: recorded and labelled, not analyzed, and the outcome is identical to the same case without a photo.",
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "panting"
+            ],
+            "photo_ref": "placeholder_1"
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "photo.ref",
+              "op": "eq",
+              "value": "placeholder_1"
+            },
+            {
+              "field": "photo.placeholder",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "photo.analyzed",
+              "op": "eq",
+              "value": false
+            },
+            {
+              "field": "photo.label_en",
+              "op": "eq",
+              "value": "Photo input (placeholder, not yet validated on real photos)"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "placeholder photo is attached"
+            }
+          ]
+        },
+        {
+          "tool": "get_health_check",
+          "args": {
+            "check_id": "$check_id"
+          },
+          "poll_until": {
+            "field": "status",
+            "op": "ne",
+            "value": "analyzing"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "ready"
+            },
+            {
+              "field": "urgency",
+              "op": "eq",
+              "value": "watch"
+            },
+            {
+              "field": "consistent_with.0.category",
+              "op": "eq",
+              "value": "heat_stress"
+            },
+            {
+              "field": "checks.0.code",
+              "op": "eq",
+              "value": "check_temperature"
+            },
+            {
+              "field": "photo.analyzed",
+              "op": "eq",
+              "value": false
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "did not change the result"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "not a diagnosis"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "triage-photo-with-red-flags-stays-code-only",
+      "description": "Swollen head + blue comb + a PLACEHOLDER photo: still answered at once from code (no model call), the photo is only recorded.",
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed two",
+            "signs": [
+              "swollen_head",
+              "discoloured_comb"
+            ],
+            "photo_ref": "placeholder_3"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "ready"
+            },
+            {
+              "field": "urgency",
+              "op": "eq",
+              "value": "notifiable_suspect"
+            },
+            {
+              "field": "ai.engine",
+              "op": "eq",
+              "value": "none"
+            },
+            {
+              "field": "consistent_with",
+              "op": "eq",
+              "value": []
+            },
+            {
+              "field": "photo.analyzed",
+              "op": "eq",
+              "value": false
+            },
+            {
+              "field": "photo.placeholder",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        }
+      ]
     }
   ]
 }

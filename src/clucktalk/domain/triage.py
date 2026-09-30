@@ -357,6 +357,7 @@ class TriageInput:
     feed_drop_pct: float | None
     latest_record_day: str | None
     records_used: bool = True  # False: the shed's records couldn't be used; the check runs on the signs alone
+    photo_ref: str | None = None  # a placeholder photo attached (clucktalk.domain.photos); recorded, never analyzed
 
 
 @dataclass(frozen=True)

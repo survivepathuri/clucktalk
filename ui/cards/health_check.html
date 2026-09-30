@@ -1,0 +1,363 @@
+<!doctype html>
+<!--
+  CluckTalk health-check card: an MCP App view (MCP Apps spec 2026-01-26, text/html;profile=mcp-app).
+  Source template. scripts/build_cards.py inlines the font and labels and writes
+  src/clucktalk/server/cards/health_check.html (the file the server serves). Edit this file, then rebuild.
+
+  Rules (docs/DESIGN.md §6, §14, §18):
+  - Every number shown comes verbatim from the tool's structuredContent, formatted like the spoken answer.
+    No arithmetic on data here (the bar widths below are a display-only scale, not new numbers).
+  - Urgency is an icon AND a word, never colour alone. A photo, if attached, is shown as a labelled placeholder
+    tile: photo input is not validated on real photos and never changes the result.
+  - No external requests (the spec's default CSP allows none): font and labels are inlined at build time.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Health check</title>
+<style>
+/*@FONT_FACES@*/
+:root {
+  --bg: #f6f4ef; --surface: #ffffff; --text: #17191c; --muted: #4a5058; --line: #d9d5cc;
+  --pos: #1d6b30; --pos-bg: #e2f3e5; --neg: #a3211a; --neg-bg: #fde5e3; --best: #1557b0; --best-bg: #e6eefc;
+  --badge-bg: #1f2a44; --badge-text: #ffffff; --focus: #1557b0; --unknown: #3f4854; --unknown-bg: #e7eaee;
+  --en: system-ui, "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif;
+  --te: "Noto Sans Telugu CT", "Nirmala UI", "Gautami", "Noto Sans Telugu", sans-serif;
+}
+:root[data-theme="dark"] {
+  --bg: #0f1317; --surface: #1a2027; --text: #f3f4f6; --muted: #b9c1cb; --line: #333c47;
+  --pos: #86dc97; --pos-bg: #173522; --neg: #ff9a90; --neg-bg: #43191a; --best: #8ab4ff; --best-bg: #16233d;
+  --badge-bg: #ffd36b; --badge-text: #17191c; --focus: #8ab4ff; --unknown: #c9d1db; --unknown-bg: #2a323c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--en); }
+body { padding: 16px 20px 14px; line-height: 1.25; -webkit-text-size-adjust: 100%; }
+:lang(te) { font-family: var(--te); line-height: 1.45; }
+button { font: inherit; color: inherit; }
+button:focus-visible, .row:focus-visible { outline: 4px solid var(--focus); outline-offset: 2px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.brand { font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: .02em; white-space: nowrap; }
+.brand span[lang="te"] { font-weight: 400; }
+.badge { background: var(--badge-bg); color: var(--badge-text); border-radius: 999px; padding: 6px 14px;
+  font-size: 16px; font-weight: 700; white-space: nowrap; }
+.titlerow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 6px; flex-wrap: wrap; }
+h1 { font-size: 26px; margin: 0; font-weight: 700; }
+h1 [lang="te"] { font-weight: 600; font-size: 23px; }
+.meta { font-size: 16px; color: var(--muted); margin-bottom: 10px; }
+.price { font-size: 15px; color: var(--muted); margin-bottom: 12px; }
+
+.say { font-size: 18px; margin-bottom: 12px; }
+.say [lang="te"] { display: block; font-size: 17px; color: var(--muted); margin-top: 2px; }
+
+.chart { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.bar-row { display: grid; grid-template-columns: 108px 1fr 96px; align-items: center; gap: 10px; }
+.bar-label { font-size: 14px; color: var(--muted); text-align: right; white-space: nowrap; }
+.bar-label.best { color: var(--best); font-weight: 800; }
+.bar-track { position: relative; height: 26px; background: var(--line); border-radius: 6px; overflow: visible; }
+.bar-mid { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; background: var(--muted); }
+.bar-fill { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; }
+.bar-fill.pos { background: var(--pos); left: 50%; }
+.bar-fill.neg { background: var(--neg); right: 50%; }
+.bar-row.best .bar-track { outline: 3px solid var(--best); outline-offset: 2px; border-radius: 8px; }
+.bar-row.breakeven .bar-track::after { content: ""; position: absolute; top: -6px; bottom: -6px; right: 0;
+  border-right: 3px dashed var(--neg); }
+.bar-value { font-size: 15px; font-variant-numeric: tabular-nums; }
+.bar-value.pos { color: var(--pos); } .bar-value.neg { color: var(--neg); }
+
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.dot.best { background: none; border: 3px solid var(--best); }
+.dot.breakeven { background: none; border-right: 3px dashed var(--neg); width: 3px; }
+
+.detail { background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 12px 16px;
+  margin-bottom: 12px; }
+.detail .row { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; font-size: 15px; }
+.detail .row .l { color: var(--muted); }
+.hint { font-size: 15px; color: var(--muted); margin-top: 4px; }
+
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.list li button { width: 100%; text-align: left; background: var(--surface); border: 2px solid var(--line);
+  border-radius: 14px; padding: 12px 16px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
+.list .hname { font-size: 20px; font-weight: 800; }
+.list .hname [lang="te"] { font-weight: 600; font-size: 18px; }
+
+.center { min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 10px; font-size: 22px; }
+.center svg { width: 56px; height: 56px; }
+.msg { max-width: 640px; }
+.msg p { margin: 6px 0; font-size: 21px; }
+.msg p[lang="te"] { font-size: 19px; }
+.action { display: inline-flex; align-items: center; gap: 10px; min-height: 56px; padding: 10px 22px;
+  border-radius: 999px; border: 2px solid var(--text); background: var(--surface); font-size: 19px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; }
+
+.urgency { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 14px; margin-bottom: 12px;
+  border: 3px solid var(--line); font-size: 22px; font-weight: 800; }
+.urgency svg { width: 34px; height: 34px; flex: none; }
+.urgency [lang="te"] { font-weight: 600; font-size: 19px; }
+.urgency.routine { border-color: var(--pos); background: var(--pos-bg); color: var(--pos); }
+.urgency.watch { border-color: var(--best); background: var(--best-bg); color: var(--best); }
+.urgency.urgent, .urgency.notifiable_suspect { border-color: var(--neg); background: var(--neg-bg); color: var(--neg); }
+.urgency.pending { border-color: var(--unknown); background: var(--unknown-bg); color: var(--unknown); }
+.sect { background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 10px 16px; margin-bottom: 10px; }
+.sect h2 { margin: 0 0 4px; font-size: 15px; color: var(--muted); font-weight: 700; }
+.sect ul { margin: 0; padding-left: 20px; font-size: 17px; }
+.sect li [lang="te"] { color: var(--muted); }
+.photo { display: flex; gap: 12px; align-items: center; }
+.tile { flex: none; width: 150px; min-height: 84px; border-radius: 8px; border: 3px dashed var(--muted); display: flex;
+  align-items: center; justify-content: center; text-align: center; font-size: 12px; font-weight: 800; color: var(--muted); padding: 6px; }
+.small { font-size: 14px; color: var(--muted); margin: 4px 0; }
+.small [lang="te"], .tile [lang="te"] { display: block; }
+.tile [lang="en"] { display: block; }
+@media (max-width: 640px) {
+  body { padding: 12px 12px 10px; }
+  h1 { font-size: 22px; } h1 [lang="te"] { font-size: 19px; }
+  .bar-row { grid-template-columns: 84px 1fr 76px; }
+  .bar-label { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<main id="root" aria-live="polite">
+  <div class="center"><span data-l="loading"></span></div>
+</main>
+<script>
+"use strict";
+const L = "@LABELS@";
+const APP = "@APP@";
+const SERVER_DEMO = "@SERVER_DEMO@";  // stamped by the server at startup: badge on every card, errors too
+const NUM_FIXTURES = "@NUM_FIXTURES@";  // [value, Python render.num(value)] pairs, written at build time
+const SPEC_VERSION = "2026-01-26";
+const TOOL = "get_health_check";  // the one tool this card calls (Check again)
+const ERROR_META_KEY = "clucktalk/error";
+
+// ---------- MCP Apps messaging (JSON-RPC 2.0 over postMessage; spec "Transport Layer") ----------
+let nextId = 1;
+const pending = new Map();
+function request(method, params) {
+  const id = nextId++;
+  window.parent.postMessage({ jsonrpc: "2.0", id, method, params }, "*");
+  return new Promise((resolve, reject) => {
+    pending.set(id, { resolve, reject });
+    setTimeout(() => { if (pending.delete(id)) reject(new Error(method + " timed out")); }, method === "ui/initialize" ? 5000 : 15000);
+  });
+}
+function notify(method, params) { window.parent.postMessage({ jsonrpc: "2.0", method, params }, "*"); }
+function log(level, data) { notify("notifications/message", { level, logger: "clucktalk.card", data }); }
+
+let hostContext = {};
+let lastResult = null;
+
+window.addEventListener("message", (event) => {
+  if (event.source !== window.parent) return;
+  const m = event.data;
+  if (!m || m.jsonrpc !== "2.0") return;
+  if (m.id != null && m.method === undefined) {
+    const p = pending.get(m.id);
+    if (!p) return;
+    pending.delete(m.id);
+    if (m.error) p.reject(new Error(m.error.message || "request failed")); else p.resolve(m.result);
+    return;
+  }
+  switch (m.method) {
+    case "ui/notifications/tool-input": break;
+    case "ui/notifications/tool-result": render(m.params); break;
+    case "ui/notifications/tool-cancelled": renderMessage(L.sorry, L.generic_error, L.generic_next); break;
+    case "ui/notifications/host-context-changed": applyContext(m.params || {}); break;
+    case "ui/resource-teardown": window.parent.postMessage({ jsonrpc: "2.0", id: m.id, result: {} }, "*"); break;
+    case "ping": window.parent.postMessage({ jsonrpc: "2.0", id: m.id, result: {} }, "*"); break;
+  }
+});
+
+function applyContext(ctx) {
+  hostContext = Object.assign({}, hostContext, ctx);
+  const theme = hostContext.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  document.documentElement.dataset.theme = theme;
+}
+
+let lastSize = "";
+function reportSize() {
+  const w = Math.ceil(document.documentElement.scrollWidth), h = Math.ceil(document.documentElement.scrollHeight);
+  const key = w + "x" + h;
+  if (key !== lastSize) { lastSize = key; notify("ui/notifications/size-changed", { width: w, height: h }); }
+}
+
+// ---------- formatting: must match clucktalk.server.render.num (spoken form) ----------
+function indianGroup(intStr) {
+  const neg = intStr.startsWith("-"); let s = neg ? intStr.slice(1) : intStr;
+  if (s.length <= 3) return (neg ? "-" : "") + s;
+  let head = s.slice(0, -3); const tail = s.slice(-3); const pairs = [];
+  while (head.length > 2) { pairs.unshift(head.slice(-2)); head = head.slice(0, -2); }
+  return (neg ? "-" : "") + [head, ...pairs, tail].join(",");
+}
+function num(x) {
+  const s = String(x);
+  if (!s.includes(".")) return indianGroup(s);
+  const [whole, frac] = s.split(".");
+  return indianGroup(whole) + "." + frac;
+}
+function rupees(x) { return "₹" + num(x); }
+function numSelfTest() {
+  const bad = NUM_FIXTURES.filter(([v, want]) => num(v) !== want).map(([v, want]) => [v, want, num(v)]);
+  if (bad.length) log("error", { event: "num-mismatch", message: "card number format differs from the server", cases: bad });
+}
+
+// ---------- DOM helpers ----------
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+function bi(t, sep) { return [el("span", { lang: "en" }, t.en), sep === undefined ? " · " : sep, el("span", { lang: "te" }, t.te)]; }
+function stacked(t, cls) { return el("div", { class: cls }, el("span", { lang: "en" }, t.en), el("span", { lang: "te" }, t.te)); }
+
+const ICONS = {
+  unknown: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M9 9.2a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.9v.6" fill="none" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.8" r="1.5" fill="var(--bg)"/></svg>',
+  back: '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+function icon(name) { const s = el("span", { "aria-hidden": "true", style: "display:inline-flex" }); s.innerHTML = ICONS[name]; return s; }
+
+function header(sc) {
+  return el("div", { class: "top" },
+    el("div", { class: "brand", "data-xm-skip": true }, el("span", { lang: "en" }, APP.name), " · ", el("span", { lang: "te" }, APP.name_te)),
+    SERVER_DEMO === true || (sc && sc.demo_data) ? el("div", { class: "badge", role: "note" }, bi(L.demo_badge)) : null);
+}
+function dateText(iso) { const [y, m, d] = iso.split("-"); return d + "-" + m + "-" + y; }
+
+// ---------- one health check ----------
+const URGENCY_ICONS = {
+  routine: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M6.5 12.5l3.6 3.6 7.4-7.6" fill="none" stroke="var(--bg)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  watch: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="var(--bg)" stroke-width="2.4"/></svg>',
+  urgent: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5l11 20H1z" fill="currentColor"/><path d="M12 9v6" stroke="var(--bg)" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="18.2" r="1.5" fill="var(--bg)"/></svg>',
+  notifiable_suspect: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 1h8l7 7v8l-7 7H8l-7-7V8z" fill="currentColor"/><path d="M12 6.5v7" stroke="var(--bg)" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="17" r="1.5" fill="var(--bg)"/></svg>',
+};
+function urgencyBanner(sc) {
+  let kind, label;
+  if (sc.status === "ready" && sc.urgency) { kind = sc.urgency; label = L["urgency_" + sc.urgency]; }
+  else if (sc.status === "failed") { kind = "pending"; label = L.status_failed; }
+  else { kind = "pending"; label = L.status_analyzing; }
+  const ic = el("span", { "aria-hidden": "true", style: "display:inline-flex" });
+  ic.innerHTML = URGENCY_ICONS[kind] || ICONS.unknown;
+  return el("div", { class: "urgency " + kind, role: "status" }, ic,
+    el("div", {}, el("span", { lang: "en" }, label.en), " · ", el("span", { lang: "te" }, label.te)));
+}
+function section(title, items) {
+  if (!items.length) return null;
+  return el("div", { class: "sect" }, el("h2", {}, bi(title)), el("ul", {}, items.map((t) => el("li", {}, bi(t)))));
+}
+function photoTile(sc) {
+  if (!sc.photo) return null;
+  return el("div", { class: "sect photo" },
+    el("div", { class: "tile", role: "img", "aria-label": L.photo_tile.en }, stacked(L.photo_tile)),
+    el("div", {}, el("h2", { style: "margin:0 0 4px;font-size:15px;color:var(--muted)" }, bi({ en: sc.photo.label_en, te: sc.photo.label_te })),
+      stacked({ en: sc.photo.note_en, te: sc.photo.note_te }, "small")));
+}
+
+function checkView(sc) {
+  const root = el("main", { id: "root", class: "health" });
+  const add = (node) => { if (node) root.append(node); };
+  root.append(header(sc));
+  root.append(el("div", { class: "titlerow" }, el("h1", {}, bi(L.health_title)),
+    el("span", { style: "color:var(--muted)" }, bi({ en: sc.label_en, te: sc.label_te }))));
+  root.append(urgencyBanner(sc));
+  root.append(stacked({ en: sc.text_en, te: sc.text_te }, "say"));
+  add(section(L.signs_title, sc.signs.map((s) => ({ en: s.label_en, te: s.label_te }))));
+  add(section(L.fits_title, sc.consistent_with.map((c) => ({
+    en: c.label_en + " (" + c.confidence_en + ")", te: c.label_te + " (" + c.confidence_te + ")" }))));
+  add(section(L.checks_title, sc.checks.map((c) => ({ en: c.label_en, te: c.label_te }))));
+  add(photoTile(sc));
+  root.append(stacked({ en: sc.ai.label_en, te: sc.ai.label_te }, "small"));
+  if (sc.status === "analyzing") {
+    root.append(el("button", { type: "button", class: "action", onclick: () => call({ check_id: sc.check_id }) },
+      bi(L.check_again)));
+  }
+  if (sc.sources && sc.sources.length) {
+    root.append(el("div", { class: "small", "data-xm-skip": true },
+      el("span", { lang: "en" }, L.sources_title.en + ": "), sc.sources.map((s) => s.title).join(" · ")));
+  }
+  return root;
+}
+
+function errorView(result) {
+  const meta = (result._meta || {})[ERROR_META_KEY];
+  const text = (result.content || []).filter((c) => c.type === "text").map((c) => c.text).join(" ");
+  return messageView(L.sorry,
+    meta ? { en: meta.message_en, te: meta.message_te } : { en: text || L.generic_error.en, te: L.generic_error.te },
+    meta ? { en: meta.next_step_en, te: meta.next_step_te } : L.generic_next);
+}
+function messageView(title, message, next) {
+  const root = el("main", { id: "root" });
+  root.append(header(lastResult && lastResult.structuredContent));
+  root.append(el("div", { class: "center" }, el("span", { style: "color:var(--unknown)" }, icon("unknown")),
+    el("h1", {}, bi(title)),
+    el("div", { class: "msg" },
+      message ? [el("p", { lang: "en" }, message.en), message.te ? el("p", { lang: "te" }, message.te) : null] : null,
+      next ? [el("p", { lang: "en" }, next.en), el("p", { lang: "te" }, next.te)] : null)));
+  return root;
+}
+function renderMessage(title, message, next) { swap(messageView(title, message, next), "message"); }
+
+function swap(root, view) {
+  document.getElementById("root").replaceWith(root);
+  reportSize();
+  const clone = root.cloneNode(true);
+  clone.querySelectorAll("[data-xm-skip]").forEach((n) => n.remove());
+  const parts = [];
+  const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) parts.push(walker.currentNode.nodeValue);
+  const fields = [...root.querySelectorAll("[data-field]")].map((n) => ({ path: n.dataset.field, shown: n.textContent }));
+  log("info", { event: "rendered", view, text: parts.join(" "), fields });
+}
+
+function render(result) {
+  lastResult = result;
+  const sc = result && result.structuredContent;
+  if (!result || result.isError || !sc) { swap(errorView(result || {}), "error"); return; }
+  swap(checkView(sc), "check");
+}
+
+async function call(args) {
+  try { render(await request("tools/call", { name: TOOL, arguments: args })); }
+  catch (err) {
+    log("error", { event: "tools/call failed", message: String(err && err.message) });
+    render({ isError: true, content: [], _meta: { [ERROR_META_KEY]: {
+      message_en: L.generic_error.en, message_te: L.generic_error.te,
+      next_step_en: L.generic_next.en, next_step_te: L.generic_next.te } } });
+  }
+}
+
+function start() {
+  document.querySelectorAll("[data-l]").forEach((n) => n.replaceChildren(...bi(L[n.dataset.l])));
+  applyContext({});
+  new ResizeObserver(reportSize).observe(document.documentElement);
+  request("ui/initialize", {
+    appInfo: { name: APP.name + " health-check card", version: "1" },
+    appCapabilities: { availableDisplayModes: ["inline"] },
+    protocolVersion: SPEC_VERSION,
+  }).then((res) => {
+    applyContext((res && res.hostContext) || {});
+    notify("ui/notifications/initialized", {});
+  }).catch((err) => {
+    log("error", { event: "ui/initialize failed", message: String(err && err.message) });
+    renderMessage(L.sorry, L.generic_error, L.generic_next);
+  });
+  numSelfTest();
+  document.fonts.ready.then(() => {
+    if (!document.fonts.check('16px "Noto Sans Telugu CT"', "తెలుగు")) {
+      log("warning", { event: "font", message: "Bundled Noto Sans Telugu did not load (host CSP?); using a system Telugu font." });
+    }
+  });
+}
+start();
+</script>
+</body>
+</html>

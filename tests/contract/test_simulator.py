@@ -287,3 +287,33 @@ def test_a_reported_record_needs_a_yes_then_shows_up_in_the_record_book(sim_fres
     assert book["intent"] == {"tool": "get_record_book", "arguments": {}, "rule": book["intent"]["rule"]}
     entry = next(e for e in book["result"]["structuredContent"]["entries"] if e["number"] == 1)
     assert entry["logged"] is True and entry["record"]["deaths"] == 3
+
+
+# -- placeholder photo attach (health check step 1B) ----------------------------------------------------------------
+def test_a_placeholder_photo_rides_along_with_a_new_health_check_only(sim):
+    from clucktalk.server.cards import HEALTH_CHECK_URI
+
+    said = "shed 1 birds are panting"
+    with_photo = sim.turn(said, photo_ref="placeholder_1")
+    assert with_photo["intent"]["tool"] == "start_health_check"
+    assert with_photo["intent"]["arguments"]["photo_ref"] == "placeholder_1"
+    assert "photo attached" in with_photo["intent"]["rule"]
+    sc = with_photo["result"]["structuredContent"]
+    assert sc["photo"]["ref"] == "placeholder_1" and sc["photo"]["analyzed"] is False
+    assert with_photo["card"]["uri"] == HEALTH_CHECK_URI
+    assert "placeholder photo is attached" in with_photo["speech"]
+
+    assert "photo_ref" not in sim.turn(said)["intent"]["arguments"]
+    other = sim.turn("how is shed two doing", photo_ref="placeholder_1")  # not a new health check: nothing attached
+    assert other["intent"]["tool"] != "start_health_check" and "photo_ref" not in other["intent"]["arguments"]
+
+
+def test_an_unknown_photo_ref_is_refused_by_the_simulator(sim):
+    for bad in ("real_photo", "placeholder_9", 7, ["placeholder_1"]):
+        r = httpx2.post(
+            sim.base + "/api/turn",
+            json={"utterance": "shed 1 birds are panting", "photo_ref": bad},
+            headers={"origin": sim.origin},
+            timeout=15,
+        )
+        assert r.status_code == 400, bad

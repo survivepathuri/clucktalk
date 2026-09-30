@@ -24,14 +24,18 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from clucktalk.config import APP_NAME, APP_NAME_TE  # noqa: E402
-from clucktalk.server.cards import CARDS_DIR, FARM_STATUS_LABELS, SALE_PLAN_LABELS  # noqa: E402
+from clucktalk.server.cards import CARDS_DIR, FARM_STATUS_LABELS, HEALTH_CHECK_LABELS, SALE_PLAN_LABELS  # noqa: E402
 from clucktalk.server.render import num  # noqa: E402
 
 TEMPLATES = ROOT / "ui" / "cards"
 FONTS = ROOT / "ui" / "fonts"
 FONT_FAMILY = "Noto Sans Telugu CT"  # a private family name, so the card can tell whether *our* copy loaded
 FONT_FILES = ((400, "NotoSansTelugu-Regular.otf"), (700, "NotoSansTelugu-Bold.otf"))
-CARDS = {"farm_status.html": FARM_STATUS_LABELS, "sale_plan.html": SALE_PLAN_LABELS}
+CARDS = {
+    "farm_status.html": FARM_STATUS_LABELS,
+    "sale_plan.html": SALE_PLAN_LABELS,
+    "health_check.html": HEALTH_CHECK_LABELS,
+}
 
 
 def _script_json(obj: object) -> str:

@@ -284,3 +284,117 @@ def test_an_unknown_check_id_alone_says_there_is_no_check(rig):
     assert (
         r["isError"] is True and "health check" in r["content"][0]["text"] and "called" not in r["content"][0]["text"]
     )
+
+
+# -- photo input (placeholder, step 1B) -----------------------------------------------------------------------------
+def _outcome(sc: dict[str, Any]) -> tuple:
+    return (sc["status"], sc["urgency"], sc["floor_urgency"], sc["consistent_with"], sc["checks"])
+
+
+def test_a_placeholder_photo_is_recorded_and_says_it_was_not_analyzed(rig):
+    sc = rig.call("start_health_check", house="shed 2", signs=["coughing"], photo_ref="placeholder_2")[
+        "structuredContent"
+    ]
+    assert sc["photo"]["ref"] == "placeholder_2"
+    assert sc["photo"]["placeholder"] is True and sc["photo"]["analyzed"] is False
+    assert sc["photo"]["label_en"] == "Photo input (placeholder, not yet validated on real photos)"
+    assert "placeholder photo is attached" in sc["text_en"]  # said while it is still checking too
+    rig.runner.run_all()
+    done = rig.call("get_health_check", check_id=sc["check_id"])["structuredContent"]
+    assert done["photo"] == sc["photo"]  # read back from the stored check
+    assert "placeholder photo is attached" in done["text_en"] and "did not change the result" in done["text_en"]
+    assert "ఫోటో" in done["text_te"]
+    _assert_no_treatment_advice(done)
+
+
+def test_a_photo_never_changes_the_outcome(rig):
+    """Same signs, same records: the check with a photo ends exactly like the one without."""
+    plain = rig.call("start_health_check", house="shed 1", signs=["panting"])["structuredContent"]
+    with_photo = rig.call("start_health_check", house="shed 1", signs=["panting"], photo_ref="placeholder_1")[
+        "structuredContent"
+    ]
+    assert with_photo["check_id"] != plain["check_id"] and with_photo["duplicate"] is False  # a new, separate check
+    assert _outcome(plain) == _outcome(with_photo)
+    rig.runner.run_all()
+    a = rig.call("get_health_check", check_id=plain["check_id"])["structuredContent"]
+    b = rig.call("get_health_check", check_id=with_photo["check_id"])["structuredContent"]
+    assert a["status"] == "ready" and _outcome(a) == _outcome(b)
+
+
+def test_a_photo_is_never_given_to_the_model_or_the_prompt():
+    reply = {"urgency": "watch", "consistent_with": [], "checks": []}
+    model = ScriptedModel(reply)
+    for rig in _rig(model):
+        sc = rig.call("start_health_check", house="shed 1", signs=["panting"], photo_ref="placeholder_3")[
+            "structuredContent"
+        ]
+        rig.runner.run_all()
+        (request,) = model.requests
+        assert "placeholder" not in request.user_text.lower() and "photo" not in request.user_text.lower()
+        assert not hasattr(request, "image")
+        assert rig.call("get_health_check", check_id=sc["check_id"])["structuredContent"]["status"] == "ready"
+
+
+def test_red_flags_with_a_photo_are_still_answered_at_once_from_code(rig):
+    sc = rig.call(
+        "start_health_check", house="shed 2", signs=["swollen_head", "discoloured_comb"], photo_ref="placeholder_1"
+    )["structuredContent"]
+    assert sc["status"] == "ready" and sc["urgency"] == "notifiable_suspect" and sc["ai"]["engine"] == "none"
+    assert sc["photo"]["analyzed"] is False
+
+
+def test_the_floor_holds_with_a_photo_against_a_model_that_says_routine():
+    for rig in _rig(ScriptedModel(ALWAYS_ROUTINE)):
+        sc = rig.call("start_health_check", house="shed 2", signs=["coughing"], photo_ref="placeholder_1")[
+            "structuredContent"
+        ]
+        rig.runner.run_all()
+        done = rig.call("get_health_check", check_id=sc["check_id"])["structuredContent"]
+        assert done["floor_urgency"] == "urgent" and done["urgency"] == "urgent"  # never below the floor
+
+
+def test_a_photo_alone_is_not_a_report(rig):
+    r = rig.call("start_health_check", house="shed 1", signs=[], photo_ref="placeholder_1")
+    assert r["isError"] is True
+
+
+def test_only_the_placeholder_refs_are_accepted(rig):
+    for bad in ("real_photo_1", "../docs/assets/placeholder_1.png", "", "http://example.com/a.jpg"):
+        r = rig.call("start_health_check", house="shed 1", signs=["panting"], photo_ref=bad)
+        assert r["isError"] is True, bad
+
+
+def test_no_photo_means_no_photo_field(rig):
+    sc = rig.call("start_health_check", house="shed 1", signs=["panting"])["structuredContent"]
+    assert sc["photo"] is None and "photo" not in sc["text_en"].lower()
+
+
+def test_the_vet_summary_never_mentions_the_photo(rig):
+    cid = rig.call("start_health_check", house="shed 2", signs=["coughing"], photo_ref="placeholder_2")[
+        "structuredContent"
+    ]["check_id"]
+    rig.runner.run_all()
+    proposal = _handoff(rig, cid, "shed 2")
+    blob = (proposal["message_en"] + proposal["message_te"]).lower()
+    assert "photo" not in blob and "placeholder" not in blob and "ఫోటో" not in blob
+
+
+def test_the_photo_input_is_described_as_demo_only_and_never_analyzed(rig):
+    tools = {t["name"]: t for t in rig.live.call(rig.sid, "tools/list")["result"]["tools"]}
+    props = tools["start_health_check"]["inputSchema"]["properties"]
+    assert "photo_ref" in props
+    text = json.dumps(props["photo_ref"]).lower()
+    assert "placeholder" in text and "never analyzed" in text and "never changes the result" in text
+    assert "photo_ref" not in tools["start_health_check"]["inputSchema"].get("required", [])
+
+
+def test_both_health_tools_declare_the_card_and_the_handoff_does_not(rig):
+    from clucktalk.server.cards import HEALTH_CHECK_URI
+
+    tools = {t["name"]: t for t in rig.live.call(rig.sid, "tools/list")["result"]["tools"]}
+    for name in ("start_health_check", "get_health_check"):
+        assert tools[name]["_meta"]["ui"]["resourceUri"] == HEALTH_CHECK_URI, name
+    assert "ui" not in (tools["prepare_vet_handoff"].get("_meta") or {})
+    card = rig.live.call(rig.sid, "resources/read", {"uri": HEALTH_CHECK_URI})["result"]["contents"][0]
+    assert card["mimeType"].startswith("text/html;profile=mcp-app")
+    assert '"@SERVER_DEMO@"' not in card["text"] and "const SERVER_DEMO = true" in card["text"]

@@ -35,6 +35,20 @@ signs; it is triage, never a diagnosis, and never names a medicine or dose.
 | USDA APHIS, *How To Spot Sickness*, aphis.usda.gov/livestock-poultry-disease/avian/defend-the-flock/signs-illness | **Verified.** Lists "Sudden death", "Swelling of the head, neck, eyelids, comb, wattles, or shanks", "Purple discoloration of the wattles, comb, or legs", "Twisting of the head and neck (torticollis)"; "Report any sick or dying birds". The US reporting route is not used; India's is the DAHD line above. |
 | D.E. Swayne, *Avian Influenza in Poultry and Wild Birds*, Merck Veterinary Manual (last updated May 2026) | **Verified**, background only (not in the code's `SOURCES`): "cyanosis and edema of the head, comb, wattles"; nervous signs "torticollis ... paralysis, and drooping wings"; "Suspected outbreaks should be reported to appropriate regulatory authorities." |
 
+## Placeholder images (docs/DESIGN.md §18, health-check photo input; added 2026-09-30)
+There are **no real photos** in this repository. The three files below are placeholders, drawn by
+`scripts/make_placeholders.py` (a striped colour field plus the words "PLACEHOLDER NOT A REAL PHOTO"), so the photo-input
+path can be exercised. They show no bird, sign or disease, are original to this project (no third-party image, nothing
+scraped, nothing AI-generated) and need no license. Photo input is **not validated on real photos**: the demo rules
+never read a photo and a photo never changes a triage result. Real photos will be listed here with their own source and
+license (own photo, CC0 or CC-BY) before any claim about photo triage is made.
+
+| File | What it is |
+|---|---|
+| `docs/assets/placeholder_1.png` | PLACEHOLDER - not a real photo (blue stripes) |
+| `docs/assets/placeholder_2.png` | PLACEHOLDER - not a real photo (red stripes) |
+| `docs/assets/placeholder_3.png` | PLACEHOLDER - not a real photo (green stripes) |
+
 ## Sources for planned features (docs/DESIGN.md §13), checked 2026-09-27
 Status: **verified** = fetched and the cited point was found in the text; **not verified** = could not be read.
 Nothing below is used in code yet. When it is, the exact passage and the file that uses it are added here.

@@ -277,4 +277,13 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
   - Every result ends "This is guidance, not a diagnosis. Your vet decides any treatment."
   - `prepare_vet_handoff` follows §5.1: a read-back of the case summary (record-book numbers, reported signs,
     triage level), sent only after "yes", always as a **Simulated SMS** to a demo contact.
-  - Not yet built (step 1B): photo input and the triage card.
+  - **Photo input (placeholder, not yet validated on real photos)**, step 1B: `start_health_check` takes an optional
+    `photo_ref`, one of three labelled placeholder images (`docs/assets/`, `clucktalk.domain.photos`; see
+    `docs/SOURCES.md`). It is stored with the check and shown as attached ("PLACEHOLDER - not a real photo"), and the
+    answer says it was not analyzed and did not change the result. It is never sent to any model, never lowers or raises
+    the urgency, and never appears in the vet summary. A photo alone is not a report: signs or words are still needed.
+    Reading photos with Nova (image block, closed-list findings that may only add signs) is not built; FL-020 says it
+    must be tested on real, licensed photos first. The Simulator dev panel attaches a placeholder to the next check.
+  - **Triage card** (`ui/cards/health_check.html`, served for `start_health_check` and `get_health_check`): urgency as an
+    icon and a word, the signs, what they fit, what to check first, the AI label, the placeholder-photo tile, sources;
+    "Check again" (the card's own read-only tool) while a check runs. All sentences and numbers come from the tool result.
