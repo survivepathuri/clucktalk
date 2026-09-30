@@ -301,3 +301,29 @@ def test_signs_win_over_result_and_vet_words(utterance):
     """Rule 11 finding 4: a sick-bird report must start a check, never lose its signs to a follow-up intent."""
     intent = match(utterance)
     assert intent.tool == "start_health_check" and "coughing" in intent.arguments["signs"]
+
+
+@pytest.mark.parametrize(
+    ("utterance", "args"),
+    [
+        ("Alexa, ask CluckTalk for today's briefing", {}),
+        ("give me the daily briefing", {}),
+        ("what's my briefing", {}),
+        ("morning briefing please", {}),
+        ("briefing", {}),
+        ("more", {"more": True}),
+        ("tell me more", {"more": True}),
+        ("what else", {"more": True}),
+    ],
+)
+def test_briefing_intents(utterance, args):
+    intent = match(utterance)
+    assert intent is not None and intent.tool == "get_daily_briefing" and intent.arguments == args
+
+
+@pytest.mark.parametrize(
+    "utterance", ["how is shed two doing", "briefing for shed 2 health check", "more feed for shed 1"]
+)
+def test_briefing_words_do_not_steal_other_intents(utterance):
+    intent = match(utterance)
+    assert intent is None or intent.tool != "get_daily_briefing"

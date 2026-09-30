@@ -142,6 +142,7 @@ def test_help_lists_the_farm_tools(live):
     assert [c["tool_name"] for c in caps] == [
         "get_farm_status",
         "plan_sale",
+        "get_daily_briefing",
         "plan_feed",
         "set_farm_mode",
         "set_contract_terms",

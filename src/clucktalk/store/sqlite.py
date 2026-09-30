@@ -18,6 +18,7 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
+from clucktalk.domain.briefing import BriefingRank
 from clucktalk.domain.models import DailyRecord, Treatment, TreatmentKind
 from clucktalk.domain.profile import ContractTerms, FarmMode, FarmProfile
 from clucktalk.domain.proposals import Proposal, ProposalStatus, canonical
@@ -35,7 +36,9 @@ from clucktalk.domain.triage import (
 from clucktalk.store import StoreError
 
 MEMORY = ":memory:"
-SCHEMA_VERSION = "3"  # v2 (2026-09-29): + contract_terms; v3 (2026-09-29): + health checks, handoffs, AI ledger
+# v2 (2026-09-29): + contract_terms; v3 (2026-09-29): + health checks, handoffs, AI ledger. The briefing_ranks table
+# (2026-09-30) is additive (CREATE IF NOT EXISTS), so an existing v3 file opens unchanged: no version bump.
+SCHEMA_VERSION = "3"
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS profiles (
@@ -70,6 +73,10 @@ CREATE TABLE IF NOT EXISTS ai_calls (
     latency_ms INTEGER NOT NULL, outcome TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ai_calls_by_day ON ai_calls (day, agent);
+CREATE TABLE IF NOT EXISTS briefing_ranks (
+    farm_id TEXT NOT NULL, day TEXT NOT NULL, fingerprint TEXT NOT NULL, ordering TEXT NOT NULL, engine TEXT NOT NULL,
+    model_id TEXT, note TEXT, PRIMARY KEY (farm_id, day)
+);
 """
 
 
@@ -374,6 +381,40 @@ class SqliteStore:
             datetime.fromisoformat(row["created_at"]),
             row["message_en"],
             row["message_te"],
+        )
+
+    # -- daily briefing: the stored AI ordering of the non-health facts (docs/DESIGN.md §18) -------------------------
+    def save_briefing_rank(self, rank: BriefingRank) -> None:
+        with self.atomic():
+            self._db.execute(
+                "INSERT OR REPLACE INTO briefing_ranks (farm_id, day, fingerprint, ordering, engine, model_id, note) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    rank.farm_id,
+                    rank.day.isoformat(),
+                    rank.fingerprint,
+                    json.dumps(list(rank.order)),
+                    rank.engine,
+                    rank.model_id,
+                    rank.note,
+                ),
+            )
+
+    def get_briefing_rank(self, farm_id: str, day: date) -> BriefingRank | None:
+        with self._lock:
+            row = self._db.execute(
+                "SELECT * FROM briefing_ranks WHERE farm_id = ? AND day = ?", (farm_id, day.isoformat())
+            ).fetchone()
+        if row is None:
+            return None
+        return BriefingRank(
+            row["farm_id"],
+            date.fromisoformat(row["day"]),
+            row["fingerprint"],
+            tuple(json.loads(row["ordering"])),
+            row["engine"],
+            row["model_id"],
+            row["note"],
         )
 
     # -- AI call ledger: every live model call's real usage; the daily cap counts from it -----------------------

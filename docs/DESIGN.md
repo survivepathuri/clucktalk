@@ -247,9 +247,11 @@ against a freshly started mock-mode server, checked against literal field values
 v0 covers a handful of read-only, single-call cases (farm status, feed reorder, and `plan_sale`'s before /
 at / after break-even and rising-mortality stories); contract-mode's multi-step confirmation flow is covered by
 the contract test suite instead, since this runner is single-call by design. Extended to the full 45-case suite,
-covering every P0 feature, on the 11 Oct task (`private/WEEK2_PLAN.md`).
+covering every P0 feature, on the 11 Oct task (`private/WEEK2_PLAN.md`). Multi-step cases (`steps`, `save`,
+`poll_until`) and model-fixture cases (`model_fixture`, `tests/fakes.py`) came with the agents (§18); a case marked
+`fresh_state` runs on a server of its own, so its answer cannot depend on what earlier cases changed.
 
-## 18. Agents (Health Triage built 2026-09-29; Daily Briefing and Flock Follow-up planned)
+## 18. Agents (Health Triage built 2026-09-29; Daily Briefing built 2026-09-30; Flock Follow-up planned)
 The model decides; code speaks. An agent runs on the slow path (§3) and asks a model for **one forced tool call
 whose input is closed lists only** (no free-text field). Code owns every number, every sentence (English and
 Telugu templates), every citation, and a deterministic **safety floor** the model can raise but never lower.
@@ -293,3 +295,32 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
   - **Triage card** (`ui/cards/health_check.html`, served for `start_health_check` and `get_health_check`): urgency as an
     icon and a word, the signs, what they fit, what to check first, the AI label, the placeholder-photo tile, sources;
     "Check again" (the card's own read-only tool) while a check runs. All sentences and numbers come from the tool result.
+
+- **Daily Briefing** (`get_daily_briefing`, built 2026-09-30; `clucktalk.domain.briefing`, `clucktalk.agents.briefing`,
+  `clucktalk.server.tools.briefing`, card `ui/cards/briefing.html`):
+  - **What it returns**: at most 5 ranked items (`MAX_ITEMS`), each with its English and Telugu sentence, level
+    (alert / watch / reminder), house, the numbers behind it, and whether it is pinned or simulated. By voice the top 3
+    are read and "more" (`more: true`) reads the rest; the screen is a carousel of the same items.
+  - **What it reads** (all on the fast path, in a few milliseconds): the record book (with logged records overlaid on
+    the seed) through `house_status` findings, feed cover (`plan_feed`), each house's latest stored health check,
+    `plan_sale`, and which houses have no record today. Nothing is fetched and no model is called inside the tool.
+  - **Facts and order** (`rules_order`): a fact is `<category>:<house>`. Health facts are **pinned** above everything:
+    today's death spike, a death spike logged earlier in the trailing week (`recent_logged_spike`, the "three days
+    later" recall), a high cumulative mortality (alert level), and a stored triage of `urgent` or worse from the last 3
+    days (a suspected reportable disease first). The rest are ordered by level, then kind, then house. The trailing
+    week, the 3-day triage window and the 3-day sale window are CluckTalk's own heuristics, not sourced figures.
+  - **Sale item**: only when `plan_sale` puts the best day within 3 days. It names a day, is labelled "simulated
+    estimate" and carries no rupee figure (so contract mode cannot leak the simulated price).
+  - **The model's part**: it is offered only the non-pinned ids and may return one list of them (`rank_briefing`,
+    `additionalProperties: false`: no text field). A reply naming an unknown or pinned id, a duplicate, or an extra field
+    is rejected; one retry; then the rules order stands and the answer says the AI ordering did not finish. `apply_order`
+    keeps pinned facts first and never drops a fact. The prompt holds only ids, categories, levels and numbers: no
+    farmer text ever reaches it.
+  - **Slow path**: the tool applies a stored ordering when its fact fingerprint still matches, otherwise it answers with
+    the rules order (labelled "AI ordering is still preparing") and queues one job (at most one per minute per set of
+    facts). A new day or any changed number makes the stored ordering stale. Demo mode (`MOCK_BEDROCK=true`) queues no
+    job and labels itself "Demo rules (no AI model)". Live: 2 calls a run, 16 a day for this agent, `maxTokens` 400, the
+    global cap and throttle apply; cap reached is labelled. The briefing is prepared on the first call after a change, not
+    at server start (the first answer of a day is the rules order).
+  - **Safety**: no medicine, drug or dose (a scan test covers every result); an open triage item ends with the
+    "guidance, not a diagnosis" line; simulated data is labelled; new Telugu strings are pending native review.

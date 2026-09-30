@@ -23,6 +23,8 @@ SALE_PLAN_URI = "ui://clucktalk/sale-plan.html"
 SALE_PLAN_FILE = CARDS_DIR / "sale_plan.html"
 HEALTH_CHECK_URI = "ui://clucktalk/health-check.html"
 HEALTH_CHECK_FILE = CARDS_DIR / "health_check.html"
+BRIEFING_URI = "ui://clucktalk/briefing.html"
+BRIEFING_FILE = CARDS_DIR / "briefing.html"
 
 # Status is always an icon AND a word, never colour alone (docs/DESIGN.md §14).
 FARM_STATUS_LABELS: dict[str, Text] = {
@@ -128,3 +130,29 @@ def health_check_html() -> str:
             f"{HEALTH_CHECK_FILE} is missing. Rebuild it: .venv\\Scripts\\python scripts\\build_cards.py"
         )
     return HEALTH_CHECK_FILE.read_text(encoding="utf-8")
+
+
+# Daily-briefing card (docs/DESIGN.md §18): a carousel of the ranked items. Level is an icon AND a word; every sentence
+# and number on a slide comes from the tool's structuredContent. Health items say so; the sale item says Simulated.
+BRIEFING_LABELS: dict[str, Text] = {
+    "briefing_title": Text("Daily briefing", "రోజువారీ బ్రీఫింగ్"),
+    "demo_badge": Text("Demo data", "డెమో డేటా"),
+    "level_alert": Text("ALERT", "శ్రద్ధ అవసరం"),
+    "level_watch": Text("WATCH", "గమనించాలి"),
+    "level_info": Text("REMINDER", "గుర్తుచేత"),
+    "health_first": Text("Health first", "ఆరోగ్యం ముందు"),
+    "simulated": Text("Simulated", "డెమో అంచనా"),
+    "previous": Text("Previous", "వెనుకకు"),
+    "next": Text("Next", "తర్వాత"),
+    "sorry": Text("Sorry", "క్షమించండి"),
+    "generic_error": GENERIC_ERROR,
+    "generic_next": GENERIC_NEXT_STEP,
+    "loading": Text("Loading", "లోడ్ అవుతోంది"),
+}
+
+
+def briefing_html() -> str:
+    """The built briefing card. Missing file = broken checkout: fail loud at startup (Rule 6)."""
+    if not BRIEFING_FILE.exists():
+        raise RuntimeError(f"{BRIEFING_FILE} is missing. Rebuild it: .venv\\Scripts\\python scripts\\build_cards.py")
+    return BRIEFING_FILE.read_text(encoding="utf-8")

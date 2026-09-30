@@ -24,7 +24,13 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from clucktalk.config import APP_NAME, APP_NAME_TE  # noqa: E402
-from clucktalk.server.cards import CARDS_DIR, FARM_STATUS_LABELS, HEALTH_CHECK_LABELS, SALE_PLAN_LABELS  # noqa: E402
+from clucktalk.server.cards import (  # noqa: E402
+    BRIEFING_LABELS,
+    CARDS_DIR,
+    FARM_STATUS_LABELS,
+    HEALTH_CHECK_LABELS,
+    SALE_PLAN_LABELS,
+)
 from clucktalk.server.render import num  # noqa: E402
 
 TEMPLATES = ROOT / "ui" / "cards"
@@ -35,6 +41,7 @@ CARDS = {
     "farm_status.html": FARM_STATUS_LABELS,
     "sale_plan.html": SALE_PLAN_LABELS,
     "health_check.html": HEALTH_CHECK_LABELS,
+    "briefing.html": BRIEFING_LABELS,
 }
 
 

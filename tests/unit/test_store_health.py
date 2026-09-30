@@ -65,3 +65,19 @@ def test_ai_call_ledger_by_day():
     s.add_ai_call(T0 + timedelta(days=1), "triage", "nova", "m", 11, 3, 310, "ok")
     assert [c["input_tokens"] for c in s.ai_calls(T0.date())] == [10]
     assert s.count_ai_calls(T0.date()) == 1 and s.count_ai_calls(T0.date(), agent="briefing") == 0
+
+
+def test_briefing_rank_round_trip_is_per_farm_day_and_replaces():
+    from datetime import date
+
+    from clucktalk.domain.briefing import BriefingRank
+
+    store = SqliteStore()
+    d = date(2026, 9, 29)
+    assert store.get_briefing_rank("farm-x", d) is None
+    store.save_briefing_rank(BriefingRank("farm-x", d, "fp1", ("a", "b"), "nova", "model-1", None))
+    assert store.get_briefing_rank("farm-x", d) == BriefingRank("farm-x", d, "fp1", ("a", "b"), "nova", "model-1", None)
+    store.save_briefing_rank(BriefingRank("farm-x", d, "fp2", (), "rules", None, "daily_limit"))
+    got = store.get_briefing_rank("farm-x", d)
+    assert (got.fingerprint, got.order, got.note) == ("fp2", (), "daily_limit")
+    assert store.get_briefing_rank("farm-x", date(2026, 9, 30)) is None and store.get_briefing_rank("farm-y", d) is None

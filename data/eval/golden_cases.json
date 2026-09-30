@@ -1,5 +1,5 @@
 {
-  "note": "Minimal golden suite v0 (2026-09-29), mock mode, no AWS. Extended to the full 45-case suite on the 11 Oct task (WEEK2_PLAN). Independent-mode plan_sale cases only: contract-mode is a stateful multi-call flow (switch mode, save terms), covered by tests/contract/test_sale_tools.py instead of this single-call runner. Multi-step cases (2026-09-29, health triage): `steps` run in order on one session; `save` keeps a result field for later steps (`$name`); `poll_until` repeats a read-only step until the agent's slow path finishes; `model_fixture` runs the case against a server whose model is a test fixture (tests/fakes.py), to prove the safety floor and fail-loud paths.",
+  "note": "Minimal golden suite v0 (2026-09-29), mock mode, no AWS. Extended to the full 45-case suite on the 11 Oct task (WEEK2_PLAN). Independent-mode plan_sale cases only: contract-mode is a stateful multi-call flow (switch mode, save terms), covered by tests/contract/test_sale_tools.py instead of this single-call runner. Multi-step cases (2026-09-29, health triage): `steps` run in order on one session; `save` keeps a result field for later steps (`$name`); `poll_until` repeats a read-only step until the agent's slow path finishes; `model_fixture` runs the case against a server whose model is a test fixture (tests/fakes.py), to prove the safety floor and fail-loud paths. `fresh_state` (2026-09-30, daily briefing) runs a case on a server of its own, so earlier cases' health checks cannot change its answer.",
   "cases": [
     {
       "id": "farm-status-invocation-example",
@@ -946,6 +946,299 @@
               "value": true
             }
           ]
+        }
+      ]
+    },
+    {
+      "id": "briefing-demo-story-health-first",
+      "description": "Today's briefing: House 2's death spike is item 1 and pinned, three items are read out, the rest is offered as 'more'; the AI label says no model ran.",
+      "tool": "get_daily_briefing",
+      "args": {},
+      "checks": [
+        {
+          "field": "items.0.fact_id",
+          "op": "eq",
+          "value": "mortality_spike:house-2"
+        },
+        {
+          "field": "items.0.pinned",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "items.0.level",
+          "op": "eq",
+          "value": "alert"
+        },
+        {
+          "field": "items.0.text_en",
+          "op": "contains",
+          "value": "26 birds died today"
+        },
+        {
+          "field": "items.2.spoken",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "items.3.spoken",
+          "op": "eq",
+          "value": false
+        },
+        {
+          "field": "more_available",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "text_en",
+          "op": "contains",
+          "value": "Say 'more'"
+        },
+        {
+          "field": "ai.engine",
+          "op": "eq",
+          "value": "rules"
+        },
+        {
+          "field": "ai.label_en",
+          "op": "contains",
+          "value": "no AI model"
+        },
+        {
+          "field": "demo_data",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "fresh_state": true
+    },
+    {
+      "id": "briefing-more-reads-the-rest",
+      "description": "'More' reads items 4 and 5 (not the first three again), and never more than 5 items exist.",
+      "tool": "get_daily_briefing",
+      "args": {
+        "more": true
+      },
+      "checks": [
+        {
+          "field": "text_en",
+          "op": "contains",
+          "value": "Here's the rest."
+        },
+        {
+          "field": "items.3.spoken",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "items.0.spoken",
+          "op": "eq",
+          "value": false
+        },
+        {
+          "field": "more_available",
+          "op": "eq",
+          "value": false
+        },
+        {
+          "field": "total_items",
+          "op": "ge",
+          "value": 5
+        },
+        {
+          "field": "items.4.rank",
+          "op": "eq",
+          "value": 5
+        }
+      ],
+      "fresh_state": true
+    },
+    {
+      "id": "briefing-recalls-a-spike-from-yesterday",
+      "description": "A death spike from the previous day is still in the briefing, pinned, with how many days ago (the 'three days later' mechanism; the 3-day move is in tests/contract).",
+      "tool": "get_daily_briefing",
+      "args": {},
+      "checks": [
+        {
+          "field": "items.2.fact_id",
+          "op": "eq",
+          "value": "recent_logged_spike:house-3"
+        },
+        {
+          "field": "items.2.pinned",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "items.2.values.days_ago",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "field": "items.2.text_en",
+          "op": "contains",
+          "value": "yesterday"
+        }
+      ],
+      "fresh_state": true
+    },
+    {
+      "id": "briefing-no-dose-or-drug-text",
+      "description": "Nothing in the briefing gives a medicine, drug or dose (CLAUDE.md safety rule).",
+      "tool": "get_daily_briefing",
+      "args": {},
+      "checks": [
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "dose"
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "medicine"
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "antibiotic"
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "drug"
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": " ml"
+        }
+      ],
+      "fresh_state": true
+    },
+    {
+      "id": "briefing-model-cannot-demote-health",
+      "model_fixture": "rank_reversed",
+      "description": "A model that reverses every list it is offered: the AI ordering is applied to the non-health items only; health items stay first.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "poll_until": {
+            "field": "ai.engine",
+            "op": "eq",
+            "value": "scripted"
+          },
+          "checks": [
+            {
+              "field": "items.0.fact_id",
+              "op": "eq",
+              "value": "mortality_spike:house-2"
+            },
+            {
+              "field": "items.0.pinned",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "items.1.pinned",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "ai.note",
+              "op": "eq",
+              "value": null
+            },
+            {
+              "field": "ai.label_en",
+              "op": "contains",
+              "value": "Test model"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "briefing-model-tries-to-move-health-is-rejected",
+      "model_fixture": "rank_tries_to_move_health",
+      "description": "A model that names a pinned health item is rejected (it is not on its list): the rules order stands and the answer says the AI ordering did not finish.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "poll_until": {
+            "field": "ai.note",
+            "op": "eq",
+            "value": "no_answer"
+          },
+          "checks": [
+            {
+              "field": "ai.engine",
+              "op": "eq",
+              "value": "rules"
+            },
+            {
+              "field": "ai.label_en",
+              "op": "contains",
+              "value": "didn't finish"
+            },
+            {
+              "field": "items.0.fact_id",
+              "op": "eq",
+              "value": "mortality_spike:house-2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "briefing-model-outage-fails-loud",
+      "model_fixture": "always_fails",
+      "description": "The model is down: the briefing still answers from code, in the rules order, and says the AI ordering did not finish.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "poll_until": {
+            "field": "ai.note",
+            "op": "eq",
+            "value": "no_answer"
+          },
+          "checks": [
+            {
+              "field": "items.0.fact_id",
+              "op": "eq",
+              "value": "mortality_spike:house-2"
+            },
+            {
+              "field": "ai.engine",
+              "op": "eq",
+              "value": "rules"
+            },
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "help-lists-briefing",
+      "description": "get_help mentions the briefing, so a new farmer can discover it.",
+      "tool": "get_help",
+      "args": {},
+      "checks": [
+        {
+          "field": "text_en",
+          "op": "contains",
+          "value": "briefing"
         }
       ]
     }

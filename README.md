@@ -29,6 +29,10 @@ mode (real Bedrock/Polly) needs an AWS account; see `docs/AWS_SETUP.md`.
   contract farmers, how each extra day changes FCR and the growing charge.
 - **Farm profile** (`get_farm_profile`, `set_farm_mode`) and **contract terms** (`set_contract_terms`): switch
   between independent and contract farming, with an explicit read-back and "yes" before anything changes.
+- **Daily briefing** (`get_daily_briefing`): the top things that need attention today, ranked, as a swipeable card. By
+  voice it reads the top 3 and offers "more" (5 items at most). Health alerts always come first, decided by code; an
+  AI model, only when live AI is switched on, may re-order the other items from a fixed list and can write no text.
+  A death spike logged a few days ago still shows. A sale-window item is a simulated estimate and shows no rupees.
 - **What can you do?** (`get_help`).
 - A local **Alexa+ Simulator** (Echo Show / Echo Dot device modes, voice and text, a developer panel showing the
   exact MCP wire).
@@ -39,7 +43,7 @@ mode (real Bedrock/Polly) needs an AWS account; see `docs/AWS_SETUP.md`.
   build, demo data and video target **broiler** farms only. Extending the voice/card experience to layer flocks
   the way broilers are covered today is future work.
 - Voice record book, the full Contract Earnings Tracker (sensitivity/what-if), vaccination planner and vaccine-day
-  coach, health triage, daily briefing, and feed/order confirmation flows — see `docs/DESIGN.md` §13 for the
+  coach, health triage, and feed/order confirmation flows — see `docs/DESIGN.md` §13 for the
   design of each.
 
 ## Documentation

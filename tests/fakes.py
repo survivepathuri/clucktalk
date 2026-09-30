@@ -56,4 +56,35 @@ def always_fails() -> RepeatingModel:
     return RepeatingModel(ModelError("simulated Bedrock outage (test fixture)"))
 
 
-FIXTURES: dict[str, Callable[[], ScriptedModel]] = {"always_routine": always_routine, "always_fails": always_fails}
+def _rankable_ids(request: ModelRequest) -> list[str] | None:
+    """The ids a Daily Briefing request offers, or None for any other agent's request."""
+    return request.schema.get("properties", {}).get("order", {}).get("items", {}).get("enum")
+
+
+def rank_reversed() -> RepeatingModel:
+    """A briefing model that reverses the list it is offered (it may only pick offered ids). Other agents' requests
+    get the always-routine triage reply, so one server can host both."""
+
+    def reply(request: ModelRequest) -> Any:
+        ids = _rankable_ids(request)
+        return ALWAYS_ROUTINE if ids is None else {"order": list(reversed(ids))}
+
+    return RepeatingModel(reply)
+
+
+def rank_tries_to_move_health() -> RepeatingModel:
+    """A briefing model that tries to reorder a health item the code pinned: not on its list, so invalid."""
+
+    def reply(request: ModelRequest) -> Any:
+        ids = _rankable_ids(request)
+        return ALWAYS_ROUTINE if ids is None else {"order": ["mortality_spike:house-2", *reversed(ids)]}
+
+    return RepeatingModel(reply)
+
+
+FIXTURES: dict[str, Callable[[], ScriptedModel]] = {
+    "always_routine": always_routine,
+    "always_fails": always_fails,
+    "rank_reversed": rank_reversed,
+    "rank_tries_to_move_health": rank_tries_to_move_health,
+}

@@ -29,6 +29,11 @@ HOUSE_PATTERNS = (
 MISHEARD = {"shade": "shed", "shred": "shed", "shared": "shed", "sheds": "shed", "houses": "house"}
 WAKE = re.compile(r"^(?:alexa\s*)?(?:(?:ask|tell|open)\s+clucktalk\s*(?:to|for|if|about|whether|how)?\s*)?")
 
+# Daily briefing (docs/DESIGN.md §18): "today's briefing" reads the top 3; a bare "more" reads the rest. A shed in the
+# sentence means the farmer asked about that shed (or a health check), not the whole-farm briefing.
+BRIEFING = re.compile(r"\b(?:briefing|daily update|morning update)\b")
+BRIEFING_MORE = re.compile(r"^(?:more|tell me more|what else|anything else|aur batao)$")
+
 HELP = re.compile(r"\b(?:what can (?:you|clucktalk) do|help me|^help$|what do you do|how do i use)\b")
 # Farm mode (docs/DESIGN.md §13.1). The words that pick the mode; the server declares the same synonyms.
 CONTRACT_WORDS = r"(?:contract|integration|integrator|company|agreement)"
@@ -232,6 +237,10 @@ def match(utterance: str) -> Intent | None:
         return None  # a negated mode sentence is unclear: the host asks again rather than guessing
     if PROFILE.search(text):
         return Intent("get_farm_profile", {}, "farm mode: 'what kind of farm' / 'contract or independent'")
+    if BRIEFING_MORE.match(text):
+        return Intent("get_daily_briefing", {"more": True}, "briefing: 'more' / 'what else'")
+    if BRIEFING.search(text) and not house_phrase(text):
+        return Intent("get_daily_briefing", {}, "briefing: 'briefing' / 'daily update'")
     if RECORD_BOOK.search(text):
         return Intent("get_record_book", {}, "record book: 'record book' / 'who's logged' / 'what's logged'")
     house = house_phrase(text)

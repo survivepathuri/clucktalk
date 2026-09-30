@@ -1,0 +1,314 @@
+<!doctype html>
+<!--
+  CluckTalk daily-briefing card: an MCP App view (MCP Apps spec 2026-01-26, text/html;profile=mcp-app).
+  Source template. scripts/build_cards.py inlines the font and labels and writes
+  src/clucktalk/server/cards/briefing.html (the file the server serves). Edit this file, then rebuild.
+
+  Rules (docs/DESIGN.md §6, §14, §18):
+  - A carousel of the ranked items (at most 5). Every sentence and number comes verbatim from the tool's
+    structuredContent, the same items the spoken answer reads. No arithmetic on data here.
+  - Level is an icon AND a word, never colour alone. Health items say "Health first"; the sale item says "Simulated".
+  - Swipe or press Previous / Next; the counter and dots show where you are. No external requests (default CSP).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Daily briefing</title>
+<style>
+/*@FONT_FACES@*/
+:root {
+  --bg: #f6f4ef; --surface: #ffffff; --text: #17191c; --muted: #4a5058; --line: #d9d5cc;
+  --pos: #1d6b30; --pos-bg: #e2f3e5; --neg: #a3211a; --neg-bg: #fde5e3; --best: #1557b0; --best-bg: #e6eefc;
+  --badge-bg: #1f2a44; --badge-text: #ffffff; --focus: #1557b0; --unknown: #3f4854; --unknown-bg: #e7eaee;
+  --en: system-ui, "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif;
+  --te: "Noto Sans Telugu CT", "Nirmala UI", "Gautami", "Noto Sans Telugu", sans-serif;
+}
+:root[data-theme="dark"] {
+  --bg: #0f1317; --surface: #1a2027; --text: #f3f4f6; --muted: #b9c1cb; --line: #333c47;
+  --pos: #86dc97; --pos-bg: #173522; --neg: #ff9a90; --neg-bg: #43191a; --best: #8ab4ff; --best-bg: #16233d;
+  --badge-bg: #ffd36b; --badge-text: #17191c; --focus: #8ab4ff; --unknown: #c9d1db; --unknown-bg: #2a323c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--en); }
+body { padding: 16px 20px 14px; line-height: 1.25; -webkit-text-size-adjust: 100%; }
+:lang(te) { font-family: var(--te); line-height: 1.45; }
+button { font: inherit; color: inherit; }
+button:focus-visible, .track:focus-visible { outline: 4px solid var(--focus); outline-offset: 2px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.brand { font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: .02em; white-space: nowrap; }
+.brand span[lang="te"] { font-weight: 400; }
+.badge { background: var(--badge-bg); color: var(--badge-text); border-radius: 999px; padding: 6px 14px;
+  font-size: 16px; font-weight: 700; white-space: nowrap; }
+.titlerow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 10px; flex-wrap: wrap; }
+h1 { font-size: 26px; margin: 0; font-weight: 700; }
+h1 [lang="te"] { font-weight: 600; font-size: 23px; }
+.meta { font-size: 16px; color: var(--muted); }
+
+.track { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  padding: 2px 2px 8px; margin: 0 -2px; }
+.slide { flex: 0 0 100%; scroll-snap-align: start; background: var(--surface); border: 3px solid var(--line);
+  border-radius: 16px; padding: 14px 18px 16px; min-height: 190px; display: flex; flex-direction: column; gap: 10px; }
+.slide.alert { border-color: var(--neg); }
+.slide.watch { border-color: var(--best); }
+.lvl { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; }
+.lvl svg { width: 30px; height: 30px; flex: none; }
+.lvl [lang="te"] { font-weight: 600; font-size: 18px; }
+.lvl.alert { color: var(--neg); } .lvl.watch { color: var(--best); } .lvl.info { color: var(--muted); }
+.tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.tag { border: 2px solid var(--muted); border-radius: 999px; padding: 2px 12px; font-size: 14px; font-weight: 700; color: var(--muted); }
+.tag.health { border-color: var(--neg); color: var(--neg); }
+.tag.sim { border-style: dashed; }
+.what { font-size: 21px; }
+.what [lang="te"] { display: block; font-size: 18px; color: var(--muted); margin-top: 4px; }
+.nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 6px 0 10px; }
+.nav button { min-height: 52px; padding: 8px 20px; border-radius: 999px; border: 2px solid var(--text);
+  background: var(--surface); font-size: 18px; font-weight: 700; cursor: pointer; }
+.nav button[disabled] { opacity: .45; cursor: default; }
+.count { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--muted); }
+.dot.on { background: var(--text); border-color: var(--text); }
+.small { font-size: 14px; color: var(--muted); margin: 4px 0; }
+.small [lang="te"] { display: block; }
+.say { font-size: 18px; margin-bottom: 12px; }
+.say [lang="te"] { display: block; font-size: 17px; color: var(--muted); margin-top: 2px; }
+
+.center { min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 10px; font-size: 22px; }
+.center svg { width: 56px; height: 56px; }
+.msg { max-width: 640px; }
+.msg p { margin: 6px 0; font-size: 21px; }
+.msg p[lang="te"] { font-size: 19px; }
+@media (max-width: 640px) {
+  body { padding: 12px 12px 10px; }
+  h1 { font-size: 22px; } h1 [lang="te"] { font-size: 19px; }
+  .what { font-size: 19px; } .what [lang="te"] { font-size: 17px; }
+}
+@media (prefers-reduced-motion: reduce) { .track { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<main id="root" aria-live="polite">
+  <div class="center"><span data-l="loading"></span></div>
+</main>
+<script>
+"use strict";
+const L = "@LABELS@";
+const APP = "@APP@";
+const SERVER_DEMO = "@SERVER_DEMO@";  // stamped by the server at startup: badge on every card, errors too
+const NUM_FIXTURES = "@NUM_FIXTURES@";  // [value, Python render.num(value)] pairs, written at build time
+const SPEC_VERSION = "2026-01-26";
+const ERROR_META_KEY = "clucktalk/error";
+
+// ---------- MCP Apps messaging (JSON-RPC 2.0 over postMessage; spec "Transport Layer") ----------
+let nextId = 1;
+const pending = new Map();
+function request(method, params) {
+  const id = nextId++;
+  window.parent.postMessage({ jsonrpc: "2.0", id, method, params }, "*");
+  return new Promise((resolve, reject) => {
+    pending.set(id, { resolve, reject });
+    setTimeout(() => { if (pending.delete(id)) reject(new Error(method + " timed out")); }, method === "ui/initialize" ? 5000 : 15000);
+  });
+}
+function notify(method, params) { window.parent.postMessage({ jsonrpc: "2.0", method, params }, "*"); }
+function log(level, data) { notify("notifications/message", { level, logger: "clucktalk.card", data }); }
+
+let hostContext = {};
+let lastResult = null;
+
+window.addEventListener("message", (event) => {
+  if (event.source !== window.parent) return;
+  const m = event.data;
+  if (!m || m.jsonrpc !== "2.0") return;
+  if (m.id != null && m.method === undefined) {
+    const p = pending.get(m.id);
+    if (!p) return;
+    pending.delete(m.id);
+    if (m.error) p.reject(new Error(m.error.message || "request failed")); else p.resolve(m.result);
+    return;
+  }
+  switch (m.method) {
+    case "ui/notifications/tool-input": break;
+    case "ui/notifications/tool-result": render(m.params); break;
+    case "ui/notifications/tool-cancelled": renderMessage(L.sorry, L.generic_error, L.generic_next); break;
+    case "ui/notifications/host-context-changed": applyContext(m.params || {}); break;
+    case "ui/resource-teardown": window.parent.postMessage({ jsonrpc: "2.0", id: m.id, result: {} }, "*"); break;
+    case "ping": window.parent.postMessage({ jsonrpc: "2.0", id: m.id, result: {} }, "*"); break;
+  }
+});
+
+function applyContext(ctx) {
+  hostContext = Object.assign({}, hostContext, ctx);
+  const theme = hostContext.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  document.documentElement.dataset.theme = theme;
+}
+
+let lastSize = "";
+function reportSize() {
+  const w = Math.ceil(document.documentElement.scrollWidth), h = Math.ceil(document.documentElement.scrollHeight);
+  const key = w + "x" + h;
+  if (key !== lastSize) { lastSize = key; notify("ui/notifications/size-changed", { width: w, height: h }); }
+}
+
+// ---------- formatting: must match clucktalk.server.render.num (spoken form) ----------
+function indianGroup(intStr) {
+  const neg = intStr.startsWith("-"); let s = neg ? intStr.slice(1) : intStr;
+  if (s.length <= 3) return (neg ? "-" : "") + s;
+  let head = s.slice(0, -3); const tail = s.slice(-3); const pairs = [];
+  while (head.length > 2) { pairs.unshift(head.slice(-2)); head = head.slice(0, -2); }
+  return (neg ? "-" : "") + [head, ...pairs, tail].join(",");
+}
+function num(x) {
+  const s = String(x);
+  if (!s.includes(".")) return indianGroup(s);
+  const [whole, frac] = s.split(".");
+  return indianGroup(whole) + "." + frac;
+}
+function numSelfTest() {
+  const bad = NUM_FIXTURES.filter(([v, want]) => num(v) !== want).map(([v, want]) => [v, want, num(v)]);
+  if (bad.length) log("error", { event: "num-mismatch", message: "card number format differs from the server", cases: bad });
+}
+
+// ---------- DOM helpers ----------
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+function bi(t, sep) { return [el("span", { lang: "en" }, t.en), sep === undefined ? " · " : sep, el("span", { lang: "te" }, t.te)]; }
+function stacked(t, cls) { return el("div", { class: cls }, el("span", { lang: "en" }, t.en), el("span", { lang: "te" }, t.te)); }
+
+const ICONS = {
+  unknown: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M9 9.2a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.9v.6" fill="none" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.8" r="1.5" fill="var(--bg)"/></svg>',
+  alert: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5l11 20H1z" fill="currentColor"/><path d="M12 9v6" stroke="var(--bg)" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="18.2" r="1.5" fill="var(--bg)"/></svg>',
+  watch: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="var(--bg)" stroke-width="2.4"/></svg>',
+  info: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M12 11v6" stroke="var(--bg)" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="7.2" r="1.5" fill="var(--bg)"/></svg>',
+};
+function icon(name) { const s = el("span", { "aria-hidden": "true", style: "display:inline-flex" }); s.innerHTML = ICONS[name]; return s; }
+
+function header(sc) {
+  return el("div", { class: "top" },
+    el("div", { class: "brand", "data-xm-skip": true }, el("span", { lang: "en" }, APP.name), " · ", el("span", { lang: "te" }, APP.name_te)),
+    SERVER_DEMO === true || (sc && sc.demo_data) ? el("div", { class: "badge", role: "note" }, bi(L.demo_badge)) : null);
+}
+function dateText(iso) { const [y, m, d] = iso.split("-"); return d + "-" + m + "-" + y; }
+
+// ---------- the briefing carousel ----------
+function slide(item, index, total) {
+  const level = L["level_" + item.level];
+  const tags = [];
+  if (item.pinned) tags.push(el("span", { class: "tag health" }, bi(L.health_first)));
+  if (item.simulated) tags.push(el("span", { class: "tag sim" }, bi(L.simulated)));
+  return el("section", { class: "slide " + item.level, role: "group", "aria-roledescription": "slide",
+      "aria-label": (index + 1) + " / " + total },
+    el("div", { class: "lvl " + item.level }, icon(item.level), el("span", {}, bi(level))),
+    tags.length ? el("div", { class: "tags" }, tags) : null,
+    stacked({ en: item.text_en, te: item.text_te }, "what"));
+}
+
+function briefingView(sc) {
+  const root = el("main", { id: "root", class: "briefing" });
+  root.append(header(sc));
+  root.append(el("div", { class: "titlerow" }, el("h1", {}, bi(L.briefing_title)),
+    el("span", { class: "meta" }, dateText(sc.as_of))));
+  if (!sc.items.length) {
+    root.append(stacked({ en: sc.text_en, te: sc.text_te }, "say"));
+  } else {
+    const total = sc.items.length;
+    const track = el("div", { class: "track", tabindex: "0", role: "region", "aria-roledescription": "carousel",
+      "aria-label": L.briefing_title.en }, sc.items.map((it, i) => slide(it, i, total)));
+    const prev = el("button", { type: "button", "aria-label": L.previous.en, disabled: true }, bi(L.previous, " "));
+    const next = el("button", { type: "button", "aria-label": L.next.en, disabled: total < 2 }, bi(L.next, " "));
+    const count = el("span", { class: "count", "aria-live": "polite" }, "1 / " + total);
+    const dots = el("div", { class: "dots", "aria-hidden": "true" }, sc.items.map((_, i) => el("span", { class: "dot" + (i === 0 ? " on" : "") })));
+    const go = (delta) => track.scrollBy({ left: delta * track.clientWidth, behavior: "smooth" });
+    const sync = () => {
+      const i = Math.min(total - 1, Math.max(0, Math.round(track.scrollLeft / Math.max(1, track.clientWidth))));
+      count.textContent = (i + 1) + " / " + total;
+      [...dots.children].forEach((d, k) => d.classList.toggle("on", k === i));
+      prev.disabled = i === 0; next.disabled = i === total - 1;
+    };
+    prev.addEventListener("click", () => go(-1));
+    next.addEventListener("click", () => go(1));
+    track.addEventListener("scroll", sync, { passive: true });
+    track.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") { go(1); e.preventDefault(); } else if (e.key === "ArrowLeft") { go(-1); e.preventDefault(); }
+    });
+    root.append(track, el("div", { class: "nav" }, prev, count, next), dots);
+  }
+  root.append(stacked({ en: sc.ai.label_en, te: sc.ai.label_te }, "small"));
+  return root;
+}
+
+function errorView(result) {
+  const meta = (result._meta || {})[ERROR_META_KEY];
+  const text = (result.content || []).filter((c) => c.type === "text").map((c) => c.text).join(" ");
+  return messageView(L.sorry,
+    meta ? { en: meta.message_en, te: meta.message_te } : { en: text || L.generic_error.en, te: L.generic_error.te },
+    meta ? { en: meta.next_step_en, te: meta.next_step_te } : L.generic_next);
+}
+function messageView(title, message, next) {
+  const root = el("main", { id: "root" });
+  root.append(header(lastResult && lastResult.structuredContent));
+  root.append(el("div", { class: "center" }, el("span", { style: "color:var(--unknown)" }, icon("unknown")),
+    el("h1", {}, bi(title)),
+    el("div", { class: "msg" },
+      message ? [el("p", { lang: "en" }, message.en), message.te ? el("p", { lang: "te" }, message.te) : null] : null,
+      next ? [el("p", { lang: "en" }, next.en), el("p", { lang: "te" }, next.te)] : null)));
+  return root;
+}
+function renderMessage(title, message, next) { swap(messageView(title, message, next), "message"); }
+
+function swap(root, view) {
+  document.getElementById("root").replaceWith(root);
+  reportSize();
+  const clone = root.cloneNode(true);
+  clone.querySelectorAll("[data-xm-skip]").forEach((n) => n.remove());
+  const parts = [];
+  const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) parts.push(walker.currentNode.nodeValue);
+  log("info", { event: "rendered", view, text: parts.join(" ") });
+}
+
+function render(result) {
+  lastResult = result;
+  const sc = result && result.structuredContent;
+  if (!result || result.isError || !sc) { swap(errorView(result || {}), "error"); return; }
+  swap(briefingView(sc), "briefing");
+}
+
+function start() {
+  document.querySelectorAll("[data-l]").forEach((n) => n.replaceChildren(...bi(L[n.dataset.l])));
+  applyContext({});
+  new ResizeObserver(reportSize).observe(document.documentElement);
+  request("ui/initialize", {
+    appInfo: { name: APP.name + " briefing card", version: "1" },
+    appCapabilities: { availableDisplayModes: ["inline"] },
+    protocolVersion: SPEC_VERSION,
+  }).then((res) => {
+    applyContext((res && res.hostContext) || {});
+    notify("ui/notifications/initialized", {});
+  }).catch((err) => {
+    log("error", { event: "ui/initialize failed", message: String(err && err.message) });
+    renderMessage(L.sorry, L.generic_error, L.generic_next);
+  });
+  numSelfTest();
+  document.fonts.ready.then(() => {
+    if (!document.fonts.check('16px "Noto Sans Telugu CT"', "తెలుగు")) {
+      log("warning", { event: "font", message: "Bundled Noto Sans Telugu did not load (host CSP?); using a system Telugu font." });
+    }
+  });
+}
+start();
+</script>
+</body>
+</html>

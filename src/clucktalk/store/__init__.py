@@ -11,6 +11,7 @@ from contextlib import AbstractContextManager
 from datetime import date, datetime
 from typing import Any, Protocol
 
+from clucktalk.domain.briefing import BriefingRank
 from clucktalk.domain.models import DailyRecord
 from clucktalk.domain.profile import ContractTerms, FarmProfile
 from clucktalk.domain.proposals import Proposal
@@ -65,6 +66,12 @@ class Store(Protocol):
     def add_handoff(self, handoff: VetHandoff) -> None: ...
 
     def handoff_for_check(self, check_id: str) -> VetHandoff | None: ...
+
+    def save_briefing_rank(self, rank: BriefingRank) -> None:
+        """Keep the AI ordering for one farm-day (replacing an earlier one)."""
+        ...
+
+    def get_briefing_rank(self, farm_id: str, day: date) -> BriefingRank | None: ...
 
     def add_ai_call(
         self,

@@ -171,15 +171,20 @@ def _check_case(client: httpx2.Client, url: str, headers: dict[str, str], case: 
 def main() -> int:
     cases = json.loads(CASES_PATH.read_text(encoding="utf-8"))["cases"]
     results: dict[str, tuple[bool, str]] = {}
-    # One fresh server per model fixture (None = the demo rules), so fixture cases never share state.
-    for fixture in dict.fromkeys(c.get("model_fixture") for c in cases):
+
+    # One fresh server per model fixture (None = the demo rules), so fixture cases never share state. A case marked
+    # ``fresh_state`` gets a server of its own: its answer must not depend on what earlier cases changed.
+    def group(case: dict[str, Any]) -> tuple[str | None, str | None]:
+        return case.get("model_fixture"), case["id"] if case.get("fresh_state") else None
+
+    for fixture, only in dict.fromkeys(group(c) for c in cases):
         port = _free_port()
         stop = _serve(port, fixture)
         try:
             with httpx2.Client(timeout=10) as client:
                 url = f"http://127.0.0.1:{port}{MCP_PATH}"
                 headers = _session(client, url)
-                for case in (c for c in cases if c.get("model_fixture") == fixture):
+                for case in (c for c in cases if group(c) == (fixture, only)):
                     results[case["id"]] = _check_case(client, url, headers, case)
         finally:
             stop()

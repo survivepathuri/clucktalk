@@ -32,6 +32,7 @@ from clucktalk.server.errors import SafeToolErrors
 from clucktalk.server.farm_state import DemoFarmSource
 from clucktalk.server.tools import (
     CapabilityRegistry,
+    briefing,
     contract_terms,
     farm_status,
     feed,
@@ -68,6 +69,7 @@ def build_mcp_server(source: DemoFarmSource | None = None, ai: AiServices | None
     apps = Apps()  # MCP Apps extension: card-bearing tools + their ui:// resources (docs/DESIGN.md §14)
     farm_status.register(apps, registry, source)
     sale.register(apps, registry, source)
+    briefing.register_cards(apps, registry, source, ai)
     health.register_cards(apps, registry, source, ai)
     server = MCPServer(
         name=APP_NAME,

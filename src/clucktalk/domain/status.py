@@ -74,22 +74,30 @@ def _mortality_findings(house: House, records: tuple[DailyRecord, ...], latest: 
         level = Level.ALERT if cum_pct >= t.CUM_MORTALITY_ALERT_PCT else Level.WATCH
         findings.append(Finding("cum_mortality_high", level, {"cum_mortality_pct": round(cum_pct, 2)}))
 
-    prior = [r for r in records if latest.day - timedelta(days=7) <= r.day < latest.day]
-    if len(prior) >= t.MIN_BASELINE_DAYS:
-        baseline = sum(r.deaths for r in prior) / len(prior)
-        floor = max(
-            math.ceil(t.MORTALITY_SPIKE_MIN_FRACTION * _live_at_start_of(house, latest.day)),
-            t.MORTALITY_SPIKE_MIN_BIRDS,
-        )
-        if latest.deaths >= max(t.MORTALITY_SPIKE_FACTOR * baseline, floor):
-            findings.append(
-                Finding(
-                    "mortality_spike",
-                    Level.ALERT,
-                    {"deaths": latest.deaths, "baseline_daily_avg": round(baseline, 1), "day": latest.day.isoformat()},
-                )
-            )
+    spike = spike_finding(house, records, latest)
+    if spike:
+        findings.append(spike)
     return findings
+
+
+def spike_finding(house: House, records: tuple[DailyRecord, ...], record: DailyRecord) -> Finding | None:
+    """Was ``record`` a death spike against the 7 days before it? Used for the latest day (status) and, by the
+    Daily Briefing, for an earlier logged day that is still inside the recall window."""
+    prior = [r for r in records if record.day - timedelta(days=7) <= r.day < record.day]
+    if len(prior) < t.MIN_BASELINE_DAYS:
+        return None
+    baseline = sum(r.deaths for r in prior) / len(prior)
+    floor = max(
+        math.ceil(t.MORTALITY_SPIKE_MIN_FRACTION * _live_at_start_of(house, record.day)),
+        t.MORTALITY_SPIKE_MIN_BIRDS,
+    )
+    if record.deaths < max(t.MORTALITY_SPIKE_FACTOR * baseline, floor):
+        return None
+    return Finding(
+        "mortality_spike",
+        Level.ALERT,
+        {"deaths": record.deaths, "baseline_daily_avg": round(baseline, 1), "day": record.day.isoformat()},
+    )
 
 
 def _per_bird_g(house: House, record: DailyRecord) -> float:
