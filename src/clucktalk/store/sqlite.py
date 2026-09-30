@@ -41,7 +41,9 @@ logger = logging.getLogger("clucktalk.store")
 MEMORY = ":memory:"
 # v2 (2026-09-29): + contract_terms; v3 (2026-09-29): + health checks, handoffs, AI ledger. The briefing_ranks table
 # (2026-09-30) is additive (CREATE IF NOT EXISTS), so an existing v3 file opens unchanged: no version bump.
-SCHEMA_VERSION = "3"
+# v4 (2026-10-01): contract_terms loses mortality_allowance_pct (saved but never used). A v3 file is migrated in
+# place, in one transaction (see _migrate_v3_to_v4); any other schema version still fails loud.
+SCHEMA_VERSION = "4"
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS profiles (
@@ -49,7 +51,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 );
 CREATE TABLE IF NOT EXISTS contract_terms (
     farm_id TEXT PRIMARY KEY, base_rate_per_kg TEXT NOT NULL, standard_fcr TEXT NOT NULL,
-    mortality_allowance_pct TEXT NOT NULL, incentive_per_kg_per_fcr_point TEXT NOT NULL,
+    incentive_per_kg_per_fcr_point TEXT NOT NULL,
     deduction_per_kg_per_fcr_point TEXT NOT NULL, updated_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS proposals (
@@ -138,11 +140,36 @@ class SqliteStore:
             row = self._db.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone()
             if row is None:
                 self._db.execute("INSERT INTO meta (key, value) VALUES ('schema_version', ?)", (SCHEMA_VERSION,))
+            elif row["value"] == "3":
+                self._migrate_v3_to_v4()
             elif row["value"] != SCHEMA_VERSION:
                 raise StoreError(
                     f"{self.path} has state schema {row['value']}, this version needs {SCHEMA_VERSION}. "
                     "Run: python tasks.py reset-demo"
                 )
+
+    def _migrate_v3_to_v4(self) -> None:
+        """Drop contract_terms.mortality_allowance_pct by rebuilding the table inside the open transaction (the
+        four numbers the farmer gave are kept as they are). Any failure rolls everything back, so the v3 file is
+        left untouched, and is reported loudly (Rule 6)."""
+        try:
+            self._db.execute(
+                "CREATE TABLE contract_terms_v4 (farm_id TEXT PRIMARY KEY, base_rate_per_kg TEXT NOT NULL, "
+                "standard_fcr TEXT NOT NULL, incentive_per_kg_per_fcr_point TEXT NOT NULL, "
+                "deduction_per_kg_per_fcr_point TEXT NOT NULL, updated_at TEXT NOT NULL)"
+            )
+            self._db.execute(
+                "INSERT INTO contract_terms_v4 SELECT farm_id, base_rate_per_kg, standard_fcr, "
+                "incentive_per_kg_per_fcr_point, deduction_per_kg_per_fcr_point, updated_at FROM contract_terms"
+            )
+            self._db.execute("DROP TABLE contract_terms")
+            self._db.execute("ALTER TABLE contract_terms_v4 RENAME TO contract_terms")
+            self._db.execute("UPDATE meta SET value = ? WHERE key = 'schema_version'", (SCHEMA_VERSION,))
+        except sqlite3.Error as exc:
+            raise StoreError(
+                f"{self.path} has state schema 3 and could not be migrated to {SCHEMA_VERSION} ({exc}). "
+                "Nothing was changed. Run: python tasks.py reset-demo"
+            ) from exc
 
     def close(self) -> None:
         with self._lock:
@@ -197,7 +224,6 @@ class SqliteStore:
             farm_id=row["farm_id"],
             base_rate_per_kg=Decimal(row["base_rate_per_kg"]),
             standard_fcr=Decimal(row["standard_fcr"]),
-            mortality_allowance_pct=Decimal(row["mortality_allowance_pct"]),
             incentive_per_kg_per_fcr_point=Decimal(row["incentive_per_kg_per_fcr_point"]),
             deduction_per_kg_per_fcr_point=Decimal(row["deduction_per_kg_per_fcr_point"]),
             updated_at=datetime.fromisoformat(row["updated_at"]),
@@ -207,13 +233,12 @@ class SqliteStore:
         with self.atomic():
             self._db.execute(
                 "INSERT OR REPLACE INTO contract_terms (farm_id, base_rate_per_kg, standard_fcr, "
-                "mortality_allowance_pct, incentive_per_kg_per_fcr_point, deduction_per_kg_per_fcr_point, "
-                "updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "incentive_per_kg_per_fcr_point, deduction_per_kg_per_fcr_point, "
+                "updated_at) VALUES (?, ?, ?, ?, ?, ?)",
                 (
                     terms.farm_id,
                     str(terms.base_rate_per_kg),
                     str(terms.standard_fcr),
-                    str(terms.mortality_allowance_pct),
                     str(terms.incentive_per_kg_per_fcr_point),
                     str(terms.deduction_per_kg_per_fcr_point),
                     _iso(terms.updated_at),

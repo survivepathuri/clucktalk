@@ -50,9 +50,8 @@ class ContractTerms:
     charge; the full Contract Earnings Tracker (sensitivity, what-if) is a separate, later tool."""
 
     farm_id: str
-    base_rate_per_kg: Decimal  # rupees per kg live weight, at standard_fcr and within the mortality allowance
+    base_rate_per_kg: Decimal  # rupees per kg live weight, at standard_fcr
     standard_fcr: Decimal
-    mortality_allowance_pct: Decimal  # cumulative mortality up to this % draws no FCR-style deduction
     incentive_per_kg_per_fcr_point: Decimal  # rupees added per kg, per 0.1 FCR better than standard
     deduction_per_kg_per_fcr_point: Decimal  # rupees subtracted per kg, per 0.1 FCR worse than standard
     updated_at: datetime
@@ -60,11 +59,7 @@ class ContractTerms:
     def __post_init__(self) -> None:
         if self.base_rate_per_kg <= 0 or self.standard_fcr <= 0:
             raise ValueError(f"{self.farm_id}: base_rate_per_kg and standard_fcr must be > 0")
-        for name in (
-            "mortality_allowance_pct",
-            "incentive_per_kg_per_fcr_point",
-            "deduction_per_kg_per_fcr_point",
-        ):
+        for name in ("incentive_per_kg_per_fcr_point", "deduction_per_kg_per_fcr_point"):
             if getattr(self, name) < 0:
                 raise ValueError(f"{self.farm_id}: {name} must be >= 0")
 

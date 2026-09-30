@@ -68,7 +68,10 @@ class SafeToolErrors:
     """Server middleware for ``tools/call``: validate arguments against the advertised ``inputSchema`` first,
     then replace any error result that does not follow the contract with a safe one."""
 
-    def __init__(self) -> None:
+    def __init__(self, strict_arguments_for: frozenset[str] = frozenset()) -> None:
+        # Tools whose unknown argument names are refused instead of ignored: a retired argument must never be
+        # silently dropped (set_contract_terms once took mortality_allowance_pct).
+        self._strict = strict_arguments_for
         self._server: MCPServer | None = None
         self._validators: dict[str, jsonschema.protocols.Validator] | None = None
 
@@ -100,6 +103,9 @@ class SafeToolErrors:
             problems = sorted(
                 {"/".join(str(p) for p in e.absolute_path) or "(root)" for e in validator.iter_errors(arguments)}
             )
+            if tool_name in self._strict and isinstance(arguments, dict):
+                known = set(validator.schema.get("properties", {}))
+                problems += sorted(f"{name} (not accepted)" for name in set(arguments) - known)
             if problems:
                 # Field paths only: the rejected values are the caller's data.
                 logger.info("tools/call %r rejected arguments at %s", tool_name, problems)

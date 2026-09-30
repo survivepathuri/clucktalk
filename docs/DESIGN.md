@@ -167,7 +167,7 @@ Status: §13.1 mode switching and contract-terms storage are built (plus `plan_s
 Most Indian broiler farms grow birds under contract: the integrator supplies chicks, feed, medicines and vet services and markets the birds; the farmer provides the shed and labour and is paid a growing charge linked to FCR and mortality (see `docs/SOURCES.md`).
 - `mode: contract | independent`, set by the farmer with read-back and "yes" (§5.1): `get_farm_profile`, `set_farm_mode` (built). The demo farm starts as independent; `python tasks.py reset-demo --contract` (planned, 8 Oct) seeds a contract-mode demo scenario for the video.
 - Contract mode: no sale planning and no feed purchasing. Feed answers name the bags to ask the supervisor for, with no price (the company supplies feed). `plan_sale` (§16, built) shows FCR and, once terms are saved, the growing charge instead of a market-price recommendation. Sending a **feed request to the supervisor** (propose → "yes" → send; simulated, labeled) is planned.
-- Contract terms (base rate, standard FCR, mortality allowance, incentive and deduction rates) are entered by the farmer with `set_contract_terms` (**built**: storage only, via the confirmation pattern; the full Contract Earnings Tracker with sensitivity answers is §13.3, planned).
+- Contract terms (base rate, standard FCR, incentive and deduction rates: four numbers) are entered by the farmer with `set_contract_terms` (**built**: storage only, via the confirmation pattern; the full Contract Earnings Tracker with sensitivity answers is §13.3, planned).
 - Independent mode: `plan_sale` (built, §16) and feed orders with confirmation (order/confirm flow planned).
 - State lives in a local SQLite file behind a `Store` interface (`clucktalk.store`), so a cloud store can replace it; `python tasks.py reset-demo` restores the seeded story.
 
@@ -181,7 +181,7 @@ Most Indian broiler farms grow birds under contract: the integrator supplies chi
 - The record book becomes the primary data source; a bilingual batch-end summary can be handed to the company.
 
 ### 13.3 Contract earnings tracker
-- Projected growing charges come only from the contract terms the farmer enters: base rate per kg, standard FCR, mortality allowance, incentive and deduction rates. No company's terms are built in; any example is labeled as an example with its source and year. **Storage built** (`set_contract_terms`, `ContractTerms.rate_per_kg`, used by `plan_sale` §16); the dedicated tracker tool below (sensitivity, what-if) is planned for 8 Oct.
+- Projected growing charges come only from the contract terms the farmer enters: base rate per kg, standard FCR, incentive and deduction rates. A mortality allowance was dropped on 2026-10-01 because no calculation used it (it would be shown only if a rule for it is built). No company's terms are built in; any example is labeled as an example with its source and year. **Storage built** (`set_contract_terms`, `ContractTerms.rate_per_kg`, used by `plan_sale` §16); the dedicated tracker tool below (sensitivity, what-if) is planned for 8 Oct.
 - Deterministic fast-path math with the formula shown; sensitivity answers such as "one more percent mortality costs about ₹X"; always labeled "estimate from your contract terms".
 
 ### 13.4 Vaccination planner and vaccine-day coach

@@ -64,7 +64,7 @@ def build_mcp_server(source: DemoFarmSource | None = None, ai: AiServices | None
     to demo mode (no model calls); ``main`` passes live AI only when chosen explicitly (docs/DESIGN.md §18)."""
     source = source or DemoFarmSource()
     ai = ai or demo_ai()
-    guard = SafeToolErrors()
+    guard = SafeToolErrors(strict_arguments_for=frozenset({contract_terms.TOOL}))
     registry = CapabilityRegistry()
     apps = Apps()  # MCP Apps extension: card-bearing tools + their ui:// resources (docs/DESIGN.md §14)
     farm_status.register(apps, registry, source)

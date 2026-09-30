@@ -59,7 +59,6 @@ class ContractTermsOut(BaseModel):
     model_config = ConfigDict(extra="forbid")
     base_rate_per_kg_inr: float
     standard_fcr: float
-    mortality_allowance_pct: float
     incentive_per_kg_per_fcr_point_inr: float
     deduction_per_kg_per_fcr_point_inr: float
     updated_at: str | None  # None for "proposed" (not yet saved)
@@ -83,29 +82,28 @@ class SetContractTermsOutput(BaseModel):
 
 DESCRIPTION = (
     "Use when a contract farmer wants to save or update their own growing-charge terms, so plan_sale can show "
-    "how an extra day changes the growing charge. Give all five numbers from the farmer's own agreement: "
-    "`base_rate_per_kg` (rupees per kg live weight at the standard FCR), `standard_fcr`, `mortality_allowance_pct` "
-    "(cumulative mortality with no deduction), `incentive_per_kg_per_fcr_point` and `deduction_per_kg_per_fcr_point` "
+    "how an extra day changes the growing charge. Give all four numbers from the farmer's own agreement: "
+    "`base_rate_per_kg` (rupees per kg live weight at the standard FCR), `standard_fcr`, "
+    "`incentive_per_kg_per_fcr_point` and `deduction_per_kg_per_fcr_point` "
     "(rupees per kg, per 0.1 FCR better/worse than standard; 0 if unknown). Never suggest numbers from any company: "
-    "ask the farmer to read them from their own paperwork. Always two calls: first only the five numbers; nothing "
+    "ask the farmer to read them from their own paperwork. Always two calls: first only the four numbers; nothing "
     "changes and the result reads them back. Then call again with the same numbers plus the returned `proposal_id` "
     "and `answer`: 'yes' for an explicit spoken yes (haan, avunu), 'no' for no (nahi, vaddu)."
 )
 RATE_PARAM = Field(gt=0, description="Rupees per kg live weight at the standard FCR.")
 FCR_PARAM = Field(gt=0, description="The contract's standard (target) FCR.")
-ALLOW_PARAM = Field(ge=0, le=100, description="Cumulative mortality percent with no deduction.")
 INCENTIVE_PARAM = Field(ge=0, description="Rupees per kg, per 0.1 FCR better than standard. 0 if none.")
 DEDUCTION_PARAM = Field(ge=0, description="Rupees per kg, per 0.1 FCR worse than standard. 0 if none.")
 PROPOSAL_PARAM = Field(default=None, description="Only on the second call: the proposal_id from the first call.")
 ANSWER_PARAM = Field(default=None, description="Only on the second call: 'yes' if the farmer said yes, 'no' if no.")
 
 
-def _read_back(base: Decimal, fcr: Decimal, allow: Decimal, inc: Decimal, ded: Decimal) -> Text:
+def _read_back(base: Decimal, fcr: Decimal, inc: Decimal, ded: Decimal) -> Text:
     return Text(
-        f"Save your contract terms: {rupees(base)} per kg at FCR {fcr}, mortality allowance {allow}%, "
+        f"Save your contract terms: {rupees(base)} per kg at FCR {fcr}, "
         f"{rupees(inc)} more per kg for every 0.1 better FCR, {rupees(ded)} less per kg for every 0.1 worse FCR. "
         "Say yes to confirm, or no to keep it as it is.",
-        f"మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయాలా: FCR {fcr} వద్ద కిలోకు {rupees(base)}, మరణాల మినహాయింపు {allow}%, "
+        f"మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయాలా: FCR {fcr} వద్ద కిలోకు {rupees(base)}, "
         f"ప్రతి 0.1 మెరుగైన FCRకి కిలోకు {rupees(inc)} ఎక్కువ, ప్రతి 0.1 తక్కువ FCRకి కిలోకు {rupees(ded)} తక్కువ. "
         "సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి.",
     )
@@ -116,7 +114,6 @@ def build_set_terms(
     flow: ConfirmFlow,
     base_rate_per_kg: Decimal,
     standard_fcr: Decimal,
-    mortality_allowance_pct: Decimal,
     incentive_per_kg_per_fcr_point: Decimal,
     deduction_per_kg_per_fcr_point: Decimal,
     proposal_id: str | None,
@@ -126,7 +123,6 @@ def build_set_terms(
     args: dict[str, Any] = {
         "base_rate_per_kg": str(base_rate_per_kg),
         "standard_fcr": str(standard_fcr),
-        "mortality_allowance_pct": str(mortality_allowance_pct),
         "incentive_per_kg_per_fcr_point": str(incentive_per_kg_per_fcr_point),
         "deduction_per_kg_per_fcr_point": str(deduction_per_kg_per_fcr_point),
     }
@@ -136,7 +132,6 @@ def build_set_terms(
             farm_id=farm_id,
             base_rate_per_kg=Decimal(proposal.arguments["base_rate_per_kg"]),
             standard_fcr=Decimal(proposal.arguments["standard_fcr"]),
-            mortality_allowance_pct=Decimal(proposal.arguments["mortality_allowance_pct"]),
             incentive_per_kg_per_fcr_point=Decimal(proposal.arguments["incentive_per_kg_per_fcr_point"]),
             deduction_per_kg_per_fcr_point=Decimal(proposal.arguments["deduction_per_kg_per_fcr_point"]),
             updated_at=now,
@@ -151,7 +146,6 @@ def build_set_terms(
             and {
                 "base_rate_per_kg": str(existing.base_rate_per_kg),
                 "standard_fcr": str(existing.standard_fcr),
-                "mortality_allowance_pct": str(existing.mortality_allowance_pct),
                 "incentive_per_kg_per_fcr_point": str(existing.incentive_per_kg_per_fcr_point),
                 "deduction_per_kg_per_fcr_point": str(existing.deduction_per_kg_per_fcr_point),
             }
@@ -164,7 +158,6 @@ def build_set_terms(
         ContractTermsOut(
             base_rate_per_kg_inr=float(saved.base_rate_per_kg),
             standard_fcr=float(saved.standard_fcr),
-            mortality_allowance_pct=float(saved.mortality_allowance_pct),
             incentive_per_kg_per_fcr_point_inr=float(saved.incentive_per_kg_per_fcr_point),
             deduction_per_kg_per_fcr_point_inr=float(saved.deduction_per_kg_per_fcr_point),
             updated_at=saved.updated_at.isoformat(),
@@ -176,7 +169,6 @@ def build_set_terms(
     proposed = ContractTermsOut(
         base_rate_per_kg_inr=float(base_rate_per_kg),
         standard_fcr=float(standard_fcr),
-        mortality_allowance_pct=float(mortality_allowance_pct),
         incentive_per_kg_per_fcr_point_inr=float(incentive_per_kg_per_fcr_point),
         deduction_per_kg_per_fcr_point_inr=float(deduction_per_kg_per_fcr_point),
         updated_at=None,
@@ -205,7 +197,6 @@ def build_set_terms(
         read_back = _read_back(
             base_rate_per_kg,
             standard_fcr,
-            mortality_allowance_pct,
             incentive_per_kg_per_fcr_point,
             deduction_per_kg_per_fcr_point,
         )
@@ -241,7 +232,6 @@ def register(server: MCPServer, registry: CapabilityRegistry, source: DemoFarmSo
     def set_contract_terms(
         base_rate_per_kg: Annotated[float, RATE_PARAM],
         standard_fcr: Annotated[float, FCR_PARAM],
-        mortality_allowance_pct: Annotated[float, ALLOW_PARAM],
         incentive_per_kg_per_fcr_point: Annotated[float, INCENTIVE_PARAM],
         deduction_per_kg_per_fcr_point: Annotated[float, DEDUCTION_PARAM],
         proposal_id: Annotated[ProposalId | None, PROPOSAL_PARAM] = None,
@@ -253,7 +243,6 @@ def register(server: MCPServer, registry: CapabilityRegistry, source: DemoFarmSo
                 flow,
                 Decimal(str(base_rate_per_kg)),
                 Decimal(str(standard_fcr)),
-                Decimal(str(mortality_allowance_pct)),
                 Decimal(str(incentive_per_kg_per_fcr_point)),
                 Decimal(str(deduction_per_kg_per_fcr_point)),
                 proposal_id,

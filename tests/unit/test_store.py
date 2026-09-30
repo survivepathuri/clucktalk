@@ -32,10 +32,10 @@ def test_profile_round_trip_and_replace():
 def test_contract_terms_round_trip_and_replace():
     s = SqliteStore()
     assert s.get_contract_terms("farm-1") is None
-    t1 = ContractTerms("farm-1", Decimal("92"), Decimal("1.85"), Decimal("5"), Decimal("2"), Decimal("3"), T0)
+    t1 = ContractTerms("farm-1", Decimal("92"), Decimal("1.85"), Decimal("2"), Decimal("3"), T0)
     s.save_contract_terms(t1)
     assert s.get_contract_terms("farm-1") == t1
-    t2 = ContractTerms("farm-1", Decimal("95"), Decimal("1.8"), Decimal("5"), Decimal("2"), Decimal("3"), T0)
+    t2 = ContractTerms("farm-1", Decimal("95"), Decimal("1.8"), Decimal("2"), Decimal("3"), T0)
     s.save_contract_terms(t2)
     assert s.get_contract_terms("farm-1") == t2
     assert s.get_contract_terms("farm-2") is None
@@ -137,6 +137,69 @@ def test_incompatible_state_file_fails_loud(tmp_path):
     db.close()
     with pytest.raises(StoreError, match="reset-demo"):
         SqliteStore(path)
+
+
+V3_CONTRACT_TERMS = """
+CREATE TABLE contract_terms (
+    farm_id TEXT PRIMARY KEY, base_rate_per_kg TEXT NOT NULL, standard_fcr TEXT NOT NULL,
+    mortality_allowance_pct TEXT NOT NULL, incentive_per_kg_per_fcr_point TEXT NOT NULL,
+    deduction_per_kg_per_fcr_point TEXT NOT NULL, updated_at TEXT NOT NULL
+)
+"""
+
+
+def _v3_state_file(path, *, with_terms: bool) -> None:
+    """A state file as schema v3 wrote it: current tables, but contract_terms still with the retired column."""
+    SqliteStore(path).close()
+    db = sqlite3.connect(path)
+    db.execute("DROP TABLE contract_terms")
+    db.execute(V3_CONTRACT_TERMS)
+    if with_terms:
+        db.execute(
+            "INSERT INTO contract_terms VALUES ('farm-1', '92', '1.85', '5', '2', '3', '2026-09-29T00:00:00+00:00')"
+        )
+    db.execute("UPDATE meta SET value = '3' WHERE key = 'schema_version'")
+    db.commit()
+    db.close()
+
+
+def test_a_v3_state_file_is_migrated_to_v4_keeping_the_four_numbers(tmp_path):
+    path = tmp_path / "clucktalk.sqlite3"
+    _v3_state_file(path, with_terms=True)
+    store = SqliteStore(path)
+    terms = store.get_contract_terms("farm-1")
+    assert terms is not None
+    assert (terms.base_rate_per_kg, terms.standard_fcr) == (Decimal("92"), Decimal("1.85"))
+    assert (terms.incentive_per_kg_per_fcr_point, terms.deduction_per_kg_per_fcr_point) == (Decimal("2"), Decimal("3"))
+    store.close()
+    db = sqlite3.connect(path)
+    assert db.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone()[0] == "4"
+    assert "mortality_allowance_pct" not in [r[1] for r in db.execute("PRAGMA table_info(contract_terms)")]
+    db.close()
+    SqliteStore(path).close()  # a second open of the migrated file is a no-op
+
+
+def test_a_v3_state_file_without_terms_migrates_too(tmp_path):
+    path = tmp_path / "clucktalk.sqlite3"
+    _v3_state_file(path, with_terms=False)
+    store = SqliteStore(path)
+    assert store.get_contract_terms("farm-1") is None
+    store.close()
+
+
+def test_a_failed_migration_leaves_the_v3_file_untouched_and_fails_loud(tmp_path):
+    path = tmp_path / "clucktalk.sqlite3"
+    _v3_state_file(path, with_terms=True)
+    db = sqlite3.connect(path)
+    db.execute("CREATE TABLE contract_terms_v4 (blocker TEXT)")  # the migration's scratch table name is taken
+    db.commit()
+    db.close()
+    with pytest.raises(StoreError, match="reset-demo"):
+        SqliteStore(path)
+    db = sqlite3.connect(path)
+    assert db.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone()[0] == "3"
+    assert db.execute("SELECT mortality_allowance_pct FROM contract_terms").fetchone()[0] == "5"
+    db.close()
 
 
 def test_timestamps_without_timezone_are_refused():

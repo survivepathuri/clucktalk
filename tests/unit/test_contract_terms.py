@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import fields
 from datetime import UTC, datetime
 from decimal import Decimal
 
@@ -17,7 +18,6 @@ def terms(**overrides) -> ContractTerms:
         farm_id="farm-1",
         base_rate_per_kg=Decimal("100"),
         standard_fcr=Decimal("1.8"),
-        mortality_allowance_pct=Decimal("5"),
         incentive_per_kg_per_fcr_point=Decimal("2"),
         deduction_per_kg_per_fcr_point=Decimal("3"),
         updated_at=T0,
@@ -50,7 +50,6 @@ def test_rate_never_goes_negative():
         {"base_rate_per_kg": Decimal(0)},
         {"base_rate_per_kg": Decimal(-5)},
         {"standard_fcr": Decimal(0)},
-        {"mortality_allowance_pct": Decimal(-1)},
         {"incentive_per_kg_per_fcr_point": Decimal(-1)},
         {"deduction_per_kg_per_fcr_point": Decimal(-1)},
     ],
@@ -58,3 +57,15 @@ def test_rate_never_goes_negative():
 def test_invalid_terms_are_rejected(bad):
     with pytest.raises(ValueError):
         terms(**bad)
+
+
+def test_terms_hold_only_the_four_numbers_the_farmer_gives():
+    """mortality_allowance_pct was saved but never used in any calculation, so it is gone (honesty fix)."""
+    assert {f.name for f in fields(ContractTerms)} == {
+        "farm_id",
+        "base_rate_per_kg",
+        "standard_fcr",
+        "incentive_per_kg_per_fcr_point",
+        "deduction_per_kg_per_fcr_point",
+        "updated_at",
+    }

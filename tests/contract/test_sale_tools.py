@@ -47,8 +47,15 @@ def test_tools_declare_the_two_call_pattern_and_synonyms(live):
     assert terms["annotations"]["readOnlyHint"] is False and terms["annotations"]["idempotentHint"] is True
     for word in ("haan", "avunu", "own"):
         assert word in terms["description"]
-    for req in ("base_rate_per_kg", "standard_fcr", "mortality_allowance_pct"):
-        assert req in terms["inputSchema"]["required"]
+    assert set(terms["inputSchema"]["required"]) == {
+        "base_rate_per_kg",
+        "standard_fcr",
+        "incentive_per_kg_per_fcr_point",
+        "deduction_per_kg_per_fcr_point",
+    }
+    # The field was saved but never used, so it is gone from the schema and the description (honesty fix).
+    assert "mortality_allowance_pct" not in terms["inputSchema"]["properties"]
+    assert "mortality" not in terms["description"].lower() and "four numbers" in terms["description"]
 
 
 def test_house_three_says_sell_now_with_the_rising_mortality_reason(live):
@@ -169,7 +176,6 @@ def test_set_contract_terms_needs_a_yes_then_plan_sale_shows_the_growing_charge(
     args = {
         "base_rate_per_kg": 92,
         "standard_fcr": 1.85,
-        "mortality_allowance_pct": 5,
         "incentive_per_kg_per_fcr_point": 2,
         "deduction_per_kg_per_fcr_point": 3,
     }
@@ -189,6 +195,42 @@ def test_set_contract_terms_needs_a_yes_then_plan_sale_shows_the_growing_charge(
     assert "growing charge" in sc["text_en"] and "supervisor" in sc["text_en"]
 
 
+FOUR_TERMS = {
+    "base_rate_per_kg": 92,
+    "standard_fcr": 1.85,
+    "incentive_per_kg_per_fcr_point": 2,
+    "deduction_per_kg_per_fcr_point": 3,
+}
+
+
+def test_the_read_back_speaks_exactly_four_numbers_and_no_mortality_allowance(fresh):
+    live = fresh.live
+    sid, schemas = _session(live)
+    _switch_to_contract(live, sid)
+    first = _ok(live, sid, "set_contract_terms", FOUR_TERMS, schemas)
+    assert "mortality" not in first["text_en"].lower()
+    assert sorted(first["proposed"]) == [
+        "base_rate_per_kg_inr",
+        "deduction_per_kg_per_fcr_point_inr",
+        "incentive_per_kg_per_fcr_point_inr",
+        "standard_fcr",
+        "updated_at",
+    ]
+    # 92, 1.85, 2, 3 and the 0.1 FCR step: nothing else is spoken as a figure.
+    assert sorted(spoken_numbers(first["text_en"], set())) == [0.1, 0.1, 1.85, 2.0, 3.0, 92.0]
+
+
+def test_the_retired_mortality_allowance_is_refused_not_silently_ignored(fresh):
+    live = fresh.live
+    sid, _ = _session(live)
+    _switch_to_contract(live, sid)
+    result = _call(live, sid, "set_contract_terms", {**FOUR_TERMS, "mortality_allowance_pct": 5})["result"]
+    _assert_contract_error(result)
+    assert "mortality_allowance_pct" not in json.dumps(result)  # the next step does not echo caller data
+    # Nothing was proposed or saved by the refused call.
+    assert _ok(live, sid, "plan_sale", {"house": "shed 3"})["plans"][0]["has_contract_terms"] is False
+
+
 def test_repeating_the_same_terms_yes_never_saves_twice(fresh):
     live = fresh.live
     sid, _ = _session(live)
@@ -196,7 +238,6 @@ def test_repeating_the_same_terms_yes_never_saves_twice(fresh):
     args = {
         "base_rate_per_kg": 92,
         "standard_fcr": 1.85,
-        "mortality_allowance_pct": 5,
         "incentive_per_kg_per_fcr_point": 2,
         "deduction_per_kg_per_fcr_point": 3,
     }
@@ -215,7 +256,6 @@ def test_no_keeps_no_terms_saved(fresh):
     args = {
         "base_rate_per_kg": 92,
         "standard_fcr": 1.85,
-        "mortality_allowance_pct": 5,
         "incentive_per_kg_per_fcr_point": 2,
         "deduction_per_kg_per_fcr_point": 3,
     }
@@ -228,7 +268,7 @@ def test_malformed_terms_request_is_a_contract_error(fresh):
     live = fresh.live
     sid, _ = _session(live)
     result = _call(live, sid, "set_contract_terms", {"base_rate_per_kg": -1, "standard_fcr": 1.8,
-                    "mortality_allowance_pct": 5, "incentive_per_kg_per_fcr_point": 2,
+                    "incentive_per_kg_per_fcr_point": 2,
                     "deduction_per_kg_per_fcr_point": 3})["result"]  # fmt: skip
     _assert_contract_error(result)
 
