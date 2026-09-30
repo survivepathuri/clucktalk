@@ -1,0 +1,539 @@
+"""Flock follow-up, domain layer (docs/DESIGN.md §18; private/AGENT3_FOLLOWUP_DESIGN.md §B, §E).
+
+``follow_up_state`` is a pure function of (health check, stored answers, confirmed handoffs, the house's record book,
+the injected ``today``). No I/O, no model, no clock of its own. Expected values are written by hand from the design's
+state table, never copied from code output."""
+
+from __future__ import annotations
+
+import ast
+import itertools
+import re
+import time
+from dataclasses import replace
+from datetime import date, datetime, timedelta, timezone
+from datetime import time as dtime
+from pathlib import Path
+
+import pytest
+
+from clucktalk.domain import follow_up as fu
+from clucktalk.domain.briefing import _check_to_show, check_urgency
+from clucktalk.domain.follow_up import (
+    EscalationReason,
+    FollowUpAnswer,
+    FollowUpState,
+    Outcome,
+    follow_up_state,
+    new_answer_id,
+)
+from clucktalk.domain.models import DailyRecord, House, HouseKind
+from clucktalk.domain.triage import (
+    CheckStatus,
+    Floor,
+    HealthCheck,
+    Sign,
+    TriageInput,
+    TriageResult,
+    Urgency,
+    new_check_id,
+)
+
+IST = timezone(timedelta(hours=5, minutes=30))
+CHECK_DAY = date(2026, 10, 10)
+PLACED = date(2026, 9, 1)
+SRC = Path(__file__).resolve().parents[2] / "src" / "clucktalk"
+
+S = FollowUpState
+O = Outcome  # noqa: E741  (a short alias keeps the tables below readable)
+ESCALATING = (O.SAME, O.WORSE, O.NOT_SURE)
+
+
+# -- builders -------------------------------------------------------------------------------------------------
+def _input(house_id: str = "house-1") -> TriageInput:
+    return TriageInput(house_id, "House 1", "షెడ్ 1", "Ross 308", 40, 900, (Sign.COUGHING,), None, None, None,
+                       2, 1.0, False, None, CHECK_DAY.isoformat())  # fmt: skip
+
+
+def _check(
+    urgency: Urgency = Urgency.WATCH,
+    *,
+    day: date = CHECK_DAY,
+    status: CheckStatus = CheckStatus.READY,
+    house_id: str = "house-1",
+    hour: int = 10,
+) -> HealthCheck:
+    at = datetime.combine(day, dtime(hour, 0), tzinfo=IST)
+    result = None
+    if status is CheckStatus.READY:
+        result = TriageResult(urgency, (), (), "rules", None, None)
+    return HealthCheck(new_check_id(), "farm", house_id, at, status, _input(house_id), Floor(urgency, ()), result, at)
+
+
+def _house(spike_day: date | None = None, *, house_id: str = "house-1", last: date = date(2026, 11, 30)) -> House:
+    """One broiler-ish house with a flat 2 deaths a day from PLACED to ``last``; ``spike_day`` has 400 deaths."""
+    records = []
+    day = PLACED
+    while day <= last:
+        records.append(DailyRecord(day, 400 if day == spike_day else 2, 100.0))
+        day += timedelta(days=1)
+    return House(house_id, 1, HouseKind.BROILER, "Ross 308", PLACED, 5000, 0, 500.0, tuple(records))
+
+
+def _answer(check: HealthCheck, said: Outcome, *, hours: int = 0) -> FollowUpAnswer:
+    at = check.created_at + timedelta(days=3, hours=hours)
+    return FollowUpAnswer(
+        new_answer_id(), check.farm_id, check.house_id, check.check_id, said, False, "prop_" + "a" * 16, at
+    )
+
+
+def _state(check, answers=(), *, today, handed=(), spike_day=None, others=()):
+    return follow_up_state(check, tuple(answers), frozenset(handed), _house(spike_day), today, others)
+
+
+# -- the time windows: named constants, one place, our own rules ----------------------------------------------
+def test_the_time_windows_are_named_and_have_the_designed_values():
+    assert fu.FOLLOW_UP_AFTER_WATCH_DAYS == 3
+    assert fu.FOLLOW_UP_AFTER_URGENT_DAYS == 1  # urgent AND suspected reportable disease
+    assert fu.FOLLOW_UP_LAPSE_AFTER_DUE_DAYS == 7
+
+
+def test_the_time_windows_say_they_are_our_own_rules_not_sourced_figures():
+    text = (SRC / "domain" / "follow_up.py").read_text(encoding="utf-8")
+    block = text[: text.index("FOLLOW_UP_AFTER_WATCH_DAYS")]
+    assert "our own" in block.lower() and "not sourced" in block.lower()
+
+
+WINDOW_NAMES = ("FOLLOW_UP_AFTER_WATCH_DAYS", "FOLLOW_UP_AFTER_URGENT_DAYS", "FOLLOW_UP_LAPSE_AFTER_DUE_DAYS")
+
+
+def _python_files():
+    return [p for p in SRC.rglob("*.py")]
+
+
+def test_the_time_windows_are_defined_only_in_the_follow_up_module():
+    defined_in: dict[str, list[str]] = {n: [] for n in WINDOW_NAMES}
+    for path in _python_files():
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            targets = []
+            if isinstance(node, ast.Assign):
+                targets = [t for t in node.targets if isinstance(t, ast.Name)]
+            elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                targets = [node.target]
+            for t in targets:
+                if t.id in defined_in:
+                    defined_in[t.id].append(path.relative_to(SRC).as_posix())
+    assert defined_in == {n: ["domain/follow_up.py"] for n in WINDOW_NAMES}, defined_in
+
+
+def test_no_bare_day_count_hides_inside_the_follow_up_module():
+    """Every timedelta in the module is built from a name, never from a literal number of days."""
+    tree = ast.parse((SRC / "domain" / "follow_up.py").read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "timedelta":
+            for arg in [*node.args, *(k.value for k in node.keywords)]:
+                assert not isinstance(arg, ast.Constant), f"literal day count at line {node.lineno}"
+
+
+# -- purity: no I/O, no model, no clock of its own ------------------------------------------------------------
+def test_the_domain_module_has_no_io_model_or_clock_imports():
+    tree = ast.parse((SRC / "domain" / "follow_up.py").read_text(encoding="utf-8"))
+    imported: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported |= {a.name for a in node.names}
+        elif isinstance(node, ast.ImportFrom):
+            imported.add(node.module or "")
+    banned = ("sqlite3", "boto3", "botocore", "socket", "os", "subprocess", "httpx", "requests", "logging",
+              "clucktalk.store", "clucktalk.agents", "clucktalk.server", "time")  # fmt: skip
+    assert not [m for m in imported if m in banned or m.startswith(tuple(b + "." for b in banned))], imported
+
+
+def test_the_domain_module_never_reads_the_real_time():
+    tree = ast.parse((SRC / "domain" / "follow_up.py").read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            assert node.func.attr not in {"today", "now", "utcnow", "monotonic", "perf_counter", "time"}, node.lineno
+
+
+def test_the_clock_is_a_parameter_so_any_date_works():
+    check = _check(Urgency.WATCH)
+    for today in (date(2020, 1, 1), date(2026, 10, 10), date(2040, 6, 1)):
+        assert follow_up_state(check, (), frozenset(), _house(), today).state in set(S)
+    far_past = follow_up_state(check, (), frozenset(), _house(), date(2020, 1, 1))
+    assert far_past.state is S.SCHEDULED and far_past.due_day == CHECK_DAY + timedelta(days=3)
+
+
+def test_the_same_inputs_give_the_same_answer_and_nothing_is_changed():
+    check = _check(Urgency.URGENT)
+    answers = (_answer(check, O.BETTER),)
+    snapshot = tuple(answers)
+    first = _state(check, answers, today=CHECK_DAY + timedelta(days=4))
+    assert first == _state(check, answers, today=CHECK_DAY + timedelta(days=4))
+    assert answers == snapshot
+
+
+def test_one_call_takes_well_under_a_millisecond():
+    check = _check(Urgency.URGENT)
+    answers = tuple(_answer(check, o) for o in (O.BETTER, O.SAME, O.NOT_SURE, O.WORSE))
+    house = _house(CHECK_DAY + timedelta(days=2))  # 90 records, a spike to find
+    today = CHECK_DAY + timedelta(days=5)
+    follow_up_state(check, answers, frozenset(), house, today)  # warm-up
+    runs = 500
+    t0 = time.perf_counter()
+    for _ in range(runs):
+        follow_up_state(check, answers, frozenset(), house, today)
+    per_call_ms = (time.perf_counter() - t0) * 1000 / runs
+    assert per_call_ms < 1.0, per_call_ms
+
+
+# -- none -----------------------------------------------------------------------------------------------------
+def test_a_routine_check_has_no_follow_up():
+    fup = _state(_check(Urgency.ROUTINE), today=CHECK_DAY + timedelta(days=30))
+    assert fup.state is S.NONE and fup.due_day is None and fup.outcome is None and fup.reasons == ()
+
+
+def test_a_check_still_analyzing_has_no_follow_up_yet():
+    fup = _state(_check(Urgency.URGENT, status=CheckStatus.ANALYZING), today=CHECK_DAY + timedelta(days=2))
+    assert fup.state is S.NONE
+
+
+@pytest.mark.parametrize("urgency", [Urgency.WATCH, Urgency.URGENT, Urgency.NOTIFIABLE_SUSPECT])
+def test_a_failed_check_is_followed_up_at_the_level_the_farmer_was_told(urgency):
+    check = _check(urgency, status=CheckStatus.FAILED)
+    fup = _state(check, today=CHECK_DAY + timedelta(days=5))
+    assert fup.state is S.DUE and fup.urgency is urgency  # the code floor, as in get_health_check
+
+
+@pytest.mark.parametrize("status", [CheckStatus.READY, CheckStatus.FAILED, CheckStatus.ANALYZING])
+@pytest.mark.parametrize("urgency", list(Urgency))
+def test_the_urgency_shown_equals_what_the_briefing_tells_the_farmer(urgency, status):
+    check = _check(urgency, status=status)
+    fup = _state(check, today=CHECK_DAY + timedelta(days=5))
+    assert fup.urgency is check_urgency(check)
+
+
+# -- scheduled, due, lapsed: the clock only -------------------------------------------------------------------
+@pytest.mark.parametrize(
+    ("urgency", "days_to_due"),
+    [(Urgency.WATCH, 3), (Urgency.URGENT, 1), (Urgency.NOTIFIABLE_SUSPECT, 1)],
+)
+def test_a_follow_up_is_due_three_days_after_watch_and_one_day_after_urgent_or_reportable(urgency, days_to_due):
+    check = _check(urgency)
+    due_day = CHECK_DAY + timedelta(days=days_to_due)
+    before = _state(check, today=due_day - timedelta(days=1))
+    on = _state(check, today=due_day)
+    assert (before.state, before.due_day) == (S.SCHEDULED, due_day)
+    assert (on.state, on.due_day) == (S.DUE, due_day)
+    assert before.outcome is None and on.outcome is None and before.reasons == on.reasons == ()
+
+
+def test_the_day_of_the_check_is_scheduled_not_due_even_for_urgent():
+    assert _state(_check(Urgency.URGENT), today=CHECK_DAY).state is S.SCHEDULED
+
+
+@pytest.mark.parametrize("urgency", [Urgency.WATCH, Urgency.URGENT, Urgency.NOTIFIABLE_SUSPECT])
+def test_lapsed_only_after_seven_days_past_due(urgency):
+    check = _check(urgency)
+    due_day = _state(check, today=CHECK_DAY).due_day
+    assert _state(check, today=due_day + timedelta(days=6)).state is S.DUE
+    assert _state(check, today=due_day + timedelta(days=7)).state is S.DUE  # the seventh day is still due
+    assert _state(check, today=due_day + timedelta(days=8)).state is S.LAPSED
+
+
+@pytest.mark.parametrize("urgency", [Urgency.WATCH, Urgency.URGENT, Urgency.NOTIFIABLE_SUSPECT])
+def test_no_answer_never_counts_as_better_not_even_lapsed(urgency):
+    check = _check(urgency)
+    for offset in range(0, 60):
+        fup = _state(check, today=CHECK_DAY + timedelta(days=offset))
+        assert fup.state in {S.SCHEDULED, S.DUE, S.LAPSED}
+        assert fup.outcome is None and fup.state is not S.CLOSED and fup.reasons == ()
+    assert _state(check, today=CHECK_DAY + timedelta(days=40)).state is S.LAPSED
+
+
+# -- better closes, and only closes ---------------------------------------------------------------------------
+@pytest.mark.parametrize("urgency", [Urgency.WATCH, Urgency.URGENT])
+def test_better_closes_the_follow_up_and_nothing_else(urgency):
+    check = _check(urgency)
+    fup = _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=4))
+    assert (fup.state, fup.outcome, fup.reasons, fup.urgency) == (S.CLOSED, O.BETTER, (), urgency)
+
+
+@pytest.mark.parametrize("offset", [0, 1, 3, 10, 40])
+def test_better_closes_before_due_and_after_lapse_too(offset):
+    check = _check(Urgency.WATCH)
+    fup = _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=offset))
+    assert fup.state is S.CLOSED
+
+
+@pytest.mark.parametrize("urgency", list(Urgency))
+@pytest.mark.parametrize("said", [None, *O])
+@pytest.mark.parametrize("spike", [False, True])
+@pytest.mark.parametrize("handed", [False, True])
+def test_no_answer_ever_lowers_or_clears_the_checks_urgency(urgency, said, spike, handed):
+    check = _check(urgency)
+    answers = () if said is None else (_answer(check, said),)
+    today = CHECK_DAY + timedelta(days=4)
+    fup = _state(
+        check, answers, today=today, handed=[check.check_id] if handed else [],
+        spike_day=CHECK_DAY + timedelta(days=2) if spike else None,
+    )  # fmt: skip
+    assert fup.urgency is urgency
+    assert fup.check_id == check.check_id
+
+
+# -- same, worse, not sure escalate ---------------------------------------------------------------------------
+@pytest.mark.parametrize("urgency", [Urgency.WATCH, Urgency.URGENT, Urgency.NOTIFIABLE_SUSPECT])
+@pytest.mark.parametrize(
+    ("said", "reason"),
+    [
+        (O.SAME, EscalationReason.SAID_SAME),
+        (O.WORSE, EscalationReason.SAID_WORSE),
+        (O.NOT_SURE, EscalationReason.SAID_NOT_SURE),
+    ],
+)
+@pytest.mark.parametrize("offset", [0, 2, 5, 30])  # before due, due, lapsed: an answer is an answer
+def test_same_worse_and_not_sure_always_escalate(urgency, said, reason, offset):
+    check = _check(urgency)
+    fup = _state(check, [_answer(check, said)], today=CHECK_DAY + timedelta(days=offset))
+    assert fup.state is S.ESCALATED and fup.outcome is said and reason in fup.reasons
+
+
+def test_the_escalation_reasons_are_codes_not_sentences():
+    assert {r.value for r in EscalationReason} == {
+        "said_same", "said_worse", "said_not_sure", "record_book_spike", "reportable_without_vet_handoff",
+    }  # fmt: skip
+    assert all(re.fullmatch(r"[a-z_]+", r.value) for r in EscalationReason)
+
+
+# -- a death spike after the check ----------------------------------------------------------------------------
+@pytest.mark.parametrize("urgency", [Urgency.WATCH, Urgency.URGENT])
+def test_a_spike_in_the_record_book_after_the_check_makes_better_count_as_worse(urgency):
+    check = _check(urgency)
+    spike_day = CHECK_DAY + timedelta(days=2)
+    fup = _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=4), spike_day=spike_day)
+    assert fup.state is S.ESCALATED and fup.outcome is O.WORSE
+    assert EscalationReason.RECORD_BOOK_SPIKE in fup.reasons and fup.spike_day == spike_day
+    assert fup.urgency is urgency
+
+
+@pytest.mark.parametrize("said", [O.SAME, O.NOT_SURE, O.WORSE])
+def test_a_spike_makes_any_answer_count_as_worse(said):
+    check = _check(Urgency.WATCH)
+    fup = _state(
+        check, [_answer(check, said)], today=CHECK_DAY + timedelta(days=4), spike_day=CHECK_DAY + timedelta(days=1)
+    )
+    assert fup.outcome is O.WORSE and EscalationReason.RECORD_BOOK_SPIKE in fup.reasons
+
+
+def test_a_spike_with_no_answer_yet_is_already_an_escalation():
+    check = _check(Urgency.WATCH)
+    fup = _state(check, today=CHECK_DAY + timedelta(days=1), spike_day=CHECK_DAY + timedelta(days=1))
+    assert fup.state is S.ESCALATED and fup.outcome is O.WORSE and fup.reasons == (EscalationReason.RECORD_BOOK_SPIKE,)
+
+
+def test_a_spike_on_the_day_of_the_check_or_before_it_is_not_news():
+    check = _check(Urgency.WATCH)
+    for spike_day in (CHECK_DAY, CHECK_DAY - timedelta(days=3)):
+        fup = _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=4), spike_day=spike_day)
+        assert fup.state is S.CLOSED and fup.spike_day is None
+
+
+def test_a_spike_after_today_does_not_exist_yet():
+    check = _check(Urgency.WATCH)
+    fup = _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=4),
+                 spike_day=CHECK_DAY + timedelta(days=9))  # fmt: skip
+    assert fup.state is S.CLOSED
+
+
+def test_a_spike_logged_later_reopens_a_closed_follow_up():
+    check = _check(Urgency.WATCH)
+    answers = [_answer(check, O.BETTER)]
+    spike = CHECK_DAY + timedelta(days=6)
+    assert _state(check, answers, today=CHECK_DAY + timedelta(days=5), spike_day=spike).state is S.CLOSED
+    assert _state(check, answers, today=CHECK_DAY + timedelta(days=6), spike_day=spike).state is S.ESCALATED
+
+
+# -- a suspected reportable disease with no confirmed vet handoff never closes --------------------------------
+def test_a_reportable_suspect_without_a_vet_handoff_never_closes_on_better():
+    check = _check(Urgency.NOTIFIABLE_SUSPECT)
+    fup = _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=4))
+    assert fup.state is S.ESCALATED and fup.outcome is O.BETTER
+    assert fup.reasons == (EscalationReason.REPORTABLE_WITHOUT_VET_HANDOFF,)
+
+
+def test_a_reportable_suspect_with_a_confirmed_vet_handoff_can_close_on_better():
+    check = _check(Urgency.NOTIFIABLE_SUSPECT)
+    fup = _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=4), handed=[check.check_id])
+    assert fup.state is S.CLOSED and fup.reasons == ()
+
+
+def test_a_handoff_for_another_check_does_not_count():
+    check = _check(Urgency.NOTIFIABLE_SUSPECT)
+    fup = _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=4), handed=[new_check_id()])
+    assert fup.state is S.ESCALATED
+
+
+def test_a_reportable_suspect_with_no_answer_is_asked_not_closed_or_escalated_by_the_clock():
+    check = _check(Urgency.NOTIFIABLE_SUSPECT)
+    assert _state(check, today=CHECK_DAY + timedelta(days=1)).state is S.DUE
+    assert _state(check, today=CHECK_DAY + timedelta(days=50)).state is S.LAPSED  # lapsed is never "better"
+
+
+def test_an_urgent_but_not_reportable_check_may_close_without_a_handoff():
+    check = _check(Urgency.URGENT)
+    assert _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=4)).state is S.CLOSED
+
+
+# -- the most severe answer ever given wins -------------------------------------------------------------------
+def test_the_severity_order_is_better_same_not_sure_worse():
+    assert sorted(O, key=fu.severity) == [O.BETTER, O.SAME, O.NOT_SURE, O.WORSE]
+
+
+@pytest.mark.parametrize(
+    ("given", "expected"),
+    [
+        ([O.WORSE, O.BETTER], O.WORSE),
+        ([O.BETTER, O.WORSE], O.WORSE),
+        ([O.SAME, O.NOT_SURE], O.NOT_SURE),
+        ([O.NOT_SURE, O.SAME, O.BETTER], O.NOT_SURE),
+        ([O.BETTER, O.BETTER], O.BETTER),
+        ([O.SAME, O.WORSE, O.NOT_SURE], O.WORSE),
+    ],
+)
+def test_the_most_severe_answer_wins_in_any_order_so_a_later_answer_cannot_lower_an_earlier_one(given, expected):
+    check = _check(Urgency.URGENT)
+    for perm in set(itertools.permutations(given)):
+        answers = [_answer(check, said, hours=i) for i, said in enumerate(perm)]
+        fup = _state(check, answers, today=CHECK_DAY + timedelta(days=4))
+        assert fup.outcome is expected, perm
+        assert (fup.state is S.CLOSED) == (expected is O.BETTER)
+
+
+def test_a_later_better_after_worse_stays_escalated():
+    check = _check(Urgency.WATCH)
+    fup = _state(
+        check, [_answer(check, O.WORSE), _answer(check, O.BETTER, hours=5)], today=CHECK_DAY + timedelta(days=5)
+    )
+    assert fup.state is S.ESCALATED and fup.outcome is O.WORSE and EscalationReason.SAID_WORSE in fup.reasons
+
+
+def test_a_closed_follow_up_reopens_when_a_later_answer_is_not_better():
+    check = _check(Urgency.WATCH)
+    today = CHECK_DAY + timedelta(days=5)
+    assert _state(check, [_answer(check, O.BETTER)], today=today).state is S.CLOSED
+    assert _state(check, [_answer(check, O.BETTER), _answer(check, O.SAME, hours=2)], today=today).state is S.ESCALATED
+
+
+# -- superseded -----------------------------------------------------------------------------------------------
+@pytest.mark.parametrize("newer_urgency", list(Urgency))
+def test_a_newer_check_on_the_house_supersedes_an_ordinary_follow_up(newer_urgency):
+    old = _check(Urgency.WATCH)
+    newer = _check(newer_urgency, day=CHECK_DAY + timedelta(days=1))
+    for answers in ((), (_answer(old, O.BETTER),), (_answer(old, O.WORSE),)):
+        fup = _state(old, answers, today=CHECK_DAY + timedelta(days=5), others=[old, newer])
+        assert fup.state is S.SUPERSEDED
+
+
+def test_a_newer_check_on_another_house_or_an_older_one_supersedes_nothing():
+    mid = _check(Urgency.WATCH, day=CHECK_DAY)
+    elsewhere = _check(Urgency.URGENT, day=CHECK_DAY + timedelta(days=1), house_id="house-2")
+    older = _check(Urgency.URGENT, day=CHECK_DAY - timedelta(days=1))
+    same_day_later = _check(Urgency.URGENT, day=CHECK_DAY, hour=11)
+    fup = _state(mid, today=CHECK_DAY + timedelta(days=4), others=[elsewhere, older])
+    assert fup.state is S.DUE
+    assert _state(mid, today=CHECK_DAY + timedelta(days=4), others=[same_day_later]).state is S.SUPERSEDED
+
+
+@pytest.mark.parametrize("newer_urgency", [Urgency.ROUTINE, Urgency.WATCH, Urgency.URGENT])
+def test_a_reportable_suspect_without_a_handoff_is_never_superseded_by_a_lower_check(newer_urgency):
+    old = _check(Urgency.NOTIFIABLE_SUSPECT)
+    newer = _check(newer_urgency, day=CHECK_DAY + timedelta(days=1))
+    fup = _state(old, [_answer(old, O.BETTER)], today=CHECK_DAY + timedelta(days=5), others=[old, newer])
+    assert fup.state is S.ESCALATED
+
+
+def test_a_reportable_suspect_is_superseded_by_a_newer_unhanded_reportable_suspect():
+    old = _check(Urgency.NOTIFIABLE_SUSPECT)
+    newer = _check(Urgency.NOTIFIABLE_SUSPECT, day=CHECK_DAY + timedelta(days=1))
+    assert _state(old, today=CHECK_DAY + timedelta(days=5), others=[old, newer]).state is S.SUPERSEDED
+
+
+def test_a_newer_reportable_suspect_that_was_already_handed_to_a_vet_does_not_hide_the_older_one():
+    old = _check(Urgency.NOTIFIABLE_SUSPECT)
+    newer = _check(Urgency.NOTIFIABLE_SUSPECT, day=CHECK_DAY + timedelta(days=1))
+    fup = _state(old, today=CHECK_DAY + timedelta(days=5), handed=[newer.check_id], others=[old, newer])
+    assert fup.state is S.DUE
+
+
+def test_a_handed_off_reportable_suspect_is_superseded_like_any_other():
+    old = _check(Urgency.NOTIFIABLE_SUSPECT)
+    newer = _check(Urgency.ROUTINE, day=CHECK_DAY + timedelta(days=1))
+    fup = _state(
+        old, [_answer(old, O.BETTER)], today=CHECK_DAY + timedelta(days=5), handed=[old.check_id], others=[newer]
+    )
+    assert fup.state is S.SUPERSEDED
+
+
+@pytest.mark.parametrize("newer_urgency", [None, *Urgency])
+@pytest.mark.parametrize("newer_handed", [False, True])
+@pytest.mark.parametrize("old_handed", [False, True])
+def test_superseded_matches_what_the_briefing_shows_for_a_reportable_suspect(newer_urgency, newer_handed, old_handed):
+    """The follow-up must never hide a check the briefing still shows, nor outlive one it hides (design rule S13)."""
+    old = _check(Urgency.NOTIFIABLE_SUSPECT)
+    checks = [old]
+    if newer_urgency is not None:
+        checks.append(_check(newer_urgency, day=CHECK_DAY + timedelta(days=1)))
+    handed = frozenset(
+        ([old.check_id] if old_handed else []) + ([checks[-1].check_id] if newer_handed and len(checks) > 1 else [])
+    )
+    as_of = CHECK_DAY + timedelta(days=2)
+    latest = max(checks, key=lambda c: c.created_at)
+    shown = _check_to_show(as_of, latest, checks, handed)
+    fup = follow_up_state(old, (), handed, _house(), as_of, tuple(checks))
+    if old.check_id in handed:
+        # handed off: the briefing has nothing to say about it; anything newer supersedes its follow-up
+        assert (fup.state is S.SUPERSEDED) == (len(checks) > 1)
+    else:
+        assert (fup.state is not S.SUPERSEDED) == (shown is not None and shown.check_id == old.check_id)
+
+
+# -- bad inputs fail loud, never guessed ----------------------------------------------------------------------
+def test_an_answer_for_another_check_is_refused():
+    check, other = _check(), _check()
+    with pytest.raises(ValueError, match="another check"):
+        _state(check, [_answer(other, O.BETTER)], today=CHECK_DAY + timedelta(days=4))
+
+
+def test_a_house_record_book_for_another_house_is_refused():
+    check = _check(house_id="house-1")
+    with pytest.raises(ValueError, match="house"):
+        follow_up_state(check, (), frozenset(), _house(house_id="house-2"), CHECK_DAY + timedelta(days=4))
+
+
+def test_an_answer_needs_a_closed_list_outcome_and_a_timezone():
+    check = _check()
+    base = dict(answer_id=new_answer_id(), farm_id="farm", house_id="house-1", check_id=check.check_id,
+                records_worse=False, proposal_id="prop_" + "b" * 16, answered_at=check.created_at)  # fmt: skip
+    FollowUpAnswer(said=O.BETTER, **base)
+    with pytest.raises(TypeError, match="Outcome"):
+        FollowUpAnswer(said="it is fine now", **base)
+    with pytest.raises(ValueError, match="timezone"):
+        FollowUpAnswer(said=O.BETTER, **{**base, "answered_at": datetime(2026, 10, 13, 9, 0)})
+    with pytest.raises(ValueError, match="answer_id"):
+        FollowUpAnswer(said=O.BETTER, **{**base, "answer_id": "x"})
+    with pytest.raises(ValueError, match="proposal_id"):
+        FollowUpAnswer(said=O.BETTER, **{**base, "proposal_id": "x"})
+
+
+def test_the_answer_record_has_no_free_text_field():
+    from dataclasses import fields
+
+    assert [f.name for f in fields(FollowUpAnswer)] == [
+        "answer_id", "farm_id", "house_id", "check_id", "said", "records_worse", "proposal_id", "answered_at",
+    ]  # fmt: skip
+    assert {o.value for o in O} == {"better", "same", "worse", "not_sure"}
+    assert (
+        replace(_answer(_check(), O.BETTER), said=O.WORSE).said is O.WORSE
+    )  # frozen dataclass: replace() builds a new one

@@ -102,3 +102,10 @@ Each one shaped the server design; the contract tests pin them.
 | Noto Sans Telugu | **2.005** (Regular 400, Bold 700, OTF) | bundled (`ui/fonts/`) | Official release `NotoSansTelugu-v2.005` (2023-09-28, latest Sans release on 2026-09-27) from github.com/notofonts/telugu; SIL OFL 1.1; checksums in `ui/fonts/README.md` |
 
 The Simulator adds no dependencies: it uses Starlette (routing, static files), uvicorn and httpx2, already pinned for the server.
+
+## State file schema (local SQLite), checked 2026-10-01
+
+- Current state schema: **5** (`SCHEMA_VERSION` in `src/clucktalk/store/sqlite.py`). v5 adds the append-only `follow_up_answers` table (no free-text column; `said` limited to better / same / worse / not_sure by a CHECK constraint).
+- Opened in place: v3 and v4 files, each migrated to v5 in one transaction (a failure changes nothing and says to run `python tasks.py reset-demo`). Any other version fails loudly with the same message.
+- A build with an older schema refuses a v5 file: checked on 2026-10-01 by opening a v5 file with the previous commit's unmodified store code (`state schema 5, this version needs 4`).
+- No new dependency: Python's built-in `sqlite3` (Python 3.13.15, SQLite 3.50.4 on the development machine).

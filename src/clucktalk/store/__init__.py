@@ -12,6 +12,7 @@ from datetime import date, datetime
 from typing import Any, Protocol
 
 from clucktalk.domain.briefing import BriefingRank
+from clucktalk.domain.follow_up import FollowUpAnswer
 from clucktalk.domain.models import DailyRecord
 from clucktalk.domain.profile import ContractTerms, FarmProfile
 from clucktalk.domain.proposals import Proposal
@@ -68,6 +69,14 @@ class Store(Protocol):
     def add_handoff(self, handoff: VetHandoff) -> None: ...
 
     def handoff_for_check(self, check_id: str) -> VetHandoff | None: ...
+
+    def add_follow_up_answer(self, answer: FollowUpAnswer) -> None:
+        """Append one confirmed follow-up answer. Append-only: there is no way to edit or remove one."""
+        ...
+
+    def follow_up_answers(self, farm_id: str, check_id: str) -> tuple[FollowUpAnswer, ...]:
+        """Every answer saved for one check, in the order given."""
+        ...
 
     def save_briefing_rank(self, rank: BriefingRank) -> None:
         """Keep the AI ordering for one farm-day (replacing an earlier one)."""

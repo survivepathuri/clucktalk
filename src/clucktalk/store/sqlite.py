@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 from clucktalk.domain.briefing import BriefingRank
+from clucktalk.domain.follow_up import FollowUpAnswer, Outcome
 from clucktalk.domain.models import DailyRecord, Treatment, TreatmentKind
 from clucktalk.domain.profile import ContractTerms, FarmMode, FarmProfile
 from clucktalk.domain.proposals import Proposal, ProposalStatus, canonical
@@ -43,7 +44,10 @@ MEMORY = ":memory:"
 # (2026-09-30) is additive (CREATE IF NOT EXISTS), so an existing v3 file opens unchanged: no version bump.
 # v4 (2026-10-01): contract_terms loses mortality_allowance_pct (saved but never used). A v3 file is migrated in
 # place, in one transaction (see _migrate_v3_to_v4); any other schema version still fails loud.
-SCHEMA_VERSION = "4"
+# v5 (2026-10-01): + follow_up_answers (append-only farmer answers to "how is the shed now?"). Additive, but the
+# version is bumped on purpose: a v4 build would silently ignore stored answers, so it must refuse a v5 file instead.
+# A v3 or v4 file is migrated in one transaction (the whole chain, see __init__); any other version still fails loud.
+SCHEMA_VERSION = "5"
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS profiles (
@@ -83,6 +87,17 @@ CREATE TABLE IF NOT EXISTS briefing_ranks (
     model_id TEXT, note TEXT, PRIMARY KEY (farm_id, day)
 );
 """
+# Not in SCHEMA: created once by a fresh file or by the v4 -> v5 migration (see _create_follow_up_table), so a leftover
+# table of that name makes the migration fail loud instead of being silently reused. No free-text column; the closed
+# lists are enforced by the database as well as by the dataclass. Append-only: the store has no update or delete.
+FOLLOW_UP_TABLE = (
+    "CREATE TABLE follow_up_answers ("
+    "answer_id TEXT PRIMARY KEY, farm_id TEXT NOT NULL, house_id TEXT NOT NULL, check_id TEXT NOT NULL, "
+    "said TEXT NOT NULL CHECK (said IN ('better', 'same', 'worse', 'not_sure')), "
+    "records_worse INTEGER NOT NULL CHECK (records_worse IN (0, 1)), "
+    "proposal_id TEXT NOT NULL, answered_at TEXT NOT NULL)",
+    "CREATE INDEX follow_up_by_check ON follow_up_answers (farm_id, check_id, answered_at)",
+)
 
 
 def _dt(value: str | None) -> datetime | None:
@@ -139,14 +154,35 @@ class SqliteStore:
                     self._db.execute(statement)
             row = self._db.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone()
             if row is None:
+                self._create_follow_up_table()
                 self._db.execute("INSERT INTO meta (key, value) VALUES ('schema_version', ?)", (SCHEMA_VERSION,))
-            elif row["value"] == "3":
-                self._migrate_v3_to_v4()
+            elif row["value"] in ("3", "4"):
+                # The whole chain is inside this one transaction: a failure in any step undoes every step.
+                if row["value"] == "3":
+                    self._migrate_v3_to_v4()
+                self._migrate_v4_to_v5(found=row["value"])
             elif row["value"] != SCHEMA_VERSION:
                 raise StoreError(
                     f"{self.path} has state schema {row['value']}, this version needs {SCHEMA_VERSION}. "
                     "Run: python tasks.py reset-demo"
                 )
+
+    def _create_follow_up_table(self) -> None:
+        for statement in FOLLOW_UP_TABLE:
+            self._db.execute(statement)
+
+    def _migrate_v4_to_v5(self, found: str) -> None:
+        """Add the append-only follow_up_answers table. Any failure (e.g. a leftover table of that name) is reported
+        loudly and, because the open transaction is rolled back, changes nothing (Rule 6). ``found`` is the version
+        the file had when opened (3 or 4), for the message."""
+        try:
+            self._create_follow_up_table()
+            self._db.execute("UPDATE meta SET value = ? WHERE key = 'schema_version'", (SCHEMA_VERSION,))
+        except sqlite3.Error as exc:
+            raise StoreError(
+                f"{self.path} has state schema {found} and could not be migrated to {SCHEMA_VERSION} ({exc}). "
+                "Nothing was changed. Run: python tasks.py reset-demo"
+            ) from exc
 
     def _migrate_v3_to_v4(self) -> None:
         """Drop contract_terms.mortality_allowance_pct by rebuilding the table inside the open transaction (the
@@ -164,10 +200,10 @@ class SqliteStore:
             )
             self._db.execute("DROP TABLE contract_terms")
             self._db.execute("ALTER TABLE contract_terms_v4 RENAME TO contract_terms")
-            self._db.execute("UPDATE meta SET value = ? WHERE key = 'schema_version'", (SCHEMA_VERSION,))
+            self._db.execute("UPDATE meta SET value = '4' WHERE key = 'schema_version'")
         except sqlite3.Error as exc:
             raise StoreError(
-                f"{self.path} has state schema 3 and could not be migrated to {SCHEMA_VERSION} ({exc}). "
+                f"{self.path} has state schema 3 and could not be migrated to 4 ({exc}). "
                 "Nothing was changed. Run: python tasks.py reset-demo"
             ) from exc
 
@@ -420,6 +456,45 @@ class SqliteStore:
             datetime.fromisoformat(row["created_at"]),
             row["message_en"],
             row["message_te"],
+        )
+
+    # -- follow-up answers: append-only, no update, no delete (docs/DESIGN.md §18) -----------------------------------
+    def add_follow_up_answer(self, answer: FollowUpAnswer) -> None:
+        with self.atomic():
+            self._db.execute(
+                "INSERT INTO follow_up_answers (answer_id, farm_id, house_id, check_id, said, records_worse, "
+                "proposal_id, answered_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    answer.answer_id,
+                    answer.farm_id,
+                    answer.house_id,
+                    answer.check_id,
+                    answer.said.value,
+                    int(answer.records_worse),
+                    answer.proposal_id,
+                    _iso(answer.answered_at),
+                ),
+            )
+
+    def follow_up_answers(self, farm_id: str, check_id: str) -> tuple[FollowUpAnswer, ...]:
+        """Every answer saved for one check, in the order given (ties keep the order they were saved in)."""
+        with self._lock:
+            rows = self._db.execute(
+                "SELECT * FROM follow_up_answers WHERE farm_id = ? AND check_id = ? ORDER BY answered_at, rowid",
+                (farm_id, check_id),
+            ).fetchall()
+        return tuple(
+            FollowUpAnswer(
+                row["answer_id"],
+                row["farm_id"],
+                row["house_id"],
+                row["check_id"],
+                Outcome(row["said"]),
+                bool(row["records_worse"]),
+                row["proposal_id"],
+                datetime.fromisoformat(row["answered_at"]),
+            )
+            for row in rows
         )
 
     # -- daily briefing: the stored AI ordering of the non-health facts (docs/DESIGN.md §18) -------------------------

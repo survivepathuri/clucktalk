@@ -152,6 +152,7 @@ def _v3_state_file(path, *, with_terms: bool) -> None:
     """A state file as schema v3 wrote it: current tables, but contract_terms still with the retired column."""
     SqliteStore(path).close()
     db = sqlite3.connect(path)
+    db.execute("DROP TABLE follow_up_answers")  # a real v3 file never had it (added in v5)
     db.execute("DROP TABLE contract_terms")
     db.execute(V3_CONTRACT_TERMS)
     if with_terms:
@@ -173,7 +174,8 @@ def test_a_v3_state_file_is_migrated_to_v4_keeping_the_four_numbers(tmp_path):
     assert (terms.incentive_per_kg_per_fcr_point, terms.deduction_per_kg_per_fcr_point) == (Decimal("2"), Decimal("3"))
     store.close()
     db = sqlite3.connect(path)
-    assert db.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone()[0] == "4"
+    # was "4": v5 is now the current schema, and a v3 file is migrated all the way to it
+    assert db.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone()[0] == "5"
     assert "mortality_allowance_pct" not in [r[1] for r in db.execute("PRAGMA table_info(contract_terms)")]
     db.close()
     SqliteStore(path).close()  # a second open of the migrated file is a no-op
