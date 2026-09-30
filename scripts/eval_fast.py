@@ -1,6 +1,6 @@
 """Golden eval suite v0 (mock mode, no AWS): runs data/eval/golden_cases.json against a real MCP server over
-real HTTP, prints a pass/fail table, and writes docs/EVALS.md. Extended to the full suite on the 11 Oct task
-(private/WEEK2_PLAN.md); this file exists to make `python tasks.py eval-fast` real rather than "not implemented".
+real HTTP, prints a pass/fail table, and writes docs/EVALS.md. Extended to the full suite later;
+this file exists to make `python tasks.py eval-fast` real rather than "not implemented".
 
 Never invents a score: every row is a real HTTP round trip against the same MCP server `tasks.py serve` runs
 (CLAUDE.md Rule 5, Rule 6). The demo farm is date-relative, so results do not depend on which day this runs.

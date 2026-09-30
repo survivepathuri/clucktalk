@@ -34,4 +34,4 @@ section was missing (regression test added), and the Telugu caption overflowing 
   accepting any `photo_ref`, the card appending a missing section, the SOURCES placeholder label).
 - Telugu: 227 -> 245 pending (+18 new strings, all left pending; none approved).
 - Tests were written after the code in this step (not before); the mutation run is the check that they fail without it.
-- Not done: the Rule 11 independent review for agent 1 is still owed (see `private/PROGRESS.md`).
+- Not done: the Rule 11 independent review for agent 1 is still owed (see the progress log).

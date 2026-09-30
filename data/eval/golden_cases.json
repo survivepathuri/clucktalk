@@ -3,7 +3,7 @@
   "cases": [
     {
       "id": "farm-status-invocation-example",
-      "description": "Doc PRD invocation example: shed two's mortality/feed alert.",
+      "description": "Design-doc invocation example: shed two's mortality/feed alert.",
       "tool": "get_farm_status",
       "args": {
         "house": "shed two"

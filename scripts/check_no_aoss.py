@@ -1,6 +1,6 @@
 """Rule 1 guard: fail if anything provisions or references Amazon OpenSearch Serverless (AOSS).
 
-AOSS bills always-on capacity and can drain the hackathon AWS credit, so CluckTalk never uses it.
+AOSS bills always-on capacity and can drain the project's AWS credit, so CluckTalk never uses it.
 
 Scans:
   1. Synthesized CloudFormation templates in ``cdk.out/`` (``*.template.json``) for any

@@ -362,7 +362,7 @@ def test_get_farm_status_uses_a_logged_record_the_same_day(fresh):
 
 
 def test_three_days_later_a_logged_spike_still_shows_in_the_trailing_week():
-    """The "three days later" cross-session recall scenario (private/RECORD_BOOK_PLAN.md §3, §5): a farmer's
+    """The "three days later" cross-session recall scenario: a farmer's
     logged record outlives the calendar day it was logged on, because the seed's own placed_on..as_of window
     slides with "today" (docs/DESIGN.md §13.2) — so this checks the raw logged value, not an age-dependent one."""
     day_clock = DayClock(FIXED_DAY)

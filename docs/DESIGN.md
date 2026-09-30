@@ -6,7 +6,7 @@ The engineering design behind CluckTalk. Code comments cite this file as `docs/D
 ## 1. Product
 CluckTalk (Telugu subtitle "కోడి మిత్ర") is an Alexa+ add-on for small and medium Indian **broiler** farms
 (500–20,000 birds): a self-hosted MCP server plus an Agent Skill. **Broiler-first** (decided 2026-09-29): the
-hackathon build and demo target broiler farmers only. The domain layer still supports layer flocks generically
+first build and the demo target broiler farmers only. The domain layer still supports layer flocks generically
 (§13.1's `HouseKind.LAYER`, egg-production status and feed planning), and nothing here removes that code, but the
 seeded demo farm, `get_help`, and the video use broiler houses only. Layer farming is a README roadmap item.
 The farmer speaks English or Hinglish, often with busy hands. CluckTalk answers by voice (complete on a screenless device) and shows bilingual Telugu + English cards (MCP Apps) on screen devices.
@@ -247,7 +247,7 @@ against a freshly started mock-mode server, checked against literal field values
 v0 covers a handful of read-only, single-call cases (farm status, feed reorder, and `plan_sale`'s before /
 at / after break-even and rising-mortality stories); contract-mode's multi-step confirmation flow is covered by
 the contract test suite instead, since this runner is single-call by design. Extended to the full 45-case suite,
-covering every P0 feature, on the 11 Oct task (`private/WEEK2_PLAN.md`). Multi-step cases (`steps`, `save`,
+covering every P0 feature. Multi-step cases (`steps`, `save`,
 `poll_until`) and model-fixture cases (`model_fixture`, `tests/fakes.py`) came with the agents (§18); a case marked
 `fresh_state` runs on a server of its own, so its answer cannot depend on what earlier cases changed.
 
