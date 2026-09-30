@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from clucktalk.domain.triage import (
     Category,
@@ -81,3 +81,14 @@ def test_briefing_rank_round_trip_is_per_farm_day_and_replaces():
     got = store.get_briefing_rank("farm-x", d)
     assert (got.fingerprint, got.order, got.note) == ("fp2", (), "daily_limit")
     assert store.get_briefing_rank("farm-x", date(2026, 9, 30)) is None and store.get_briefing_rank("farm-y", d) is None
+
+
+def test_recent_health_checks_are_one_house_since_a_day_newest_first():
+    s = SqliteStore()
+    old, mid, new = _check(at=T0 - timedelta(days=9)), _check(at=T0 - timedelta(days=6)), _check(at=T0)
+    for c in (old, mid, new, _check(house="house-1", at=T0)):
+        s.add_health_check(c)
+    since = T0.date() - timedelta(days=7)
+    assert s.recent_health_checks("farm", "house-2", since) == (new, mid)  # this house only, nothing older
+    assert s.recent_health_checks("farm", "house-2", date(2026, 9, 30)) == ()
+    assert s.recent_health_checks("farm", "house-9", since) == ()

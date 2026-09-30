@@ -63,7 +63,7 @@ class RankView:
     order: tuple[str, ...]
     engine: str  # "rules" | "none" | the model engine that ordered the facts
     model_id: str | None
-    note: str | None  # None | "in_progress" | "no_answer" | "daily_limit" | "not_needed"
+    note: str | None  # None | "in_progress" | "no_answer" | "daily_limit" | "not_needed" | "unreadable"
 
 
 @dataclass
@@ -106,8 +106,11 @@ class BriefingRanker:
             return RankView((), "none", None, "not_needed")  # nothing to put in order
         fp = fingerprint(facts)
         stored = self._store.get_briefing_rank(farm_id, day)
+        unreadable = False
         if stored is not None and stored.fingerprint == fp:
-            return RankView(stored.order, stored.engine, stored.model_id, stored.note)
+            if stored.note != "unreadable":
+                return RankView(stored.order, stored.engine, stored.model_id, stored.note)
+            unreadable = True  # the store logged it; the rules order is shown, labelled, and a new ranking is prepared
         key = (farm_id, day, fp)
         with self._lock:
             now = self._now()
@@ -117,7 +120,7 @@ class BriefingRanker:
                 attempt = self._attempts[key] = _Attempt(now, "pending")
                 self._ai.runner.submit(lambda: self._job(key, facts))
             note = "in_progress" if attempt.status == "pending" else "no_answer"
-        return RankView((), "rules", None, note)
+        return RankView((), "rules", None, "unreadable" if unreadable else note)
 
     def _job(self, key: tuple[str, date, str], facts: tuple[Fact, ...]) -> None:
         try:
@@ -134,7 +137,7 @@ class BriefingRanker:
     def _rank(self, key: tuple[str, date, str], facts: tuple[Fact, ...]) -> bool:
         farm_id, day, fp = key
         stored = self._store.get_briefing_rank(farm_id, day)
-        if stored is not None and stored.fingerprint == fp:
+        if stored is not None and stored.fingerprint == fp and stored.note != "unreadable":
             return True
         rankable = [f for f in facts if not f.pinned]
         ids = [f.fact_id for f in rankable]

@@ -12,7 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
@@ -35,6 +35,7 @@ SPOKEN_ITEMS = 3
 # close to its best sale day a flock must be to be "in its sale window".
 RECENT_SPIKE_DAYS = 7  # the same trailing week the status spike baseline uses
 RECENT_CHECK_DAYS = 3
+NOTIFIABLE_DAYS = 7  # a suspected reportable disease stays until a vet handoff was confirmed, or this many days
 SALE_WINDOW_DAYS = 3
 
 
@@ -67,7 +68,14 @@ STATUS_CATEGORIES = {
     Category.FEED_INTAKE_DROP,
     Category.RECORDS_STALE,
 }
-NOTIFIABLE_SEVERITY = 3  # a suspected reportable disease outranks every other alert
+# Severity of a stored health check, above every level (0-2): an urgent vet check outranks the mortality alerts, and a
+# suspected reportable disease outranks everything (Rule 11 review 2026-09-30, M2).
+URGENT_CHECK_SEVERITY = 3
+NOTIFIABLE_SEVERITY = 4
+# Every health fact is pinned, at any level: above every non-health item, never re-ordered by a model.
+HEALTH_CATEGORIES = frozenset(
+    {Category.MORTALITY_SPIKE, Category.RECENT_LOGGED_SPIKE, Category.OPEN_HEALTH_CHECK, Category.CUM_MORTALITY_HIGH}
+)
 
 
 @dataclass(frozen=True)
@@ -76,7 +84,7 @@ class Fact:
     category: Category
     level: Level
     severity: int  # the level, or NOTIFIABLE_SEVERITY for a suspected reportable disease
-    pinned: bool  # a health fact: above everything, never re-ordered by a model
+    pinned: bool  # a health fact (any level): above everything, never re-ordered by a model
     house_id: str | None
     number: int | None  # the house number, for tie-breaks and speech
     values: dict[str, Any]  # the numbers behind the fact; the tool renders every sentence from these
@@ -93,7 +101,54 @@ def _severity(level: Level) -> int:
     return int(level)
 
 
-def _house_facts(farm: Farm, house: House, as_of: date, check: HealthCheck | None) -> list[Fact]:
+def _answered(check: HealthCheck) -> bool:
+    return check.status is CheckStatus.READY and check.result is not None
+
+
+def check_urgency(check: HealthCheck) -> Urgency:
+    """What the farmer was told: the model's answer, or (still running, or it could not answer) the code floor,
+    the same level ``get_health_check`` speaks. The briefing must never say less than the health tool."""
+    return check.result.urgency if check.result is not None else check.floor.urgency
+
+
+def _check_to_show(
+    as_of: date, latest: HealthCheck | None, recent: Sequence[HealthCheck], handed_off: frozenset[str]
+) -> HealthCheck | None:
+    """The one stored check a house's briefing item is built from. A suspected reportable disease is not hidden by a
+    newer check (routine, running or failed): the newest one not yet handed to a vet stays for NOTIFIABLE_DAYS. Any
+    other check counts only if it is the house's latest, within RECENT_CHECK_DAYS, and at least a watch."""
+
+    def age(c: HealthCheck) -> int:
+        return max(0, (as_of - c.created_at.date()).days)
+
+    def handed(c: HealthCheck) -> bool:
+        return check_urgency(c) is Urgency.NOTIFIABLE_SUSPECT and c.check_id in handed_off
+
+    pool = list(recent)
+    if latest is not None and all(c.check_id != latest.check_id for c in pool):
+        pool.append(latest)
+    notifiable = [
+        c
+        for c in pool
+        if check_urgency(c) is Urgency.NOTIFIABLE_SUSPECT and not handed(c) and age(c) <= NOTIFIABLE_DAYS
+    ]
+    if notifiable:
+        return max(notifiable, key=lambda c: c.created_at)
+    if latest is None or handed(latest):
+        return None
+    if check_urgency(latest) >= Urgency.WATCH and age(latest) <= RECENT_CHECK_DAYS:
+        return latest
+    return None
+
+
+def _house_facts(
+    farm: Farm,
+    house: House,
+    as_of: date,
+    check: HealthCheck | None,
+    recent: Sequence[HealthCheck],
+    handed_off: frozenset[str],
+) -> list[Fact]:
     try:
         st = house_status(house, as_of)
     except DomainError as err:  # said, never hidden (Rule 6): the farmer hears this house was not checked
@@ -115,7 +170,7 @@ def _house_facts(farm: Farm, house: House, as_of: date, check: HealthCheck | Non
         if f.level is Level.OK or f.code not in {c.value for c in STATUS_CATEGORIES}:
             continue  # "no reference curve" / "past the growth table" are notes, not things needing attention
         cat = Category(f.code)
-        pinned = cat is Category.MORTALITY_SPIKE or (cat is Category.CUM_MORTALITY_HIGH and f.level is Level.ALERT)
+        pinned = cat in HEALTH_CATEGORIES
         facts.append(
             Fact(
                 _fact_id(cat, house.house_id),
@@ -153,25 +208,29 @@ def _house_facts(farm: Farm, house: House, as_of: date, check: HealthCheck | Non
             )
             break
 
-    if check is not None and check.status is CheckStatus.READY and check.result is not None:
-        urgency = check.result.urgency
-        days_ago = max(0, (as_of - check.created_at.date()).days)
-        if urgency >= Urgency.WATCH and days_ago <= RECENT_CHECK_DAYS:
-            urgent = urgency >= Urgency.URGENT
-            level = Level.ALERT if urgent else Level.WATCH
-            severity = NOTIFIABLE_SEVERITY if urgency is Urgency.NOTIFIABLE_SUSPECT else _severity(level)
-            facts.append(
-                Fact(
-                    _fact_id(Category.OPEN_HEALTH_CHECK, house.house_id),
-                    Category.OPEN_HEALTH_CHECK,
-                    level,
-                    severity,
-                    urgent,
-                    house.house_id,
-                    house.number,
-                    {"urgency": urgency.code, "days_ago": days_ago},
-                )
+    shown = _check_to_show(as_of, check, recent, handed_off)
+    if shown is not None:
+        urgency = check_urgency(shown)
+        days_ago = max(0, (as_of - shown.created_at.date()).days)
+        urgent = urgency >= Urgency.URGENT
+        level = Level.ALERT if urgent else Level.WATCH
+        severity = _severity(level)
+        if urgency is Urgency.NOTIFIABLE_SUSPECT:
+            severity = NOTIFIABLE_SEVERITY
+        elif urgent:
+            severity = URGENT_CHECK_SEVERITY
+        facts.append(
+            Fact(
+                _fact_id(Category.OPEN_HEALTH_CHECK, house.house_id),
+                Category.OPEN_HEALTH_CHECK,
+                level,
+                severity,
+                True,
+                house.house_id,
+                house.number,
+                {"urgency": urgency.code, "days_ago": days_ago, "ready": _answered(shown)},
             )
+        )
 
     try:
         plan = plan_feed(farm, house, as_of)
@@ -223,13 +282,22 @@ def rules_order(facts: Iterable[Fact]) -> tuple[Fact, ...]:
 
 
 def collect_facts(
-    farm: Farm, as_of: date, checks: Mapping[str, HealthCheck], logged_today: frozenset[str]
+    farm: Farm,
+    as_of: date,
+    checks: Mapping[str, HealthCheck],
+    logged_today: frozenset[str],
+    recent_checks: Mapping[str, Sequence[HealthCheck]] | None = None,
+    handed_off: frozenset[str] = frozenset(),
 ) -> tuple[Fact, ...]:
     """Every fact worth mentioning today, in rules order. ``checks``: each house's latest health check, if any;
-    ``logged_today``: the houses that have a record for today in the record book."""
+    ``recent_checks``: each house's checks from the last NOTIFIABLE_DAYS days; ``handed_off``: ids of checks whose vet
+    handoff was confirmed; ``logged_today``: the houses that have a record for today in the record book."""
+    recent_checks = recent_checks or {}
     facts: list[Fact] = []
     for house in sorted(farm.houses, key=lambda h: h.number):
-        facts += _house_facts(farm, house, as_of, checks.get(house.house_id))
+        facts += _house_facts(
+            farm, house, as_of, checks.get(house.house_id), recent_checks.get(house.house_id, ()), handed_off
+        )
     missing = [h.number for h in sorted(farm.houses, key=lambda h: h.number) if h.house_id not in logged_today]
     if missing:
         facts.append(
@@ -247,14 +315,16 @@ def collect_facts(
     return rules_order(facts)
 
 
-def apply_order(rules_ordered: tuple[Fact, ...], model_order: Iterable[str]) -> tuple[Fact, ...]:
+def apply_order(rules_ordered: tuple[Fact, ...], model_order: Any) -> tuple[Fact, ...]:
     """The final order. Pinned facts keep their rules order and stay first; the model's ids order the rest;
-    anything it left out (or named twice, or that is not on the list) follows in rules order. Never drops a fact."""
+    anything it left out (or named twice, or that is not on the list, or is not even a string) follows in rules order.
+    Never drops a fact and never raises on a damaged ordering (a stored one may be corrupt)."""
     pinned = [f for f in rules_ordered if f.pinned]
     rest = {f.fact_id: f for f in rules_ordered if not f.pinned}
     ordered: list[Fact] = []
-    for fid in model_order:
-        fact = rest.pop(fid, None)
+    ids = list(model_order) if isinstance(model_order, (list, tuple)) else []  # a string or a dict is no ordering
+    for fid in ids:
+        fact = rest.pop(fid, None) if isinstance(fid, str) else None
         if fact is not None:
             ordered.append(fact)
     return tuple(pinned + ordered + [f for f in rules_ordered if f.fact_id in rest])
@@ -314,4 +384,4 @@ class BriefingRank:
     order: tuple[str, ...]
     engine: str
     model_id: str | None
-    note: str | None  # None | "daily_limit"
+    note: str | None  # None | "daily_limit" | "unreadable" (the stored row was damaged; its order is empty)

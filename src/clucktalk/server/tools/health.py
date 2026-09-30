@@ -560,7 +560,7 @@ def build_start(
             check = replace(check, status=CheckStatus.READY, result=floor_only_result(floor))
         source.store.add_health_check(check)
     if check.status is CheckStatus.ANALYZING:
-        ai.runner.submit(lambda: run_triage(source.store, ai, check.check_id, source.now))
+        ai.runner.submit(lambda: run_triage(source.store, ai, check.check_id, source.now), priority=True)
     return _output(check, house, source, ai, first_time=True, duplicate=False)
 
 

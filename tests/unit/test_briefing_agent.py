@@ -215,3 +215,31 @@ def test_the_prompt_lists_only_ids_categories_levels_and_numbers():
     text = build_prompt([f for f in FACTS if not f.pinned])
     assert "feed_stock_low:house-2: feed_stock_low, watch, days_covered=2" in text
     assert "weight_below_target:house-1: weight_below_target, watch, pct_of_target=85" in text
+
+
+def _corrupt(rig, fp, text="not json"):
+    rig.store._db.execute(
+        "INSERT OR REPLACE INTO briefing_ranks VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (FARM, DAY.isoformat(), fp, text, "nova", None, None),
+    )
+
+
+def test_an_unreadable_stored_ranking_is_logged_said_and_prepared_again(caplog):
+    """H2 (Rule 11 review 2026-09-30): never a crash; the rules order, labelled; the ranking is rebuilt."""
+    from clucktalk.domain.briefing import fingerprint
+
+    rig = Rig(ScriptedModel({"order": list(reversed(RANKABLE))}))
+    _corrupt(rig, fingerprint(FACTS))
+    v = rig.view()
+    assert (v.order, v.engine, v.note) == ((), "rules", "unreadable")
+    assert rig.runner.pending == 1 and "unreadable" in caplog.text
+    assert rig.view().note == "unreadable" and rig.runner.pending == 1  # debounced like any other job
+    rig.runner.run_all()
+    v = rig.view()
+    assert v.order == tuple(reversed(RANKABLE)) and v.note is None  # the row was replaced by a good one
+
+
+def test_an_unreadable_ranking_for_other_facts_is_simply_stale():
+    rig = Rig(ScriptedModel({"order": RANKABLE}))
+    _corrupt(rig, "0" * 16)
+    assert rig.view().note == "in_progress"

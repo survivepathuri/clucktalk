@@ -5,16 +5,20 @@ code output."""
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
 from clucktalk.domain.briefing import (
     MAX_ITEMS,
+    NOTIFIABLE_DAYS,
+    NOTIFIABLE_SEVERITY,
     RECENT_CHECK_DAYS,
     RECENT_SPIKE_DAYS,
     SALE_WINDOW_DAYS,
     SPOKEN_ITEMS,
+    URGENT_CHECK_SEVERITY,
     Category,
     Fact,
     InvalidRanking,
@@ -134,18 +138,18 @@ def test_an_urgent_check_from_two_days_ago_is_pinned():
     as_of = D0 + timedelta(days=14)
     created = datetime.combine(as_of - timedelta(days=2), datetime.min.time(), tzinfo=IST).replace(hour=9)
     f = _facts(_house(), as_of, {"house-1": _check("house-1", Urgency.URGENT, created)})["open_health_check"]
-    assert f.pinned and f.level is Level.ALERT and f.severity == 2
-    assert f.values == {"urgency": "urgent", "days_ago": 2}
+    assert f.pinned and f.level is Level.ALERT and f.severity == URGENT_CHECK_SEVERITY == 3
+    assert f.values == {"urgency": "urgent", "days_ago": 2, "ready": True}
 
 
 def test_a_notifiable_check_outranks_every_other_alert():
     as_of = D0 + timedelta(days=14)
     created = datetime.combine(as_of, datetime.min.time(), tzinfo=IST).replace(hour=9)
     f = _facts(_house(), as_of, {"house-1": _check("house-1", Urgency.NOTIFIABLE_SUSPECT, created)})
-    assert f["open_health_check"].severity == 3 and f["open_health_check"].pinned
+    assert f["open_health_check"].severity == NOTIFIABLE_SEVERITY == 4 and f["open_health_check"].pinned
 
 
-def test_only_recent_finished_checks_that_were_not_routine_count():
+def test_only_recent_checks_that_were_not_routine_count():
     as_of = D0 + timedelta(days=14)
     at = lambda days: datetime.combine(as_of - timedelta(days=days), datetime.min.time(), tzinfo=IST)  # noqa: E731
     assert RECENT_CHECK_DAYS == 3
@@ -153,17 +157,135 @@ def test_only_recent_finished_checks_that_were_not_routine_count():
     assert "open_health_check" in _facts(house, as_of, {"house-1": _check("house-1", Urgency.URGENT, at(3))})
     assert "open_health_check" not in _facts(house, as_of, {"house-1": _check("house-1", Urgency.URGENT, at(4))})
     assert "open_health_check" not in _facts(house, as_of, {"house-1": _check("house-1", Urgency.ROUTINE, at(0))})
-    analyzing = _check("house-1", Urgency.URGENT, at(0), CheckStatus.ANALYZING)
-    assert "open_health_check" not in _facts(house, as_of, {"house-1": analyzing})
-    failed = _check("house-1", Urgency.URGENT, at(0), CheckStatus.FAILED)
-    assert "open_health_check" not in _facts(house, as_of, {"house-1": failed})
 
 
-def test_a_watch_check_is_listed_but_not_pinned():
+@pytest.mark.parametrize("status", [CheckStatus.ANALYZING, CheckStatus.FAILED])
+@pytest.mark.parametrize("urgency", [Urgency.WATCH, Urgency.URGENT, Urgency.NOTIFIABLE_SUSPECT])
+def test_an_unfinished_check_still_shows_the_urgency_from_its_floor(status, urgency):
+    """H1 (Rule 11 review 2026-09-30): a check the model has not answered (or could not) still has its code floor, and
+    the health tool already tells the farmer that level; the briefing must not say less."""
+    as_of = D0 + timedelta(days=14)
+    created = datetime.combine(as_of, datetime.min.time(), tzinfo=IST).replace(hour=9)
+    f = _facts(_house(), as_of, {"house-1": _check("house-1", urgency, created, status)})["open_health_check"]
+    assert f.values["urgency"] == urgency.code and f.values["ready"] is False and f.pinned
+
+
+def test_a_finished_check_takes_its_urgency_from_the_result_not_the_floor():
+    as_of = D0 + timedelta(days=14)
+    created = datetime.combine(as_of, datetime.min.time(), tzinfo=IST).replace(hour=9)
+    chk = _check("house-1", Urgency.URGENT, created)
+    chk = replace(chk, floor=Floor(Urgency.WATCH, ()))  # the model raised it above the floor
+    f = _facts(_house(), as_of, {"house-1": chk})["open_health_check"]
+    assert f.values["urgency"] == "urgent" and f.values["ready"] is True
+
+
+def test_a_watch_check_is_pinned_like_every_health_fact():
+    """M2 (Rule 11 review 2026-09-30): ALL health facts sit above every non-health item, whatever their level."""
     as_of = D0 + timedelta(days=14)
     created = datetime.combine(as_of, datetime.min.time(), tzinfo=IST)
     f = _facts(_house(), as_of, {"house-1": _check("house-1", Urgency.WATCH, created)})["open_health_check"]
-    assert f.level is Level.WATCH and not f.pinned and f.severity == 1
+    assert f.level is Level.WATCH and f.pinned and f.severity == 1
+
+
+def test_a_watch_level_cumulative_mortality_is_pinned():
+    house = _house(deaths={i: 5 for i in range(15)})  # 75 of 1000 birds: 7.5%, above the 5% watch line, below 10%
+    f = _facts(house, D0 + timedelta(days=14))["cum_mortality_high"]
+    assert f.level is Level.WATCH and f.pinned
+
+
+def test_only_health_categories_are_pinned():
+    as_of = D0 + timedelta(days=14)
+    created = datetime.combine(as_of, datetime.min.time(), tzinfo=IST)
+    house = _house(deaths={i: 5 for i in range(15)} | {14: 60}, stock_kg=1.0)
+    farm = farm_with(house)
+    facts = collect_facts(farm, as_of, {"house-1": _check("house-1", Urgency.WATCH, created)}, frozenset())
+    health = {
+        Category.MORTALITY_SPIKE,
+        Category.RECENT_LOGGED_SPIKE,
+        Category.OPEN_HEALTH_CHECK,
+        Category.CUM_MORTALITY_HIGH,
+    }
+    assert {f.category for f in facts} >= {
+        Category.MORTALITY_SPIKE,
+        Category.OPEN_HEALTH_CHECK,
+        Category.FEED_STOCK_LOW,
+    }
+    assert all(f.pinned == (f.category in health) for f in facts)
+
+
+def test_an_urgent_check_ranks_above_mortality_items_and_a_notifiable_one_above_both():
+    as_of = D0 + timedelta(days=14)
+    created = datetime.combine(as_of, datetime.min.time(), tzinfo=IST)
+    house = _house(deaths={14: 60})  # a death spike today
+    for urgency in (Urgency.URGENT, Urgency.NOTIFIABLE_SUSPECT):
+        facts = collect_facts(farm_with(house), as_of, {"house-1": _check("house-1", urgency, created)}, frozenset())
+        assert [f.category.value for f in facts][:2] == ["open_health_check", "mortality_spike"]
+    watch = collect_facts(farm_with(house), as_of, {"house-1": _check("house-1", Urgency.WATCH, created)}, frozenset())
+    assert [f.category.value for f in watch][:2] == [
+        "mortality_spike",
+        "open_health_check",
+    ]  # a watch is below an alert
+
+
+# -- M3: a suspected reportable disease stays until a vet handoff was confirmed, or 7 days --------------------------
+def _at(as_of, days=0, hour=9):
+    return datetime.combine(as_of - timedelta(days=days), datetime.min.time(), tzinfo=IST).replace(hour=hour)
+
+
+def _with_id(check: HealthCheck, n: int) -> HealthCheck:
+    return replace(check, check_id="chk_" + str(n) * 16)
+
+
+def _open(house, as_of, latest, recent=(), handed_off=frozenset()):
+    facts = collect_facts(
+        farm_with(house), as_of, {"house-1": latest}, frozenset(), {"house-1": tuple(recent)}, handed_off
+    )
+    return next((f for f in facts if f.category is Category.OPEN_HEALTH_CHECK), None)
+
+
+@pytest.mark.parametrize("newer", [Urgency.ROUTINE, Urgency.WATCH, Urgency.URGENT])
+@pytest.mark.parametrize("status", [CheckStatus.READY, CheckStatus.ANALYZING, CheckStatus.FAILED])
+def test_a_newer_check_does_not_hide_an_earlier_notifiable_one(newer, status):
+    as_of = D0 + timedelta(days=14)
+    earlier = _with_id(_check("house-1", Urgency.NOTIFIABLE_SUSPECT, _at(as_of, 1)), 1)
+    latest = _with_id(_check("house-1", newer, _at(as_of, 0), status), 2)
+    f = _open(_house(), as_of, latest, [latest, earlier])
+    assert f.values["urgency"] == "notifiable_suspect" and f.values["days_ago"] == 1
+    assert f.pinned and f.severity == NOTIFIABLE_SEVERITY
+
+
+def test_a_notifiable_check_stays_seven_days_not_three():
+    as_of = D0 + timedelta(days=14)
+    assert NOTIFIABLE_DAYS == 7
+    for days, shown in ((3, True), (4, True), (7, True), (8, False)):
+        chk = _with_id(_check("house-1", Urgency.NOTIFIABLE_SUSPECT, _at(as_of, days)), 1)
+        assert (_open(_house(), as_of, chk, [chk]) is not None) is shown, days
+
+
+def test_a_confirmed_vet_handoff_ends_the_notifiable_item():
+    as_of = D0 + timedelta(days=14)
+    earlier = _with_id(_check("house-1", Urgency.NOTIFIABLE_SUSPECT, _at(as_of, 2)), 1)
+    latest = _with_id(_check("house-1", Urgency.ROUTINE, _at(as_of, 0)), 2)
+    handed = frozenset({earlier.check_id})
+    assert _open(_house(), as_of, latest, [latest, earlier], handed) is None
+    assert _open(_house(), as_of, earlier, [earlier], handed) is None  # also when it is the latest check
+    other = frozenset({latest.check_id})  # a handoff for a different check changes nothing
+    assert _open(_house(), as_of, latest, [latest, earlier], other) is not None
+
+
+def test_a_handoff_does_not_end_a_non_notifiable_urgent_check_early():
+    as_of = D0 + timedelta(days=14)
+    chk = _with_id(_check("house-1", Urgency.URGENT, _at(as_of, 1)), 1)
+    assert _open(_house(), as_of, chk, [chk], frozenset({chk.check_id})) is not None
+
+
+def test_the_newest_unhandled_notifiable_check_is_the_one_shown():
+    as_of = D0 + timedelta(days=14)
+    a = _with_id(_check("house-1", Urgency.NOTIFIABLE_SUSPECT, _at(as_of, 5)), 1)
+    b = _with_id(_check("house-1", Urgency.NOTIFIABLE_SUSPECT, _at(as_of, 2)), 2)
+    latest = _with_id(_check("house-1", Urgency.ROUTINE, _at(as_of, 0)), 3)
+    f = _open(_house(), as_of, latest, [latest, b, a], frozenset({b.check_id}))
+    assert f.values["days_ago"] == 5  # b was handed to the vet, a was not
 
 
 # -- sale window: simulated, only near the end of the flock's life ---------------------------------------------------
@@ -270,6 +392,21 @@ def test_apply_order_never_moves_a_pinned_fact_and_keeps_every_fact():
     assert ids(apply_order(facts, ("x",))) == ["p1", "x", "y", "z"]  # the rest keep their rules order
     assert ids(apply_order(facts, ("p1", "z", "z", "nope"))) == ["p1", "z", "y", "x"]  # unknown/pinned/dupes ignored
     assert ids(apply_order(facts, ())) == ids(facts)
+
+
+def test_apply_order_ignores_anything_that_is_not_a_list_of_ids():
+    """H2: a damaged stored ordering (nested lists, numbers, None) must never raise: the rules order stands."""
+    facts = rules_order(
+        [
+            _fact("p1", Category.MORTALITY_SPIKE, Level.ALERT, pinned=True),
+            _fact("x", Category.FEED_STOCK_LOW, Level.WATCH),
+            _fact("y", Category.WEIGHT_BELOW_TARGET, Level.WATCH),
+        ]
+    )
+    ids = lambda ordered: [f.fact_id for f in ordered]  # noqa: E731
+    for junk in ([["x"]], [1, None, {"a": 1}], "xy", {"x": 1}, None, 5):
+        assert ids(apply_order(facts, junk)) == ids(facts), junk
+    assert ids(apply_order(facts, [["x"], "x"])) == ["p1", "x", "y"]  # a good id next to junk is still used
 
 
 # -- the closed-list ranking -----------------------------------------------------------------------------------------

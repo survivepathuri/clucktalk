@@ -1,7 +1,9 @@
 """Where agent jobs run: off the tool call, so every MCP tool returns within its latency budget (Rule 4).
 
-``ThreadRunner`` (the server): one background worker thread, jobs in order. A job that raises is logged with its
-traceback (never swallowed, Rule 6); the job itself is responsible for saving a "failed" state the farmer hears.
+``ThreadRunner`` (the server): background worker threads, jobs in order within a lane. A farmer's health check is a
+priority job with a lane of its own, so a slow briefing job (a model call can take seconds, twice) never holds it
+up. A job that raises is logged with its traceback (never swallowed, Rule 6); the job itself is responsible for
+saving a "failed" state the farmer hears.
 ``ManualRunner`` (tests, evals): jobs wait until the test runs them, so the "still checking" state is observable.
 """
 
@@ -18,7 +20,7 @@ Job = Callable[[], None]
 
 
 class JobRunner(Protocol):
-    def submit(self, job: Job) -> None: ...
+    def submit(self, job: Job, *, priority: bool = False) -> None: ...
 
 
 def _logged(job: Job) -> None:
@@ -31,17 +33,18 @@ def _logged(job: Job) -> None:
 class ThreadRunner:
     def __init__(self) -> None:
         self._pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="clucktalk-agent")
+        self._priority_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="clucktalk-agent-priority")
 
-    def submit(self, job: Job) -> None:
-        self._pool.submit(_logged, job)
+    def submit(self, job: Job, *, priority: bool = False) -> None:
+        (self._priority_pool if priority else self._pool).submit(_logged, job)
 
 
 class ManualRunner:
     def __init__(self) -> None:
         self._jobs: list[Job] = []
 
-    def submit(self, job: Job) -> None:
-        self._jobs.append(job)
+    def submit(self, job: Job, *, priority: bool = False) -> None:
+        self._jobs.append(job)  # tests run jobs in submission order; there is no lane to skip
 
     @property
     def pending(self) -> int:

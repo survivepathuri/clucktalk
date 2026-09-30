@@ -10,6 +10,7 @@ The tool only reads: it computes the facts in a few milliseconds and never waits
 
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import Annotated, Any, Literal
 
 from mcp.server.apps import Apps
@@ -20,15 +21,17 @@ from clucktalk.agents import AiServices
 from clucktalk.agents.briefing import BriefingRanker, RankView
 from clucktalk.domain.briefing import (
     MAX_ITEMS,
+    NOTIFIABLE_DAYS,
     SPOKEN_ITEMS,
     Category,
     Fact,
     apply_order,
+    check_urgency,
     collect_facts,
 )
 from clucktalk.domain.models import Farm, House
 from clucktalk.domain.status import Finding, Level
-from clucktalk.domain.triage import Urgency
+from clucktalk.domain.triage import HealthCheck, Urgency
 from clucktalk.i18n import Text
 from clucktalk.server.cards import BRIEFING_URI, briefing_html
 from clucktalk.server.farm_state import DemoFarmSource
@@ -52,8 +55,12 @@ ASK_SALE = Text("Ask me for the sell-day plan.", "అమ్మకం రోజ�
 AND = Text("and", "మరియు")
 
 AI_ORDERED = Text(
-    "Health items come first by safety rules; the rest are ordered by AI (Amazon Nova on Bedrock).",
-    "ఆరోగ్య అంశాలు భద్రతా నియమాల ప్రకారం ముందుంటాయి; మిగిలినవి AI (బెడ్‌రాక్‌పై Amazon Nova) క్రమం పెట్టింది.",
+    "Health items come first by safety rules; AI (Amazon Nova on Bedrock) orders the other items in the first three.",
+    "ఆరోగ్య అంశాలు భద్రతా నియమాల ప్రకారం ముందుంటాయి; మొదటి మూడింటిలో మిగిలిన అంశాల క్రమాన్ని AI (బెడ్‌రాక్‌పై Amazon Nova) నిర్ణయించింది.",
+)
+AI_UNREADABLE = Text(
+    "The saved AI ordering was unreadable, so the items are in the rules order.",
+    "సేవ్ చేసిన AI క్రమం చదవడానికి వీలుకాలేదు, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి.",
 )
 AI_PREPARING = Text(
     "AI ordering is still preparing; showing the rules order for now.",
@@ -94,7 +101,7 @@ class BriefingAiOut(BaseModel):
     model_id: str | None
     label_en: str
     label_te: str
-    note: Literal["in_progress", "no_answer", "daily_limit", "not_needed"] | None
+    note: Literal["in_progress", "no_answer", "daily_limit", "not_needed", "unreadable"] | None
 
 
 class BriefingOutput(BaseModel):
@@ -204,7 +211,13 @@ def _render(fact: Fact, farm: Farm) -> tuple[Text, dict[str, Any]]:
             ago = int(v["days_ago"])
             when = _when(ago)
             short = URGENCY_SHORT[next(u for u in Urgency if u.code == v["urgency"])]
-            body = Text(f"your health check {when.en} said: {short.en}.", f"{when.te} మీ ఆరోగ్య తనిఖీ ఫలితం: {short.te}.")
+            if v.get("ready", True):
+                body = Text(f"your health check {when.en} said: {short.en}.", f"{when.te} మీ ఆరోగ్య తనిఖీ ఫలితం: {short.te}.")
+            else:  # still running or failed: the level is the code floor from the signs, as in the health tool
+                body = Text(
+                    f"your health check {when.en} is not finished; from the signs so far: {short.en}.",
+                    f"{when.te} మీ ఆరోగ్య తనిఖీ ఇంకా పూర్తి కాలేదు; ఇప్పటివరకు లక్షణాల ప్రకారం: {short.te}.",
+                )
             return _join(_prefixed(_label(house), body), ASK_RESULT), {"urgency": v["urgency"], "days_ago": ago}
         case Category.SALE_WINDOW:
             index = int(v["best_day_index"])
@@ -229,6 +242,8 @@ def _ai_out(view: RankView) -> BriefingAiOut:
         label = AI_NO_ANSWER
     elif view.note == "daily_limit":
         label = AI_LIMIT
+    elif view.note == "unreadable":
+        label = AI_UNREADABLE
     elif view.engine in ("rules", "none"):
         label = AI_LABEL[view.engine]
     elif view.engine == "nova":
@@ -244,9 +259,16 @@ def _ai_out(view: RankView) -> BriefingAiOut:
     )
 
 
+def _needs_safety_step(item: ItemOut) -> bool:
+    """A death alert, or a stored check that says urgent or a suspected reportable disease: the same next step."""
+    if item.category in ("mortality_spike", "recent_logged_spike", "cum_mortality_high"):
+        return item.pinned
+    return item.category == "open_health_check" and item.values.get("urgency") in ("urgent", "notifiable_suspect")
+
+
 def _closing(page: list[ItemOut]) -> list[Text]:
     closings: list[Text] = []
-    if any(i.category in ("mortality_spike", "recent_logged_spike", "cum_mortality_high") and i.pinned for i in page):
+    if any(_needs_safety_step(i) for i in page):
         closings.append(SAFETY_STEP)
     if any(i.category == "open_health_check" for i in page):
         closings.append(DISCLAIMER)
@@ -257,16 +279,28 @@ def build_briefing(source: DemoFarmSource, ranker: BriefingRanker, more: bool = 
     farm, as_of = source.snapshot()
     store = source.store
     checks = {}
+    recent: dict[str, tuple[HealthCheck, ...]] = {}
+    handed_off: set[str] = set()
     logged: set[str] = set()
+    since = as_of - timedelta(days=NOTIFIABLE_DAYS)
     for house in farm.houses:
         check = store.latest_health_check(farm.farm_id, house.house_id)
         if check is not None:
             checks[house.house_id] = check
+        recent[house.house_id] = store.recent_health_checks(farm.farm_id, house.house_id, since)
+        handed_off |= {  # only a confirmed vet handoff (written after "yes") ends a suspected reportable disease item
+            c.check_id
+            for c in recent[house.house_id]
+            if check_urgency(c) is Urgency.NOTIFIABLE_SUSPECT and store.handoff_for_check(c.check_id) is not None
+        }
         if any(r.day == as_of for r in store.records(farm.farm_id, house.house_id)):
             logged.add(house.house_id)
-    facts = collect_facts(farm, as_of, checks, frozenset(logged))
+    facts = collect_facts(farm, as_of, checks, frozenset(logged), recent, frozenset(handed_off))
     view = ranker.view(farm.farm_id, as_of, facts)
-    ordered = apply_order(facts, view.order)
+    # The split between the first three (read first) and the rest ("more") always comes from the rules order, so
+    # "more" reads what the first answer promised whatever the AI has stored since (Rule 11 review 2026-09-30, M1).
+    # The AI order (never on "more") only re-orders the non-health items inside the first three.
+    ordered = facts if more else (*apply_order(facts[:SPOKEN_ITEMS], view.order), *facts[SPOKEN_ITEMS:])
     shown = ordered[:MAX_ITEMS]
     spoken_range = range(SPOKEN_ITEMS, len(shown)) if more else range(min(SPOKEN_ITEMS, len(shown)))
 

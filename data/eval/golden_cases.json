@@ -1230,6 +1230,83 @@
       ]
     },
     {
+      "id": "briefing-shows-a-check-the-ai-could-not-finish",
+      "model_fixture": "always_fails",
+      "fresh_state": true,
+      "description": "The model is down while a farmer's health check runs: the check fails, and the briefing still shows its urgency (from the code floor), pinned, saying it is not finished, with the call-your-vet step.",
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed two",
+            "signs": [
+              "coughing",
+              "sneezing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            }
+          ]
+        },
+        {
+          "tool": "get_health_check",
+          "args": {
+            "check_id": "$check_id"
+          },
+          "poll_until": {
+            "field": "status",
+            "op": "ne",
+            "value": "analyzing"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "failed"
+            }
+          ]
+        },
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "items.0.category",
+              "op": "eq",
+              "value": "open_health_check"
+            },
+            {
+              "field": "items.0.pinned",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "items.0.values.urgency",
+              "op": "eq",
+              "value": "urgent"
+            },
+            {
+              "field": "items.0.text_en",
+              "op": "contains",
+              "value": "not finished"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "call your vet"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "help-lists-briefing",
       "description": "get_help mentions the briefing, so a new farmer can discover it.",
       "tool": "get_help",

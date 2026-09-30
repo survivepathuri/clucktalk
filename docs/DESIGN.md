@@ -306,11 +306,23 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     `plan_sale`, and which houses have no record today. Nothing is fetched and no model is called inside the tool.
   - **Facts and order** (`rules_order`): a fact is `<category>:<house>`. Health facts are **pinned** above everything:
     today's death spike, a death spike logged earlier in the trailing week (`recent_logged_spike`, the "three days
-    later" recall), a high cumulative mortality (alert level), and a stored triage of `urgent` or worse from the last 3
-    days (a suspected reportable disease first). The rest are ordered by level, then kind, then house. The trailing
-    week, the 3-day triage window and the 3-day sale window are CluckTalk's own heuristics, not sourced figures.
+    later" recall), a high cumulative mortality (any level), and a stored health check that said watch or worse. **Every**
+    health fact is pinned, at any level (Rule 11 review 2026-09-30). Among them a suspected reportable disease is first,
+    then an urgent check, then the mortality alerts. A check's urgency is the model's answer, or, while it runs or after
+    it failed, the code floor (the level `get_health_check` speaks; the item says "not finished"). An urgent or
+    suspected-reportable item carries the same "check the birds, call your vet" step as a death alert. A **suspected
+    reportable disease stays** (even under a newer routine, running or failed check) until a vet handoff for it was
+    confirmed or 7 days pass; any other check counts only as the house's latest, for 3 days. The rest are ordered by
+    level, then kind, then house. The trailing week, the 3-day and 7-day windows and the 3-day sale window are
+    CluckTalk's own heuristics, not sourced figures.
   - **Sale item**: only when `plan_sale` puts the best day within 3 days. It names a day, is labelled "simulated
     estimate" and carries no rupee figure (so contract mode cannot leak the simulated price).
+  - **"More" and the AI order**: the split between the first three and the rest always comes from the rules order,
+    so "more" (items 4 and 5, rules order, the AI ignored) is exactly what the first answer promised, whatever the AI
+    has stored since. The AI order only re-orders the non-health items **inside the first three**; on a farm whose
+    first three are all health items it changes nothing you can see. Known trade-off, not solved here.
+  - **A damaged stored ordering** (unreadable JSON, not a list of ids) is logged, the rules order is shown with the
+    label "saved AI ordering was unreadable", and a new ordering is prepared. The tool never fails on it.
   - **The model's part**: it is offered only the non-pinned ids and may return one list of them (`rank_briefing`,
     `additionalProperties: false`: no text field). A reply naming an unknown or pinned id, a duplicate, or an extra field
     is rejected; one retry; then the rules order stands and the answer says the AI ordering did not finish. `apply_order`
@@ -322,5 +334,6 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     job and labels itself "Demo rules (no AI model)". Live: 2 calls a run, 16 a day for this agent, `maxTokens` 400, the
     global cap and throttle apply; cap reached is labelled. The briefing is prepared on the first call after a change, not
     at server start (the first answer of a day is the rules order).
+  A farmer's health-check job runs in a priority lane of its own, so a slow briefing job never holds it up.
   - **Safety**: no medicine, drug or dose (a scan test covers every result); an open triage item ends with the
     "guidance, not a diagnosis" line; simulated data is labelled; new Telugu strings are pending native review.

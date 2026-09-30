@@ -9,6 +9,7 @@ Timestamps are stored as ISO 8601 with their UTC offset; JSON columns hold canon
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 import threading
 from collections.abc import Iterator
@@ -34,6 +35,8 @@ from clucktalk.domain.triage import (
     result_to_dict,
 )
 from clucktalk.store import StoreError
+
+logger = logging.getLogger("clucktalk.store")
 
 MEMORY = ":memory:"
 # v2 (2026-09-29): + contract_terms; v3 (2026-09-29): + health checks, handoffs, AI ledger. The briefing_ranks table
@@ -354,6 +357,17 @@ class SqliteStore:
             ).fetchone()
         return None if row is None else self._check(row)
 
+    def recent_health_checks(self, farm_id: str, house_id: str, since_day: date) -> tuple[HealthCheck, ...]:
+        """This house's checks made on or after ``since_day`` (by the day each was created), newest first."""
+        with self._lock:
+            rows = self._db.execute(
+                "SELECT * FROM health_checks WHERE farm_id = ? AND house_id = ? "
+                "ORDER BY created_at DESC, rowid DESC LIMIT 200",
+                (farm_id, house_id),
+            ).fetchall()
+        checks = (self._check(r) for r in rows)
+        return tuple(c for c in checks if c.created_at.date() >= since_day)
+
     def add_handoff(self, handoff: VetHandoff) -> None:
         with self.atomic():
             self._db.execute(
@@ -407,14 +421,15 @@ class SqliteStore:
             ).fetchone()
         if row is None:
             return None
+        try:
+            order = json.loads(row["ordering"])
+            if not isinstance(order, list) or not all(isinstance(x, str) for x in order):
+                raise ValueError("the ordering is not a list of ids")
+        except ValueError as exc:  # a damaged cache row (JSONDecodeError is a ValueError): said, never a crash (Rule 6)
+            logger.error("briefing ranking for %s on %s is unreadable (%s); the rules order is used", farm_id, day, exc)
+            return BriefingRank(farm_id, day, row["fingerprint"], (), "rules", None, "unreadable")
         return BriefingRank(
-            row["farm_id"],
-            date.fromisoformat(row["day"]),
-            row["fingerprint"],
-            tuple(json.loads(row["ordering"])),
-            row["engine"],
-            row["model_id"],
-            row["note"],
+            row["farm_id"], day, row["fingerprint"], tuple(order), row["engine"], row["model_id"], row["note"]
         )
 
     # -- AI call ledger: every live model call's real usage; the daily cap counts from it -----------------------

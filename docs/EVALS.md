@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-09-30T19:35:54+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite on the 11 Oct task.
+Run 2026-09-30T20:13:19+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite on the 11 Oct task.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -33,6 +33,7 @@ Run 2026-09-30T19:35:54+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | briefing-model-cannot-demote-health | PASS | — |
 | briefing-model-tries-to-move-health-is-rejected | PASS | — |
 | briefing-model-outage-fails-loud | PASS | — |
+| briefing-shows-a-check-the-ai-could-not-finish | PASS | — |
 | help-lists-briefing | PASS | — |
 
-**Score: 30/30**
+**Score: 31/31**

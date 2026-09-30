@@ -239,21 +239,23 @@ def test_the_tool_never_waits_for_the_model_and_the_first_answer_is_the_rules_or
     assert "preparing" in sc["ai"]["label_en"].lower()
 
 
-def test_a_ready_ai_ordering_reorders_only_the_unpinned_items(rig_reversing):
+def test_a_ready_ai_ordering_never_moves_health_items_or_the_split_between_first_three_and_more(rig_reversing):
+    """M1 (2026-09-30): the AI only re-orders non-health items inside the first three. On the demo farm the first
+    three are all health items, so a ready ordering changes nothing you can see, and "more" is what was promised.
+    (The effect itself is tested where the first three hold non-health items: tests/unit/test_briefing_tool.py.)"""
     rig = rig_reversing
-    rules = _brief(rig, more=True)
+    rules_first, rules_more = _brief(rig), _brief(rig, more=True)
     assert rig.runner.run_all() == 1
-    ai = _brief(rig, more=True)
-    assert ai["ai"]["engine"] == "scripted" and ai["ai"]["note"] is None
-    assert ai["ai"]["model_id"] == "scripted-test-model"
-    pinned = [i["fact_id"] for i in rules["items"] if i["pinned"]]
-    assert [i["fact_id"] for i in ai["items"] if i["pinned"]] == pinned  # health: untouched, still first
-    assert _ids(ai)[: len(pinned)] == pinned
+    ai_first, ai_more = _brief(rig), _brief(rig, more=True)
+    assert ai_first["ai"]["engine"] == "scripted" and ai_first["ai"]["note"] is None
+    assert ai_first["ai"]["model_id"] == "scripted-test-model"
+    assert _ids(ai_first) == _ids(rules_first) and _ids(ai_more) == _ids(rules_more)
+    assert _ids(ai_first)[3:] == _ids(ai_more)[3:]  # "more" reads items 4 and 5 of the first answer's list
+    pinned = [i["fact_id"] for i in rules_more["items"] if i["pinned"]]
+    assert _ids(ai_more)[: len(pinned)] == pinned  # health: untouched, still first
     offered = rig.model.requests[-1].schema["properties"]["order"]["items"]["enum"]
     assert not set(offered) & set(pinned)  # the model was never offered a health item
-    assert ai["total_items"] == rules["total_items"]  # nothing added or dropped
-    rest_ai = [i for i in _ids(ai) if i not in pinned]
-    assert rest_ai == list(reversed(offered))[: len(rest_ai)]  # the model's (reversed) order took effect
+    assert ai_first["total_items"] == rules_first["total_items"]  # nothing added or dropped
     assert rig.runner.pending == 0  # a ready ranking is served, not recomputed
     assert rig.source.store.count_ai_calls(rig.source.now().date(), "briefing") == 1
 
