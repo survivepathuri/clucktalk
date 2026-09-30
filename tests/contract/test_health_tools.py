@@ -388,6 +388,68 @@ def test_the_photo_input_is_described_as_demo_only_and_never_analyzed(rig):
     assert "photo_ref" not in tools["start_health_check"]["inputSchema"].get("required", [])
 
 
+# -- Rule 11 review 2026-09-30 regressions --------------------------------------------------------------------------
+RED_FLAG_WORDS = "heads swollen, combs blue, many birds died suddenly overnight"
+
+
+@pytest.mark.parametrize("house", ["shed 1", "shed 2", "shed 3"])
+def test_words_with_no_mapped_sign_are_never_called_not_urgent(rig, house):
+    """H1: red-flag words with no sign mapped used to get "this doesn't look urgent right now" (House 1)."""
+    started = rig.call("start_health_check", house=house, signs=[], symptoms=RED_FLAG_WORDS)["structuredContent"]
+    assert started["floor_urgency"] == "urgent" and "words_not_mapped" in started["floor_reasons"]
+    assert "vet today" in started["text_en"] and "couldn't match" in started["text_en"]
+    rig.runner.run_all()
+    done = rig.call("get_health_check", check_id=started["check_id"])["structuredContent"]
+    assert done["urgency"] in ("urgent", "notifiable_suspect")
+    assert "doesn't look urgent" not in done["text_en"] and "couldn't match" in done["text_en"]
+    assert done["handoff_offered"] is True
+    _assert_no_treatment_advice(done)
+
+
+def test_a_check_that_timed_out_in_the_queue_stays_failed(rig):
+    """M1: the farmer heard "couldn't finish"; the queued job must not turn it "ready" afterwards."""
+    cid = rig.call("start_health_check", house="shed 1", signs=["coughing"])["structuredContent"]["check_id"]
+    rig.source.now.t += timedelta(minutes=3)
+    assert rig.call("get_health_check", check_id=cid)["structuredContent"]["status"] == "failed"
+    rig.runner.run_all()
+    assert rig.call("get_health_check", check_id=cid)["structuredContent"]["status"] == "failed"
+
+
+def test_an_absurd_bird_count_is_rejected(rig):
+    """L3: 10^40 birds used to be accepted and put into the prompt."""
+    r = rig.call("start_health_check", house="shed 1", signs=["coughing"], birds_affected=10**40)
+    assert r["isError"] is True
+
+
+def test_more_birds_affected_than_alive_is_said_and_kept_out_of_the_prompt():
+    """L3: a count above the shed's live birds is never given to the model; the farmer hears why."""
+    model = ScriptedModel({"urgency": "watch", "consistent_with": [], "checks": []})
+    for rig in _rig(model):
+        live = rig.call("start_health_check", house="shed 1", signs=["panting"])["structuredContent"]["evidence"][
+            "live_birds"
+        ]
+        rig.runner.run_all()
+        said = live + 500
+        sc = rig.call("start_health_check", house="shed 1", signs=["panting"], birds_affected=said)["structuredContent"]
+        assert sc["evidence"]["birds_affected_ignored"] == said
+        rig.runner.run_all()
+        assert "Birds affected" not in model.requests[-1].user_text and str(said) not in model.requests[-1].user_text
+        done = rig.call("get_health_check", check_id=sc["check_id"])["structuredContent"]
+        from clucktalk.server.render import num
+
+        assert num(said) in done["text_en"] and num(live) in done["text_en"]  # spoken = structured numbers
+        assert "left that number out" in done["text_en"]
+
+
+def test_a_failed_check_does_not_credit_the_model():
+    """L7: a failed check's AI label used to name the configured model as if it had answered."""
+    for rig in _rig(ScriptedModel(ModelError("down"), ModelError("down"))):
+        cid = rig.call("start_health_check", house="shed 2", signs=["coughing"])["structuredContent"]["check_id"]
+        rig.runner.run_all()
+        ai = rig.call("get_health_check", check_id=cid)["structuredContent"]["ai"]
+        assert ai["note"] == "no_answer" and ai["label_en"] == "No AI answer: the check couldn't finish"
+
+
 def test_both_health_tools_declare_the_card_and_the_handoff_does_not(rig):
     from clucktalk.server.cards import HEALTH_CHECK_URI
 

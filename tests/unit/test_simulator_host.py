@@ -264,6 +264,21 @@ def test_health_check_follow_ups(utterance, tool, args):
     assert (intent.tool, intent.arguments) == (tool, args)
 
 
+@pytest.mark.parametrize(
+    ("utterance", "signs"),
+    [
+        ("shed 2 no sudden deaths, just coughing", ["coughing"]),
+        ("shed 2 not coughing but not eating", ["not_eating"]),  # "not eating" is itself a sign
+        ("shed 2 birds are not eating", ["not_eating"]),
+        ("shed 2 without any coughing, some diarrhoea", ["diarrhoea"]),
+        ("shed 2 no more coughing, birds dying suddenly", ["coughing", "sudden_deaths"]),  # only a direct "no X"
+    ],
+)
+def test_a_directly_negated_sign_is_not_reported(utterance, signs):
+    """Rule 11 review 2026-09-30 L5: "no sudden deaths, just coughing" used to report sudden deaths."""
+    assert match(utterance).arguments["signs"] == signs
+
+
 def test_signs_without_a_shed_are_not_guessed():
     assert match("birds are coughing") is None  # the host asks which shed rather than guessing
 

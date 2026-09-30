@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import secrets
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import IntEnum, StrEnum
 from typing import Any
 
@@ -176,11 +176,14 @@ class Floor:
     reasons: tuple[str, ...]  # stable codes, for structuredContent and tests; never spoken
 
 
-def floor_urgency(signs: frozenset[Sign], mortality_spike: bool) -> Floor:
+def floor_urgency(signs: frozenset[Sign], mortality_spike: bool, unmapped_words: bool = False) -> Floor:
     """The minimum urgency, from code only. ``mortality_spike`` is the record book's own finding
-    (clucktalk.domain.status); the farmer saying "sudden deaths" counts the same."""
+    (clucktalk.domain.status); the farmer saying "sudden deaths" counts the same. ``unmapped_words``: the farmer
+    described something but no sign could be mapped; code can't read the words, so it never calls them less than
+    a vet today (Rule 11 review 2026-09-30)."""
     deaths = mortality_spike or Sign.SUDDEN_DEATHS in signs
     red = signs & RED_FLAG_SIGNS
+    unread = unmapped_words and not signs
     reasons: list[str] = []
     if red:
         reasons.append("red_flag_sign")
@@ -188,9 +191,11 @@ def floor_urgency(signs: frozenset[Sign], mortality_spike: bool) -> Floor:
         reasons.append("mortality_spike")
     if Sign.SUDDEN_DEATHS in signs:
         reasons.append("sudden_deaths_reported")
+    if unread:
+        reasons.append("words_not_mapped")
     if red and deaths:
         return Floor(Urgency.NOTIFIABLE_SUSPECT, tuple(reasons))
-    if red or deaths:
+    if red or deaths or unread:
         # DAHD: "Every unusual sickness or death of birds should be immediately reported to the nearest
         # veterinary center": a vet today, even without other signs.
         return Floor(Urgency.URGENT, tuple(reasons))
@@ -325,6 +330,10 @@ class CheckStatus(StrEnum):
 
 
 CHECK_ID_PATTERN = r"^chk_[0-9a-f]{16}$"
+# Longer than a check can take (2 calls x 15 s timeout + throttle); a check still "analyzing" after this lost its
+# job (a crash, a restart, a long queue) and is failed for good: the tool says so, and the job then neither calls
+# the model nor turns it "ready" (Rule 11 reviews 2026-09-29 and 2026-09-30).
+ANALYZING_TIMEOUT = timedelta(minutes=2)
 HANDOFF_ID_PATTERN = r"^vh_[0-9a-f]{16}$"
 
 
@@ -358,6 +367,7 @@ class TriageInput:
     latest_record_day: str | None
     records_used: bool = True  # False: the shed's records couldn't be used; the check runs on the signs alone
     photo_ref: str | None = None  # a placeholder photo attached (clucktalk.domain.photos); recorded, never analyzed
+    birds_affected_ignored: int | None = None  # said count above the live birds: never given to the model, said so
 
 
 @dataclass(frozen=True)
@@ -381,6 +391,10 @@ class HealthCheck:
     floor: Floor
     result: TriageResult | None
     updated_at: datetime
+
+    def timed_out(self, now: datetime) -> bool:
+        """Still "analyzing" past ``ANALYZING_TIMEOUT``: the farmer is told it failed, so it stays failed."""
+        return self.status is CheckStatus.ANALYZING and now - self.created_at > ANALYZING_TIMEOUT
 
 
 @dataclass(frozen=True)

@@ -291,6 +291,93 @@ def test_any_unexpected_error_marks_the_check_failed_and_counts_the_call():
     assert [c["outcome"] for c in store.ai_calls(T0.date())] == ["error"]
 
 
+# -- Rule 11 review 2026-09-30 regressions --------------------------------------------------------------------------
+def test_a_job_that_starts_after_the_timeout_makes_no_call():
+    """M1: a check that waited in the queue past ANALYZING_TIMEOUT is already "failed" to the farmer; the job
+    must not spend a live call on it, and must not turn it "ready" later."""
+    store = SqliteStore()
+    check = _check(store, _input(spike=False))
+    model = ScriptedModel()  # must not be called
+    late = T0 + timedelta(minutes=3)
+    run_triage(store, _ai(model, store), check.check_id, lambda: late)
+    assert model.requests == []
+    assert store.get_health_check(check.check_id).status is CheckStatus.FAILED
+    assert store.ai_calls(T0.date()) == []
+
+
+def test_a_timed_out_check_is_not_answered_by_the_daily_limit_rules():
+    """M1: with the cap reached the rules answer at once; a check already past its timeout must still stay failed."""
+    store = SqliteStore()
+    check = _check(store, _input(spike=False))
+    run_triage(store, _ai(ScriptedModel(), store, cap=0), check.check_id, lambda: T0 + timedelta(minutes=3))
+    assert store.get_health_check(check.check_id).status is CheckStatus.FAILED
+
+
+def test_a_reply_after_the_timeout_leaves_the_check_failed():
+    """M1: a reply that lands after the farmer could already have heard "couldn't finish" never flips it."""
+    store = SqliteStore()
+    check = _check(store, _input(spike=False))
+    clock = {"t": T0}
+
+    def slow(_request):
+        clock["t"] = T0 + timedelta(minutes=3)
+        return GOOD
+
+    run_triage(store, _ai(ScriptedModel(slow), store), check.check_id, lambda: clock["t"])
+    done = store.get_health_check(check.check_id)
+    assert done.status is CheckStatus.FAILED and done.result is None
+    assert [c["outcome"] for c in store.ai_calls(T0.date())] == ["late"]  # the billed call is still ledgered
+
+
+def test_a_throttle_wait_past_the_timeout_makes_no_call():
+    """M1: the job may start in time but wait out the throttle past the deadline; then it must not call."""
+    store = SqliteStore()
+    check = _check(store, _input(spike=False))
+    clock = {"t": T0, "mono": 0.0}
+
+    def sleep(s: float) -> None:
+        clock["mono"] += s
+        clock["t"] += timedelta(seconds=s)
+
+    budget = AiBudget(store, lambda: clock["t"], 100, min_interval_s=180, sleep=sleep, monotonic=lambda: clock["mono"])
+    budget._last = 0.0  # a call was just made: this one waits 3 minutes
+    model = ScriptedModel()  # must not be called
+    run_triage(store, AiServices(model, budget, ManualRunner()), check.check_id, lambda: clock["t"])
+    assert model.requests == []
+    assert store.get_health_check(check.check_id).status is CheckStatus.FAILED
+
+
+def test_nova_no_tool_call_keeps_the_billed_usage():
+    """M2: Bedrock bills a reply with no tool call; the error must carry its real usage."""
+    client = boto3.client("bedrock-runtime", region_name="us-east-1", aws_access_key_id="x", aws_secret_access_key="y")
+    stub = Stubber(client)
+    no_tool = {
+        "output": {"message": {"role": "assistant", "content": [{"text": "hi"}]}},
+        "stopReason": "end_turn",
+        "usage": {"inputTokens": 997, "outputTokens": 35, "totalTokens": 1032},
+        "metrics": {"latencyMs": 584},
+    }
+    stub.add_response("converse", no_tool)
+    with stub, pytest.raises(ModelError, match="no tool call") as err:
+        NovaModel(client, "us.amazon.nova-2-lite-v1:0").invoke(_request())
+    assert (err.value.input_tokens, err.value.output_tokens, err.value.latency_ms) == (997, 35, 584)
+
+
+def test_a_billed_model_error_is_ledgered_with_its_tokens():
+    """M2: the ledger used to write 0/0 tokens for a reply that was billed but had no tool call."""
+    store = SqliteStore()
+    check = _check(store, _input(spike=False))
+    billed = ModelError("no tool call (test)", input_tokens=997, output_tokens=35, latency_ms=584)
+    run_triage(store, _ai(ScriptedModel(billed, GOOD), store), check.check_id, lambda: T0)
+    first = store.ai_calls(T0.date())[0]
+    assert (first["outcome"], first["input_tokens"], first["output_tokens"], first["latency_ms"]) == (
+        "error",
+        997,
+        35,
+        584,
+    )
+
+
 def test_live_client_makes_one_attempt_per_call_with_a_short_timeout():
     """Finding 8: botocore's default retries would hide several HTTP attempts behind one ledger row."""
     from clucktalk.agents import live_ai

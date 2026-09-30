@@ -13,7 +13,16 @@ from typing import Any, Protocol
 
 
 class ModelError(RuntimeError):
-    """The model call failed (network, throttling, access, or no tool call). Logged; never spoken as-is."""
+    """The model call failed (network, throttling, access, or no tool call). Logged; never spoken as-is.
+    A reply that arrived but was unusable was still billed: its real usage rides along for the ledger."""
+
+    def __init__(
+        self, message: str, *, input_tokens: int = 0, output_tokens: int = 0, latency_ms: int | None = None
+    ) -> None:
+        super().__init__(message)
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+        self.latency_ms = latency_ms  # the service's own figure when a reply arrived; None: no reply
 
 
 @dataclass(frozen=True)

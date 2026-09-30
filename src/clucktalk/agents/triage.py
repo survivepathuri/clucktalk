@@ -142,10 +142,16 @@ def _run_triage(store: Store, ai: AiServices, check_id: str, now: Callable[[], d
     )
     result: TriageResult | None = None
     for attempt in range(1, CALLS_PER_CHECK + 1):
+        if check.timed_out(now()):  # the farmer may already have heard "couldn't finish": no call (M1, 2026-09-30)
+            logger.error("triage %s: past the analyzing timeout before call %d; no model call", check_id, attempt)
+            break
         if ai.budget is not None and not ai.budget.acquire(AGENT, DAILY_CALLS):
             logger.warning("triage %s: daily AI limit reached; answering with the labelled demo rules", check_id)
             rules = validate_decision(rules_decision(signs, inp.mortality_spike))
             result = _result(check.floor, rules, "rules", None, "daily_limit")
+            break
+        if check.timed_out(now()):  # the throttle wait can cross the deadline too
+            logger.error("triage %s: past the analyzing timeout after the throttle; no model call", check_id)
             break
         t0 = time.perf_counter()
         try:
@@ -153,15 +159,21 @@ def _run_triage(store: Store, ai: AiServices, check_id: str, now: Callable[[], d
         except Exception as exc:  # noqa: BLE001 - every acquired call is ledgered before anything else happens
             if ai.budget is not None:
                 elapsed = round((time.perf_counter() - t0) * 1000)
-                ai.budget.record(AGENT, ai.model.engine, ai.model.model_id, 0, 0, elapsed, "error")
+                billed = exc if isinstance(exc, ModelError) else ModelError(str(exc))
+                latency = elapsed if billed.latency_ms is None else billed.latency_ms
+                ai.budget.record(
+                    AGENT, ai.model.engine, ai.model.model_id, billed.input_tokens, billed.output_tokens, latency,
+                    "error",
+                )  # fmt: skip
             if not isinstance(exc, ModelError):
                 raise
             logger.warning("triage %s: model call %d failed: %s", check_id, attempt, exc)
             continue
+        late = check.timed_out(now())
         decision, outcome = None, "invalid_reply"
         try:
             decision = validate_decision(reply.data)
-            outcome = "ok"
+            outcome = "late" if late else "ok"
         except InvalidDecision as exc:
             logger.warning("triage %s: model reply %d rejected (%s)", check_id, attempt, exc)
         finally:  # the reply is ledgered whatever validation does
@@ -170,12 +182,13 @@ def _run_triage(store: Store, ai: AiServices, check_id: str, now: Callable[[], d
                     AGENT, reply.engine, reply.model_id, reply.input_tokens, reply.output_tokens, reply.latency_ms,
                     outcome,
                 )  # fmt: skip
+        if late:
+            logger.error("triage %s: model reply %d came after the analyzing timeout; not used", check_id, attempt)
+            break
         if decision is not None:
             result = _result(check.floor, decision, reply.engine, reply.model_id, None)
             break
     status = CheckStatus.READY if result is not None else CheckStatus.FAILED
     if result is None:
-        logger.error(
-            "triage %s: no valid model reply after %d calls; the check is marked failed", check_id, CALLS_PER_CHECK
-        )
+        logger.error("triage %s: no usable model reply; the check is marked failed", check_id)
     store.update_health_check(replace(check, status=status, result=result, updated_at=now()))

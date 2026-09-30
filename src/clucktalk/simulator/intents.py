@@ -170,8 +170,18 @@ HEALTH_RESULT = re.compile(
 VET_HANDOFF = re.compile(r"\b(?:send|bhej\w*)\b.*\b(?:vet|doctor|daktar)\b|\b(?:vet|doctor)\b.*\bbhej\w*\b")
 
 
+# "no sudden deaths", "not coughing", "without any coughing": the word right before a sign negates it. Only that
+# direct form counts ("no more coughing" keeps the sign), so a real sign is never dropped on a guess (Rule 11
+# review 2026-09-30: "no sudden deaths, just coughing" used to report sudden deaths).
+NEGATED_BEFORE = re.compile(r"\b(?:no|not|without|never|nahi|nahin)\s+(?:any\s+)?$")
+
+
 def health_signs(text: str) -> list[str]:
-    return [sign for sign, pattern in SIGN_WORDS if pattern.search(text)]
+    return [
+        sign
+        for sign, pattern in SIGN_WORDS
+        if any(not NEGATED_BEFORE.search(text[: m.start()]) for m in pattern.finditer(text))
+    ]
 
 
 @dataclass(frozen=True)

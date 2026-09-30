@@ -268,6 +268,12 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     red-flag sign (head swelling, blue/purple comb or wattles, twisted neck, paralysis/drooping wings) with
     sudden deaths or a record-book death spike gives `notifiable_suspect`; a red flag or deaths alone give
     `urgent` (DAHD: report every unusual sickness or death); other signs give `watch`. Sources: `docs/SOURCES.md`.
+    Words with no sign mapped also give `urgent`: code can't read them, so it never calls them "not urgent" and
+    says it couldn't match them ("so to be safe").
+  - A check still `analyzing` after 2 minutes is failed for good: the agent then makes no model call, and a reply
+    that arrives later is ledgered (`late`) but never turns the check `ready`. A failed check's AI label says no AI
+    answered. A billed reply without the tool call is ledgered with its real token usage.
+  - `birds_affected` above the shed's live birds is left out of the prompt, and the answer says so with both numbers.
   - `notifiable_suspect` is answered at once, with no model call: no category named (no diagnosis), and fixed
     steps: stop movement, separate sick birds, do not cut open dead birds, report today to a vet or the nearest
     government veterinary centre; vet handoff offered.

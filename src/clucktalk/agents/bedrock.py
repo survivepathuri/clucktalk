@@ -51,17 +51,22 @@ class NovaModel:
         except BotoCoreError as exc:
             raise ModelError(f"Bedrock call failed for agent {request.agent}: {type(exc).__name__}") from exc
         usage = resp.get("usage", {})
+        tokens_in, tokens_out = int(usage.get("inputTokens", 0)), int(usage.get("outputTokens", 0))
+        latency = int(resp.get("metrics", {}).get("latencyMs", 0))
         content = resp.get("output", {}).get("message", {}).get("content", [])
         tool_uses = [c["toolUse"] for c in content if "toolUse" in c and c["toolUse"].get("name") == request.tool_name]
-        if not tool_uses:
+        if not tool_uses:  # billed all the same: the ledger gets the real usage (Rule 11 review 2026-09-30)
             raise ModelError(
-                f"no tool call in the reply for agent {request.agent} (stopReason {resp.get('stopReason')})"
+                f"no tool call in the reply for agent {request.agent} (stopReason {resp.get('stopReason')})",
+                input_tokens=tokens_in,
+                output_tokens=tokens_out,
+                latency_ms=latency,
             )
         return ModelReply(
             data=tool_uses[0].get("input"),
             engine=self.engine,
             model_id=self.model_id,
-            input_tokens=int(usage.get("inputTokens", 0)),
-            output_tokens=int(usage.get("outputTokens", 0)),
-            latency_ms=int(resp.get("metrics", {}).get("latencyMs", 0)),
+            input_tokens=tokens_in,
+            output_tokens=tokens_out,
+            latency_ms=latency,
         )

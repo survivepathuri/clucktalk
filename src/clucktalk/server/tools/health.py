@@ -57,9 +57,8 @@ from clucktalk.server.tools import Capability, CapabilityRegistry
 
 START_TOOL, GET_TOOL, HANDOFF_TOOL = "start_health_check", "get_health_check", "prepare_vet_handoff"
 DUPLICATE_WINDOW = timedelta(minutes=10)
-# Longer than a check can take (2 calls x 15 s timeout + throttle); a check still "analyzing" after this lost its
-# job (a crash or a restart) and is reported as failed, never "still checking" forever (Rule 11 review 2026-09-29).
-ANALYZING_TIMEOUT = timedelta(minutes=2)
+# A sanity bound on the schema, not a sourced flock size: the real check is against the shed's live birds.
+MAX_BIRDS_AFFECTED = 1_000_000
 SPOKEN_CATEGORIES = 2
 SPOKEN_CHECKS = 3
 SignName = Literal[
@@ -112,6 +111,11 @@ AI_LABEL: dict[str, Text] = {
     "none": Text("Safety rules only (no AI needed)", "భద్రతా నియమాలు మాత్రమే (AI అవసరం లేదు)"),
 }
 TEST_MODEL_LABEL = Text("Test model", "పరీక్ష మోడల్")
+NO_ANSWER_LABEL = Text("No AI answer: the check couldn't finish", "AI సమాధానం రాలేదు: తనిఖీ పూర్తి కాలేదు")
+WORDS_NOT_MAPPED = Text(
+    "I couldn't match what you told me to a sign I know, so to be safe:",
+    "మీరు చెప్పినదాన్ని నాకు తెలిసిన ఏ లక్షణంతోనూ సరిపోల్చలేకపోయాను, కాబట్టి జాగ్రత్త కోసం:",
+)
 DAILY_LIMIT_NOTE = Text(
     "Today's AI limit is reached, so this check used the demo rules.",
     "ఈరోజు AI పరిమితి అయిపోయింది, కాబట్టి ఈ తనిఖీకి డెమో నియమాలు వాడాను.",
@@ -184,6 +188,7 @@ class EvidenceOut(BaseModel):
     feed_drop_pct: float | None
     live_birds: int | None
     age_days: int | None
+    birds_affected_ignored: int | None  # the count said, when above live_birds: left out of the triage, and said so
 
 
 class PhotoOut(BaseModel):
@@ -199,11 +204,11 @@ class PhotoOut(BaseModel):
 
 class AiOut(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    engine: str
+    engine: str  # who answered; for a check still running or failed, the engine that was asked
     model_id: str | None
     label_en: str
     label_te: str
-    note: Literal["daily_limit", "not_needed_red_flags"] | None
+    note: Literal["daily_limit", "not_needed_red_flags", "no_answer"] | None
 
 
 class SourceOut(BaseModel):
@@ -284,6 +289,9 @@ def _input(
                 spike, baseline = True, float(f.values["baseline_daily_avg"])
             elif f.code == "feed_intake_drop":
                 drop = float(f.values["drop_pct"])
+    ignored = None
+    if birds_affected is not None and live is not None and birds_affected > live:
+        ignored, birds_affected = birds_affected, None  # never a number the records contradict (said, not silent)
     return TriageInput(
         records_used=st is not None,
         house_id=house.house_id,
@@ -302,14 +310,14 @@ def _input(
         feed_drop_pct=drop,
         latest_record_day=latest_day,
         photo_ref=photo_ref,
+        birds_affected_ignored=ignored,
     )
 
 
 def _effective(check: HealthCheck, now: datetime) -> HealthCheck:
-    """A check still "analyzing" past ``ANALYZING_TIMEOUT`` lost its job: it is failed (read-only view)."""
-    if check.status is CheckStatus.ANALYZING and now - check.created_at > ANALYZING_TIMEOUT:
-        return replace(check, status=CheckStatus.FAILED)
-    return check
+    """A check still "analyzing" past ``ANALYZING_TIMEOUT`` lost its job: it is failed (read-only view; the job
+    uses the same test, so it never turns such a check "ready" later)."""
+    return replace(check, status=CheckStatus.FAILED) if check.timed_out(now) else check
 
 
 # -- rendering ------------------------------------------------------------------------------------------------------
@@ -338,7 +346,25 @@ def _evidence_text(inp: TriageInput) -> Text:
 
 def _urgency_text(u: Urgency, inp: TriageInput) -> Text:
     s = URGENCY_SENTENCE[u]
-    return Text(s.en.format(h=inp.label_en), s.te.format(h=inp.label_te))
+    text = Text(s.en.format(h=inp.label_en), s.te.format(h=inp.label_te))
+    return _join(WORDS_NOT_MAPPED, text) if not inp.signs and inp.symptoms else text
+
+
+def _notes(inp: TriageInput) -> list[Text]:
+    """What the farmer gave that did not shape the result, said so it is never silently dropped."""
+    notes = []
+    if inp.birds_affected_ignored is not None and inp.live_birds is not None:
+        n, live = num(inp.birds_affected_ignored), num(inp.live_birds)
+        notes.append(
+            Text(
+                f"You said {n} birds show the signs, but {inp.label_en} has {live} birds alive, so I left that "
+                "number out.",
+                f"{n} కోళ్లలో లక్షణాలు ఉన్నాయని చెప్పారు, కానీ {inp.label_te} లో {live} కోళ్లే బతికి ఉన్నాయి, కాబట్టి ఆ సంఖ్యను వదిలేశాను.",
+            )
+        )
+    if inp.photo_ref:
+        notes.append(NOT_ANALYZED)
+    return notes
 
 
 def _ready_text(check: HealthCheck) -> Text:
@@ -366,8 +392,7 @@ def _ready_text(check: HealthCheck) -> Text:
             parts.append(Text(f"First, {first.en}.", f"ముందుగా, {first.te}."))
     if r.ai_note == "daily_limit":
         parts.append(DAILY_LIMIT_NOTE)
-    if inp.photo_ref:
-        parts.append(NOT_ANALYZED)
+    parts += _notes(inp)
     parts.append(DISCLAIMER)
     if r.urgency >= Urgency.URGENT:
         parts.append(OFFER)
@@ -414,8 +439,14 @@ def _failed_text(check: HealthCheck) -> Text:
 def _ai_out(check: HealthCheck, ai: AiServices) -> AiOut:
     """Who answered; while a check still runs (or failed), the engine configured to answer it."""
     r = check.result
-    engine, model_id, note = (r.engine, r.model_id, r.ai_note) if r else (ai.model.engine, ai.model.model_id, None)
-    label = AI_LABEL.get(engine, TEST_MODEL_LABEL)
+    if r is not None:
+        engine, model_id, note = r.engine, r.model_id, r.ai_note
+        label = AI_LABEL.get(engine, TEST_MODEL_LABEL)
+    else:
+        engine, model_id = ai.model.engine, ai.model.model_id
+        failed = check.status is CheckStatus.FAILED  # nobody answered: never credit the model (L7, 2026-09-30)
+        note = "no_answer" if failed else None
+        label = NO_ANSWER_LABEL if failed else AI_LABEL.get(engine, TEST_MODEL_LABEL)
     return AiOut(engine=engine, model_id=model_id, label_en=label.en, label_te=label.te, note=note)
 
 
@@ -429,8 +460,8 @@ def _output(
         text = _failed_text(check)
     else:
         text = _analyzing_text(check, first_time)
-    if inp.photo_ref and check.status is not CheckStatus.READY:  # a ready answer already says it (_ready_text)
-        text = _join(text, NOT_ANALYZED)
+    if check.status is not CheckStatus.READY:  # a ready answer already says them (_ready_text)
+        text = _join(text, *_notes(inp))
     ready = check.status is CheckStatus.READY and r is not None
     return HealthCheckOutput(
         text_en=text.en,
@@ -472,6 +503,7 @@ def _output(
             feed_drop_pct=inp.feed_drop_pct,
             live_birds=inp.live_birds,
             age_days=inp.age_days,
+            birds_affected_ignored=inp.birds_affected_ignored,
         ),
         ai=_ai_out(check, ai),
         photo=None
@@ -520,7 +552,7 @@ def build_start(
             and latest.input == inp  # same words AND same record-book facts (new deaths make a new check)
         ):
             return _output(latest, house, source, ai, first_time=False, duplicate=True)
-        floor = floor_urgency(frozenset(sign_set), inp.mortality_spike)
+        floor = floor_urgency(frozenset(sign_set), inp.mortality_spike, unmapped_words=words is not None)
         check = HealthCheck(
             new_check_id(), farm.farm_id, house.house_id, now, CheckStatus.ANALYZING, inp, floor, None, now
         )
@@ -718,7 +750,9 @@ SIGNS_PARAM = Field(description="Signs the farmer reports, mapped onto the allow
 SYMPTOMS_PARAM = Field(
     default=None, max_length=300, description="The farmer's own words about what they see (optional)."
 )
-AFFECTED_PARAM = Field(default=None, ge=1, description="About how many birds show the signs, if said.")
+AFFECTED_PARAM = Field(
+    default=None, ge=1, le=MAX_BIRDS_AFFECTED, description="About how many birds show the signs, if said."
+)
 SINCE_PARAM = Field(default=None, ge=0, le=60, description="How many days ago it started, if said.")
 PHOTO_PARAM = Field(
     default=None,

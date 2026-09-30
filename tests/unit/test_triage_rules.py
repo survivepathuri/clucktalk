@@ -47,6 +47,19 @@ def test_floor(given, spike, expected):
     assert floor_urgency(given, spike).urgency is expected
 
 
+@pytest.mark.parametrize("spike", [False, True])
+def test_words_with_no_mapped_sign_are_never_below_urgent(spike):
+    """Rule 11 review 2026-09-30 H1: words the host couldn't map (e.g. "heads swollen, birds died") used to get a
+    `routine` floor. Code can't read them, so it assumes the worst it can safely say: a vet today."""
+    floor = floor_urgency(signs(), spike, unmapped_words=True)
+    assert floor.urgency is Urgency.URGENT
+    assert "words_not_mapped" in floor.reasons
+
+
+def test_unmapped_words_flag_needs_no_signs():
+    assert floor_urgency(signs(S.PANTING), False, unmapped_words=False).urgency is Urgency.WATCH
+
+
 def test_floor_reasons_name_their_trigger():
     assert floor_urgency(signs(S.SWOLLEN_HEAD), True).reasons == ("red_flag_sign", "mortality_spike")
     assert floor_urgency(signs(S.SUDDEN_DEATHS), False).reasons == ("sudden_deaths_reported",)
