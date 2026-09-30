@@ -132,6 +132,53 @@ class BearerAuth:
         await self.app(scope, receive, send)
 
 
+class CorsForAllowedOrigins:
+    """CORS for the explicitly allowed extra origins only (CLUCKTALK_ALLOWED_ORIGINS), for a browser-based MCP
+    Apps host. Outermost layer, so a preflight (which carries no Authorization header) is answered before the
+    bearer and Origin checks. Any other Origin passes through untouched: the transport's Origin check still
+    answers it (403) and no CORS header is added. The allowed origin is echoed exactly, never ``*``, and there is
+    no credentials mode."""
+
+    METHODS = b"POST, GET, DELETE, OPTIONS"
+    ALLOW_HEADERS = b"content-type, accept, authorization, mcp-session-id, mcp-protocol-version"
+    EXPOSE_HEADERS = b"Mcp-Session-Id"
+
+    def __init__(self, app: ASGIApp, origins: tuple[str, ...]) -> None:
+        self.app = app
+        self._origins = frozenset(origins)
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        origin = Headers(scope=scope).get("origin") if scope["type"] == "http" else None
+        if origin is None or origin not in self._origins:
+            await self.app(scope, receive, send)
+            return
+        allow_origin = [(b"access-control-allow-origin", origin.encode()), (b"vary", b"Origin")]
+        if scope["method"] == "OPTIONS" and Headers(scope=scope).get("access-control-request-method"):
+            headers = [
+                *allow_origin,
+                (b"access-control-allow-methods", self.METHODS),
+                (b"access-control-allow-headers", self.ALLOW_HEADERS),
+                (b"access-control-max-age", b"600"),
+            ]
+            await send({"type": "http.response.start", "status": 204, "headers": headers})
+            await send({"type": "http.response.body", "body": b""})
+            return
+
+        async def send_with_cors(message: dict) -> None:
+            if message["type"] == "http.response.start":
+                message = {
+                    **message,
+                    "headers": [
+                        *message.get("headers", []),
+                        *allow_origin,
+                        (b"access-control-expose-headers", self.EXPOSE_HEADERS),
+                    ],
+                }
+            await send(message)
+
+        await self.app(scope, receive, send_with_cors)
+
+
 def _transport_security(settings: Settings) -> TransportSecuritySettings:
     names = _LOCAL_HOST_NAMES if settings.is_local else (settings.host,)
     return TransportSecuritySettings(
@@ -153,6 +200,8 @@ def build_app(settings: Settings, server: MCPServer | None = None) -> ASGIApp:
     app = ProtocolVersionGate(app)
     if settings.auth_token:
         app = BearerAuth(app, settings.auth_token)
+    if settings.extra_origins:
+        app = CorsForAllowedOrigins(app, settings.extra_origins)
     return app
 
 
@@ -188,6 +237,8 @@ def main() -> int:
     print(f"{APP_NAME} MCP server | mode: {mode} | protocol {TARGET_PROTOCOL_VERSION}")
     print(f"Endpoint: http://{settings.host}:{settings.port}{MCP_PATH}")
     print(f"Allowed browser origins: {', '.join(settings.allowed_origins)}")
+    if settings.extra_origins:
+        print(f"CORS enabled only for: {', '.join(settings.extra_origins)} (CLUCKTALK_ALLOWED_ORIGINS)")
     print(f"Farm state: {settings.state_path} (python tasks.py reset-demo restores the demo story)")
     uvicorn.run(build_app(settings, server), host=settings.host, port=settings.port, log_level="info")
     return 0

@@ -41,9 +41,28 @@ def test_non_local_host_requires_auth_token():
     assert not s.is_local
 
 
-def test_origin_allow_list_is_parsed():
-    s = load_settings({"CLUCKTALK_ALLOWED_ORIGINS": " http://a.test , http://b.test ,"})
-    assert s.allowed_origins == ("http://a.test", "http://b.test")
+def test_extra_origins_are_added_to_the_default_ones():
+    """CLUCKTALK_ALLOWED_ORIGINS adds explicit origins; it never replaces the server's own loopback origins."""
+    s = load_settings({"CLUCKTALK_ALLOWED_ORIGINS": " http://a.test , https://b.test:8443 ,"})
+    assert s.extra_origins == ("http://a.test", "https://b.test:8443")
+    assert s.allowed_origins == (
+        "http://127.0.0.1:8765",
+        "http://localhost:8765",
+        "http://a.test",
+        "https://b.test:8443",
+    )
+
+
+def test_no_extra_origins_by_default():
+    assert load_settings({}).extra_origins == ()
+
+
+@pytest.mark.parametrize(
+    "bad", ["*", "http://a.test,*", "http://*.test", "null", "a.test", "http://a.test/path", "ftp://a.test", "http://"]
+)
+def test_wildcard_and_malformed_origins_are_refused_at_load(bad):
+    with pytest.raises(ConfigError, match="CLUCKTALK_ALLOWED_ORIGINS"):
+        load_settings({"CLUCKTALK_ALLOWED_ORIGINS": bad})
 
 
 def test_state_path_default_relative_and_suffix():

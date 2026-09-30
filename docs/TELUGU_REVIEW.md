@@ -309,7 +309,7 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 
 | # | English | Telugu | Where | Reviewed by | Date |
 |---|---|---|---|---|---|
-| 1 | CluckTalk | కోడి మిత్ర | `src/clucktalk/config.py:16` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 1 | CluckTalk | కోడి మిత్ర | `src/clucktalk/config.py:17` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 2 | I couldn't find a shed called {reference}. | {reference} అనే షెడ్ నాకు కనబడలేదు. | `src/clucktalk/domain/errors.py:26` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 3 | Your sheds are {', '.join(known_labels)}. Which one do you mean? | మీ షెడ్లు: {', '.join(known_labels_te)}. మీరు ఏది అడుగుతున్నారు? | `src/clucktalk/domain/errors.py:27` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 4 | I don't have a verified growth standard for {breed} yet, so I can't compare weight or feed to target. | {breed} కి ధృవీకరించిన పెరుగుదల ప్రమాణం నా దగ్గర ఇంకా లేదు, కాబట్టి బరువు లేదా ఫీడ్‌ను లక్ష్యంతో పోల్చలేను. | `src/clucktalk/domain/errors.py:37` | Pathuri Venkateswara Rao | 2026-09-27 |

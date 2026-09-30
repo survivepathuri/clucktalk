@@ -50,7 +50,7 @@ Planned next (§13): farm profile (contract or independent, **built**), voice re
 - Deterministic math (feed plan, profit forecast, sell-now-or-wait) runs directly on the fast path.
 
 ## 4. MCP transport security
-1. Validate the `Origin` header on Streamable HTTP requests.
+1. Validate the `Origin` header on Streamable HTTP requests. Allowed: the server's own two loopback origins, plus any exact origins listed in `CLUCKTALK_ALLOWED_ORIGINS` (never `*`; refused at config load). CORS headers are sent only for those extra origins (exact origin echoed, `Vary: Origin`, `Mcp-Session-Id` exposed, no credentials), by a layer outside the Origin and bearer checks so a preflight is answered; any other Origin still gets 403 with no CORS headers. The bind stays 127.0.0.1.
 2. Bind to `127.0.0.1` in local mode; require an auth token whenever the server is reachable from other hosts.
 3. Handle `Mcp-Session-Id` correctly; reject unknown sessions cleanly.
 

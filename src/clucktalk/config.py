@@ -8,6 +8,7 @@ falling back silently (Rule 6).
 from __future__ import annotations
 
 import os
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -27,6 +28,7 @@ AI_HARD_DAILY_CAP = 100
 _TRUE = {"true", "1", "yes"}
 _FALSE = {"false", "0", "no"}
 _LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
+_ORIGIN_RE = re.compile(r"https?://(?:[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?|\[[0-9A-Fa-f:]+\])(?::[0-9]{1,5})?")
 
 
 class ConfigError(ValueError):
@@ -38,13 +40,15 @@ class Settings:
     mock_bedrock: bool
     host: str
     port: int
-    allowed_origins: tuple[str, ...]
+    allowed_origins: tuple[str, ...]  # the Origin check: the server's own loopback origins + extra_origins
     auth_token: str | None
     aws_region: str | None
     state_path: Path = DEFAULT_STATE_PATH
     mock_bedrock_given: bool = False  # MOCK_BEDROCK was set explicitly (live AI needs an explicit "false")
     bedrock_model_id: str | None = None
     ai_max_calls_per_day: int = AI_HARD_DAILY_CAP
+    # Extra browser origins from CLUCKTALK_ALLOWED_ORIGINS (an explicit list, never "*"). Only these get CORS headers.
+    extra_origins: tuple[str, ...] = ()
 
     @property
     def is_local(self) -> bool:
@@ -97,20 +101,33 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         raise ConfigError(
             f"CLUCKTALK_HOST={host!r} exposes the server beyond this machine, so CLUCKTALK_AUTH_TOKEN is required."
         )
-    origins = tuple(o.strip() for o in env.get("CLUCKTALK_ALLOWED_ORIGINS", "").split(",") if o.strip())
+    extra_origins = _parse_origins(env.get("CLUCKTALK_ALLOWED_ORIGINS", ""))
     port = _parse_port(env, "CLUCKTALK_PORT", 8765)
     return Settings(
         mock_bedrock=_parse_bool(env, "MOCK_BEDROCK", default=False),
         host=host,
         port=port,
-        allowed_origins=origins or (f"http://127.0.0.1:{port}", f"http://localhost:{port}"),
+        allowed_origins=(f"http://127.0.0.1:{port}", f"http://localhost:{port}", *extra_origins),
         auth_token=auth_token,
         aws_region=env.get("AWS_REGION", "").strip() or None,
         state_path=_state_path(env.get("CLUCKTALK_STATE_PATH", "").strip()),
         mock_bedrock_given=env.get("MOCK_BEDROCK", "").strip() != "",
         bedrock_model_id=env.get("BEDROCK_MODEL_ID", "").strip() or None,
         ai_max_calls_per_day=_ai_cap(env.get("CLUCKTALK_AI_MAX_CALLS_PER_DAY", "").strip()),
+        extra_origins=extra_origins,
     )
+
+
+def _parse_origins(raw: str) -> tuple[str, ...]:
+    """CLUCKTALK_ALLOWED_ORIGINS: comma-separated exact origins (scheme://host[:port]). No wildcard, no path."""
+    origins = tuple(o.strip() for o in raw.split(",") if o.strip())
+    for origin in origins:
+        if not _ORIGIN_RE.fullmatch(origin):
+            raise ConfigError(
+                f"CLUCKTALK_ALLOWED_ORIGINS has {origin!r}, which is not an exact origin. Use a comma-separated "
+                "list like http://localhost:8080 (scheme, host, optional port; no '*', no path)."
+            )
+    return origins
 
 
 def _ai_cap(raw: str) -> int:
