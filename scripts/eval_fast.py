@@ -202,7 +202,7 @@ def main() -> int:
         "",
         f"Run {datetime.now().astimezone().isoformat(timespec='seconds')}, mock mode (`MOCK_BEDROCK=true`), "
         f"no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers "
-        f"'routine' to everything or always fails (tests/fakes.py). Extended to the full suite on the 11 Oct task.",
+        f"'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.",
         "",
         "| Case | Result | Detail |",
         "|---|---|---|",
