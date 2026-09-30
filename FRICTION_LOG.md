@@ -243,3 +243,13 @@ Expected vs actual: Expected `left: red, right: blue`. Actual: a well-formed for
 Severity: Low (for CluckTalk: photo triage was already designed as advisory, below a deterministic safety floor)
 Workaround: Photo findings may only add signs, never lower urgency; the spike was stopped at this first wrong answer, as agreed. Photo triage (step 1B) will be tested on real, licensed photos at a realistic resolution before any claim is made.
 Actionable suggestion: Document minimum/recommended image resolution for Nova 2 Lite image understanding, and state in the Converse `toolChoice` docs which models support the `tool` choice (it worked here, but the API reference only says "if supported by model").
+
+### FL-021: ext-apps basic-host cannot be built with `npm ci --ignore-scripts`: it needs the unbuilt repo root, bun, and bun's postinstall
+Date: 2026-10-01
+Tool / service: `modelcontextprotocol/ext-apps` (commit 82221c0, v2.0.3) `examples/basic-host`, npm 11.12.1, Node 24.15.0, Windows 11
+Task attempted: Build and start the reference MCP Apps host to test our four cards, installing with `--ignore-scripts` as a precaution.
+Steps taken: Read `examples/basic-host/README.md` (says `npm install`, `npm run start`). Ran `npm ci --ignore-scripts` (first only for the `basic-host` workspace, then the whole repo), then `npm run build` in `examples/basic-host`.
+Expected vs actual: Expected a working build from the README. Actual: `tsc` failed with `Cannot find module '@modelcontextprotocol/ext-apps'` (TS2307) plus cascading implicit-any errors, because that dependency is a workspace link to the repo root, which has no `dist/` until its own `npm run build` runs (normally from the root `prepare` script). That build needs `bun`; the `bun` npm package then refuses to run ("Bun's postinstall script was not run") under `--ignore-scripts`. The README does not mention bun, the root build, or that `npm run start` (`bun --watch serve.ts`) also needs bun.
+Severity: Low (a doc gap; cost about 20 minutes)
+Workaround: `npm ci --ignore-scripts`, then run only `node node_modules/bun/install.js`, then `npm run build` at the root, then `npm run build` in `examples/basic-host`, then `npm run serve`. Documented in docs/evidence/2026-10-01_basic_host/README.md.
+Actionable suggestion: In the basic-host README, state that the repo root must be built first and that bun is required (or ship a prebuilt host), and make `npm run start` work without a globally installed bun.
