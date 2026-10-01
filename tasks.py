@@ -6,6 +6,7 @@ Windows (cmd); on Linux/macOS use python3 instead of python:
     python tasks.py eval-fast   Golden eval suite in mock mode, no AWS needed
     python tasks.py serve       Start only the MCP server (demo data, http://127.0.0.1:8765/mcp)
     python tasks.py run         Start the local demo (Simulator + MCP server, mock mode)
+    python tasks.py serve --demo-days-later 3   (also for run) demo clock: "today" is 3 days later; demo mode only
     python tasks.py reset-demo  Delete the local farm state (.local/), so the demo story starts fresh
 
 Every step prints PASS / FAIL / SKIP, and the run exits non-zero if any step fails.
@@ -300,8 +301,23 @@ COMMANDS = {
 }
 
 
+def _demo_days_flag(args: list[str]) -> bool:
+    """``--demo-days-later N`` (serve and run only): hand N to the server as CLUCKTALK_DEMO_DAYS_LATER. The server
+    validates the value and refuses it outside demo mode. Returns False when the arguments are not understood."""
+    if args == []:
+        return True
+    if len(args) == 2 and args[0] == "--demo-days-later" and args[1].isdigit():
+        os.environ["CLUCKTALK_DEMO_DAYS_LATER"] = args[1]
+        return True
+    return False
+
+
 def main() -> int:
-    if len(sys.argv) != 2 or sys.argv[1] not in COMMANDS:
+    if len(sys.argv) < 2 or sys.argv[1] not in COMMANDS:
+        print(__doc__)
+        return 2
+    extra = sys.argv[2:]
+    if extra and not (sys.argv[1] in ("serve", "run") and _demo_days_flag(extra)):
         print(__doc__)
         return 2
     return COMMANDS[sys.argv[1]]()

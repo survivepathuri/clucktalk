@@ -29,7 +29,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from clucktalk.agents import AiServices, demo_ai, live_ai
 from clucktalk.config import APP_NAME, ConfigError, Settings, load_settings
 from clucktalk.server.errors import SafeToolErrors
-from clucktalk.server.farm_state import DemoFarmSource
+from clucktalk.server.farm_state import DemoClock, DemoFarmSource
 from clucktalk.server.tools import (
     CapabilityRegistry,
     briefing,
@@ -65,7 +65,10 @@ def build_mcp_server(source: DemoFarmSource | None = None, ai: AiServices | None
     to demo mode (no model calls); ``main`` passes live AI only when chosen explicitly (docs/DESIGN.md §18)."""
     source = source or DemoFarmSource()
     ai = ai or demo_ai()
-    guard = SafeToolErrors(strict_arguments_for=frozenset({contract_terms.TOOL, follow_up.TOOL}))
+    guard = SafeToolErrors(
+        strict_arguments_for=frozenset({contract_terms.TOOL, follow_up.TOOL}),
+        demo_clock_days=lambda: source.demo_clock_days,
+    )
     registry = CapabilityRegistry()
     apps = Apps()  # MCP Apps extension: card-bearing tools + their ui:// resources (docs/DESIGN.md §14)
     farm_status.register(apps, registry, source)
@@ -221,7 +224,8 @@ def main() -> int:
     except (StoreError, sqlite3.Error, OSError) as exc:  # fail loud: never run without the farmer's saved state
         print(f"State store error ({settings.state_path}): {exc}", file=sys.stderr)
         return 2
-    source = DemoFarmSource(store=store)
+    demo_clock = DemoClock(settings.demo_days_later) if settings.demo_days_later else None
+    source = DemoFarmSource(store=store, demo_clock=demo_clock)
     if settings.mock_bedrock:
         ai, mode = demo_ai(), "DEMO DATA (MOCK_BEDROCK=true), AI off (demo rules)"
     else:
@@ -237,6 +241,8 @@ def main() -> int:
         )
     server = build_mcp_server(source, ai)
     print(f"{APP_NAME} MCP server | mode: {mode} | protocol {TARGET_PROTOCOL_VERSION}")
+    if demo_clock is not None:
+        print(f"DEMO CLOCK: +{settings.demo_days_later} days (today and now are shifted; stored data is not changed)")
     print(f"Endpoint: http://{settings.host}:{settings.port}{MCP_PATH}")
     print(f"Allowed browser origins: {', '.join(settings.allowed_origins)}")
     if settings.extra_origins:

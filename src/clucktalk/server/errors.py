@@ -15,6 +15,7 @@ Never codes, tool names, JSON, IDs, or exception text.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from typing import Any
 
 import jsonschema
@@ -29,6 +30,14 @@ from clucktalk.i18n import BAD_REQUEST_ERROR, BAD_REQUEST_NEXT_STEP, GENERIC_ERR
 logger = logging.getLogger("clucktalk.server")
 
 ERROR_META_KEY = "clucktalk/error"  # _meta key: prefix "clucktalk/" + name (MCP _meta naming)
+DEMO_CLOCK_META_KEY = "clucktalk/demo_clock"
+
+
+def demo_clock_marker(days: int) -> dict[str, Any]:
+    """The visible "Demo clock: +N days" marker (docs/DESIGN.md section 18). It rides in ``_meta``, not in
+    ``structuredContent``, because every tool's output schema is closed. Only built when the clock is on."""
+    unit = "day" if days == 1 else "days"
+    return {"days_later": days, "label_en": f"Demo clock: +{days} {unit}", "label_te": f"డెమో గడియారం: +{days} రోజులు"}
 
 
 def error_result(message: Text, next_step: Text) -> CallToolResult:
@@ -68,10 +77,15 @@ class SafeToolErrors:
     """Server middleware for ``tools/call``: validate arguments against the advertised ``inputSchema`` first,
     then replace any error result that does not follow the contract with a safe one."""
 
-    def __init__(self, strict_arguments_for: frozenset[str] = frozenset()) -> None:
+    def __init__(
+        self,
+        strict_arguments_for: frozenset[str] = frozenset(),
+        demo_clock_days: Callable[[], int] = lambda: 0,
+    ) -> None:
         # Tools whose unknown argument names are refused instead of ignored: a retired argument must never be
         # silently dropped (set_contract_terms once took mortality_allowance_pct).
         self._strict = strict_arguments_for
+        self._demo_clock_days = demo_clock_days  # the marker is added to every result only while this is above 0
         self._server: MCPServer | None = None
         self._validators: dict[str, jsonschema.protocols.Validator] | None = None
 
@@ -109,12 +123,24 @@ class SafeToolErrors:
             if problems:
                 # Field paths only: the rejected values are the caller's data.
                 logger.info("tools/call %r rejected arguments at %s", tool_name, problems)
-                return _wire(error_result(BAD_REQUEST_ERROR, BAD_REQUEST_NEXT_STEP))
+                return self._marked(_wire(error_result(BAD_REQUEST_ERROR, BAD_REQUEST_NEXT_STEP)))
 
         result = await call_next(ctx)
         parsed = CallToolResult.model_validate(result) if isinstance(result, dict) else result
         if isinstance(parsed, CallToolResult) and parsed.is_error and not is_contract_error(parsed):
             original = " ".join(c.text for c in parsed.content if isinstance(c, TextContent))
             logger.warning("tools/call %r failed without a contract error; replaced. Original: %r", tool_name, original)
-            return _wire(error_result(GENERIC_ERROR, GENERIC_NEXT_STEP))
+            return self._marked(_wire(error_result(GENERIC_ERROR, GENERIC_NEXT_STEP)))
+        return self._marked(result)
+
+    def _marked(self, result: HandlerResult) -> HandlerResult:
+        """Add the demo-clock marker to a result's ``_meta`` while the clock is on; otherwise return it untouched."""
+        days = self._demo_clock_days()
+        if days <= 0:
+            return result
+        marker = demo_clock_marker(days)
+        if isinstance(result, CallToolResult):
+            result.meta = {**(result.meta or {}), DEMO_CLOCK_META_KEY: marker}
+        elif isinstance(result, dict):
+            result["_meta"] = {**(result.get("_meta") or {}), DEMO_CLOCK_META_KEY: marker}
         return result

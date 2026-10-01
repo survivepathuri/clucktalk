@@ -49,6 +49,7 @@ class Settings:
     ai_max_calls_per_day: int = AI_HARD_DAILY_CAP
     # Extra browser origins from CLUCKTALK_ALLOWED_ORIGINS (an explicit list, never "*"). Only these get CORS headers.
     extra_origins: tuple[str, ...] = ()
+    demo_days_later: int = 0  # CLUCKTALK_DEMO_DAYS_LATER: the demo clock (0 = off); demo mode only
 
     @property
     def is_local(self) -> bool:
@@ -102,9 +103,11 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
             f"CLUCKTALK_HOST={host!r} exposes the server beyond this machine, so CLUCKTALK_AUTH_TOKEN is required."
         )
     extra_origins = _parse_origins(env.get("CLUCKTALK_ALLOWED_ORIGINS", ""))
+    mock_bedrock = _parse_bool(env, "MOCK_BEDROCK", default=False)
+    demo_days_later = _demo_days_later(env.get("CLUCKTALK_DEMO_DAYS_LATER", "").strip(), mock_bedrock)
     port = _parse_port(env, "CLUCKTALK_PORT", 8765)
     return Settings(
-        mock_bedrock=_parse_bool(env, "MOCK_BEDROCK", default=False),
+        mock_bedrock=mock_bedrock,
         host=host,
         port=port,
         allowed_origins=(f"http://127.0.0.1:{port}", f"http://localhost:{port}", *extra_origins),
@@ -115,7 +118,23 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         bedrock_model_id=env.get("BEDROCK_MODEL_ID", "").strip() or None,
         ai_max_calls_per_day=_ai_cap(env.get("CLUCKTALK_AI_MAX_CALLS_PER_DAY", "").strip()),
         extra_origins=extra_origins,
+        demo_days_later=demo_days_later,
     )
+
+
+def _demo_days_later(raw: str, mock_bedrock: bool) -> int:
+    """The demo clock (0 to 30 days). It makes the farm's "today" untrue, so it is refused in live mode."""
+    if raw == "":
+        return 0
+    if not raw.isdigit() or int(raw) > 30:
+        raise ConfigError(f"CLUCKTALK_DEMO_DAYS_LATER={raw!r} must be a whole number of days from 0 to 30.")
+    days = int(raw)
+    if days and not mock_bedrock:
+        raise ConfigError(
+            "CLUCKTALK_DEMO_DAYS_LATER is refused outside demo mode: it changes what 'today' means. "
+            "Use MOCK_BEDROCK=true for the demo, or remove CLUCKTALK_DEMO_DAYS_LATER."
+        )
+    return days
 
 
 def _parse_origins(raw: str) -> tuple[str, ...]:
