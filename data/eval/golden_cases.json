@@ -3094,6 +3094,264 @@
           ]
         }
       ]
+    },
+    {
+      "id": "followup-worse-after-a-handoff-and-a-newer-check-still-says-contact-the-vet",
+      "description": "Review finding H4: a vet handoff on the first check, then a newer check of equal urgency on the day the farmer says 'worse': the read-back and the saved answer both end with 'To be safe, contact your vet or doctor.', and 'Done.' is never spoken alone.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "swollen_head",
+              "discoloured_comb",
+              "sudden_deaths"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "urgency",
+              "op": "eq",
+              "value": "notifiable_suspect"
+            }
+          ]
+        },
+        {
+          "tool": "prepare_vet_handoff",
+          "args": {
+            "house": "shed one",
+            "check_id": "$check_id"
+          },
+          "save": {
+            "handoff_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            }
+          ]
+        },
+        {
+          "tool": "prepare_vet_handoff",
+          "args": {
+            "house": "shed one",
+            "check_id": "$check_id",
+            "proposal_id": "$handoff_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "demo_days_later": 1,
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "swollen_head",
+              "discoloured_comb",
+              "sudden_deaths",
+              "twisted_neck"
+            ]
+          },
+          "checks": [
+            {
+              "field": "urgency",
+              "op": "eq",
+              "value": "notifiable_suspect"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "To be safe, contact your vet or doctor."
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "To be safe, contact your vet or doctor."
+            },
+            {
+              "field": "text_en",
+              "op": "ne",
+              "value": "Done."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-not-sure-after-a-handoff-and-a-newer-check-still-says-contact-the-vet",
+      "description": "Review finding H4: a vet handoff on the first check, then a newer check of equal urgency on the day the farmer says 'not_sure': the read-back and the saved answer both end with 'To be safe, contact your vet or doctor.', and 'Done.' is never spoken alone.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "swollen_head",
+              "discoloured_comb",
+              "sudden_deaths"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "urgency",
+              "op": "eq",
+              "value": "notifiable_suspect"
+            }
+          ]
+        },
+        {
+          "tool": "prepare_vet_handoff",
+          "args": {
+            "house": "shed one",
+            "check_id": "$check_id"
+          },
+          "save": {
+            "handoff_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            }
+          ]
+        },
+        {
+          "tool": "prepare_vet_handoff",
+          "args": {
+            "house": "shed one",
+            "check_id": "$check_id",
+            "proposal_id": "$handoff_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "demo_days_later": 1,
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "swollen_head",
+              "discoloured_comb",
+              "sudden_deaths",
+              "twisted_neck"
+            ]
+          },
+          "checks": [
+            {
+              "field": "urgency",
+              "op": "eq",
+              "value": "notifiable_suspect"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "not_sure"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "To be safe, contact your vet or doctor."
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "not_sure",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "To be safe, contact your vet or doctor."
+            },
+            {
+              "field": "text_en",
+              "op": "ne",
+              "value": "Done."
+            }
+          ]
+        }
+      ]
     }
   ]
 }

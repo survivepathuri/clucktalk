@@ -232,6 +232,10 @@ def build_follow_up(
             check, (*store.follow_up_answers(farm.farm_id, check.check_id), stand_in), handed, house, today, checks
         )
     escalated = shown.state is FollowUpState.ESCALATED
+    # Not better: "worse", "same" or "not sure", or a "better" that is recorded as not better (a death spike or an
+    # earlier answer: the state is then escalated). It always ends with the vet line, whatever the follow-up's state
+    # now: a handoff, or a newer check, may have taken the follow-up over, but the farmer still hears it.
+    not_better = escalated or said is not Outcome.BETTER
     # The vet already has this check's summary (one handoff per check): speak the escalation, but offer no second one.
     offer = escalated and not shown.handed_off
     spike_deaths = _spike_deaths(house, shown.spike_day)
@@ -263,7 +267,7 @@ def build_follow_up(
         parts = [REASON_TEXT[result.reason]] if result.reason else []
         if spike_deaths is not None:
             parts.append(_spike_note(str(spike_deaths)))
-        if escalated:
+        if not_better:
             parts.append(TO_BE_SAFE)
         parts.append(_ask(said, label))
         text = _join(*parts)
@@ -275,7 +279,7 @@ def build_follow_up(
         return FollowUpOutput(text_en=text.en, text_te=text.te, status="needs_confirmation", **fields)
     if result.status == "applied":
         fields["replayed"] = result.replayed
-        text = _join(DONE, TO_BE_SAFE, OFFER) if offer else (_join(DONE, TO_BE_SAFE) if escalated else DONE)
+        text = _join(DONE, TO_BE_SAFE, OFFER) if offer else (_join(DONE, TO_BE_SAFE) if not_better else DONE)
         return FollowUpOutput(text_en=text.en, text_te=text.te, status="changed", **fields)
     fields["handoff_offered"] = False
     if result.reason == "already_done":

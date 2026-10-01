@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-10-01T18:34:26+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
+Run 2026-10-01T18:45:23+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -53,5 +53,7 @@ Run 2026-10-01T18:34:26+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | status-reportable-check-is-alert-never-doing-well | PASS | — |
 | status-due-follow-up-is-watch-never-doing-well | PASS | — |
 | status-escalated-follow-up-is-alert-never-doing-well | PASS | — |
+| followup-worse-after-a-handoff-and-a-newer-check-still-says-contact-the-vet | PASS | — |
+| followup-not-sure-after-a-handoff-and-a-newer-check-still-says-contact-the-vet | PASS | — |
 
-**Score: 49/49**
+**Score: 51/51**
