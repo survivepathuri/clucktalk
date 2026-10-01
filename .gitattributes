@@ -6,3 +6,10 @@
 *.otf binary
 *.woff2 binary
 *.gif binary
+# Generated or compared text files: LF everywhere, never guessed (the CI check compares their bytes).
+src/clucktalk/server/cards/*.html text eol=lf
+ui/cards/*.html text eol=lf
+docs/EVALS.md text eol=lf
+docs/TELUGU_REVIEW.md text eol=lf
+data/eval/golden_cases.json text eol=lf
+data/i18n/telugu_approvals.json text eol=lf

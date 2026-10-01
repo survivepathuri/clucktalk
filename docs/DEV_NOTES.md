@@ -38,3 +38,16 @@ Severity: Low (one red CI job; no product bug)
 Workaround: Lower-bound tolerance of 50 ms in the test, with a comment. Upper-bound latency checks were not changed.
 Actionable suggestion: Never assert an exact lower bound on a measured sleep; allow a tolerance of one or two timer ticks.
 Evidence: `tests/contract/test_simulator.py::test_simulated_delay_is_applied_and_reported`.
+
+## FL-025: A card bundle built on Windows from a CRLF template differed from the CI build, and the local check passed anyway
+Date: 2026-10-01
+Tool / service: scripts/build_cards.py, Git for Windows (core.autocrlf=true), GitHub Actions (all four jobs)
+Tag: [Dev]
+Task attempted: Push the Step 47A fixes and get the CI matrix green.
+Steps taken: Edited two card templates with a script in Windows text mode (which wrote CRLF into the working copy), rebuilt the bundles and ran `python tasks.py check` (green), committed (Git normalised every blob to LF, as .gitattributes says) and pushed.
+Expected vs actual: Expected the same green result on CI. Actual: all four jobs failed `tests/harness/test_build_cards.py::test_built_cards_are_up_to_date` ("Out of date: farm_status.html, sale_plan.html"). Root cause: the build did `out.replace("<!doctype html>
+", ...)`, which silently matched nothing when the template had CRLF, so the committed bundles lacked their one "Built by" header line; CI builds from LF and adds it. The local check compared a CRLF build with a CRLF-built bundle, so it passed. The git blobs never contained a CR (a fresh clone's bundle hashes differed from the committed ones only by that line).
+Severity: Medium (a red CI on every job; no product bug, but a push that looked verified was not).
+Workaround / fix: The build now reads the template as text with CRLF turned into LF, writes bytes (UTF-8, LF) and refuses to emit a CR or to drop the header; `.gitattributes` names the generated and compared files with `text eol=lf`; three harness tests (a CRLF template builds the same bytes, committed bundles equal the build and have no CR, the attributes exist). The CI comparison itself is still byte-exact.
+Actionable suggestion: A generated-file check must build from the same bytes on every OS; never rely on a string replace that contains a newline, and read templates in a way that does not depend on the checkout's line endings.
+Evidence: `scripts/build_cards.py`, `tests/harness/test_build_cards.py`, `.gitattributes`.

@@ -71,6 +71,9 @@ def num_fixtures() -> list[list]:
 
 
 def build(template: str, labels: dict) -> str:
+    # The template is read as text whatever line endings the checkout stored (a Windows editor may save CRLF); the
+    # output is always LF, on every OS (a CRLF template used to skip the header line below).
+    template = template.replace("\r\n", "\n")
     replacements = {
         '"@NUM_FIXTURES@"': _script_json(num_fixtures()),
         "/*@FONT_FACES@*/": font_faces(),
@@ -85,7 +88,10 @@ def build(template: str, labels: dict) -> str:
     if out.count('"@SERVER_DEMO@"') != 1:
         raise SystemExit('template must contain "@SERVER_DEMO@" exactly once (the server fills it)')
     header = "<!-- Built by scripts/build_cards.py from ui/cards/. Do not edit; edit the template and rebuild. -->\n"
-    return out.replace("<!doctype html>\n", "<!doctype html>\n" + header, 1)
+    out = out.replace("<!doctype html>\n", "<!doctype html>\n" + header, 1)
+    if header not in out or "\r" in out:
+        raise SystemExit("the built card must carry its header line and contain no carriage return")
+    return out
 
 
 def main() -> int:
@@ -100,7 +106,7 @@ def main() -> int:
             if not target.exists() or target.read_bytes() != built:
                 stale.append(name)
         else:
-            target.write_bytes(built)  # bytes: identical LF output on every OS
+            target.write_bytes(built)  # bytes, UTF-8, LF: identical on every OS (no newline translation)
             print(f"built {target.relative_to(ROOT).as_posix()} ({len(built):,} bytes)")
     if stale:
         print(f"Out of date: {', '.join(stale)}. Run: {sys.executable} scripts/build_cards.py", file=sys.stderr)

@@ -25,7 +25,7 @@ Audit of 2026-10-01: three pairs of entries that describe one problem were merge
 | FL-017 | [Alexa+/MCP] | this file |
 | FL-019, FL-020 | [AWS/Bedrock/Nova] | this file |
 | FL-021 | [MCP Apps] | this file |
-| FL-022, FL-023 | [Dev] | `docs/DEV_NOTES.md` (FL-022 includes its recurrence note) |
+| FL-022, FL-023, FL-025 | [Dev] | `docs/DEV_NOTES.md` (FL-022 includes its recurrence note) |
 | FL-024 | [Alexa+/MCP] | this file |
 
 ---
@@ -285,3 +285,6 @@ Severity: High for participants (the official validation path is closed).
 Workaround: Used the MCP Inspector, the ext-apps basic-host and our own Simulator.
 Actionable suggestion: Give participants an access path or publish the Local Inspector, and state Windows support.
 Evidence: none in the repo (documentation-based).
+
+### FL-025: A card bundle built on Windows from a CRLF template differed from the Linux and CI build, and the local check could not see it
+Moved to `docs/DEV_NOTES.md` ([Dev], CI). The number stays valid.
