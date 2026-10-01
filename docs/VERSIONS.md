@@ -1,7 +1,7 @@
 # Verified Versions (Rule 7)
 
 Every version below was checked on the date shown, from the command or source named. Nothing here is from memory.
-**Status**: `pinned` = in a requirements file · `verified` = confirmed to exist, not yet a dependency · `risk` = needs follow-up.
+**Status**: `pinned` = in a requirements file · `verified` = confirmed to exist, not yet a dependency (a package that exists but is not used by this project is marked `available, not used by this project`) · `risk` = needs follow-up.
 
 ## Local toolchain (checked 2026-09-27, Windows 11 Pro 10.0.22621)
 
@@ -23,8 +23,8 @@ Every version below was checked on the date shown, from the command or source na
 | `mcp-types` | 2.2.0 | pinned (exact-pinned dependency of `mcp` 2.2.0) | PyPI `requires_dist`: `mcp-types==2.2.0` |
 | `ruff` | 0.16.9 | pinned (`requirements-dev.txt`) | `pip index versions ruff`; installed in `.venv`, `ruff check` ran |
 | `pytest` | 9.1.1 | pinned (`requirements-dev.txt`) | `pip index versions pytest`; installed in `.venv`; harness tests ran on 3.14.5 and again on 3.13.15 |
-| `strands-agents` | 1.57.1 | verified | PyPI JSON: classifiers include 3.14 |
-| `bedrock-agentcore` | 1.23.1 | verified | PyPI JSON: classifiers list 3.10–3.13 (no 3.14). Resolved by using Python 3.13 for the project |
+| `strands-agents` | 1.57.1 | available, not used by this project | PyPI JSON: classifiers include 3.14. Not imported by any code in this repo |
+| `bedrock-agentcore` | 1.23.1 | available, not used by this project | PyPI JSON: classifiers list 3.10–3.13 (no 3.14). Resolved by using Python 3.13 for the project |
 | `boto3` | 1.43.103 | **pinned** (`requirements.txt`, 2026-09-29) with botocore 1.43.104, s3transfer 0.19.2, jmespath 1.1.0, python-dateutil 2.9.0.post0, six 1.17.0, urllib3 2.8.0 (`pip check` clean) | Converse `toolConfig.toolChoice` (`auto`/`any`/`tool`) and `ImageBlock` (png/jpeg/gif/webp) read in the installed `botocore/data/bedrock-runtime/2023-09-30/service-2.json.gz`; `botocore.stub.Stubber` used in tests. Live check: docs/AWS_SETUP.md §5.3 |
 | `pydantic` | 2.13.5 | pinned | PyPI JSON: classifiers include 3.14 |
 | `uvicorn` | 0.54.0 | pinned | PyPI JSON: classifiers include 3.14 |

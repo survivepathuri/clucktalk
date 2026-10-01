@@ -65,12 +65,36 @@ mode (real Bedrock/Polly) needs an AWS account; see `docs/AWS_SETUP.md`.
   coach, health triage, and feed/order confirmation flows — see `docs/DESIGN.md` §13 for the
   design of each.
 
+## Agent Skill: operate CluckTalk from a coding agent
+
+`skills/clucktalk/` is an Agent Skill (a `SKILL.md` plus three reference files and an MIT
+license) that teaches an AI agent how to operate CluckTalk: which of the 14 tools to call for a farmer's words (shed /
+kotam / house; haan / avunu / nahi / vaddu), the propose, read-back, yes protocol, the safety rules, voice-only versus
+card behaviour, and the rule that spoken numbers equal card numbers. It does not claim that Alexa+ runs CluckTalk. Tests
+keep it in step with the server (`tests/unit/test_skill.py`): it names exactly the tools the server lists, and every
+example phrase routes through the Simulator's rules as the skill says.
+
+Install by copying the folder `skills/clucktalk` into the agent's skills folder, in your project (or the user-level
+folder of the same name):
+
+| Agent | Project folder | What we checked |
+|---|---|---|
+| Claude Code | `.claude/skills/clucktalk/` | Unverified: not checked against the official docs in this change, and never loaded in Claude Code here |
+| Kiro | `.kiro/skills/clucktalk/` | Matches Kiro's skills documentation as returned by a web search on 2026-10-01; never loaded in Kiro |
+| Cursor | `.cursor/skills/clucktalk/` (also `.agents/skills/`; Cursor also reads `.claude/skills/`) | Matches Cursor's skills documentation as returned by a web search on 2026-10-01; never loaded in Cursor. A plain top-level `skills/` folder is unverified: we found no Cursor documentation for it |
+| GitHub Copilot (VS Code) | `.github/skills/clucktalk/` | Unverified: seen only on a third-party page, not on GitHub's own documentation; never loaded in Copilot |
+
+Windows (cmd): `xcopy /E /I skills\clucktalk .claude\skills\clucktalk`. Linux/macOS: `mkdir -p .claude/skills && cp -r skills/clucktalk .claude/skills/`.
+Replace the folder name for another agent. Whether each agent loads the skill and picks it when a farmer's words match
+is unverified for all four.
+
 ## Documentation
 
 - `docs/DESIGN.md` — architecture, tool contract rules, safety rules, and what's built vs planned.
 - `docs/SOURCES.md` — provenance for every number CluckTalk uses.
 - `docs/VERSIONS.md` — pinned/verified tool and package versions.
 - `docs/AWS_SETUP.md` — live-mode AWS setup (not needed for the demo).
+- `skills/clucktalk/` — the Agent Skill for operating CluckTalk (see above).
 - `FRICTION_LOG.md` / `FEATURE_REQUESTS.md` — developer friction with the platforms used, recorded as it happens.
 - `docs/TELUGU_REVIEW.md` — every Telugu string with its English pair and native-speaker review status.
 
