@@ -303,7 +303,10 @@ def _pick(
     said: Outcome,
     today: date,
 ) -> HealthCheck:
-    """The check this answer is for: the one named, else the newest on the shed that has a follow-up to answer."""
+    """The check this answer is for: the one named, else the open check of the HIGHEST urgency on the shed that has a
+    follow-up to answer, the newest among equals (review finding H3: a newer, lower check must not take the answer
+    away from an urgent or reportable one still open; a newer check of equal or higher urgency is the one asked
+    about anyway, because it takes the older follow-up over)."""
     if not checks:
         raise NoHealthCheck(house.label_en, house.label_te)
     if check_id is not None:
@@ -313,10 +316,15 @@ def _pick(
         candidates = [found]
     else:
         candidates = list(checks)  # newest first
+    open_checks = []
     for candidate in candidates:
-        if _can_answer(state_of(candidate), candidate, said, today):
-            return candidate
-    raise NothingToFollowUp(house.label_en, house.label_te)
+        fup = state_of(candidate)
+        if _can_answer(fup, candidate, said, today):
+            open_checks.append((fup.urgency, candidate))
+    if not open_checks:
+        raise NothingToFollowUp(house.label_en, house.label_te)
+    # max() keeps the first of equals, and the list is newest first: the newest among the highest urgency
+    return max(open_checks, key=lambda pair: pair[0])[1]
 
 
 def _can_answer(fup: FollowUp, check: HealthCheck, said: Outcome, today: date) -> bool:

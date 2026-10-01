@@ -142,6 +142,18 @@ def _check_to_show(
     ]
     if notifiable:
         return max(notifiable, key=lambda c: c.created_at)
+    # An URGENT check is not hidden by a newer check of lower urgency either (review finding H3, together with the
+    # follow-up rule): the newest urgent check stays for RECENT_CHECK_DAYS. A newer urgent check simply is the newest;
+    # a newer suspected reportable disease (here only one already handed to a vet) takes it over, as in the follow-up.
+    urgent = [
+        c
+        for c in pool
+        if check_urgency(c) is Urgency.URGENT
+        and age(c) <= RECENT_CHECK_DAYS
+        and not any(check_urgency(n) is Urgency.NOTIFIABLE_SUSPECT and n.created_at > c.created_at for n in pool)
+    ]
+    if urgent:
+        return max(urgent, key=lambda c: c.created_at)
     if latest is None or handed(latest):
         return None
     if check_urgency(latest) >= Urgency.WATCH and age(latest) <= RECENT_CHECK_DAYS:

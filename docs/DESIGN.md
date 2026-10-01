@@ -204,7 +204,7 @@ the tool's sentence, and how Alexa words it is not verified on a device. After e
 - **Visual**: status is an icon shape AND a word (OK ✓ circle, WATCH triangle, ALERT octagon, UNKNOWN ?), never colour alone. Key numbers are large (32–48 px); the least important line (breed, day, bird count) comes last so it is what drops below the fold on short screens. Checked at Amazon-documented Echo Show sizes (§15) and on a phone.
 - **Bilingual**: English and Telugu side by side. Fixed labels are Python `Text` pairs in `clucktalk.server.cards` (reviewed per string, §8), with `{n}` slots for numbers so Telugu inflection ("{n}వ రోజు") is reviewed too. Noto Sans Telugu 2.005 (SIL OFL 1.1, `ui/fonts/`) is inlined; if a host's CSP blocks data: fonts, the card falls back to system Telugu fonts and logs a warning (FRICTION_LOG FL-007).
 - **Demo data**: the server stamps its mode into the card at startup, so the "Demo data" badge shows on every card in demo mode, including error cards (which carry no `structuredContent`).
-- **Follow-up on the cards (§18)**: a briefing slide for a follow-up item has its own icon (a circular arrow) AND the word "Follow-up" beside the level icon and word. The farm-status tile and the shed detail view show a chip: the state as icon AND word, the briefing's own level words (due = WATCH for a watch check, ALERT for an urgent or reportable one; escalated = ALERT; lapsed = UNKNOWN, because no answer came and so nothing is known; never "reminder", since nothing reminds anyone), then the spoken sentence verbatim from `follow_up.text_en/te`. Only "Follow-up" is a new Telugu label. Scheduled and closed show no chip. The chip is inside the tile, so a tap opens the existing detail view; the tile's accessible name includes the sentence. The days number is the one in the sentence, so in the Simulator a card cannot disagree with the voice (on Alexa+ the assistant words its own answer). **Not built**: a follow-up row on the health-check card (it needs a new output field and would touch more than 12 non-test files; the day 0 sentence already shows there through `text_en`). The sale card is unchanged except for the demo-clock marker.
+- **Follow-up on the cards (§18)**: a briefing slide for a follow-up item has its own icon (a circular arrow) AND the word "Follow-up" beside the level icon and word. The farm-status tile and the shed detail view show a chip: the state as icon AND word, the briefing's own level words (due = WATCH for a watch check, ALERT for an urgent or reportable one; escalated = ALERT; lapsed = UNKNOWN, because no answer came and so nothing is known; never "reminder", since nothing reminds anyone), with English, a visible " · " and Telugu in the chip head (also in plain text), then the spoken sentence verbatim from `follow_up.text_en/te`. Only "Follow-up" is a new Telugu label. Scheduled and closed show no chip. The chip is inside the tile, so a tap opens the existing detail view; the tile's accessible name includes the sentence. The days number is the one in the sentence, so in the Simulator a card cannot disagree with the voice (on Alexa+ the assistant words its own answer). **Not built**: a follow-up row on the health-check card (it needs a new output field and would touch more than 12 non-test files; the day 0 sentence already shows there through `text_en`). The sale card is unchanged except for the demo-clock marker.
 - **Demo-clock marker**: when the server's demo clock is on (§18), every card shows a second badge "Demo clock: +N days". It comes from `_meta["clucktalk/demo_clock"]` on the tool result (not from `structuredContent`, whose output schema is closed) and is marked `data-xm-skip`, so the "+N" is not mistaken for a farm number. When the clock is off the card is exactly as before.
 - **Touch = voice**: tapping a shed tile or "All sheds" makes the card call the same tool (`tools/call get_farm_status`) through the host; the answer equals what voice would give.
 - **Errors**: an `isError` result renders the bilingual message and next step from `_meta["clucktalk/error"]`, never a blank card.
@@ -251,7 +251,7 @@ against a freshly started mock-mode server, checked against literal field values
 (`scripts/eval_fast.py`). Writes `docs/EVALS.md` with a real pass/fail count; never fakes a score (Rule 6).
 v0 covers a handful of read-only, single-call cases (farm status, feed reorder, and `plan_sale`'s before /
 at / after break-even and rising-mortality stories); contract-mode's multi-step confirmation flow is covered by
-the contract test suite instead, since this runner is single-call by design. The suite has 51 cases
+the contract test suite instead, since this runner is single-call by design. The suite has 53 cases
 (the table in `docs/EVALS.md` is the count; a harness test keeps this number equal to it). Multi-step cases (`steps`, `save`,
 `poll_until`) and model-fixture cases (`model_fixture`, `tests/fakes.py`) came with the agents (§18); a case marked
 `fresh_state` runs on a server of its own, so its answer cannot depend on what earlier cases changed.
@@ -266,7 +266,8 @@ fails the case instead of being ignored. No MCP tool or argument can reach the d
 group was run and the matching case failed each time (see PROGRESS).
 The Session 5 review fixes added 7 more: an urgent and a reportable check keep their warning the next day (briefing),
 a reportable check, a due follow-up and an escalated one change the farm-status level (never "doing well"), and a
-"worse" / "not sure" after a vet handoff and a newer check still ends with the vet line.
+"worse" / "not sure" after a vet handoff and a newer check still ends with the vet line. Step 47B added 2 for
+review finding H3 (an urgent check stays visible, with its warning, after a newer lower check).
 
 ## 18. Agents (Health Triage built 2026-09-29; Daily Briefing built 2026-09-30; Flock Follow-up: tool, briefing, farm status, the day 0 sentence, the demo clock, golden evals and the briefing / farm-status cards built 2026-10-01; health-check card row not built)
 The model decides; code speaks. An agent runs on the slow path (§3) and asks a model for **one forced tool call
@@ -366,7 +367,9 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     `set_contract_terms`). One confirmation pattern (§5.1): the first call reads the answer back and saves nothing; only
     "yes" appends one row to `follow_up_answers` (append-only: the store has no update or delete). A repeated "yes" is a
     replay, even after the follow-up has since closed or a handoff ended it. Annotations as the other write tools.
-  - **Which check**: the one named, else the newest check on the shed that has a follow-up to answer. An answer is taken
+  - **Which check**: the one named, else the open check of the HIGHEST urgency on the shed that has a follow-up to
+    answer, the newest among equals (so a newer, lower check never takes the answer away from an urgent or reportable
+    one that is still open; a newer check of equal or higher urgency takes the older one over anyway). An answer is taken
     from the day after the check (a same-day "better" must not close a follow-up that was never asked). A second
     "better" on a closed follow-up has nothing to add and is an error; "same", "worse" or "not sure" still reopens it.
   - **State** (`follow_up_state`, a pure function; the date is a parameter, never read from a clock): none, scheduled,
@@ -392,7 +395,13 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     whose check got a handoff is therefore never told "no health check is waiting" while the birds get worse.
   - **When an escalated follow-up stops showing**: only when a newer check of equal or higher urgency exists on that
     shed, or a vet handoff for that very check is confirmed and nothing worse was said since. A newer check of lower
-    urgency never hides it. Any other follow-up is taken over by any newer check on the shed.
+    urgency never hides it. **The same holds for every follow-up of an urgent check or a suspected reportable disease,
+    escalated or not (review finding H3, approved 2026-10-01)**: it stays visible, still as the one item carrying the
+    check's warning plus the question, until "better" closes it (under the existing safety conditions), a newer check
+    of equal or higher urgency exists, the vet handoff is confirmed, or the 7-day lapse; a "worse", "same" or "not
+    sure" for it is always accepted. On the day of the check, before the follow-up is due, the briefing's own rule
+    keeps the urgent check for the usual 3 days behind a newer lower one too (the two rules, `_superseded` and
+    `_check_to_show`, change together). A watch check's follow-up is still taken over by any newer check on the shed.
   - **Surfaces** (all computed on the fast path from stored checks, answers, handoffs, the record book and the date):
     - *Daily briefing*: an escalated follow-up (even when the briefing's own check rule hid its check) or a due,
       unanswered one is one pinned item for that shed. It replaces the shed's open health-check item (never both), is never

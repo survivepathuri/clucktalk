@@ -152,6 +152,7 @@ def test_the_chip_word_and_icon_for_every_state_and_urgency_run_in_node():
         f"const L = {json.dumps(labels, ensure_ascii=False)};\n"
         "const icon = (name) => ({ nodeType: 1, tag: 'icon', name, kids: [] });\n"
         + _js_function(source, "el")
+        + _js_function(source, "bi")
         + _js_function(source, "stacked")
         + _js_function(source, "followUpChip")
         + "\nconst words = (n) => typeof n === 'string' ? n : Array.isArray(n) ? n.map(words).join('')"
@@ -166,11 +167,11 @@ def test_the_chip_word_and_icon_for_every_state_and_urgency_run_in_node():
         "console.log(JSON.stringify(out));"
     )
     out = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True, encoding="utf-8").stdout
-    rows = {(s, u): (cls, h and h.replace(" ", "")) for s, u, cls, h in json.loads(out)}
+    rows = {(s, u): (cls, h) for s, u, cls, h in json.loads(out)}
     watch, alert, unknown = (FARM_STATUS_LABELS[k] for k in ("level_watch", "level_alert", "level_unknown"))
 
-    def head(icon: str, word) -> str:
-        return f"[{icon}]Follow-up: {word.en} ఫాలో-అప్: {word.te}".replace(" ", "")  # spacing is CSS: compare the words
+    def head(icon: str, word) -> str:  # English, a visible separator, Telugu: also in plain text, never glued
+        return f"[{icon}]Follow-up: {word.en} · ఫాలో-అప్: {word.te}"
 
     for urgency in ("watch", "urgent", "notifiable_suspect"):
         assert rows[("scheduled", urgency)] == (None, None) and rows[("closed", urgency)] == (None, None)

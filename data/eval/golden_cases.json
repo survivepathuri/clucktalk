@@ -3352,6 +3352,263 @@
           ]
         }
       ]
+    },
+    {
+      "id": "followup-urgent-stays-visible-after-a-newer-lower-check",
+      "description": "Review finding H3 (approved): an urgent check yesterday, a lower (watch) check today: the briefing still carries the urgent warning plus the follow-up question in one item, the farm status is ALERT, and 'worse' is accepted with the vet line (never 'no health check waiting').",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "swollen_head"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            }
+          ]
+        },
+        {
+          "tool": "get_health_check",
+          "args": {
+            "check_id": "$check_id"
+          },
+          "poll_until": {
+            "field": "status",
+            "op": "eq",
+            "value": "ready"
+          },
+          "checks": [
+            {
+              "field": "urgency",
+              "op": "eq",
+              "value": "urgent"
+            }
+          ]
+        },
+        {
+          "demo_days_later": 1,
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            }
+          ]
+        },
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "items.0.fact_id",
+              "op": "eq",
+              "value": "follow_up:house-1"
+            },
+            {
+              "field": "items.0.text_en",
+              "op": "contains",
+              "value": "needs a vet today"
+            },
+            {
+              "field": "items.0.text_en",
+              "op": "contains",
+              "value": "How are the birds now"
+            }
+          ]
+        },
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            },
+            {
+              "field": "houses.0.level",
+              "op": "eq",
+              "value": "alert"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "To be safe, contact your vet or doctor."
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "no health check waiting"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            },
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "escalated"
+            },
+            {
+              "field": "urgency",
+              "op": "eq",
+              "value": "urgent"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-urgent-check-this-morning-stays-after-a-lower-check-this-afternoon",
+      "description": "Review finding H3: an urgent check, then a lower (watch) check on the same day: the briefing and the farm status still show the urgent one (open check, warning, ALERT).",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "swollen_head"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            }
+          ]
+        },
+        {
+          "tool": "get_health_check",
+          "args": {
+            "check_id": "$check_id"
+          },
+          "poll_until": {
+            "field": "status",
+            "op": "eq",
+            "value": "ready"
+          },
+          "checks": [
+            {
+              "field": "urgency",
+              "op": "eq",
+              "value": "urgent"
+            }
+          ]
+        },
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            }
+          ]
+        },
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "items.0.fact_id",
+              "op": "eq",
+              "value": "open_health_check:house-1"
+            },
+            {
+              "field": "items.0.values.urgency",
+              "op": "eq",
+              "value": "urgent"
+            },
+            {
+              "field": "items.0.text_en",
+              "op": "contains",
+              "value": "needs a vet today"
+            }
+          ]
+        },
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "needs a vet today"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "doing well"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

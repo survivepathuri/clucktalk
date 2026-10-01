@@ -154,10 +154,13 @@ def _superseded(
 
     An ESCALATED follow-up does not disappear because some newer check exists: it stays until a newer check on the
     house of equal or higher urgency exists (decided 2026-10-01; a newer check that is LOWER in urgency never hides it).
-    A vet handoff for the check does not hide an escalation either, because ``follow_up_state`` only lets what came
-    AFTER the handoff escalate. Any other follow-up (scheduled, due, lapsed, closed) is taken over by any newer check on
-    the house, except that a suspected reportable disease not yet handed to a vet is taken over only by a newer one of
-    its own kind (the briefing's ``_check_to_show`` rule)."""
+    The same holds for any follow-up of an URGENT check, escalated or not (review finding H3, approved 2026-10-01): a
+    newer check of lower urgency never hides it; it ends by "better", a newer check of equal or higher urgency, the
+    vet handoff, or the 7-day lapse. A vet handoff for the check does not hide an escalation either, because
+    ``follow_up_state`` only lets what came AFTER the handoff escalate. Any other follow-up (a watch check's) is taken
+    over by any newer check on the house, except that a suspected reportable disease not yet handed to a vet is taken
+    over only by a newer one of its own kind (the briefing's ``_check_to_show`` rule, which changes together with
+    this one)."""
     newer = [
         c
         for c in house_checks
@@ -167,6 +170,9 @@ def _superseded(
         return any(_told_urgency(c) >= urgency for c in newer)
     if _unhanded_reportable(check, handed_off):
         return any(_unhanded_reportable(c, handed_off) for c in newer)
+    # an urgent check: only a newer check of equal or higher urgency takes it over; a confirmed vet handoff ends it
+    if urgency >= Urgency.URGENT and check.check_id not in handed_off:
+        return any(_told_urgency(c) >= urgency for c in newer)
     return bool(newer)
 
 

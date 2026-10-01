@@ -88,7 +88,7 @@ h1 [lang="te"] { font-weight: 600; font-size: 23px; }
 .fu.fu-due.fu-high { border-color: var(--alert); }
 .fu-head { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 16px; }
 .fu-head svg { width: 22px; height: 22px; flex: none; }
-.fu-head [lang="te"] { display: block; font-weight: 600; font-size: 14px; }
+.fu-head [lang="te"] { font-weight: 600; font-size: 14px; }
 .say [lang="te"] { display: block; font-size: 17px; color: var(--muted); margin-top: 2px; }
 
 .band { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -349,7 +349,7 @@ function followUpChip(h) {
   const word = L["level_" + level];
   return el("div", { class: "fu fu-" + f.state + (high && f.state === "due" ? " fu-high" : ""), role: "group" },
     el("div", { class: "fu-head" }, icon(level),
-      stacked({ en: L.follow_up.en + ": " + word.en, te: L.follow_up.te + ": " + word.te })),
+      el("div", {}, bi({ en: L.follow_up.en + ": " + word.en, te: L.follow_up.te + ": " + word.te }))),
     stacked({ en: f.text_en, te: f.text_te }, "say"));
 }
 
