@@ -4,7 +4,7 @@ docstrings and docs/DESIGN.md, not from tool output."""
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -13,6 +13,7 @@ from clucktalk.domain.feed import plan_feed
 from clucktalk.domain.profile import demo_default_profile
 from clucktalk.server.tools.farm_status import MAX_SPOKEN_HOUSES, build_status
 from clucktalk.server.tools.feed import build_plan
+from clucktalk.store.sqlite import SqliteStore
 from tests.crossmodal import tool_output_problems
 from tests.unit.helpers import D0, broiler_house, farm_with, layer_house
 
@@ -22,6 +23,8 @@ class _Source:
 
     def __init__(self, farm, day_offset: int):
         self._farm, self._as_of = farm, D0 + timedelta(days=day_offset)
+        self.store = SqliteStore()  # farm status also reads the stored follow-ups
+        self.now = lambda: datetime(2026, 10, 1, 12, 0, tzinfo=UTC)
 
     def snapshot(self):
         return self._farm, self._as_of

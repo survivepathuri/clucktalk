@@ -24,6 +24,7 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 from clucktalk.agents import AiServices
 from clucktalk.agents.triage import floor_only_result, run_triage
 from clucktalk.domain.errors import DomainError, NoHealthCheck, NothingToCheck
+from clucktalk.domain.follow_up import due_after_days
 from clucktalk.domain.houses import resolve_house
 from clucktalk.domain.models import House
 from clucktalk.domain.photos import LABEL as PHOTO_LABEL
@@ -52,7 +53,7 @@ from clucktalk.server.cards import HEALTH_CHECK_URI, health_check_html
 from clucktalk.server.confirm import ConfirmFlow
 from clucktalk.server.errors import domain_error_result
 from clucktalk.server.farm_state import DemoFarmSource
-from clucktalk.server.render import num
+from clucktalk.server.render import num, plural
 from clucktalk.server.tools import Capability, CapabilityRegistry
 
 START_TOOL, GET_TOOL, HANDOFF_TOOL = "start_health_check", "get_health_check", "prepare_vet_handoff"
@@ -240,6 +241,7 @@ class HealthCheckOutput(BaseModel):
     ai: AiOut
     photo: PhotoOut | None
     handoff_offered: bool
+    follow_up_in_days: int | None = None  # a new check only: when the next briefing will ask about this shed
     disclaimer_en: str
     disclaimer_te: str
     sources: list[SourceOut]
@@ -450,6 +452,16 @@ def _ai_out(check: HealthCheck, ai: AiServices) -> AiOut:
     return AiOut(engine=engine, model_id=model_id, label_en=label.en, label_te=label.te, note=note)
 
 
+def _next_briefing_line(inp: TriageInput, days: int) -> Text:
+    """Said when a check starts: what the farmer can expect. Nothing proactive is promised: the farm asks only when the
+    farmer next opens the briefing (there is no verified way to push a reminder, FL-017)."""
+    d, unit = num(days), plural(days, "day", "days")
+    return Text(
+        f"The next briefing, in about {d} {unit}, will ask how {inp.label_en} is doing.",
+        f"తదుపరి బ్రీఫింగ్‌లో, సుమారు {d} రోజుల్లో, {inp.label_te} ఎలా ఉందో అడుగుతాను.",
+    )
+
+
 def _output(
     check: HealthCheck, house: House, source: DemoFarmSource, ai: AiServices, *, first_time: bool, duplicate: bool
 ) -> HealthCheckOutput:
@@ -462,6 +474,10 @@ def _output(
         text = _analyzing_text(check, first_time)
     if check.status is not CheckStatus.READY:  # a ready answer already says them (_ready_text)
         text = _join(text, *_notes(inp))
+    is_start = first_time or duplicate  # the answer to start_health_check, not to a later get_health_check
+    follow_up_days = due_after_days(r.urgency if check.status is CheckStatus.READY and r else check.floor.urgency)
+    if is_start and follow_up_days is not None:
+        text = _join(text, _next_briefing_line(inp, follow_up_days))
     ready = check.status is CheckStatus.READY and r is not None
     return HealthCheckOutput(
         text_en=text.en,
@@ -518,6 +534,7 @@ def _output(
             note_te=NOT_ANALYZED.te,
         ),
         handoff_offered=(r.urgency if ready else check.floor.urgency) >= Urgency.URGENT,
+        follow_up_in_days=follow_up_days if is_start else None,
         disclaimer_en=DISCLAIMER.en,
         disclaimer_te=DISCLAIMER.te,
         sources=[SourceOut(title=t, url=u) for t, u in SOURCES],

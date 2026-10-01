@@ -3,7 +3,7 @@ Expected strings are written by hand from the Indian grouping rule, not copied f
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import pytest
@@ -13,6 +13,7 @@ from clucktalk.domain.profile import demo_default_profile
 from clucktalk.server.render import indian_group, num, rupees, weekday_en, weekday_te
 from clucktalk.server.tools.farm_status import MAX_SPOKEN_HOUSES, build_status
 from clucktalk.server.tools.feed import build_plan
+from clucktalk.store.sqlite import SqliteStore
 from tests.crossmodal import unbacked_numbers
 from tests.unit.helpers import D0, farm_with, layer_house
 
@@ -60,6 +61,8 @@ class _Source:
     def __init__(self, farm, day_offset: int = 9):
         self._farm = farm
         self._as_of = D0 + timedelta(days=day_offset)
+        self.store = SqliteStore()  # farm status also reads the stored follow-ups
+        self.now = lambda: datetime(2026, 10, 1, 12, 0, tzinfo=UTC)
 
     def snapshot(self):
         return self._farm, self._as_of

@@ -41,6 +41,7 @@ from clucktalk.i18n import Text
 from clucktalk.server.confirm import ConfirmFlow
 from clucktalk.server.errors import domain_error_result
 from clucktalk.server.farm_state import DemoFarmSource
+from clucktalk.server.render import num, plural
 from clucktalk.server.tools import Capability, CapabilityRegistry
 from clucktalk.server.tools.health import (
     ANSWER_PARAM,
@@ -146,7 +147,7 @@ class FollowUpOutput(BaseModel):
     replayed: bool
 
 
-# -- finding the check this answer belongs to --------------------------------------------------------------------------
+# -- finding the check this answer belongs to ------------------------------------------------------
 def _confirmed_replay(
     source: DemoFarmSource, farm_id: str, outcome: str, proposal_id: str | None, checks: tuple[HealthCheck, ...]
 ) -> HealthCheck | None:
@@ -183,7 +184,7 @@ def build_follow_up(
     checks = tuple(
         _effective(c, source.now()) for c in store.recent_health_checks(farm.farm_id, house.house_id, date.min)
     )
-    handed = frozenset(c.check_id for c in checks if store.handoff_for_check(c.check_id) is not None)
+    handed = _handoff_times(source, checks)
 
     def state_of(check: HealthCheck) -> FollowUp:
         answers = store.follow_up_answers(farm.farm_id, check.check_id)
@@ -228,6 +229,8 @@ def build_follow_up(
             check, (*store.follow_up_answers(farm.farm_id, check.check_id), stand_in), handed, house, today, checks
         )
     escalated = shown.state is FollowUpState.ESCALATED
+    # The vet already has this check's summary (one handoff per check): speak the escalation, but offer no second one.
+    offer = escalated and not shown.handed_off
     spike_deaths = _spike_deaths(house, shown.spike_day)
     fields: dict[str, Any] = {
         "demo_data": source.demo_data,
@@ -244,7 +247,7 @@ def build_follow_up(
         "reasons": [r.value for r in shown.reasons],
         "record_book_worse": shown.spike_day is not None,
         "spike_deaths": spike_deaths,
-        "handoff_offered": escalated and result.status != "cancelled",
+        "handoff_offered": offer and result.status != "cancelled",
         "proposal_id": None,
         "expires_at": None,
         "expires_in_minutes": None,
@@ -269,7 +272,7 @@ def build_follow_up(
         return FollowUpOutput(text_en=text.en, text_te=text.te, status="needs_confirmation", **fields)
     if result.status == "applied":
         fields["replayed"] = result.replayed
-        text = _join(DONE, TO_BE_SAFE, OFFER) if escalated else DONE
+        text = _join(DONE, TO_BE_SAFE, OFFER) if offer else (_join(DONE, TO_BE_SAFE) if escalated else DONE)
         return FollowUpOutput(text_en=text.en, text_te=text.te, status="changed", **fields)
     fields["handoff_offered"] = False
     if result.reason == "already_done":
@@ -294,29 +297,149 @@ def _pick(
     today: date,
 ) -> HealthCheck:
     """The check this answer is for: the one named, else the newest on the shed that has a follow-up to answer."""
+    if not checks:
+        raise NoHealthCheck(house.label_en, house.label_te)
     if check_id is not None:
         found = next((c for c in checks if c.check_id == check_id), None)
         if found is None:
             raise NoHealthCheck(house.label_en, house.label_te)
-        candidate, fup = found, state_of(found)
+        candidates = [found]
     else:
-        if not checks:
-            raise NoHealthCheck(house.label_en, house.label_te)
-        for candidate in checks:  # newest first
-            fup = state_of(candidate)
-            if fup.state not in (FollowUpState.NONE, FollowUpState.SUPERSEDED):
-                break
-        else:
-            raise NothingToFollowUp(house.label_en, house.label_te)
-    unanswerable = fup.state in (FollowUpState.NONE, FollowUpState.SUPERSEDED) or not answerable(candidate, today)
-    # A second "better" on a follow-up that is already closed has nothing to add; "same", "worse" or "not sure" does
-    # (it reopens it): the birds can get worse after they were better.
-    if unanswerable or (fup.state is FollowUpState.CLOSED and said is Outcome.BETTER):
-        raise NothingToFollowUp(house.label_en, house.label_te)
-    return candidate
+        candidates = list(checks)  # newest first
+    for candidate in candidates:
+        if _can_answer(state_of(candidate), candidate, said, today):
+            return candidate
+    raise NothingToFollowUp(house.label_en, house.label_te)
 
 
-# -- registration -----------------------------------------------------------------------------------------------------
+def _can_answer(fup: FollowUp, check: HealthCheck, said: Outcome, today: date) -> bool:
+    """Is this check's follow-up waiting for an answer today?
+
+    No for a check still being analyzed, one a newer check took over (it has its own follow-up), the day of the check
+    itself (nothing to compare with yet), and a second "better" on a closed follow-up (nothing to add). A check that
+    got a vet handoff still hears the farmer: its follow-up shows as handled, but "worse", "same" or "not sure" after
+    the handoff escalates again, and "better" only closes it. A closed follow-up still hears a "worse" (a relapse)."""
+    if fup.state is FollowUpState.NONE or not answerable(check, today):
+        return False
+    if fup.state is FollowUpState.SUPERSEDED and not fup.handed_off:
+        return False
+    return not (fup.state is FollowUpState.CLOSED and said is Outcome.BETTER)
+
+
+def _handoff_times(source: DemoFarmSource, checks: tuple[HealthCheck, ...]) -> dict[str, datetime]:
+    """When each check's vet handoff was sent (only checks that have one): the domain needs the time to tell what was
+    said before the handoff from what is said after it."""
+    found = {c.check_id: source.store.handoff_for_check(c.check_id) for c in checks}
+    return {check_id: h.created_at for check_id, h in found.items() if h is not None}
+
+
+# -- where a follow-up shows up: the briefing and the farm status share these sentences ------------
+def _due_sentence(label: Text, days: int) -> Text:
+    d, unit = num(days), plural(days, "day", "days")
+    return Text(
+        f"{label.en}: your health check {d} {unit} ago needs a follow-up. "
+        "How are the birds now: better, the same, or worse?",
+        f"{label.te}: {d} రోజుల క్రితం చేసిన మీ ఆరోగ్య తనిఖీకి ఫాలో-అప్ అవసరం. కోళ్లు ఇప్పుడు ఎలా ఉన్నాయి: మెరుగ్గా, అలాగే, లేదా అధ్వాన్నంగా?",
+    )
+
+
+def _escalated_sentence(label: Text, days: int) -> Text:
+    d, unit = num(days), plural(days, "day", "days")
+    first = Text(
+        f"{label.en}: the follow-up on the health check {d} {unit} ago still needs attention.",
+        f"{label.te}: {d} రోజుల క్రితం చేసిన ఆరోగ్య తనిఖీ ఫాలో-అప్‌పై ఇంకా శ్రద్ధ అవసరం.",
+    )
+    return _join(first, TO_BE_SAFE)
+
+
+def _lapsed_sentence(label: Text, days: int) -> Text:
+    d, unit = num(days), plural(days, "day", "days")
+    return Text(
+        f"{label.en}: there was no answer to the follow-up on the health check {d} {unit} ago.",
+        f"{label.te}: {d} రోజుల క్రితం చేసిన ఆరోగ్య తనిఖీ ఫాలో-అప్‌కు సమాధానం రాలేదు.",
+    )
+
+
+def follow_up_days_ago(fup: FollowUp, as_of: date) -> int:
+    """Days since the check, from the date passed in (never typed, never below zero)."""
+    return 0 if fup.check_day is None else max(0, (as_of - fup.check_day).days)
+
+
+def follow_up_line(fup: FollowUp, label: Text, as_of: date) -> Text | None:
+    """The one spoken sentence for a shed's follow-up: a question when it is due, the escalation (with "To be safe,
+    contact your vet or doctor"), or an honest "no answer" once it lapsed. Nothing for the other states."""
+    days = follow_up_days_ago(fup, as_of)
+    if fup.state is FollowUpState.DUE:
+        return _due_sentence(label, days)
+    if fup.state is FollowUpState.ESCALATED:
+        return _escalated_sentence(label, days)
+    if fup.state is FollowUpState.LAPSED:
+        return _lapsed_sentence(label, days)
+    return None
+
+
+# What the farmer should hear about first when a shed has several follow-ups (newest check first among equals).
+_SURFACE_ORDER = (
+    FollowUpState.ESCALATED,
+    FollowUpState.DUE,
+    FollowUpState.LAPSED,
+    FollowUpState.SCHEDULED,
+    FollowUpState.CLOSED,
+)
+
+
+def surfaced_follow_up(source: DemoFarmSource, farm_id: str, house: House, today: date) -> FollowUp | None:
+    """The follow-up of this shed worth showing today, or None: an escalated one first (the most urgent check, then the
+    newest), then a due one, a lapsed one, one not yet due, and a closed one. Nothing is slow: it reads this shed's
+    stored checks and answers and works the states out in code."""
+    store = source.store
+    checks = tuple(_effective(c, source.now()) for c in store.recent_health_checks(farm_id, house.house_id, date.min))
+    handed = _handoff_times(source, checks)
+    best: tuple[tuple[int, int], FollowUp] | None = None
+    for check in checks:  # newest first: on a tie the newest check stays
+        fup = follow_up_state(check, store.follow_up_answers(farm_id, check.check_id), handed, house, today, checks)
+        if fup.state not in _SURFACE_ORDER:
+            continue
+        key = (_SURFACE_ORDER.index(fup.state), -int(fup.urgency))
+        if best is None or key < best[0]:
+            best = (key, fup)
+    return None if best is None else best[1]
+
+
+class FollowUpView(BaseModel):
+    """A shed's follow-up as farm status reports it (the card will show exactly this; docs/DESIGN.md §14)."""
+
+    model_config = ConfigDict(extra="forbid")
+    check_id: str
+    state: Literal["scheduled", "due", "closed", "escalated", "lapsed"]
+    urgency: Literal["watch", "urgent", "notifiable_suspect"]  # the health check's own; never changed by an answer
+    days_ago: int
+    due_day: str
+    outcome: OutcomeName | None
+    reasons: list[str]  # codes; never spoken
+    handed_off: bool
+    text_en: str | None  # the sentence spoken for it (due, escalated, lapsed); None for the others
+    text_te: str | None
+
+
+def follow_up_view(fup: FollowUp, label: Text, as_of: date) -> FollowUpView:
+    line = follow_up_line(fup, label, as_of)
+    assert fup.due_day is not None
+    return FollowUpView(
+        check_id=fup.check_id,
+        state=fup.state.value,  # type: ignore[arg-type]
+        urgency=fup.urgency.code,  # type: ignore[arg-type]
+        days_ago=follow_up_days_ago(fup, as_of),
+        due_day=fup.due_day.isoformat(),
+        outcome=None if fup.outcome is None else fup.outcome.value,
+        reasons=[r.value for r in fup.reasons],
+        handed_off=fup.handed_off,
+        text_en=None if line is None else line.en,
+        text_te=None if line is None else line.te,
+    )
+
+
+# -- registration ----------------------------------------------------------------------------------
 DESCRIPTION = (
     "Use when the farmer says how a shed that had a health check is doing now compared with then: better (theek, "
     "behtar), the same (waisa hi, no change), worse (aur kharab), or not sure (pata nahi). Give the house (shed, "

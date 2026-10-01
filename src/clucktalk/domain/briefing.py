@@ -12,7 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
@@ -20,6 +20,7 @@ from typing import Any
 
 from clucktalk.domain.errors import DomainError
 from clucktalk.domain.feed import plan_feed
+from clucktalk.domain.follow_up import FollowUp, FollowUpState
 from clucktalk.domain.models import Farm, House
 from clucktalk.domain.sale import plan_sale
 from clucktalk.domain.status import Level, house_status, spike_finding
@@ -43,6 +44,7 @@ class Category(StrEnum):
     MORTALITY_SPIKE = "mortality_spike"
     RECENT_LOGGED_SPIKE = "recent_logged_spike"
     OPEN_HEALTH_CHECK = "open_health_check"
+    FOLLOW_UP = "follow_up"
     CUM_MORTALITY_HIGH = "cum_mortality_high"
     WEIGHT_BELOW_TARGET = "weight_below_target"
     FCR_ABOVE_TARGET = "fcr_above_target"
@@ -74,7 +76,13 @@ URGENT_CHECK_SEVERITY = 3
 NOTIFIABLE_SEVERITY = 4
 # Every health fact is pinned, at any level: above every non-health item, never re-ordered by a model.
 HEALTH_CATEGORIES = frozenset(
-    {Category.MORTALITY_SPIKE, Category.RECENT_LOGGED_SPIKE, Category.OPEN_HEALTH_CHECK, Category.CUM_MORTALITY_HIGH}
+    {
+        Category.MORTALITY_SPIKE,
+        Category.RECENT_LOGGED_SPIKE,
+        Category.OPEN_HEALTH_CHECK,
+        Category.FOLLOW_UP,
+        Category.CUM_MORTALITY_HIGH,
+    }
 )
 
 
@@ -141,13 +149,45 @@ def _check_to_show(
     return None
 
 
+def _follow_up_fact(house: House, as_of: date, fup: FollowUp | None, replaced: Fact | None) -> Fact | None:
+    """The follow-up item for a shed: a pinned alert when it is escalated, a pinned question when it is due and still
+    unanswered. Nothing for any other state. Its priority is the check's own (a reportable suspect 4, an urgent check
+    3, an escalated watch check 3, a due watch check as a watch), and never below the item it replaces. The days since
+    the check come from ``as_of``, the date passed in."""
+    if fup is None or fup.check_day is None or fup.state not in (FollowUpState.ESCALATED, FollowUpState.DUE):
+        return None
+    urgent = fup.urgency >= Urgency.URGENT
+    if fup.state is FollowUpState.ESCALATED or urgent:
+        level = Level.ALERT
+    else:
+        level = Level.WATCH
+    severity = _severity(level)
+    if fup.urgency is Urgency.NOTIFIABLE_SUSPECT:
+        severity = NOTIFIABLE_SEVERITY
+    elif urgent or fup.state is FollowUpState.ESCALATED:
+        severity = URGENT_CHECK_SEVERITY
+    if replaced is not None:
+        level, severity = max(level, replaced.level), max(severity, replaced.severity)
+    return Fact(
+        _fact_id(Category.FOLLOW_UP, house.house_id),
+        Category.FOLLOW_UP,
+        level,
+        severity,
+        True,
+        house.house_id,
+        house.number,
+        {"state": fup.state.value, "urgency": fup.urgency.code, "days_ago": max(0, (as_of - fup.check_day).days)},
+    )
+
+
 def _house_facts(
     farm: Farm,
     house: House,
     as_of: date,
     check: HealthCheck | None,
     recent: Sequence[HealthCheck],
-    handed_off: frozenset[str],
+    handed_off: Collection[str],
+    follow_up: FollowUp | None = None,
 ) -> list[Fact]:
     try:
         st = house_status(house, as_of)
@@ -219,18 +259,25 @@ def _house_facts(
             severity = NOTIFIABLE_SEVERITY
         elif urgent:
             severity = URGENT_CHECK_SEVERITY
-        facts.append(
-            Fact(
-                _fact_id(Category.OPEN_HEALTH_CHECK, house.house_id),
-                Category.OPEN_HEALTH_CHECK,
-                level,
-                severity,
-                True,
-                house.house_id,
-                house.number,
-                {"urgency": urgency.code, "days_ago": days_ago, "ready": _answered(shown)},
-            )
+        open_check = Fact(
+            _fact_id(Category.OPEN_HEALTH_CHECK, house.house_id),
+            Category.OPEN_HEALTH_CHECK,
+            level,
+            severity,
+            True,
+            house.house_id,
+            house.number,
+            {"urgency": urgency.code, "days_ago": days_ago, "ready": _answered(shown)},
         )
+    else:
+        open_check = None
+    # An escalated or due follow-up replaces this shed's open health-check item (never both): it is the one item the
+    # farmer needs for this shed, and it never ranks lower than the check item it replaces.
+    follow_fact = _follow_up_fact(house, as_of, follow_up, open_check)
+    if follow_fact is not None:
+        facts.append(follow_fact)
+    elif open_check is not None:
+        facts.append(open_check)
 
     try:
         plan = plan_feed(farm, house, as_of)
@@ -287,16 +334,26 @@ def collect_facts(
     checks: Mapping[str, HealthCheck],
     logged_today: frozenset[str],
     recent_checks: Mapping[str, Sequence[HealthCheck]] | None = None,
-    handed_off: frozenset[str] = frozenset(),
+    handed_off: Collection[str] = frozenset(),
+    follow_ups: Mapping[str, FollowUp] | None = None,
 ) -> tuple[Fact, ...]:
     """Every fact worth mentioning today, in rules order. ``checks``: each house's latest health check, if any;
     ``recent_checks``: each house's checks from the last NOTIFIABLE_DAYS days; ``handed_off``: ids of checks whose vet
-    handoff was confirmed; ``logged_today``: the houses that have a record for today in the record book."""
+    handoff was confirmed; ``logged_today``: the houses that have a record for today in the record book;
+    ``follow_ups``: each house's follow-up worth surfacing (computed by the caller from stored data and ``as_of``): an
+    escalated one, or a due unanswered one, replaces that shed's open health-check item."""
     recent_checks = recent_checks or {}
+    follow_ups = follow_ups or {}
     facts: list[Fact] = []
     for house in sorted(farm.houses, key=lambda h: h.number):
         facts += _house_facts(
-            farm, house, as_of, checks.get(house.house_id), recent_checks.get(house.house_id, ()), handed_off
+            farm,
+            house,
+            as_of,
+            checks.get(house.house_id),
+            recent_checks.get(house.house_id, ()),
+            handed_off,
+            follow_ups.get(house.house_id),
         )
     missing = [h.number for h in sorted(farm.houses, key=lambda h: h.number) if h.house_id not in logged_today]
     if missing:

@@ -251,7 +251,7 @@ covering every P0 feature. Multi-step cases (`steps`, `save`,
 `poll_until`) and model-fixture cases (`model_fixture`, `tests/fakes.py`) came with the agents (§18); a case marked
 `fresh_state` runs on a server of its own, so its answer cannot depend on what earlier cases changed.
 
-## 18. Agents (Health Triage built 2026-09-29; Daily Briefing built 2026-09-30; Flock Follow-up: tool built 2026-10-01, not yet shown in the briefing, farm status or cards)
+## 18. Agents (Health Triage built 2026-09-29; Daily Briefing built 2026-09-30; Flock Follow-up: tool, briefing, farm status and the day 0 sentence built 2026-10-01; cards planned)
 The model decides; code speaks. An agent runs on the slow path (§3) and asks a model for **one forced tool call
 whose input is closed lists only** (no free-text field). Code owns every number, every sentence (English and
 Telugu templates), every citation, and a deterministic **safety floor** the model can raise but never lower.
@@ -341,7 +341,8 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
 - **Flock Follow-up** (`report_health_follow_up`; `clucktalk.domain.follow_up`, `clucktalk.server.tools.follow_up`; built
   2026-10-01). Days after a health check flagged a shed, the farmer says how it is now. **No model is involved**: the
   state of a follow-up is plain code over stored data and the day, and the host's own assistant is the only thing that
-  may interpret the farmer's words into one of four values. It is not yet shown in the briefing, farm status or any card.
+  may interpret the farmer's words into one of four values. It shows up when the farmer next asks (the briefing, the
+  farm status); no card shows it yet, and nothing is pushed: there is no verified way for an add-on to remind a farmer.
   - **Tool**: `report_health_follow_up(house, outcome, check_id?, proposal_id?, answer?)`; `outcome` is exactly one of
     `better`, `same`, `worse`, `not_sure`. No free-text argument; unknown arguments are refused (strict list, as for
     `set_contract_terms`). One confirmation pattern (§5.1): the first call reads the answer back and saves nothing; only
@@ -360,11 +361,29 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     definition as the status and the briefing, for that shed only, on days after the check) escalate. The saved row
     records whether the record book showed a spike (the domain's own verdict, not the farmer's words), and the read-back
     says plainly when that means it is recorded as not better. Escalation is spoken as "To be safe, contact your vet
-    or doctor." and the existing `prepare_vet_handoff` is offered as a separate step with its own "yes"; this tool never
-    sends anything.
+    or doctor." and the existing `prepare_vet_handoff` is offered as a separate step with its own "yes" (only while no
+    handoff was sent for that check: there is one handoff per check, so after a handoff the escalation line is spoken
+    without a second offer); this tool never sends anything.
+  - **A vet handoff ends what came before it, not what comes after it.** After a handoff for a check the follow-up shows
+    as handled until something new is said or logged. A "worse", "same" or "not sure" given AFTER the handoff (or a death
+    spike on a day after it) escalates again; a "better" after it is accepted and only closes. An answer at the very
+    instant of the handoff counts as before it (the usual order is the answer, then the handoff it led to). A farmer
+    whose check got a handoff is therefore never told "no health check is waiting" while the birds get worse.
   - **When an escalated follow-up stops showing**: only when a newer check of equal or higher urgency exists on that
-    shed, or a vet handoff for that very check is confirmed. A newer check of lower urgency never hides it. Any other
-    follow-up is taken over by any newer check on the shed.
+    shed, or a vet handoff for that very check is confirmed and nothing worse was said since. A newer check of lower
+    urgency never hides it. Any other follow-up is taken over by any newer check on the shed.
+  - **Surfaces** (all computed on the fast path from stored checks, answers, handoffs, the record book and the date):
+    - *Daily briefing*: an escalated follow-up (even when the briefing's own check rule hid its check) or a due,
+      unanswered one is one pinned item for that shed. It replaces the shed's open health-check item (never both), is never
+      lower in priority than the check was (a reportable suspect 4, an urgent check 3, an escalated watch check 3), and
+      the list stays at 5 items. "Due" is a question ("How are the birds now: better, the same, or worse?"); escalated
+      ends with "To be safe, contact your vet or doctor." The number of days since the check is worked out from the date,
+      never typed ("1 day ago", "3 days ago").
+    - *Farm status*: each shed has a `follow_up` field (state, urgency, days ago, due day, outcome, reasons, whether a
+      handoff was sent, and the spoken sentence) and ONE spoken sentence when it is due, escalated or lapsed (a lapsed one
+      says no answer came, never "better"). Scheduled and closed ones have the field but are not spoken.
+    - *Day 0*: a new health check ends with "The next briefing, in about N days, will ask how this shed is doing." N is
+      the named window for the check's urgency; nothing proactive is promised.
   - **Safety**: no medicine, dose, sample, lab, reassurance or rearing wording (a scan test covers every result); new
     Telugu strings are pending native review. The Simulator's rule-based intents are the only tested way of mapping
     spoken phrases (including Hinglish such as "theek hai" or "pata nahi") onto the four values; how the real Alexa+

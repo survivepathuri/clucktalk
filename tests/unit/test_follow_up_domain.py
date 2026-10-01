@@ -679,10 +679,145 @@ def test_only_days_after_the_check_and_up_to_today_count():
         assert (got is not None) == seen, (spike_day, today)
 
 
-# -- an answer is taken from the day after the check -------------------------------------------------------------------
+# -- an answer is taken from the day after the check -----------------------------------------------
 def test_an_answer_is_only_accepted_from_the_day_after_the_check():
     check = _check(Urgency.WATCH)
     assert fu.answerable(check, CHECK_DAY) is False  # the day of the check: nothing to compare with yet
     assert fu.answerable(check, CHECK_DAY - timedelta(days=1)) is False
     assert fu.answerable(check, CHECK_DAY + timedelta(days=1)) is True
     assert fu.answerable(check, CHECK_DAY + timedelta(days=90)) is True
+
+
+# -- a vet handoff ends what came before it, not what comes after it -------------------------------
+# After a handoff for a check, "worse", "same", "not sure" or a new death spike escalates again; "better" only closes.
+HANDOFF_AT = datetime.combine(CHECK_DAY + timedelta(days=3), dtime(12, 0), tzinfo=IST)
+BEFORE_HANDOFF = HANDOFF_AT - timedelta(hours=2)
+AFTER_HANDOFF = HANDOFF_AT + timedelta(hours=2)
+LATER_AFTER_HANDOFF = HANDOFF_AT + timedelta(hours=5)
+HANDED_TODAY = CHECK_DAY + timedelta(days=5)
+ALL_LEVELS = [Urgency.WATCH, Urgency.URGENT, Urgency.NOTIFIABLE_SUSPECT]
+
+
+def _said_at(check, said, at):
+    return FollowUpAnswer(
+        new_answer_id(), check.farm_id, check.house_id, check.check_id, said, False, "prop_" + "a" * 16, at
+    )
+
+
+def _handed(check, answers, *, today=HANDED_TODAY, spike_day=None, others=(), handed_at=HANDOFF_AT):
+    return follow_up_state(check, tuple(answers), {check.check_id: handed_at}, _house(spike_day), today, tuple(others))
+
+
+@pytest.mark.parametrize("urgency", ALL_LEVELS)
+@pytest.mark.parametrize("said", [O.SAME, O.WORSE, O.NOT_SURE])
+def test_not_better_after_the_handoff_escalates_again(urgency, said):
+    check = _check(urgency)
+    fup = _handed(check, [_said_at(check, said, AFTER_HANDOFF)])
+    assert fup.state is S.ESCALATED and fup.handed_off is True and fup.outcome is said
+    assert fup.reasons == (
+        EscalationReason(f"said_{said.value}"),
+    )  # the handoff is done: no reportable-without-handoff
+    assert fup.urgency is urgency
+
+
+@pytest.mark.parametrize("urgency", ALL_LEVELS)
+def test_answers_given_before_the_handoff_are_handled_by_it(urgency):
+    check = _check(urgency)
+    for said in (O.SAME, O.WORSE, O.NOT_SURE):
+        fup = _handed(check, [_said_at(check, said, BEFORE_HANDOFF)])
+        assert fup.state is S.SUPERSEDED and fup.handed_off is True and fup.reasons == ()
+
+
+@pytest.mark.parametrize("urgency", ALL_LEVELS)
+def test_better_after_the_handoff_is_accepted_and_only_closes(urgency):
+    check = _check(urgency)
+    only = _handed(check, [_said_at(check, O.BETTER, AFTER_HANDOFF)])
+    assert only.state is S.CLOSED and only.outcome is O.BETTER and only.reasons == () and only.urgency is urgency
+    after_worse = _handed(check, [_said_at(check, O.WORSE, BEFORE_HANDOFF), _said_at(check, O.BETTER, AFTER_HANDOFF)])
+    assert after_worse.state is S.CLOSED and after_worse.outcome is O.BETTER and after_worse.handed_off is True
+
+
+def test_after_the_handoff_the_most_severe_new_answer_still_wins():
+    check = _check(Urgency.URGENT)
+    for first, second in ((O.WORSE, O.BETTER), (O.BETTER, O.WORSE)):
+        answers = [_said_at(check, first, AFTER_HANDOFF), _said_at(check, second, LATER_AFTER_HANDOFF)]
+        fup = _handed(check, answers)
+        assert fup.state is S.ESCALATED and fup.outcome is O.WORSE
+
+
+def test_an_answer_at_the_very_instant_of_the_handoff_counts_as_before_it():
+    check = _check(Urgency.URGENT)
+    fup = _handed(check, [_said_at(check, O.WORSE, HANDOFF_AT)])
+    assert fup.state is S.SUPERSEDED  # the usual order is the answer first, then the handoff it led to
+
+
+def test_a_death_spike_on_a_day_after_the_handoff_escalates_again_but_not_one_before_it():
+    check = _check(Urgency.URGENT)
+    handoff_day = HANDOFF_AT.date()
+    after = _handed(check, [], spike_day=handoff_day + timedelta(days=1))
+    assert after.state is S.ESCALATED and after.reasons == (EscalationReason.RECORD_BOOK_SPIKE,)
+    assert after.spike_day == handoff_day + timedelta(days=1)
+    for day in (handoff_day, handoff_day - timedelta(days=1)):  # the spike the handoff was already about
+        before = _handed(check, [], spike_day=day)
+        assert before.state is S.SUPERSEDED and before.spike_day is None
+
+
+def test_better_after_the_handoff_is_not_undone_by_a_spike_from_before_it():
+    check = _check(Urgency.URGENT)
+    fup = _handed(check, [_said_at(check, O.BETTER, AFTER_HANDOFF)], spike_day=HANDOFF_AT.date() - timedelta(days=1))
+    assert fup.state is S.CLOSED
+
+
+@pytest.mark.parametrize("urgency", ALL_LEVELS)
+def test_an_escalation_after_a_handoff_is_hidden_only_by_a_newer_check_of_equal_or_higher_urgency(urgency):
+    check = _check(urgency)
+    answers = [_said_at(check, O.WORSE, AFTER_HANDOFF)]
+    for lower in LOWER_THAN[urgency]:
+        newer = _check(lower, day=CHECK_DAY + timedelta(days=1))
+        fup = _handed(check, answers, others=[check, newer])
+        assert fup.state is S.ESCALATED and fup.handed_off is True, lower
+    for level in SAME_OR_HIGHER[urgency]:
+        newer = _check(level, day=CHECK_DAY + timedelta(days=1))
+        assert _handed(check, answers, others=[check, newer]).state is S.SUPERSEDED, level
+
+
+def test_a_handed_off_follow_up_with_no_new_evidence_still_follows_the_clock():
+    check = _check(Urgency.WATCH)
+    due_day = CHECK_DAY + timedelta(days=3)
+    assert _handed(check, [], today=due_day - timedelta(days=1)).state is S.SCHEDULED
+    assert _handed(check, [], today=due_day).state is S.DUE
+    assert _handed(check, [], today=due_day).handed_off is True
+
+
+def test_a_handoff_with_no_time_known_ends_the_escalation_for_good():
+    """Ids alone (no send time): everything on file is taken as before the handoff (the earlier, simpler rule)."""
+    check = _check(Urgency.URGENT)
+    fup = follow_up_state(
+        check, [_said_at(check, O.WORSE, AFTER_HANDOFF)], frozenset([check.check_id]), _house(), TODAY
+    )
+    assert fup.state is S.SUPERSEDED and fup.handed_off is True
+
+
+def test_the_handed_off_flag_is_false_without_a_handoff_and_the_check_day_is_always_given():
+    check = _check(Urgency.WATCH)
+    plain = _state(check, today=TODAY)
+    assert plain.handed_off is False and plain.check_day == CHECK_DAY
+    other = follow_up_state(check, (), {new_check_id(): HANDOFF_AT}, _house(), TODAY)
+    assert other.handed_off is False  # a handoff for some other check
+    assert _state(_check(Urgency.ROUTINE), today=TODAY).check_day == CHECK_DAY
+
+
+def test_both_forms_of_handed_off_are_accepted_and_agree_when_no_answers_exist():
+    check = _check(Urgency.URGENT)
+    as_ids = follow_up_state(check, (), frozenset([check.check_id]), _house(), TODAY)
+    as_times = follow_up_state(check, (), {check.check_id: HANDOFF_AT}, _house(), TODAY)
+    assert as_ids == as_times
+
+
+def test_how_long_until_a_follow_up_is_due_comes_from_the_named_windows():
+    assert fu.due_after_days(Urgency.WATCH) == fu.FOLLOW_UP_AFTER_WATCH_DAYS
+    assert fu.due_after_days(Urgency.URGENT) == fu.FOLLOW_UP_AFTER_URGENT_DAYS
+    assert fu.due_after_days(Urgency.NOTIFIABLE_SUSPECT) == fu.FOLLOW_UP_AFTER_URGENT_DAYS
+    assert fu.due_after_days(Urgency.ROUTINE) is None
+    check = _check(Urgency.WATCH)
+    assert _state(check, today=TODAY).due_day == CHECK_DAY + timedelta(days=fu.due_after_days(Urgency.WATCH))

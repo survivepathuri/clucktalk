@@ -29,6 +29,7 @@ from clucktalk.domain.briefing import (
     check_urgency,
     collect_facts,
 )
+from clucktalk.domain.follow_up import FollowUp, FollowUpState
 from clucktalk.domain.models import Farm, House
 from clucktalk.domain.status import Finding, Level
 from clucktalk.domain.triage import HealthCheck, Urgency
@@ -38,6 +39,7 @@ from clucktalk.server.farm_state import DemoFarmSource
 from clucktalk.server.render import num, plural
 from clucktalk.server.tools import Capability, CapabilityRegistry
 from clucktalk.server.tools.farm_status import SAFETY_STEP, _feed_stock_finding, _finding
+from clucktalk.server.tools.follow_up import _due_sentence, _escalated_sentence, surfaced_follow_up
 from clucktalk.server.tools.health import AI_LABEL, DISCLAIMER, TEST_MODEL_LABEL, URGENCY_SHORT
 
 TOOL = "get_daily_briefing"
@@ -219,6 +221,14 @@ def _render(fact: Fact, farm: Farm) -> tuple[Text, dict[str, Any]]:
                     f"{when.te} మీ ఆరోగ్య తనిఖీ ఇంకా పూర్తి కాలేదు; ఇప్పటివరకు లక్షణాల ప్రకారం: {short.te}.",
                 )
             return _join(_prefixed(_label(house), body), ASK_RESULT), {"urgency": v["urgency"], "days_ago": ago}
+        case Category.FOLLOW_UP:
+            ago = int(v["days_ago"])
+            fup_text = (
+                _escalated_sentence(_label(house), ago)
+                if v["state"] == "escalated"
+                else _due_sentence(_label(house), ago)
+            )
+            return fup_text, {"urgency": v["urgency"], "state": v["state"], "days_ago": ago}
         case Category.SALE_WINDOW:
             index = int(v["best_day_index"])
             when = _sale_when(index)
@@ -270,7 +280,7 @@ def _closing(page: list[ItemOut]) -> list[Text]:
     closings: list[Text] = []
     if any(_needs_safety_step(i) for i in page):
         closings.append(SAFETY_STEP)
-    if any(i.category == "open_health_check" for i in page):
+    if any(i.category in ("open_health_check", "follow_up") for i in page):
         closings.append(DISCLAIMER)
     return closings
 
@@ -282,8 +292,12 @@ def build_briefing(source: DemoFarmSource, ranker: BriefingRanker, more: bool = 
     recent: dict[str, tuple[HealthCheck, ...]] = {}
     handed_off: set[str] = set()
     logged: set[str] = set()
+    follow_ups: dict[str, FollowUp] = {}
     since = as_of - timedelta(days=NOTIFIABLE_DAYS)
     for house in farm.houses:
+        fup = surfaced_follow_up(source, farm.farm_id, house, as_of)  # stored checks + answers + the date: no model
+        if fup is not None and fup.state in (FollowUpState.ESCALATED, FollowUpState.DUE):
+            follow_ups[house.house_id] = fup
         check = store.latest_health_check(farm.farm_id, house.house_id)
         if check is not None:
             checks[house.house_id] = check
@@ -295,7 +309,7 @@ def build_briefing(source: DemoFarmSource, ranker: BriefingRanker, more: bool = 
         }
         if any(r.day == as_of for r in store.records(farm.farm_id, house.house_id)):
             logged.add(house.house_id)
-    facts = collect_facts(farm, as_of, checks, frozenset(logged), recent, frozenset(handed_off))
+    facts = collect_facts(farm, as_of, checks, frozenset(logged), recent, frozenset(handed_off), follow_ups)
     view = ranker.view(farm.farm_id, as_of, facts)
     # The split between the first three (read first) and the rest ("more") always comes from the rules order, so
     # "more" reads what the first answer promised whatever the AI has stored since (Rule 11 review 2026-09-30, M1).

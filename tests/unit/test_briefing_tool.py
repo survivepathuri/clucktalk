@@ -124,7 +124,7 @@ def test_a_newer_routine_check_does_not_hide_an_earlier_notifiable_one_until_a_v
     source = CalmSource()
     earlier = _store_check(source, Urgency.NOTIFIABLE_SUSPECT, 2, 1)
     _store_check(source, Urgency.ROUTINE, 0, 2)
-    item = _item(_build(source))
+    item = _item(_build(source), "follow_up")  # a due follow-up replaces the open-check item (same keys)
     assert item.values["urgency"] == "notifiable_suspect" and item.values["days_ago"] == 2 and item.pinned
     source.store.add_handoff(VetHandoff(new_handoff_id(), earlier.farm_id, earlier.check_id, source.now(), "s", "సా"))
     assert not any(i.category == "open_health_check" for i in _build(source).items)
@@ -133,7 +133,7 @@ def test_a_newer_routine_check_does_not_hide_an_earlier_notifiable_one_until_a_v
 def test_a_notifiable_check_is_still_shown_six_days_later():
     source = CalmSource()
     _store_check(source, Urgency.NOTIFIABLE_SUSPECT, 6, 1)
-    assert _item(_build(source)).values["days_ago"] == 6
+    assert _item(_build(source), "follow_up").values["days_ago"] == 6
 
 
 @pytest.mark.parametrize("urgency", [Urgency.URGENT, Urgency.NOTIFIABLE_SUSPECT])

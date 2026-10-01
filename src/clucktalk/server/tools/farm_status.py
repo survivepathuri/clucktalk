@@ -7,6 +7,7 @@ output model only (clucktalk.server.render). Telugu: review status per string in
 from __future__ import annotations
 
 import logging
+from datetime import date
 from typing import Annotated, Literal
 
 from mcp.server.apps import Apps
@@ -25,6 +26,7 @@ from clucktalk.server.errors import domain_error_result
 from clucktalk.server.farm_state import DemoFarmSource
 from clucktalk.server.render import num, plural
 from clucktalk.server.tools import Capability, CapabilityRegistry, unavailable_text, whole_farm_or
+from clucktalk.server.tools.follow_up import FollowUpView, follow_up_line, follow_up_view, surfaced_follow_up
 
 logger = logging.getLogger("clucktalk.server")
 
@@ -75,6 +77,7 @@ class HouseStatusOut(BaseModel):
     feed_days_covered: int | None
     feed_days_covered_is_minimum: bool | None  # None when cover is unknown
     findings: list[FindingOut]
+    follow_up: FollowUpView | None = None  # this shed's follow-up after a health check, if it has one
 
 
 class HouseUnavailableOut(BaseModel):
@@ -310,21 +313,41 @@ def _closing(spoken: list[FindingOut], contract: bool) -> list[Text]:
     return extra
 
 
+def _attach_follow_up(
+    source: DemoFarmSource, farm: Farm, house: House, as_of: date, out: HouseStatusOut
+) -> Text | None:
+    """Put the shed's follow-up (if it has one) on its status, and return the one sentence spoken for it, if any."""
+    fup = surfaced_follow_up(source, farm.farm_id, house, as_of)
+    if fup is None:
+        return None
+    label = Text(house.label_en, house.label_te)
+    out.follow_up = follow_up_view(fup, label, as_of)
+    return follow_up_line(fup, label, as_of)
+
+
 def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOutput:
     farm, as_of = source.snapshot()
     order = {"alert": 0, "watch": 1, "ok": 2}
     house_ref = whole_farm_or(house_ref)
+    follow_up_lines: dict[str, Text] = {}
     if house_ref is not None:
         house = resolve_house(farm, house_ref)
         out = _house_out(farm, house, as_of)  # DomainError propagates: the one house asked about failed
         houses, unavailable = [out], []
         spoken = out.findings[:MAX_SPOKEN_FINDINGS]
         parts = [Text(out.summary_en, out.summary_te)] + [Text(f.text_en, f.text_te) for f in spoken]
+        line = _attach_follow_up(source, farm, house, as_of, out)
+        if line is not None:
+            parts.append(line)
     else:
         houses, unavailable = [], []
         for house in sorted(farm.houses, key=lambda h: h.number):
             try:
-                houses.append(_house_out(farm, house, as_of))
+                out = _house_out(farm, house, as_of)
+                line = _attach_follow_up(source, farm, house, as_of, out)
+                if line is not None:
+                    follow_up_lines[house.house_id] = line
+                houses.append(out)
             except DomainError as err:
                 unavailable.append(
                     HouseUnavailableOut(
@@ -344,12 +367,16 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
         spoken = []
         for h in houses:
             head = _level_sentence(h)
+            line = follow_up_lines.get(h.house_id)  # the one spoken follow-up sentence this shed has, if any
+            tail = Text(f" {line.en}", f" {line.te}") if line is not None else Text("", "")
             if not h.findings:
-                items.append(head)
+                items.append(Text(head.en + tail.en, head.te + tail.te))
                 continue
             if len(items) < MAX_SPOKEN_HOUSES:
                 spoken.append(h.findings[0])
-            items.append(Text(f"{head.en} {h.findings[0].text_en}", f"{head.te} {h.findings[0].text_te}"))
+            items.append(
+                Text(f"{head.en} {h.findings[0].text_en}{tail.en}", f"{head.te} {h.findings[0].text_te}{tail.te}")
+            )
         items += [unavailable_text(u) for u in unavailable]
         parts += items[:MAX_SPOKEN_HOUSES]  # voice-only: at most 5 houses read out, checked or not
         if len(items) > MAX_SPOKEN_HOUSES:

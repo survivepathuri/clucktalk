@@ -251,8 +251,13 @@ def test_the_vet_handoff_stays_a_separate_step_with_its_own_yes_and_then_ends_th
     done = rig.call("prepare_vet_handoff", house="shed 1", proposal_id=ask["proposal_id"], answer="yes")
     assert done["structuredContent"]["status"] == "changed" and rig.source.store.handoff_for_check(cid) is not None
     assert _derive(rig, cid).state is FollowUpState.SUPERSEDED  # a confirmed handoff ends the escalation
-    nothing = _report(rig, "worse")
-    assert nothing["isError"] is True  # nothing left to answer for that check
+    # A handoff ends what came before it, not what comes after: a "worse" said later is still heard (changed in
+    # step 40: this used to be refused as "nothing waiting", which was wrong while the birds get worse).
+    rig.source.now.t += timedelta(minutes=5)
+    again = _report(rig, "worse")
+    assert again.get("isError") in (None, False), again
+    sc = again["structuredContent"]
+    assert sc["status"] == "needs_confirmation" and sc["escalated"] is True and sc["handoff_offered"] is False
 
 
 def test_a_repeated_yes_is_replayed_even_after_the_follow_up_closed_or_a_handoff_ended_it(rig):
