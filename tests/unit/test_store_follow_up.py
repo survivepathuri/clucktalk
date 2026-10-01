@@ -1,5 +1,5 @@
 """Schema v5: the append-only ``follow_up_answers`` table, the v3/v4 -> v5 migrations, restart behaviour
-(private/AGENT3_FOLLOWUP_DESIGN.md §B). Real SQLite files (tmp_path) wherever a restart or a migration is tested."""
+(docs/DESIGN.md §18). Real SQLite files (tmp_path) wherever a restart or a migration is tested."""
 
 from __future__ import annotations
 

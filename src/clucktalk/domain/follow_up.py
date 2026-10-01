@@ -129,17 +129,36 @@ def _unhanded_reportable(check: HealthCheck, handed_off: frozenset[str]) -> bool
     return _told_urgency(check) is Urgency.NOTIFIABLE_SUSPECT and check.check_id not in handed_off
 
 
-def _superseded(check: HealthCheck, handed_off: frozenset[str], house_checks: Sequence[HealthCheck]) -> bool:
-    """Any newer check on the house takes over, except that a suspected reportable disease not yet handed to a vet is
-    taken over only by a newer one of its own kind (the same rule as the briefing's ``_check_to_show``)."""
+def _superseded(
+    check: HealthCheck,
+    urgency: Urgency,
+    escalated: bool,
+    handed_off: frozenset[str],
+    house_checks: Sequence[HealthCheck],
+) -> bool:
+    """When another check takes the follow-up over.
+
+    An ESCALATED follow-up does not disappear because some newer check exists: it stays until a newer check on the
+    house of equal or higher urgency exists, or a vet handoff for this very check is confirmed (decided 2026-10-01; a
+    newer check that is LOWER in urgency never hides it). Any other follow-up (scheduled, due, lapsed, closed) is taken
+    over by any newer check on the house, except that a suspected reportable disease not yet handed to a vet is taken
+    over only by a newer one of its own kind (the briefing's ``_check_to_show`` rule)."""
     newer = [
         c
         for c in house_checks
         if c.farm_id == check.farm_id and c.house_id == check.house_id and c.created_at > check.created_at
     ]
+    if escalated:
+        return check.check_id in handed_off or any(_told_urgency(c) >= urgency for c in newer)
     if _unhanded_reportable(check, handed_off):
         return any(_unhanded_reportable(c, handed_off) for c in newer)
     return bool(newer)
+
+
+def answerable(check: HealthCheck, today: date) -> bool:
+    """An answer is taken from the day after the check. On the day itself there is nothing to compare with, and a
+    same-day "better" must not close a follow-up that was never asked."""
+    return today > check.created_at.date()
 
 
 def _latest_spike_after(house: House, check_day: date, today: date) -> date | None:
@@ -164,8 +183,9 @@ def follow_up_state(
 
     ``answers``: every stored answer for this check. ``handed_off``: ids of checks with a confirmed vet handoff.
     ``house``: this house with its record book (logged records already overlaid). ``house_checks``: this house's
-    checks (may include ``check`` itself), to find a newer one. Checked in this order: none, superseded, escalated,
-    closed, then the clock alone (scheduled, due, lapsed)."""
+    checks (may include ``check`` itself), to find a newer one. Checked in this order: none; whether it is escalated
+    (an answer, a death spike, a reportable disease with no handoff); superseded (see ``_superseded``, which depends
+    on escalation); escalated; closed; then the clock alone (scheduled, due, lapsed)."""
     if house.house_id != check.house_id:
         raise ValueError(f"the record book is for {house.house_id}, the check is for {check.house_id}: wrong house")
     for a in answers:
@@ -180,9 +200,6 @@ def follow_up_state(
     wait = FOLLOW_UP_AFTER_URGENT_DAYS if urgency >= Urgency.URGENT else FOLLOW_UP_AFTER_WATCH_DAYS
     due_day = check_day + timedelta(days=wait)
 
-    if _superseded(check, handed_off, house_checks):
-        return FollowUp(FollowUpState.SUPERSEDED, check.check_id, urgency, due_day, None, (), None)
-
     said = max((a.said for a in answers), key=severity, default=None)
     spike_day = _latest_spike_after(house, check_day, today)
     outcome = Outcome.WORSE if spike_day is not None else said  # a spike counts as worse, whatever was said
@@ -195,6 +212,8 @@ def follow_up_state(
     if answers and _unhanded_reportable(check, handed_off):
         reasons.append(EscalationReason.REPORTABLE_WITHOUT_VET_HANDOFF)
 
+    if _superseded(check, urgency, bool(reasons), handed_off, house_checks):
+        return FollowUp(FollowUpState.SUPERSEDED, check.check_id, urgency, due_day, None, (), None)
     if reasons:
         return FollowUp(FollowUpState.ESCALATED, check.check_id, urgency, due_day, outcome, tuple(reasons), spike_day)
     if answers:  # only "better" answers, no spike, nothing still owed to a vet

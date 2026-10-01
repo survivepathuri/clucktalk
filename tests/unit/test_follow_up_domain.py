@@ -1,4 +1,4 @@
-"""Flock follow-up, domain layer (docs/DESIGN.md §18; private/AGENT3_FOLLOWUP_DESIGN.md §B, §E).
+"""Flock follow-up, domain layer (docs/DESIGN.md §18).
 
 ``follow_up_state`` is a pure function of (health check, stored answers, confirmed handoffs, the house's record book,
 the injected ``today``). No I/O, no model, no clock of its own. Expected values are written by hand from the design's
@@ -431,7 +431,9 @@ def test_a_closed_follow_up_reopens_when_a_later_answer_is_not_better():
 def test_a_newer_check_on_the_house_supersedes_an_ordinary_follow_up(newer_urgency):
     old = _check(Urgency.WATCH)
     newer = _check(newer_urgency, day=CHECK_DAY + timedelta(days=1))
-    for answers in ((), (_answer(old, O.BETTER),), (_answer(old, O.WORSE),)):
+    # Step 38 (decision 2): an ESCALATED follow-up (for example after "worse") no longer follows this any-newer-check
+    # rule; it has its own tests below. The two cases left here are the ones that are not escalated.
+    for answers in ((), (_answer(old, O.BETTER),)):
         fup = _state(old, answers, today=CHECK_DAY + timedelta(days=5), others=[old, newer])
         assert fup.state is S.SUPERSEDED
 
@@ -537,3 +539,150 @@ def test_the_answer_record_has_no_free_text_field():
     assert (
         replace(_answer(_check(), O.BETTER), said=O.WORSE).said is O.WORSE
     )  # frozen dataclass: replace() builds a new one
+
+
+# -- an escalated follow-up stays until an equal-or-higher newer check or a confirmed handoff ---------------------
+# (it must not disappear just because any newer check exists: docs/DESIGN.md §18)
+LOWER_THAN = {
+    Urgency.WATCH: [Urgency.ROUTINE],
+    Urgency.URGENT: [Urgency.ROUTINE, Urgency.WATCH],
+    Urgency.NOTIFIABLE_SUSPECT: [Urgency.ROUTINE, Urgency.WATCH, Urgency.URGENT],
+}
+SAME_OR_HIGHER = {
+    Urgency.WATCH: [Urgency.WATCH, Urgency.URGENT, Urgency.NOTIFIABLE_SUSPECT],
+    Urgency.URGENT: [Urgency.URGENT, Urgency.NOTIFIABLE_SUSPECT],
+    Urgency.NOTIFIABLE_SUSPECT: [Urgency.NOTIFIABLE_SUSPECT],
+}
+SPIKE_DAY = CHECK_DAY + timedelta(days=2)
+TODAY = CHECK_DAY + timedelta(days=5)
+# (cause, answers said, spike in the record book, urgencies it applies to)
+ESCALATIONS = [
+    ("worse", [O.WORSE], None, list(LOWER_THAN)),
+    ("same", [O.SAME], None, list(LOWER_THAN)),
+    ("not_sure", [O.NOT_SURE], None, list(LOWER_THAN)),
+    ("spike_only", [], SPIKE_DAY, list(LOWER_THAN)),
+    ("better_but_spike", [O.BETTER], SPIKE_DAY, list(LOWER_THAN)),
+    ("better_on_a_reportable_suspect", [O.BETTER], None, [Urgency.NOTIFIABLE_SUSPECT]),
+]
+ESCALATION_CASES = [(u, name, said, spike) for name, said, spike, urgencies in ESCALATIONS for u in urgencies]
+
+
+def _escalated(urgency, said, spike):
+    check = _check(urgency)
+    answers = [_answer(check, s, hours=i) for i, s in enumerate(said)]
+    return check, answers, spike
+
+
+@pytest.mark.parametrize(("urgency", "name", "said", "spike"), ESCALATION_CASES)
+def test_a_newer_lower_urgency_check_does_not_hide_an_escalated_follow_up(urgency, name, said, spike):
+    check, answers, spike_day = _escalated(urgency, said, spike)
+    alone = _state(check, answers, today=TODAY, spike_day=spike_day, others=[check])
+    assert alone.state is S.ESCALATED
+    for lower in LOWER_THAN[urgency]:
+        newer = _check(lower, day=CHECK_DAY + timedelta(days=1))
+        fup = _state(check, answers, today=TODAY, spike_day=spike_day, others=[check, newer])
+        assert fup == alone, (name, lower)  # not one field changes: same state, outcome and reasons
+
+
+@pytest.mark.parametrize(("urgency", "name", "said", "spike"), ESCALATION_CASES)
+def test_a_newer_check_of_equal_or_higher_urgency_replaces_an_escalated_follow_up(urgency, name, said, spike):
+    check, answers, spike_day = _escalated(urgency, said, spike)
+    for level in SAME_OR_HIGHER[urgency]:
+        newer = _check(level, day=CHECK_DAY + timedelta(days=1))
+        fup = _state(check, answers, today=TODAY, spike_day=spike_day, others=[check, newer])
+        assert fup.state is S.SUPERSEDED, (name, level)
+
+
+@pytest.mark.parametrize(("urgency", "name", "said", "spike"), ESCALATION_CASES)
+def test_one_higher_check_among_lower_ones_is_enough(urgency, name, said, spike):
+    check, answers, spike_day = _escalated(urgency, said, spike)
+    newer = [_check(u, day=CHECK_DAY + timedelta(days=1 + i)) for i, u in enumerate(LOWER_THAN[urgency])]
+    assert _state(check, answers, today=TODAY, spike_day=spike_day, others=[check, *newer]).state is S.ESCALATED
+    same = _check(urgency, day=CHECK_DAY + timedelta(days=4))
+    assert _state(check, answers, today=TODAY, spike_day=spike_day, others=[check, *newer, same]).state is S.SUPERSEDED
+
+
+# "better" on a reportable suspect escalates only while no vet handoff exists; once one does it simply closes (rule S4,
+# tested above), so that case is not an escalated follow-up to end.
+HANDOFF_CASES = [c for c in ESCALATION_CASES if c[1] != "better_on_a_reportable_suspect"]
+
+
+@pytest.mark.parametrize(("urgency", "name", "said", "spike"), HANDOFF_CASES)
+def test_a_confirmed_vet_handoff_for_that_check_ends_an_escalated_follow_up(urgency, name, said, spike):
+    check, answers, spike_day = _escalated(urgency, said, spike)
+    without = _state(check, answers, today=TODAY, spike_day=spike_day)
+    assert without.state is S.ESCALATED
+    handed = _state(check, answers, today=TODAY, spike_day=spike_day, handed=[check.check_id])
+    assert handed.state is S.SUPERSEDED  # a vet handoff takes it over: nothing left to escalate
+    assert handed.urgency is urgency  # and nothing was lowered
+    other = _state(check, answers, today=TODAY, spike_day=spike_day, handed=[new_check_id()])
+    assert other.state is S.ESCALATED  # a handoff for some other check does not count
+
+
+def test_a_newer_check_on_another_house_or_an_older_check_never_hides_an_escalated_follow_up():
+    check = _check(Urgency.WATCH)
+    answers = [_answer(check, O.WORSE)]
+    elsewhere = _check(Urgency.NOTIFIABLE_SUSPECT, day=CHECK_DAY + timedelta(days=1), house_id="house-2")
+    older = _check(Urgency.NOTIFIABLE_SUSPECT, day=CHECK_DAY - timedelta(days=1))
+    assert _state(check, answers, today=TODAY, others=[check, elsewhere, older]).state is S.ESCALATED
+
+
+def test_a_follow_up_that_is_not_escalated_is_still_replaced_by_any_newer_check():
+    """The scope of decision 2: only an escalated follow-up is protected. Due, scheduled, lapsed and closed
+    follow-ups are still replaced by any newer check on the house."""
+    old = _check(Urgency.WATCH)
+    newer = _check(Urgency.ROUTINE, day=CHECK_DAY + timedelta(days=1))
+    for today in (CHECK_DAY + timedelta(days=1), CHECK_DAY + timedelta(days=4), CHECK_DAY + timedelta(days=40)):
+        assert _state(old, today=today, others=[old, newer]).state is S.SUPERSEDED
+    assert _state(old, [_answer(old, O.BETTER)], today=TODAY, others=[old, newer]).state is S.SUPERSEDED
+
+
+def test_a_newer_lower_check_never_lowers_the_urgency_the_follow_up_reports():
+    check = _check(Urgency.URGENT)
+    newer = _check(Urgency.ROUTINE, day=CHECK_DAY + timedelta(days=1))
+    fup = _state(check, [_answer(check, O.WORSE)], today=TODAY, others=[check, newer])
+    assert fup.state is S.ESCALATED and fup.urgency is Urgency.URGENT
+
+
+# -- the spike is the briefing's own definition: same shed, only days after the check -------------------------------
+def test_the_spike_is_found_with_the_same_function_the_briefing_and_status_use():
+    from clucktalk.domain import status
+
+    assert fu.spike_finding is status.spike_finding  # one definition of "a death spike", not a second copy
+
+
+def test_the_follow_up_sees_a_spike_exactly_when_the_status_finding_does():
+    from clucktalk.domain.status import house_status
+
+    check = _check(Urgency.WATCH)
+    for day_of_spike in (CHECK_DAY + timedelta(days=1), CHECK_DAY + timedelta(days=4)):
+        house = _house(day_of_spike)
+        finding_codes = {f.code for f in house_status(house, day_of_spike).findings}
+        assert "mortality_spike" in finding_codes  # the status sees the spike on its own day
+        fup = follow_up_state(check, (), frozenset(), house, day_of_spike, ())
+        assert fup.spike_day == day_of_spike and fup.state is S.ESCALATED
+    quiet = _house(None)
+    assert "mortality_spike" not in {f.code for f in house_status(quiet, TODAY).findings}
+    assert follow_up_state(check, (), frozenset(), quiet, TODAY, ()).spike_day is None
+
+
+def test_only_days_after_the_check_and_up_to_today_count():
+    check = _check(Urgency.WATCH)
+    for spike_day, today, seen in [
+        (CHECK_DAY - timedelta(days=1), TODAY, False),
+        (CHECK_DAY, TODAY, False),  # the day of the check: it is what the check was about
+        (CHECK_DAY + timedelta(days=1), TODAY, True),
+        (TODAY, TODAY, True),
+        (TODAY + timedelta(days=1), TODAY, False),  # not yet happened
+    ]:
+        got = follow_up_state(check, (), frozenset(), _house(spike_day), today, ()).spike_day
+        assert (got is not None) == seen, (spike_day, today)
+
+
+# -- an answer is taken from the day after the check -------------------------------------------------------------------
+def test_an_answer_is_only_accepted_from_the_day_after_the_check():
+    check = _check(Urgency.WATCH)
+    assert fu.answerable(check, CHECK_DAY) is False  # the day of the check: nothing to compare with yet
+    assert fu.answerable(check, CHECK_DAY - timedelta(days=1)) is False
+    assert fu.answerable(check, CHECK_DAY + timedelta(days=1)) is True
+    assert fu.answerable(check, CHECK_DAY + timedelta(days=90)) is True

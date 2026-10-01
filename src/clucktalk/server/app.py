@@ -36,6 +36,7 @@ from clucktalk.server.tools import (
     contract_terms,
     farm_status,
     feed,
+    follow_up,
     health,
     profile,
     records,
@@ -64,7 +65,7 @@ def build_mcp_server(source: DemoFarmSource | None = None, ai: AiServices | None
     to demo mode (no model calls); ``main`` passes live AI only when chosen explicitly (docs/DESIGN.md §18)."""
     source = source or DemoFarmSource()
     ai = ai or demo_ai()
-    guard = SafeToolErrors(strict_arguments_for=frozenset({contract_terms.TOOL}))
+    guard = SafeToolErrors(strict_arguments_for=frozenset({contract_terms.TOOL, follow_up.TOOL}))
     registry = CapabilityRegistry()
     apps = Apps()  # MCP Apps extension: card-bearing tools + their ui:// resources (docs/DESIGN.md §14)
     farm_status.register(apps, registry, source)
@@ -84,6 +85,7 @@ def build_mcp_server(source: DemoFarmSource | None = None, ai: AiServices | None
     contract_terms.register(server, registry, source)
     records.register(server, registry, source)
     health.register(server, registry, source)
+    follow_up.register(server, registry, source)
     help_tool.register(server, registry)
     guard.bind(server)
     return server

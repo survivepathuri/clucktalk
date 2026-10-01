@@ -253,3 +253,13 @@ Expected vs actual: Expected a working build from the README. Actual: `tsc` fail
 Severity: Low (a doc gap; cost about 20 minutes)
 Workaround: `npm ci --ignore-scripts`, then run only `node node_modules/bun/install.js`, then `npm run build` at the root, then `npm run build` in `examples/basic-host`, then `npm run serve`. Documented in docs/evidence/2026-10-01_basic_host/README.md.
 Actionable suggestion: In the basic-host README, state that the repo root must be built first and that bun is required (or ship a prebuilt host), and make `npm run start` work without a globally installed bun.
+
+### FL-022: Claude Code's shell tool changes backslash sequences in a command (`\b` in a Python heredoc reached the file as a backspace character)
+Date: 2026-10-01
+Tool / service: Claude Code (Bash tool, Git Bash on Windows 11) while editing source files with a Python heredoc script
+Task attempted: Add regular expressions that use word boundaries (`\b`) to `src/clucktalk/simulator/intents.py` by running a `python - <<'EOF'` script that wrote the file.
+Steps taken: Wrote the pattern with a doubled backslash inside a non-raw Python string in the quoted heredoc, ran it, then ran ruff.
+Expected vs actual: Expected `\b` (backslash, b) in the file. Actual: the file held the invisible backspace character (0x08) ten times; the patterns looked right in the editor and in terminal output, and only ruff's line-length complaint and a failing intent test showed something was off. A second fix attempt written the same way produced the same ten characters.
+Severity: Low (cost about 15 minutes; no wrong code was committed)
+Workaround: Do not type backslashes in shell commands that write code. Use the Write or Edit tools for any text with backslashes, or build the character in code (`chr(92) + "b"`). Check with `grep -P "\x08"` afterwards.
+Actionable suggestion: Document how the Bash tool treats backslashes in quoted heredocs, or pass the command text to the shell unchanged.

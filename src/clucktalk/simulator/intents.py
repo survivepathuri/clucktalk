@@ -189,6 +189,42 @@ def health_signs(text: str) -> list[str]:
     ]
 
 
+# Follow-up after a health check (docs/DESIGN.md §18): "shed 2 is better / the same / worse now", "not sure".
+# The words map onto the four outcomes report_health_follow_up accepts; with several, the most worrying one is sent.
+FOLLOW_UP_WORDS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("better", re.compile(r"\b(?:better|improv\w*|theek|thik|behtar|sudhar\w*)\b")),
+    ("same", re.compile(r"\b(?:same|no change|waisa hi|waise hi|jaisa tha)\b")),
+    ("worse", re.compile(r"\b(?:worse|worsen\w*|aur kharab|kharab|bigad\w*)\b")),
+    (
+        "not_sure",
+        re.compile(
+            r"\b(?:not sure|unsure|can't tell|cant tell|don't know|dont know|pata nahi|maloom nahi|malum nahi)\b"
+        ),
+    ),
+)
+FOLLOW_UP_SEVERITY = {"better": 0, "same": 1, "not_sure": 2, "worse": 3}  # the domain's order of concern
+NOT_OKAY = re.compile(r"\b(?:theek|thik|behtar)\s+(?:nahi|nahin)\b")  # "theek nahi" = not better, not "theek"
+
+
+def follow_up_outcome(text: str) -> str | None:
+    """The outcome the farmer reported, or None. "not better" is the same (never better); "not worse" is not sure
+    (never reassurance); several outcomes in one sentence give the most worrying one."""
+    found: set[str] = set()
+    if NOT_OKAY.search(text):
+        found.add("same")
+        text = NOT_OKAY.sub(" ", text)
+    for outcome, pattern in FOLLOW_UP_WORDS:
+        for m in pattern.finditer(text):
+            negated = bool(NEGATED_BEFORE.search(text[: m.start()]))
+            if not negated:
+                found.add(outcome)
+            elif outcome == "better":
+                found.add("same")
+            elif outcome == "worse":
+                found.add("not_sure")
+    return max(found, key=FOLLOW_UP_SEVERITY.__getitem__, default=None)
+
+
 @dataclass(frozen=True)
 class Intent:
     tool: str
@@ -260,6 +296,10 @@ def match(utterance: str) -> Intent | None:
         if fields:
             rule = "record: " + ", ".join(matched) + " + shed"
             return Intent("log_daily_record", {**args, **fields}, rule)
+        outcome = follow_up_outcome(text)
+        if outcome and not FEED.search(text) and not SELL.search(text):
+            rule = f"follow-up: 'better / same / worse / not sure' ({outcome}) + shed"
+            return Intent("report_health_follow_up", {**args, "outcome": outcome}, rule)
     if SELL.search(text) or RATE_VALUE.search(text):
         sale_args = dict(args)
         rate = RATE_VALUE.search(text)

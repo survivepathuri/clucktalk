@@ -150,6 +150,7 @@ def test_help_lists_the_farm_tools(live):
         "log_daily_record",
         "start_health_check",
         "prepare_vet_handoff",
+        "report_health_follow_up",
     ]
 
 
