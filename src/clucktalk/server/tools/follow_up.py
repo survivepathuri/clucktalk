@@ -36,7 +36,7 @@ from clucktalk.domain.follow_up import (
 from clucktalk.domain.houses import resolve_house
 from clucktalk.domain.models import House
 from clucktalk.domain.proposals import PROPOSAL_TTL, Answer, Proposal, ProposalId, ProposalStatus
-from clucktalk.domain.triage import HealthCheck
+from clucktalk.domain.triage import HealthCheck, Urgency
 from clucktalk.i18n import Text
 from clucktalk.server.confirm import ConfirmFlow
 from clucktalk.server.errors import domain_error_result
@@ -49,6 +49,7 @@ from clucktalk.server.tools.health import (
     HOUSE_PARAM,
     OFFER,
     PROPOSAL_PARAM,
+    URGENCY_SHORT,
     CheckId,
     _effective,
 )
@@ -360,6 +361,42 @@ def _lapsed_sentence(label: Text, days: int) -> Text:
     )
 
 
+def when_ago(days_ago: int) -> Text:
+    """How the briefing and the status say how long ago a check was made (from the date passed in, never typed)."""
+    if days_ago <= 0:
+        return Text("earlier today", "ఈరోజు ముందు")
+    if days_ago == 1:
+        return Text("yesterday", "నిన్న")
+    return Text(f"{days_ago} {plural(days_ago, 'day', 'days')} ago", f"{days_ago} రోజుల క్రితం")
+
+
+def check_said_text(label: Text, urgency: Urgency, days_ago: int, ready: bool = True) -> Text:
+    """What the health check told the farmer ("needs a vet today", "signs of a possible reportable disease"), in the
+    reviewed sentence the briefing has always used. A follow-up on an urgent or reportable check keeps it (review
+    finding B1): the question is added to the warning, never substituted for it."""
+    when, short = when_ago(days_ago), URGENCY_SHORT[urgency]
+    if ready:
+        body = Text(f"your health check {when.en} said: {short.en}.", f"{when.te} మీ ఆరోగ్య తనిఖీ ఫలితం: {short.te}.")
+    else:  # still running or failed: the level is the code floor from the signs, as in the health tool
+        body = Text(
+            f"your health check {when.en} is not finished; from the signs so far: {short.en}.",
+            f"{when.te} మీ ఆరోగ్య తనిఖీ ఇంకా పూర్తి కాలేదు; ఇప్పటివరకు లక్షణాల ప్రకారం: {short.te}.",
+        )
+    return Text(f"{label.en}: {body.en}", f"{label.te}: {body.te}")
+
+
+def warns_vet(urgency: Urgency) -> bool:
+    """An urgent check or a suspected reportable disease: the warning and the vet closing line must not go away."""
+    return urgency >= Urgency.URGENT
+
+
+def follow_up_text(state: FollowUpState, urgency: Urgency, label: Text, days: int) -> Text:
+    """The one sentence for a due or escalated follow-up. For an urgent or reportable check it starts with the
+    check's own warning, so one item carries both; for a watch check it is the short question or escalation."""
+    base = _escalated_sentence(label, days) if state is FollowUpState.ESCALATED else _due_sentence(label, days)
+    return _join(check_said_text(label, urgency, days), base) if warns_vet(urgency) else base
+
+
 def follow_up_days_ago(fup: FollowUp, as_of: date) -> int:
     """Days since the check, from the date passed in (never typed, never below zero)."""
     return 0 if fup.check_day is None else max(0, (as_of - fup.check_day).days)
@@ -369,10 +406,8 @@ def follow_up_line(fup: FollowUp, label: Text, as_of: date) -> Text | None:
     """The one spoken sentence for a shed's follow-up: a question when it is due, the escalation (with "To be safe,
     contact your vet or doctor"), or an honest "no answer" once it lapsed. Nothing for the other states."""
     days = follow_up_days_ago(fup, as_of)
-    if fup.state is FollowUpState.DUE:
-        return _due_sentence(label, days)
-    if fup.state is FollowUpState.ESCALATED:
-        return _escalated_sentence(label, days)
+    if fup.state in (FollowUpState.DUE, FollowUpState.ESCALATED):
+        return follow_up_text(fup.state, fup.urgency, label, days)
     if fup.state is FollowUpState.LAPSED:
         return _lapsed_sentence(label, days)
     return None

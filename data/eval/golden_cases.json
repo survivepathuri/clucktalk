@@ -2742,6 +2742,152 @@
           ]
         }
       ]
+    },
+    {
+      "id": "followup-urgent-check-keeps-its-warning-the-next-day",
+      "description": "Review finding B1: the day after an urgent check the briefing item still says 'needs a vet today' and asks the follow-up question in the same item; the vet line is still spoken.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "swollen_head"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            }
+          ]
+        },
+        {
+          "tool": "get_health_check",
+          "args": {
+            "check_id": "$check_id"
+          },
+          "poll_until": {
+            "field": "status",
+            "op": "eq",
+            "value": "ready"
+          },
+          "checks": [
+            {
+              "field": "urgency",
+              "op": "eq",
+              "value": "urgent"
+            }
+          ]
+        },
+        {
+          "demo_days_later": 1,
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "items.0.fact_id",
+              "op": "eq",
+              "value": "follow_up:house-1"
+            },
+            {
+              "field": "items.0.level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "items.0.pinned",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "items.0.text_en",
+              "op": "contains",
+              "value": "needs a vet today"
+            },
+            {
+              "field": "items.0.text_en",
+              "op": "contains",
+              "value": "How are the birds now"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "call your vet if deaths continue"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-reportable-check-keeps-its-warning-the-next-day",
+      "description": "Review finding B1: the day after a suspected reportable disease the briefing item still says 'signs of a possible reportable disease', is still first, and asks the follow-up question in the same item.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "swollen_head",
+              "discoloured_comb",
+              "sudden_deaths"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "ready"
+            },
+            {
+              "field": "urgency",
+              "op": "eq",
+              "value": "notifiable_suspect"
+            }
+          ]
+        },
+        {
+          "demo_days_later": 1,
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "items.0.fact_id",
+              "op": "eq",
+              "value": "follow_up:house-1"
+            },
+            {
+              "field": "items.0.text_en",
+              "op": "contains",
+              "value": "signs of a possible reportable disease"
+            },
+            {
+              "field": "items.0.text_en",
+              "op": "contains",
+              "value": "How are the birds now"
+            },
+            {
+              "field": "items.0.text_en",
+              "op": "not_contains",
+              "value": "doing well"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "call your vet if deaths continue"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

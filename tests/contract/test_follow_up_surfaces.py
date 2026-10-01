@@ -201,7 +201,11 @@ def test_the_days_since_the_check_are_the_real_number_of_days(rig, days_ago, urg
     _store_check(rig.source, days_ago=days_ago, urgency=urgency)
     item = _item(_brief(rig), "follow_up:house-1")
     assert item is not None and item["values"]["days_ago"] == days_ago
-    assert item["text_en"] == due_line("House 1", days_ago)  # "1 day ago", "3 days ago": from the clock, not typed
+    if urgency is Urgency.WATCH:
+        assert item["text_en"] == due_line("House 1", days_ago)  # "1 day ago", "3 days ago": from the clock, not typed
+    else:  # an urgent check keeps its own warning first (review finding B1); the question follows it
+        assert item["text_en"].endswith(due_line("House 1", days_ago))
+        assert "needs a vet today" in item["text_en"]
 
 
 def test_an_escalated_follow_up_ranks_first_with_the_safe_line(rig):

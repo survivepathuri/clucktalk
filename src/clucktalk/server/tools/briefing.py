@@ -36,11 +36,12 @@ from clucktalk.domain.triage import HealthCheck, Urgency
 from clucktalk.i18n import Text
 from clucktalk.server.cards import BRIEFING_URI, briefing_html
 from clucktalk.server.farm_state import DemoFarmSource
-from clucktalk.server.render import num, plural
+from clucktalk.server.render import num
 from clucktalk.server.tools import Capability, CapabilityRegistry
 from clucktalk.server.tools.farm_status import SAFETY_STEP, _feed_stock_finding, _finding
-from clucktalk.server.tools.follow_up import _due_sentence, _escalated_sentence, surfaced_follow_up
-from clucktalk.server.tools.health import AI_LABEL, DISCLAIMER, TEST_MODEL_LABEL, URGENCY_SHORT
+from clucktalk.server.tools.follow_up import check_said_text, follow_up_text, surfaced_follow_up
+from clucktalk.server.tools.follow_up import when_ago as _when
+from clucktalk.server.tools.health import AI_LABEL, DISCLAIMER, TEST_MODEL_LABEL
 
 TOOL = "get_daily_briefing"
 LevelName = Literal["alert", "watch", "info"]
@@ -131,14 +132,6 @@ def _label(house: House) -> Text:
     return Text(house.label_en, house.label_te)
 
 
-def _when(days_ago: int) -> Text:
-    if days_ago <= 0:
-        return Text("earlier today", "ఈరోజు ముందు")
-    if days_ago == 1:
-        return Text("yesterday", "నిన్న")
-    return Text(f"{days_ago} {plural(days_ago, 'day', 'days')} ago", f"{days_ago} రోజుల క్రితం")
-
-
 def _sale_when(index: int) -> Text:
     if index <= 0:
         return Text("today", "ఈరోజు")
@@ -211,23 +204,13 @@ def _render(fact: Fact, farm: Farm) -> tuple[Text, dict[str, Any]]:
             }
         case Category.OPEN_HEALTH_CHECK:
             ago = int(v["days_ago"])
-            when = _when(ago)
-            short = URGENCY_SHORT[next(u for u in Urgency if u.code == v["urgency"])]
-            if v.get("ready", True):
-                body = Text(f"your health check {when.en} said: {short.en}.", f"{when.te} మీ ఆరోగ్య తనిఖీ ఫలితం: {short.te}.")
-            else:  # still running or failed: the level is the code floor from the signs, as in the health tool
-                body = Text(
-                    f"your health check {when.en} is not finished; from the signs so far: {short.en}.",
-                    f"{when.te} మీ ఆరోగ్య తనిఖీ ఇంకా పూర్తి కాలేదు; ఇప్పటివరకు లక్షణాల ప్రకారం: {short.te}.",
-                )
-            return _join(_prefixed(_label(house), body), ASK_RESULT), {"urgency": v["urgency"], "days_ago": ago}
+            urgency = next(u for u in Urgency if u.code == v["urgency"])
+            said = check_said_text(_label(house), urgency, ago, v.get("ready", True))
+            return _join(said, ASK_RESULT), {"urgency": v["urgency"], "days_ago": ago}
         case Category.FOLLOW_UP:
             ago = int(v["days_ago"])
-            fup_text = (
-                _escalated_sentence(_label(house), ago)
-                if v["state"] == "escalated"
-                else _due_sentence(_label(house), ago)
-            )
+            urgency = next(u for u in Urgency if u.code == v["urgency"])
+            fup_text = follow_up_text(FollowUpState(v["state"]), urgency, _label(house), ago)
             return fup_text, {"urgency": v["urgency"], "state": v["state"], "days_ago": ago}
         case Category.SALE_WINDOW:
             index = int(v["best_day_index"])
@@ -273,7 +256,11 @@ def _needs_safety_step(item: ItemOut) -> bool:
     """A death alert, or a stored check that says urgent or a suspected reportable disease: the same next step."""
     if item.category in ("mortality_spike", "recent_logged_spike", "cum_mortality_high"):
         return item.pinned
-    return item.category == "open_health_check" and item.values.get("urgency") in ("urgent", "notifiable_suspect")
+    # an urgent or reportable check keeps its vet line the day after, when the follow-up item carries the check
+    return item.category in ("open_health_check", "follow_up") and item.values.get("urgency") in (
+        "urgent",
+        "notifiable_suspect",
+    )
 
 
 def _closing(page: list[ItemOut]) -> list[Text]:
