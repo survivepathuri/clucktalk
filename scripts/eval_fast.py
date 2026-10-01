@@ -31,11 +31,15 @@ from clucktalk.agents import AiServices  # noqa: E402
 from clucktalk.agents.runner import ThreadRunner  # noqa: E402
 from clucktalk.config import load_settings  # noqa: E402
 from clucktalk.server.app import MCP_PATH, TARGET_PROTOCOL_VERSION, build_app, build_mcp_server  # noqa: E402
+from clucktalk.server.farm_state import DemoClock, DemoFarmSource  # noqa: E402
+from clucktalk.simulator.intents import match as match_intent  # noqa: E402
+from clucktalk.simulator.intents import yes_no  # noqa: E402
 from tests.fakes import FIXTURES  # noqa: E402
 
 CASES_PATH = ROOT / "data" / "eval" / "golden_cases.json"
 EVALS_MD = ROOT / "docs" / "EVALS.md"
 HEADERS = {"content-type": "application/json", "accept": "application/json, text/event-stream"}
+STEP_KEYS = {"tool", "args", "checks", "save", "poll_until", "demo_days_later", "say", "answer_word", "expect_error"}
 POLL_SECONDS = 10  # an agent's slow path must finish within this (demo rules take milliseconds)
 
 
@@ -46,11 +50,13 @@ def _free_port() -> int:
 
 
 def _serve(port: int, fixture: str | None = None):
-    """A fresh mock-mode server (its own in-memory state). ``fixture`` swaps the demo rules for a test model."""
+    """A fresh mock-mode server (its own in-memory state). ``fixture`` swaps the demo rules for a test model.
+    Returns ``(stop, clock)``: the demo clock (off, 0 days) that a case step may move with ``demo_days_later``. That
+    hook lives only in this runner, in process: no MCP tool and no argument can reach it (docs/DESIGN.md section 18)."""
     settings = load_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_PORT": str(port)})
-    server = None
-    if fixture is not None:
-        server = build_mcp_server(ai=AiServices(model=FIXTURES[fixture](), budget=None, runner=ThreadRunner()))
+    clock = DemoClock(0)
+    ai = AiServices(model=FIXTURES[fixture](), budget=None, runner=ThreadRunner()) if fixture is not None else None
+    server = build_mcp_server(DemoFarmSource(demo_clock=clock), ai)
     app = build_app(settings, server)
     uv = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
     thread = threading.Thread(target=uv.run, daemon=True)
@@ -65,7 +71,7 @@ def _serve(port: int, fixture: str | None = None):
         uv.should_exit = True
         thread.join(timeout=10)
 
-    return stop
+    return stop, clock
 
 
 def _session(client: httpx2.Client, url: str) -> dict[str, str]:
@@ -127,28 +133,72 @@ def _resolve(value: Any, saved: dict[str, Any]) -> Any:
     return value
 
 
-def _call(client: httpx2.Client, url: str, headers: dict[str, str], tool: str, args: dict[str, Any]):
+def _call(
+    client: httpx2.Client,
+    url: str,
+    headers: dict[str, str],
+    tool: str,
+    args: dict[str, Any],
+    expect_error: bool = False,
+):
     body = {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": tool, "arguments": args}}
     r = client.post(url, headers=headers, json=body)
     if r.status_code != 200:
         return None, f"HTTP {r.status_code}: {r.text[:200]}"
     result = r.json().get("result", {})
+    if expect_error:  # a refusal is the expected answer: it must be an isError result, and say so in words
+        if not result.get("isError"):
+            return None, f"expected a refusal (isError), got {result.get('structuredContent')}"
+        return {"error_text": " ".join(c.get("text", "") for c in result.get("content", []))}, ""
     if result.get("isError"):
         return None, f"tool returned isError: {result.get('content')}"
     return result.get("structuredContent", {}), ""
 
 
-def _check_case(client: httpx2.Client, url: str, headers: dict[str, str], case: dict[str, Any]) -> tuple[bool, str]:
-    """A case is one call (``tool``/``args``/``checks``) or ordered ``steps`` on one session."""
+def _plan_step(step: dict[str, Any], saved: dict[str, Any]) -> tuple[str, dict[str, Any], str]:
+    """The tool and arguments of a step. ``tool``/``args`` are used as written. ``say`` is a farmer's sentence sent
+    through the Simulator's own intent rules (the host side of tool selection, no model): it must pick the tool the
+    step names, and the matched arguments are what is sent. ``answer_word`` (haan, avunu, nahi, vaddu...) is turned
+    into the yes/no ``answer`` by the same rules."""
+    args = _resolve(step.get("args", {}), saved)
+    tool = step.get("tool", "")
+    if "say" in step:
+        intent = match_intent(step["say"])
+        if intent is None:
+            return "", {}, f"nothing matched {step['say']!r}"
+        if tool and intent.tool != tool:
+            return "", {}, f"{step['say']!r} picked {intent.tool}, expected {tool}"
+        tool, args = intent.tool, {**intent.arguments, **args}
+    if "answer_word" in step:
+        word = yes_no(step["answer_word"])
+        if word is None:
+            return "", {}, f"{step['answer_word']!r} is not a yes or a no"
+        args = {**args, "answer": word}
+    return tool, args, ""
+
+
+def _check_case(
+    client: httpx2.Client, url: str, headers: dict[str, str], case: dict[str, Any], clock: DemoClock
+) -> tuple[bool, str]:
+    """A case is one call (``tool``/``args``/``checks``) or ordered ``steps`` on one session. A step may first move
+    the demo clock (``demo_days_later``: days after the real today, in process), say a sentence (``say``), turn a
+    spoken yes/no into the answer (``answer_word``), or expect a refusal (``expect_error``)."""
     steps = case.get("steps") or [{"tool": case["tool"], "args": case["args"], "checks": case["checks"]}]
     saved: dict[str, Any] = {}
     for n, step in enumerate(steps, 1):
-        where = f"step {n} ({step['tool']}): " if len(steps) > 1 else ""
-        args = _resolve(step.get("args", {}), saved)
+        unknown = sorted(set(step) - STEP_KEYS)
+        if unknown:  # a typo in a case must fail it, never be skipped
+            return False, f"step {n}: unknown key(s) {unknown}"
+        if "demo_days_later" in step:
+            clock.set_days_later(step["demo_days_later"])
+        tool, args, problem = _plan_step(step, saved)
+        where = f"step {n} ({tool or step.get('tool', '?')}): " if len(steps) > 1 else ""
+        if problem:
+            return False, where + problem
         poll = step.get("poll_until")
         deadline = time.monotonic() + POLL_SECONDS
         while True:
-            sc, error = _call(client, url, headers, step["tool"], args)
+            sc, error = _call(client, url, headers, tool, args, bool(step.get("expect_error")))
             if sc is None:
                 return False, where + error
             if poll is None or _OPS[poll["op"]](_get(sc, poll["field"]), poll["value"]):
@@ -179,13 +229,13 @@ def main() -> int:
 
     for fixture, only in dict.fromkeys(group(c) for c in cases):
         port = _free_port()
-        stop = _serve(port, fixture)
+        stop, clock = _serve(port, fixture)
         try:
             with httpx2.Client(timeout=10) as client:
                 url = f"http://127.0.0.1:{port}{MCP_PATH}"
                 headers = _session(client, url)
                 for case in (c for c in cases if group(c) == (fixture, only)):
-                    results[case["id"]] = _check_case(client, url, headers, case)
+                    results[case["id"]] = _check_case(client, url, headers, case, clock)
         finally:
             stop()
     rows: list[tuple[str, bool, str]] = [(c["id"], *results[c["id"]]) for c in cases]

@@ -1,5 +1,5 @@
 {
-  "note": "Minimal golden suite v0 (2026-09-29), mock mode, no AWS. Extended to the full 45-case suite on the 11 Oct task (WEEK2_PLAN). Independent-mode plan_sale cases only: contract-mode is a stateful multi-call flow (switch mode, save terms), covered by tests/contract/test_sale_tools.py instead of this single-call runner. Multi-step cases (2026-09-29, health triage): `steps` run in order on one session; `save` keeps a result field for later steps (`$name`); `poll_until` repeats a read-only step until the agent's slow path finishes; `model_fixture` runs the case against a server whose model is a test fixture (tests/fakes.py), to prove the safety floor and fail-loud paths. `fresh_state` (2026-09-30, daily briefing) runs a case on a server of its own, so earlier cases' health checks cannot change its answer.",
+  "note": "Minimal golden suite v0 (2026-09-29), mock mode, no AWS. Extended to the full 45-case suite on the 11 Oct task (WEEK2_PLAN). Independent-mode plan_sale cases only: contract-mode is a stateful multi-call flow (switch mode, save terms), covered by tests/contract/test_sale_tools.py instead of this single-call runner. Multi-step cases (2026-09-29, health triage): `steps` run in order on one session; `save` keeps a result field for later steps (`$name`); `poll_until` repeats a read-only step until the agent's slow path finishes; `model_fixture` runs the case against a server whose model is a test fixture (tests/fakes.py), to prove the safety floor and fail-loud paths. `fresh_state` (2026-09-30, daily briefing) runs a case on a server of its own, so earlier cases' health checks cannot change its answer. Follow-up and contract-terms cases (2026-10-01, build session 4): a step may set `demo_days_later` (the demo clock, in process: only this runner can; no MCP tool can), `say` (a sentence run through the Simulator's own intent rules; the matched tool and arguments are sent), `answer_word` (haan/avunu/nahi/vaddu turned into yes/no by the same rules) and `expect_error` (the call must be refused).",
   "cases": [
     {
       "id": "farm-status-invocation-example",
@@ -1316,6 +1316,1430 @@
           "field": "text_en",
           "op": "contains",
           "value": "briefing"
+        }
+      ]
+    },
+    {
+      "id": "followup-better-closes",
+      "description": "Watch check, 3 days later the follow-up is due; 'better' is read back, saved on yes, and closes it.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            },
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            },
+            {
+              "field": "houses.0.follow_up.days_ago",
+              "op": "eq",
+              "value": 3
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "needs a follow-up"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "better"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "better"
+            },
+            {
+              "field": "escalated",
+              "op": "eq",
+              "value": false
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "better",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            },
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "closed"
+            },
+            {
+              "field": "escalated",
+              "op": "eq",
+              "value": false
+            },
+            {
+              "field": "handoff_offered",
+              "op": "eq",
+              "value": false
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "closed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-same-escalates",
+      "description": "'The same' is not better: it escalates and says to contact the vet or doctor.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            },
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "same"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "same"
+            },
+            {
+              "field": "escalated",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "same",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            },
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "escalated"
+            },
+            {
+              "field": "escalated",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "To be safe, contact your vet or doctor."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-worse-escalates-and-offers-the-vet",
+      "description": "'Worse' escalates and offers the vet summary as a separate step; this tool sends nothing.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            },
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "worse"
+            },
+            {
+              "field": "escalated",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "escalated"
+            },
+            {
+              "field": "handoff_offered",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "summary to your vet"
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "escalated"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "To be safe, contact your vet or doctor."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-not-sure-escalates",
+      "description": "'Not sure' is never treated as better: it escalates.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            },
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "not_sure"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "not_sure"
+            },
+            {
+              "field": "escalated",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "not_sure",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "escalated"
+            },
+            {
+              "field": "escalated",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-record-book-spike-overrides-better",
+      "description": "The farmer says better, but the record book shows a death spike since the check: recorded as worse.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            },
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed one",
+            "deaths": 600
+          },
+          "save": {
+            "log_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            }
+          ]
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed one",
+            "deaths": 600,
+            "proposal_id": "$log_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "better"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "worse"
+            },
+            {
+              "field": "record_book_worse",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "escalated",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "better",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "worse"
+            },
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "escalated"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-no-answer-lapses-never-better",
+      "description": "Nobody answers for 11 days: it lapses, and says so; it never reads as better.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            },
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 11,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "lapsed"
+            },
+            {
+              "field": "houses.0.follow_up.outcome",
+              "op": "eq",
+              "value": null
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "there was no answer to the follow-up"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "better"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-relapse-after-better",
+      "description": "After 'better' closed it, a later 'worse' is accepted and escalates (the birds can get worse again).",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            },
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "better"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "better"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "better",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "closed"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "worse"
+            },
+            {
+              "field": "escalated",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            },
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "escalated"
+            },
+            {
+              "field": "escalated",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-worse-after-the-vet-handoff-escalates-again",
+      "description": "A vet handoff ends what came before it; a later 'worse' is still heard and escalates, with no second handoff offered.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            },
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "worse"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "escalated"
+            }
+          ]
+        },
+        {
+          "tool": "prepare_vet_handoff",
+          "args": {
+            "house": "shed one",
+            "check_id": "$check_id"
+          },
+          "save": {
+            "handoff_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            }
+          ]
+        },
+        {
+          "tool": "prepare_vet_handoff",
+          "args": {
+            "house": "shed one",
+            "check_id": "$check_id",
+            "proposal_id": "$handoff_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "demo_days_later": 4,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": []
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "worse"
+            },
+            {
+              "field": "handoff_offered",
+              "op": "eq",
+              "value": false
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            },
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "escalated"
+            },
+            {
+              "field": "handoff_offered",
+              "op": "eq",
+              "value": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-tool-selection-shed-kotam-house",
+      "description": "Farmers say shed, kotam or house, in English or Hinglish: the Simulator host rules pick report_health_follow_up with the right shed and outcome.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            },
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        },
+        {
+          "say": "kotam one is better now",
+          "tool": "report_health_follow_up",
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "number",
+              "op": "eq",
+              "value": 1
+            },
+            {
+              "field": "outcome",
+              "op": "eq",
+              "value": "better"
+            }
+          ]
+        },
+        {
+          "say": "house one pata nahi",
+          "tool": "report_health_follow_up",
+          "checks": [
+            {
+              "field": "number",
+              "op": "eq",
+              "value": 1
+            },
+            {
+              "field": "outcome",
+              "op": "eq",
+              "value": "not_sure"
+            }
+          ]
+        },
+        {
+          "say": "shed one aur kharab ho gaya",
+          "tool": "report_health_follow_up",
+          "checks": [
+            {
+              "field": "number",
+              "op": "eq",
+              "value": 1
+            },
+            {
+              "field": "outcome",
+              "op": "eq",
+              "value": "worse"
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-answer-words-nahi-then-haan",
+      "description": "'nahi' to the read-back saves nothing; a new read-back and 'haan' saves it.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            },
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "same"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "same"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "same",
+            "proposal_id": "$proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "cancelled"
+            },
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "due"
+            }
+          ],
+          "answer_word": "nahi"
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "same"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "same"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "same",
+            "proposal_id": "$proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            },
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "escalated"
+            }
+          ],
+          "answer_word": "haan"
+        }
+      ]
+    },
+    {
+      "id": "followup-answer-words-vaddu-then-avunu",
+      "description": "'vaddu' to the read-back saves nothing; a new read-back and 'avunu' saves it.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            },
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "worse"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse",
+            "proposal_id": "$proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "cancelled"
+            },
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "due"
+            }
+          ],
+          "answer_word": "vaddu"
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "worse"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse",
+            "proposal_id": "$proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            },
+            {
+              "field": "state",
+              "op": "eq",
+              "value": "escalated"
+            }
+          ],
+          "answer_word": "avunu"
+        }
+      ]
+    },
+    {
+      "id": "contract-terms-read-back-says-four-numbers",
+      "description": "set_contract_terms propose-only: the read-back speaks the four numbers and nothing is saved until yes.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "set_contract_terms",
+          "args": {
+            "base_rate_per_kg": 6.5,
+            "standard_fcr": 1.6,
+            "incentive_per_kg_per_fcr_point": 0.1,
+            "deduction_per_kg_per_fcr_point": 0.1
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "proposed.base_rate_per_kg_inr",
+              "op": "eq",
+              "value": 6.5
+            },
+            {
+              "field": "proposed.standard_fcr",
+              "op": "eq",
+              "value": 1.6
+            },
+            {
+              "field": "terms",
+              "op": "eq",
+              "value": null
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "Say yes to confirm"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "mortality"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "contract-terms-refuses-the-retired-mortality-argument",
+      "description": "The removed mortality_allowance_pct argument is refused, never silently ignored.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "set_contract_terms",
+          "expect_error": true,
+          "args": {
+            "base_rate_per_kg": 6.5,
+            "standard_fcr": 1.6,
+            "incentive_per_kg_per_fcr_point": 0.1,
+            "deduction_per_kg_per_fcr_point": 0.1,
+            "mortality_allowance_pct": 2
+          },
+          "checks": [
+            {
+              "field": "error_text",
+              "op": "contains",
+              "value": "didn't catch all the details"
+            }
+          ]
         }
       ]
     }

@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-10-01T08:46:37+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
+Run 2026-10-01T15:30:33+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -35,5 +35,18 @@ Run 2026-10-01T08:46:37+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | briefing-model-outage-fails-loud | PASS | — |
 | briefing-shows-a-check-the-ai-could-not-finish | PASS | — |
 | help-lists-briefing | PASS | — |
+| followup-better-closes | PASS | — |
+| followup-same-escalates | PASS | — |
+| followup-worse-escalates-and-offers-the-vet | PASS | — |
+| followup-not-sure-escalates | PASS | — |
+| followup-record-book-spike-overrides-better | PASS | — |
+| followup-no-answer-lapses-never-better | PASS | — |
+| followup-relapse-after-better | PASS | — |
+| followup-worse-after-the-vet-handoff-escalates-again | PASS | — |
+| followup-tool-selection-shed-kotam-house | PASS | — |
+| followup-answer-words-nahi-then-haan | PASS | — |
+| followup-answer-words-vaddu-then-avunu | PASS | — |
+| contract-terms-read-back-says-four-numbers | PASS | — |
+| contract-terms-refuses-the-retired-mortality-argument | PASS | — |
 
-**Score: 31/31**
+**Score: 44/44**
