@@ -201,6 +201,8 @@ Built on the MCP Apps extension (`io.modelcontextprotocol/ui`, stable spec 2026-
 - **Visual**: status is an icon shape AND a word (OK ✓ circle, WATCH triangle, ALERT octagon, UNKNOWN ?), never colour alone. Key numbers are large (32–48 px); the least important line (breed, day, bird count) comes last so it is what drops below the fold on short screens. Checked at Amazon-documented Echo Show sizes (§15) and on a phone.
 - **Bilingual**: English and Telugu side by side. Fixed labels are Python `Text` pairs in `clucktalk.server.cards` (reviewed per string, §8), with `{n}` slots for numbers so Telugu inflection ("{n}వ రోజు") is reviewed too. Noto Sans Telugu 2.005 (SIL OFL 1.1, `ui/fonts/`) is inlined; if a host's CSP blocks data: fonts, the card falls back to system Telugu fonts and logs a warning (FRICTION_LOG FL-007).
 - **Demo data**: the server stamps its mode into the card at startup, so the "Demo data" badge shows on every card in demo mode, including error cards (which carry no `structuredContent`).
+- **Follow-up on the cards (§18)**: a briefing slide for a follow-up item has its own icon (a circular arrow) AND the word "Follow-up" beside the level icon and word. The farm-status tile and the shed detail view show a chip: the state as icon AND word (due = REMINDER, escalated = ALERT, lapsed = UNKNOWN; reused reviewed words, so only "Follow-up" is a new Telugu label), then the spoken sentence verbatim from `follow_up.text_en/te`. Scheduled and closed show no chip. The chip is inside the tile, so a tap opens the existing detail view; the tile's accessible name includes the sentence. The days number is the one in the sentence, so a card cannot disagree with the voice. **Not built**: a follow-up row on the health-check card (it needs a new output field and would touch more than 12 non-test files; the day 0 sentence already shows there through `text_en`). The sale card is unchanged except for the demo-clock marker.
+- **Demo-clock marker**: when the server's demo clock is on (§18), every card shows a second badge "Demo clock: +N days". It comes from `_meta["clucktalk/demo_clock"]` on the tool result (not from `structuredContent`, whose output schema is closed) and is marked `data-xm-skip`, so the "+N" is not mistaken for a farm number. When the clock is off the card is exactly as before.
 - **Touch = voice**: tapping a shed tile or "All sheds" makes the card call the same tool (`tools/call get_farm_status`) through the host; the answer equals what voice would give.
 - **Errors**: an `isError` result renders the bilingual message and next step from `_meta["clucktalk/error"]`, never a blank card.
 
@@ -250,8 +252,17 @@ the contract test suite instead, since this runner is single-call by design. Ext
 covering every P0 feature. Multi-step cases (`steps`, `save`,
 `poll_until`) and model-fixture cases (`model_fixture`, `tests/fakes.py`) came with the agents (§18); a case marked
 `fresh_state` runs on a server of its own, so its answer cannot depend on what earlier cases changed.
+Build session 4 (2026-10-01) added 13 cases (44 in all): 11 for the follow-up (better closes; same, worse and not sure
+escalate; a record-book death spike overrides "better"; no answer lapses and never reads as better; a relapse after
+"better"; "worse" after a vet handoff escalates again; shed / kotam / house phrases; haan / nahi / avunu / vaddu) and 2 for
+`set_contract_terms` (the four-number read-back; the retired `mortality_allowance_pct` argument is refused). To make them
+possible a step may carry runner-only keys: `demo_days_later` (moves the demo clock, in process), `say` (a sentence run
+through the Simulator's own intent rules, no model; it must pick the tool the step names), `answer_word` (haan, avunu,
+nahi, vaddu turned into yes / no by the same rules) and `expect_error` (the call must be refused). An unknown step key
+fails the case instead of being ignored. No MCP tool or argument can reach the demo clock. One deliberate break per
+group was run and the matching case failed each time (see PROGRESS).
 
-## 18. Agents (Health Triage built 2026-09-29; Daily Briefing built 2026-09-30; Flock Follow-up: tool, briefing, farm status and the day 0 sentence built 2026-10-01; cards planned)
+## 18. Agents (Health Triage built 2026-09-29; Daily Briefing built 2026-09-30; Flock Follow-up: tool, briefing, farm status, the day 0 sentence, the demo clock, golden evals and the briefing / farm-status cards built 2026-10-01; health-check card row not built)
 The model decides; code speaks. An agent runs on the slow path (§3) and asks a model for **one forced tool call
 whose input is closed lists only** (no free-text field). Code owns every number, every sentence (English and
 Telugu templates), every citation, and a deterministic **safety floor** the model can raise but never lower.
@@ -384,6 +395,15 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
       says no answer came, never "better"). Scheduled and closed ones have the field but are not spoken.
     - *Day 0*: a new health check ends with "The next briefing, in about N days, will ask how this shed is doing." N is
       the named window for the check's urgency; nothing proactive is promised.
+  - **Demo clock** (for the video's "three days later" and the golden cases): `CLUCKTALK_DEMO_DAYS_LATER=N` (0 to 30), or
+    `python tasks.py serve|run --demo-days-later N`. It shifts the injected `today` and `now` of the farm source by whole
+    days (`DemoClock` in `server/farm_state.py`; real time is read only in `now_ist`, a test enforces it); nothing stored
+    is rewritten, so a restart with a different N reads the same data. It is **never an MCP tool** (a test checks that no
+    tool name or argument looks like it, and that sending such an argument changes nothing), is **refused in live mode**
+    (`MOCK_BEDROCK` not true: a clear `ConfigError`), and is off by default (then the output is unchanged). While on,
+    every tool result (errors too) carries `_meta["clucktalk/demo_clock"]` = days, "Demo clock: +N days" and its Telugu;
+    the server prints `DEMO CLOCK: +N days` at startup; the cards show a badge (§14). The eval runner moves the same clock
+    in process between steps (§17).
   - **Safety**: no medicine, dose, sample, lab, reassurance or rearing wording (a scan test covers every result); new
     Telugu strings are pending native review. The Simulator's rule-based intents are the only tested way of mapping
     spoken phrases (including Hinglish such as "theek hai" or "pata nahi") onto the four values; how the real Alexa+

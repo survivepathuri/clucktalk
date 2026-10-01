@@ -273,3 +273,5 @@ Expected vs actual: Expected at least 300 ms. Actual: 290.6 ms on windows / 3.12
 Severity: Low (one red CI job; no product bug)
 Workaround: Lower-bound tolerance of 50 ms in the test, with a comment. Upper-bound latency checks were not changed.
 Actionable suggestion: Never assert an exact lower bound on a measured sleep; allow a tolerance of one or two timer ticks.
+
+Recurrence of FL-022 (2026-10-01, build session 4): the same tool again changed backslash sequences in two Python heredocs (a `\r\n` pair became real line breaks and broke the script's syntax), and a quoted heredoc whose text held an apostrophe failed with `unexpected EOF while looking for matching`. Workaround as above: write such files with the Write tool, or build the characters with `chr()`. About 10 minutes lost.
