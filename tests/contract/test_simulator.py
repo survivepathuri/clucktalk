@@ -123,7 +123,9 @@ def test_server_down_is_said_plainly(sim_without_server):
 def test_simulated_delay_is_applied_and_reported(sim):
     out = sim.turn("How is shed one doing?", simulate_delay_ms=300)
     assert out["timing"]["simulated_delay_ms"] == 300
-    assert out["timing"]["backend_ms"] >= 300
+    # The server measures with time.perf_counter already; the sleep itself can return a few ms early on Windows
+    # (coarse timer, seen as 290.6 ms on CI). Allow a 50 ms lower-bound tolerance; the delay must still be felt.
+    assert out["timing"]["backend_ms"] >= 300 - 50
 
 
 def test_card_resource_is_served_to_the_page(sim):

@@ -263,3 +263,13 @@ Expected vs actual: Expected `\b` (backslash, b) in the file. Actual: the file h
 Severity: Low (cost about 15 minutes; no wrong code was committed)
 Workaround: Do not type backslashes in shell commands that write code. Use the Write or Edit tools for any text with backslashes, or build the character in code (`chr(92) + "b"`). Check with `grep -P "\x08"` afterwards.
 Actionable suggestion: Document how the Bash tool treats backslashes in quoted heredocs, or pass the command text to the shell unchanged.
+
+### FL-023: Windows timer granularity made a lower-bound timing test fail in CI (a 300 ms sleep measured 290.6 ms)
+Date: 2026-10-01
+Tool / service: GitHub Actions windows-latest, Python 3.12 (server sleep measured with time.perf_counter)
+Task attempted: Run `python tasks.py check` on the CI matrix after pushing the follow-up session 3 commit.
+Steps taken: The Simulator applied a 300 ms simulated delay; `tests/contract/test_simulator.py::test_simulated_delay_is_applied_and_reported` asserted the measured backend time was at least 300 ms.
+Expected vs actual: Expected at least 300 ms. Actual: 290.6 ms on windows / 3.12 only; the other three jobs and the local Windows run passed. The measurement already used perf_counter, so the sleep itself returned early (coarse Windows timer).
+Severity: Low (one red CI job; no product bug)
+Workaround: Lower-bound tolerance of 50 ms in the test, with a comment. Upper-bound latency checks were not changed.
+Actionable suggestion: Never assert an exact lower bound on a measured sleep; allow a tolerance of one or two timer ticks.
