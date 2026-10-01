@@ -77,6 +77,7 @@ h1 [lang="te"] { font-weight: 600; font-size: 23px; }
   margin-bottom: 12px; }
 .detail .row { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; font-size: 15px; }
 .detail .row .l { color: var(--muted); }
+.detail .row .l [lang="te"] { display: block; font-size: 13px; }
 .hint { font-size: 15px; color: var(--muted); margin-top: 4px; }
 
 .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -199,8 +200,15 @@ function el(tag, attrs, ...kids) {
   for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
   return e;
 }
-function bi(t, sep) { return [el("span", { lang: "en" }, t.en), sep === undefined ? " · " : sep, el("span", { lang: "te" }, t.te)]; }
-function stacked(t, cls) { return el("div", { class: cls }, el("span", { lang: "en" }, t.en), el("span", { lang: "te" }, t.te)); }
+// A label that is the same in both languages (FCR) is shown once; otherwise the two are always separated.
+function bi(t, sep) {
+  if (t.te === t.en) return [el("span", { lang: "en" }, t.en)];
+  return [el("span", { lang: "en" }, t.en), sep === undefined ? " · " : sep, el("span", { lang: "te" }, t.te)];
+}
+function stacked(t, cls) {
+  if (t.te === t.en) return el("div", { class: cls }, el("span", { lang: "en" }, t.en));
+  return el("div", { class: cls }, el("span", { lang: "en" }, t.en), " ", el("span", { lang: "te" }, t.te));
+}
 
 const ICONS = {
   unknown: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M9 9.2a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.9v.6" fill="none" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.8" r="1.5" fill="var(--bg)"/></svg>',
@@ -251,7 +259,7 @@ function chart(hc, path) {
       }
     }
     return el("div", { class: cls.join(" ") },
-      el("div", { class: "bar-label" + (i === hc.best_day_index ? " best" : "") }, i === 0 ? bi(L.today, "") : dayLabelEn(hc, i)),
+      el("div", { class: "bar-label" + (i === hc.best_day_index ? " best" : "") }, i === 0 ? bi(L.today) : dayLabelEn(hc, i)),
       el("div", { class: "bar-track" }, independent ? el("div", { class: "bar-mid" }) : null, fill),
       v == null ? el("div", { class: "bar-value" }, "—") :
         el("div", { class: "bar-value " + (independent ? (v >= 0 ? "pos" : "neg") : "pos"), "data-field": path + ".days." + i + field }, rupees(v)));

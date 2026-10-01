@@ -1,5 +1,4 @@
 <!doctype html>
-<!-- Built by scripts/build_cards.py from ui/cards/. Do not edit; edit the template and rebuild. -->
 <!--
   CluckTalk farm-status card: an MCP App view (MCP Apps spec 2026-01-26, text/html;profile=mcp-app).
   Source template. scripts/build_cards.py inlines the font and labels and writes
@@ -87,6 +86,7 @@ h1 [lang="te"] { font-weight: 600; font-size: 23px; }
 .say { font-size: 18px; }
 .fu { display: flex; flex-direction: column; gap: 4px; border: 2px solid var(--line); border-radius: 14px; padding: 8px 12px; }
 .fu.fu-escalated { border-color: var(--alert); border-width: 3px; } .fu.fu-due { border-color: var(--watch); }
+.fu.fu-due.fu-high { border-color: var(--alert); }
 .fu-head { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 16px; }
 .fu-head svg { width: 22px; height: 22px; flex: none; }
 .fu-head [lang="te"] { display: block; font-weight: 600; font-size: 14px; }
@@ -159,7 +159,7 @@ h1 [lang="te"] { font-weight: 600; font-size: 23px; }
 </main>
 <script>
 "use strict";
-const L = {"age_day_n": {"en": "Day {n}", "te": "{n}వ రోజు"}, "at_least_days_n": {"en": "at least {n} days", "te": "కనీసం {n} రోజులు"}, "avg_weight": {"en": "Average weight", "te": "సగటు బరువు"}, "back_all": {"en": "All sheds", "te": "అన్ని షెడ్లు"}, "birds_n": {"en": "{n} birds", "te": "{n} కోళ్లు"}, "day_one_n": {"en": "{n} day", "te": "{n} రోజు"}, "days_n": {"en": "{n} days", "te": "{n} రోజులు"}, "deaths_latest": {"en": "Deaths, latest count", "te": "తాజా లెక్కలో మరణాలు"}, "deaths_today": {"en": "Deaths today", "te": "ఈరోజు మరణాలు"}, "demo_badge": {"en": "Demo data", "te": "డెమో డేటా"}, "farm_title": {"en": "Farm status", "te": "ఫారం స్థితి"}, "feed_days": {"en": "Feed stock, days", "te": "ఫీడ్ నిల్వ, రోజులు"}, "feed_left": {"en": "Feed stock", "te": "ఫీడ్ నిల్వ"}, "follow_up": {"en": "Follow-up", "te": "ఫాలో-అప్"}, "generic_error": {"en": "Sorry, I couldn't do that just now.", "te": "క్షమించండి, ఇప్పుడు అది చేయలేకపోయాను."}, "generic_next": {"en": "Please ask me again in a moment.", "te": "దయచేసి కొద్దిసేపటి తర్వాత మళ్ళీ అడగండి."}, "grams_n": {"en": "{n} g", "te": "{n} గ్రా."}, "laying": {"en": "Laying", "te": "గుడ్ల ఉత్పత్తి"}, "level_alert": {"en": "ALERT", "te": "శ్రద్ధ అవసరం"}, "level_info": {"en": "REMINDER", "te": "గుర్తుచేత"}, "level_ok": {"en": "OK", "te": "బాగుంది"}, "level_unknown": {"en": "UNKNOWN", "te": "తెలియదు"}, "level_watch": {"en": "WATCH", "te": "గమనించాలి"}, "loading": {"en": "Loading", "te": "లోడ్ అవుతోంది"}, "not_checked": {"en": "Could not check", "te": "తనిఖీ చేయలేకపోయాను"}, "not_known": {"en": "not known", "te": "తెలియదు"}, "readings_from_d": {"en": "Latest readings: {d}", "te": "తాజా రీడింగులు: {d}"}, "sorry": {"en": "Sorry", "te": "క్షమించండి"}, "tap_hint": {"en": "Tap a shed for details", "te": "వివరాల కోసం షెడ్‌ను తాకండి"}, "target_grams_n": {"en": "target {n} g", "te": "లక్ష్యం {n} గ్రా."}};
+const L = {"age_day_n": {"en": "Day {n}", "te": "{n}వ రోజు"}, "at_least_days_n": {"en": "at least {n} days", "te": "కనీసం {n} రోజులు"}, "avg_weight": {"en": "Average weight", "te": "సగటు బరువు"}, "back_all": {"en": "All sheds", "te": "అన్ని షెడ్లు"}, "birds_n": {"en": "{n} birds", "te": "{n} కోళ్లు"}, "day_one_n": {"en": "{n} day", "te": "{n} రోజు"}, "days_n": {"en": "{n} days", "te": "{n} రోజులు"}, "deaths_latest": {"en": "Deaths, latest count", "te": "తాజా లెక్కలో మరణాలు"}, "deaths_today": {"en": "Deaths today", "te": "ఈరోజు మరణాలు"}, "demo_badge": {"en": "Demo data", "te": "డెమో డేటా"}, "farm_title": {"en": "Farm status", "te": "ఫారం స్థితి"}, "feed_days": {"en": "Feed stock, days", "te": "ఫీడ్ నిల్వ, రోజులు"}, "feed_left": {"en": "Feed stock", "te": "ఫీడ్ నిల్వ"}, "follow_up": {"en": "Follow-up", "te": "ఫాలో-అప్"}, "generic_error": {"en": "Sorry, I couldn't do that just now.", "te": "క్షమించండి, ఇప్పుడు అది చేయలేకపోయాను."}, "generic_next": {"en": "Please ask me again in a moment.", "te": "దయచేసి కొద్దిసేపటి తర్వాత మళ్ళీ అడగండి."}, "grams_n": {"en": "{n} g", "te": "{n} గ్రా."}, "laying": {"en": "Laying", "te": "గుడ్ల ఉత్పత్తి"}, "level_alert": {"en": "ALERT", "te": "శ్రద్ధ అవసరం"}, "level_ok": {"en": "OK", "te": "బాగుంది"}, "level_unknown": {"en": "UNKNOWN", "te": "తెలియదు"}, "level_watch": {"en": "WATCH", "te": "గమనించాలి"}, "loading": {"en": "Loading", "te": "లోడ్ అవుతోంది"}, "not_checked": {"en": "Could not check", "te": "తనిఖీ చేయలేకపోయాను"}, "not_known": {"en": "not known", "te": "తెలియదు"}, "readings_from_d": {"en": "Latest readings: {d}", "te": "తాజా రీడింగులు: {d}"}, "sorry": {"en": "Sorry", "te": "క్షమించండి"}, "tap_hint": {"en": "Tap a shed for details", "te": "వివరాల కోసం షెడ్‌ను తాకండి"}, "target_grams_n": {"en": "target {n} g", "te": "లక్ష్యం {n} గ్రా."}};
 const APP = {"name": "CluckTalk", "name_te": "కోడి మిత్ర"};
 const SERVER_DEMO = "@SERVER_DEMO@";  // stamped by the server at startup: badge on every card, errors too
 const NUM_FIXTURES = [[0, "0"], [7, "7"], [88, "88"], [88.0, "88"], [941, "941"], [1012, "1,012"], [3883, "3,883"], [4862, "4,862"], [12345, "12,345"], [123456, "1,23,456"], [12345678, "1,23,45,678"], [2.9, "2.9"], [1.23, "1.23"], [38.5, "38.5"], [0.05, "0.05"], [1568.25, "1,568.25"], [100000.5, "1,00,000.5"], [-0.5, "-0.5"], [-3, "-3"], [-1234.5, "-1,234.5"]];  // [value, Python render.num(value)] pairs, written at build time
@@ -342,12 +342,15 @@ function levelTag(level) {
 // ---------- the follow-up chip: its state as icon AND word, then the sentence the voice says (verbatim) ----------
 function followUpChip(h) {
   const f = h.follow_up;
-  const state = f && { due: { icon: "info", word: L.level_info }, escalated: { icon: "alert", word: L.level_alert },
-    lapsed: { icon: "unknown", word: L.level_unknown } }[f.state];
-  if (!state || !f.text_en) return null;  // scheduled and closed have nothing to say
-  return el("div", { class: "fu fu-" + f.state, role: "group" },
-    el("div", { class: "fu-head" }, icon(state.icon),
-      stacked({ en: L.follow_up.en + ": " + state.word.en, te: L.follow_up.te + ": " + state.word.te })),
+  // The word is the briefing's own level word for the same item: due = WATCH for a watch check, ALERT for an
+  // urgent or reportable one; escalated = ALERT; lapsed = UNKNOWN (no answer came, so it is not known).
+  const high = f && (f.urgency === "urgent" || f.urgency === "notifiable_suspect");
+  const level = f && { due: high ? "alert" : "watch", escalated: "alert", lapsed: "unknown" }[f.state];
+  if (!level || !f.text_en) return null;  // scheduled and closed have nothing to say
+  const word = L["level_" + level];
+  return el("div", { class: "fu fu-" + f.state + (high && f.state === "due" ? " fu-high" : ""), role: "group" },
+    el("div", { class: "fu-head" }, icon(level),
+      stacked({ en: L.follow_up.en + ": " + word.en, te: L.follow_up.te + ": " + word.te })),
     stacked({ en: f.text_en, te: f.text_te }, "say"));
 }
 

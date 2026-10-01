@@ -196,12 +196,15 @@ Built on the MCP Apps extension (`io.modelcontextprotocol/ui`, stable spec 2026-
 - **Wiring**: a card-bearing tool carries `_meta.ui.resourceUri` in `tools/list` (spec: on the tool, not the result); the card is a `ui://` resource served as `text/html;profile=mcp-app` with `_meta.ui.prefersBorder: false`. Tools without a card declare none (§5 rule 3). Hosts without MCP Apps still get the full spoken answer in `content`.
 - **Self-contained**: the spec's default CSP allows no network access, so each card is one HTML file: no external scripts, styles, fonts or requests. Source templates live in `ui/cards/`; `scripts/build_cards.py` inlines the font and the labels and writes the committed bundle to `src/clucktalk/server/cards/` (no Node or build step needed to run). A harness test fails if the bundle is out of date.
 - **Protocol**: plain JSON-RPC over `postMessage` as the spec allows ("you don't need an SDK"): `ui/initialize` (`appInfo`, `appCapabilities`, `protocolVersion`) → `ui/notifications/initialized` → the host sends `tool-input` and `tool-result`. The card reports its size (`size-changed`), answers `ui/resource-teardown` and `ping`, and logs through `notifications/message`.
-- **Cross-modal (§6)**: every number on a card is a value from the tool's `structuredContent`, formatted like the spoken answer (the card's `num()` mirrors `render.num`: Indian digit grouping, no trailing zeros). The card does no arithmetic on data, and finding sentences are the exact spoken sentences in English and Telugu. After each render the card reports its visible text and each big KPI value with the `structuredContent` field it shows; the host checks that every spoken number is on the card, every card number is in the tool result, and every KPI equals its own field. At load the card also checks its `num()` against `render.num` outputs embedded at build time and logs an error on any mismatch.
+- **Cross-modal (§6)**: every number on a card is a value from the tool's `structuredContent`, formatted like the spoken answer (the card's `num()` mirrors `render.num`: Indian digit grouping, no trailing zeros). The card does no arithmetic on data, and finding sentences are the exact spoken sentences in English and Telugu. **In the Simulator**, which speaks the
+tool's own text, the card sentence therefore equals the spoken one. **On Alexa+** the assistant composes its own speech
+from `structuredContent` and the tool descriptions, so its wording may differ from the card's; the card still shows
+the tool's sentence, and how Alexa words it is not verified on a device. After each render the card reports its visible text and each big KPI value with the `structuredContent` field it shows; the host checks that every spoken number is on the card, every card number is in the tool result, and every KPI equals its own field. At load the card also checks its `num()` against `render.num` outputs embedded at build time and logs an error on any mismatch.
 - **Honest time (§7 rule 7)**: when a shed's latest readings are not from today, the card dates them ("Latest readings: dd-mm-yyyy").
 - **Visual**: status is an icon shape AND a word (OK ✓ circle, WATCH triangle, ALERT octagon, UNKNOWN ?), never colour alone. Key numbers are large (32–48 px); the least important line (breed, day, bird count) comes last so it is what drops below the fold on short screens. Checked at Amazon-documented Echo Show sizes (§15) and on a phone.
 - **Bilingual**: English and Telugu side by side. Fixed labels are Python `Text` pairs in `clucktalk.server.cards` (reviewed per string, §8), with `{n}` slots for numbers so Telugu inflection ("{n}వ రోజు") is reviewed too. Noto Sans Telugu 2.005 (SIL OFL 1.1, `ui/fonts/`) is inlined; if a host's CSP blocks data: fonts, the card falls back to system Telugu fonts and logs a warning (FRICTION_LOG FL-007).
 - **Demo data**: the server stamps its mode into the card at startup, so the "Demo data" badge shows on every card in demo mode, including error cards (which carry no `structuredContent`).
-- **Follow-up on the cards (§18)**: a briefing slide for a follow-up item has its own icon (a circular arrow) AND the word "Follow-up" beside the level icon and word. The farm-status tile and the shed detail view show a chip: the state as icon AND word (due = REMINDER, escalated = ALERT, lapsed = UNKNOWN; reused reviewed words, so only "Follow-up" is a new Telugu label), then the spoken sentence verbatim from `follow_up.text_en/te`. Scheduled and closed show no chip. The chip is inside the tile, so a tap opens the existing detail view; the tile's accessible name includes the sentence. The days number is the one in the sentence, so a card cannot disagree with the voice. **Not built**: a follow-up row on the health-check card (it needs a new output field and would touch more than 12 non-test files; the day 0 sentence already shows there through `text_en`). The sale card is unchanged except for the demo-clock marker.
+- **Follow-up on the cards (§18)**: a briefing slide for a follow-up item has its own icon (a circular arrow) AND the word "Follow-up" beside the level icon and word. The farm-status tile and the shed detail view show a chip: the state as icon AND word, the briefing's own level words (due = WATCH for a watch check, ALERT for an urgent or reportable one; escalated = ALERT; lapsed = UNKNOWN, because no answer came and so nothing is known; never "reminder", since nothing reminds anyone), then the spoken sentence verbatim from `follow_up.text_en/te`. Only "Follow-up" is a new Telugu label. Scheduled and closed show no chip. The chip is inside the tile, so a tap opens the existing detail view; the tile's accessible name includes the sentence. The days number is the one in the sentence, so in the Simulator a card cannot disagree with the voice (on Alexa+ the assistant words its own answer). **Not built**: a follow-up row on the health-check card (it needs a new output field and would touch more than 12 non-test files; the day 0 sentence already shows there through `text_en`). The sale card is unchanged except for the demo-clock marker.
 - **Demo-clock marker**: when the server's demo clock is on (§18), every card shows a second badge "Demo clock: +N days". It comes from `_meta["clucktalk/demo_clock"]` on the tool result (not from `structuredContent`, whose output schema is closed) and is marked `data-xm-skip`, so the "+N" is not mistaken for a farm number. When the clock is off the card is exactly as before.
 - **Touch = voice**: tapping a shed tile or "All sheds" makes the card call the same tool (`tools/call get_farm_status`) through the host; the answer equals what voice would give.
 - **Errors**: an `isError` result renders the bilingual message and next step from `_meta["clucktalk/error"]`, never a blank card.
@@ -248,8 +251,8 @@ against a freshly started mock-mode server, checked against literal field values
 (`scripts/eval_fast.py`). Writes `docs/EVALS.md` with a real pass/fail count; never fakes a score (Rule 6).
 v0 covers a handful of read-only, single-call cases (farm status, feed reorder, and `plan_sale`'s before /
 at / after break-even and rising-mortality stories); contract-mode's multi-step confirmation flow is covered by
-the contract test suite instead, since this runner is single-call by design. Extended to the full 45-case suite,
-covering every P0 feature. Multi-step cases (`steps`, `save`,
+the contract test suite instead, since this runner is single-call by design. The suite has 51 cases
+(the table in `docs/EVALS.md` is the count; a harness test keeps this number equal to it). Multi-step cases (`steps`, `save`,
 `poll_until`) and model-fixture cases (`model_fixture`, `tests/fakes.py`) came with the agents (§18); a case marked
 `fresh_state` runs on a server of its own, so its answer cannot depend on what earlier cases changed.
 Build session 4 (2026-10-01) added 13 cases (44 in all): 11 for the follow-up (better closes; same, worse and not sure
@@ -261,6 +264,9 @@ through the Simulator's own intent rules, no model; it must pick the tool the st
 nahi, vaddu turned into yes / no by the same rules) and `expect_error` (the call must be refused). An unknown step key
 fails the case instead of being ignored. No MCP tool or argument can reach the demo clock. One deliberate break per
 group was run and the matching case failed each time (see PROGRESS).
+The Session 5 review fixes added 7 more: an urgent and a reportable check keep their warning the next day (briefing),
+a reportable check, a due follow-up and an escalated one change the farm-status level (never "doing well"), and a
+"worse" / "not sure" after a vet handoff and a newer check still ends with the vet line.
 
 ## 18. Agents (Health Triage built 2026-09-29; Daily Briefing built 2026-09-30; Flock Follow-up: tool, briefing, farm status, the day 0 sentence, the demo clock, golden evals and the briefing / farm-status cards built 2026-10-01; health-check card row not built)
 The model decides; code speaks. An agent runs on the slow path (§3) and asks a model for **one forced tool call
@@ -352,8 +358,9 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
 - **Flock Follow-up** (`report_health_follow_up`; `clucktalk.domain.follow_up`, `clucktalk.server.tools.follow_up`; built
   2026-10-01). Days after a health check flagged a shed, the farmer says how it is now. **No model is involved**: the
   state of a follow-up is plain code over stored data and the day, and the host's own assistant is the only thing that
-  may interpret the farmer's words into one of four values. It shows up when the farmer next asks (the briefing, the
-  farm status); no card shows it yet, and nothing is pushed: there is no verified way for an add-on to remind a farmer.
+  may interpret the farmer's words into one of four values. It shows up when the farmer next asks (the briefing and the
+  farm status, and their cards; the health-check card has no follow-up row), and nothing is pushed: there is no verified
+  way for an add-on to remind a farmer.
   - **Tool**: `report_health_follow_up(house, outcome, check_id?, proposal_id?, answer?)`; `outcome` is exactly one of
     `better`, `same`, `worse`, `not_sure`. No free-text argument; unknown arguments are refused (strict list, as for
     `set_contract_terms`). One confirmation pattern (§5.1): the first call reads the answer back and saves nothing; only
@@ -374,7 +381,10 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     says plainly when that means it is recorded as not better. Escalation is spoken as "To be safe, contact your vet
     or doctor." and the existing `prepare_vet_handoff` is offered as a separate step with its own "yes" (only while no
     handoff was sent for that check: there is one handoff per check, so after a handoff the escalation line is spoken
-    without a second offer); this tool never sends anything.
+    without a second offer); this tool never sends anything. **Every not-better outcome ("worse", "same", "not sure", or a
+    "better" recorded as not better) ends with that line, in the read-back and after the "yes", even after a vet handoff
+    and even when a newer check of equal or higher urgency exists; "Done." alone is never spoken for it** (review
+    finding H4).
   - **A vet handoff ends what came before it, not what comes after it.** After a handoff for a check the follow-up shows
     as handled until something new is said or logged. A "worse", "same" or "not sure" given AFTER the handoff (or a death
     spike on a day after it) escalates again; a "better" after it is accepted and only closes. An answer at the very
@@ -387,12 +397,21 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     - *Daily briefing*: an escalated follow-up (even when the briefing's own check rule hid its check) or a due,
       unanswered one is one pinned item for that shed. It replaces the shed's open health-check item (never both), is never
       lower in priority than the check was (a reportable suspect 4, an urgent check 3, an escalated watch check 3), and
-      the list stays at 5 items. "Due" is a question ("How are the birds now: better, the same, or worse?"); escalated
+      the list stays at 5 items. **For an urgent check or a suspected reportable disease the one item starts with the
+      check's own sentence ("your health check yesterday said: needs a vet today" / "...signs of a possible reportable
+      disease") and then asks the question or says "To be safe...", and the vet closing line stays** (review finding B1:
+      the question is added to the warning, never substituted for it). "Due" is a question ("How are the birds now: better, the same, or worse?"); escalated
       ends with "To be safe, contact your vet or doctor." The number of days since the check is worked out from the date,
       never typed ("1 day ago", "3 days ago").
     - *Farm status*: each shed has a `follow_up` field (state, urgency, days ago, due day, outcome, reasons, whether a
       handoff was sent, and the spoken sentence) and ONE spoken sentence when it is due, escalated or lapsed (a lapsed one
-      says no answer came, never "better"). Scheduled and closed ones have the field but are not spoken.
+      says no answer came, never "better"). Scheduled and closed ones have the field but are not spoken. **The shed's
+      level takes the briefing's own level for its health item** (urgent or reportable: ALERT; a watch check: at least
+      WATCH; an escalated follow-up: ALERT; a due follow-up: at least WATCH), so the tile, the farm badge and the
+      spoken line never say "doing well" while the briefing has a health item for that shed (review finding H1). A shed
+      that is not OK because of an open check says why in the check's own sentence (`open_health_check` carries the
+      number it speaks), and an urgent or reportable one adds the vet closing line. The briefing and the status read one
+      shared per-shed health item (`health_fact`), so their levels agree.
     - *Day 0*: a new health check ends with "The next briefing, in about N days, will ask how this shed is doing." N is
       the named window for the check's urgency; nothing proactive is promised.
   - **Demo clock** (for the video's "three days later" and the golden cases): `CLUCKTALK_DEMO_DAYS_LATER=N` (0 to 30), or

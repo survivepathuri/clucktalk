@@ -52,18 +52,33 @@ mode (real Bedrock/Polly) needs an AWS account; see `docs/AWS_SETUP.md`.
   voice it reads the top 3 and offers "more" (5 items at most). Health alerts always come first, decided by code; an
   AI model, only when live AI is switched on, may re-order the other items from a fixed list and can write no text.
   A death spike logged a few days ago still shows. A sale-window item is a simulated estimate and shows no rupees.
+- **Voice record book** (`log_daily_record`, `get_record_book`): the farmer says deaths, feed, a weight sample or a
+  treatment name; it is read back and saved only after an explicit "yes". No medicine advice and no doses.
+- **Health triage** (`start_health_check`, `get_health_check`, `prepare_vet_handoff`): guidance, never a diagnosis.
+  Code decides the urgency from the signs and the record book (a model can raise it, never lower it); a suspected
+  reportable disease gets the report-and-isolate steps. The vet summary is a **simulated SMS** to a demo contact.
+- **Follow-up** (`report_health_follow_up`): days after a flagged check the next briefing or farm status asks how the shed
+  is now. "Same", "worse" and "not sure" always end with "To be safe, contact your vet or doctor." Nothing is pushed;
+  CluckTalk only speaks when the farmer asks.
 - **What can you do?** (`get_help`).
 - A local **Alexa+ Simulator** (Echo Show / Echo Dot device modes, voice and text, a developer panel showing the
   exact MCP wire).
+
+## Voice versus cards, and what is not verified
+
+In the Simulator the host speaks the tool's own text, so the card sentence equals the spoken sentence and every
+number is the same on both (tested). **That equality holds in the Simulator only.** On Alexa+ the assistant composes
+its own speech from the tool result and the tool descriptions, so the words it says can differ from ours; the card
+still shows the tool's own sentence. We cannot script Alexa's wording, and no Alexa+ device has loaded CluckTalk.
 
 ## Roadmap
 
 - **Layer farming.** The domain layer already models egg-laying flocks (status, feed planning), but the current
   build, demo data and video target **broiler** farms only. Extending the voice/card experience to layer flocks
   the way broilers are covered today is future work.
-- Voice record book, the full Contract Earnings Tracker (sensitivity/what-if), vaccination planner and vaccine-day
-  coach, health triage, and feed/order confirmation flows — see `docs/DESIGN.md` §13 for the
-  design of each.
+- The full Contract Earnings Tracker (sensitivity/what-if), the vaccination planner and vaccine-day coach, and
+  feed/order confirmation flows — see `docs/DESIGN.md` §13 for the design of each. (The voice record book and
+  health triage are built; see above.)
 
 ## Agent Skill: operate CluckTalk from a coding agent
 

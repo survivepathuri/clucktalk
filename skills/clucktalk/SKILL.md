@@ -44,7 +44,7 @@ One tool is one intent. Pick the tool from what the farmer wants, pass the farme
 Five tools change something and use one pattern and no other: `set_farm_mode`, `set_contract_terms`, `log_daily_record`, `prepare_vet_handoff` and `report_health_follow_up`. (`start_health_check` also stores a check, but it takes no `proposal_id` and no `answer`.)
 
 1. **Propose.** Call the tool with the farmer's request and no `proposal_id`. Nothing changes. The result has `status: "needs_confirmation"`, a `proposal_id`, and a read-back in full.
-2. **Read it back** to the farmer, word for word, then stop and wait.
+2. **Read it back** to the farmer (the result's own read-back, with every number in it), then stop and wait.
 3. **Answer.** Only an explicit whole-sentence yes (yes, haan, avunu) or no (no, nahi, vaddu) counts. Call the same tool again with the same arguments plus `proposal_id` and `answer: "yes"` or `"no"`. In the Simulator host any other utterance drops the pending read-back; do the same, and make a new proposal if they still want the change.
 4. The change applies only when the arguments equal what was read back and the proposal is unexpired (10 minutes). A correction is a new proposal. Repeating a confirmed `proposal_id` returns the same outcome and never applies twice.
 
@@ -54,13 +54,13 @@ A card tap never stands in for a spoken yes. Never invent an answer for the farm
 
 - Never name a medicine or give a dose, and never ask for one. `log_daily_record` keeps a treatment name only, and `report_health_follow_up` has no free-text argument at all.
 - Health checks are guidance, not a diagnosis. A suspected reportable disease gets no diagnosis: the result says to report it and offers the vet handoff.
-- An answer to a follow-up never lowers a health check's urgency. "Same", "worse" and "not sure" all end with "To be safe, contact your vet or doctor." A death spike in the record book counts as worse whatever the farmer says.
+- An answer to a follow-up never lowers a health check's urgency. For "same", "worse" and "not sure" the tool's own text includes "To be safe, contact your vet or doctor." (in the read-back and after the yes). Keep that step if you put it in your own words. A death spike in the record book counts as worse whatever the farmer says.
 - Never reassure, never give rearing advice, never promise a reminder or any proactive contact. CluckTalk only answers when the farmer asks; the next briefing asks about a shed only when the farmer next opens it.
 - Never say a number the result does not contain. Never report an unknown farm level as ok.
 
 ## Voice and cards, in short (full list in `references/voice-and-cards.md`)
 
-- Every result has `text_en`, `text_te` and `structuredContent`. Speak the sentence in the farmer's language; the card shows the same sentence and the same numbers.
+- Every result has `text_en`, `text_te` and `structuredContent`. Speak the sentence in the farmer's language and keep every number. In a host that speaks the tool's own text (the local Simulator) the card shows that same sentence and the same numbers; on Alexa+ the assistant words its own answer, so never promise exact wording to a farmer.
 - Voice-only devices (an Echo Dot class device) get no card. The spoken answer must be complete on its own and must never refer to a screen. Offer at most 5 options.
 - Where a card exists, the tool declares it in `_meta.ui.resourceUri`. A tap on a card calls the same tool as voice and gives the same answer.
 

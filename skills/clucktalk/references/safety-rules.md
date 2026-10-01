@@ -27,12 +27,12 @@ A follow-up asks how a shed is now compared with its health check: better, the s
 | The farmer says | What CluckTalk records | What it says |
 |---|---|---|
 | better | closes the follow-up (never lowers urgency) | the read-back, then "Done." |
-| the same | escalates | ends with "To be safe, contact your vet or doctor." |
+| the same | escalates | the read-back and the saved answer both include "To be safe, contact your vet or doctor." |
 | worse | escalates | the same line, and offers the vet summary as a step of its own |
 | not sure | escalates | the same line |
 | any answer, but the record book shows a death spike since the check | recorded as worse | says the record book shows a spike and records it as not better |
 
-- "Same", "worse" and "not sure" mean contact your vet or doctor, in those words. Do not soften them and do not replace them with advice.
+- "Same", "worse" and "not sure" mean contact your vet or doctor. The tool says it in those words, also after a vet summary was sent and also when a newer check exists; "Done." alone is never the answer to them. Keep the step if you rephrase, do not soften it and do not replace it with advice. On Alexa+ the assistant words its own answer, so do not promise a farmer exact wording.
 - "Better" after a spike in the record book is still recorded as worse. Do not argue with the record book.
 - The follow-up tool sends nothing. The vet summary is a different tool with its own read-back and its own yes.
 - A follow-up nobody answered lapses and says so ("there was no answer to the follow-up"). It never reads as better.

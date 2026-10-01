@@ -85,6 +85,7 @@ h1 [lang="te"] { font-weight: 600; font-size: 23px; }
 .say { font-size: 18px; }
 .fu { display: flex; flex-direction: column; gap: 4px; border: 2px solid var(--line); border-radius: 14px; padding: 8px 12px; }
 .fu.fu-escalated { border-color: var(--alert); border-width: 3px; } .fu.fu-due { border-color: var(--watch); }
+.fu.fu-due.fu-high { border-color: var(--alert); }
 .fu-head { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 16px; }
 .fu-head svg { width: 22px; height: 22px; flex: none; }
 .fu-head [lang="te"] { display: block; font-weight: 600; font-size: 14px; }
@@ -340,12 +341,15 @@ function levelTag(level) {
 // ---------- the follow-up chip: its state as icon AND word, then the sentence the voice says (verbatim) ----------
 function followUpChip(h) {
   const f = h.follow_up;
-  const state = f && { due: { icon: "info", word: L.level_info }, escalated: { icon: "alert", word: L.level_alert },
-    lapsed: { icon: "unknown", word: L.level_unknown } }[f.state];
-  if (!state || !f.text_en) return null;  // scheduled and closed have nothing to say
-  return el("div", { class: "fu fu-" + f.state, role: "group" },
-    el("div", { class: "fu-head" }, icon(state.icon),
-      stacked({ en: L.follow_up.en + ": " + state.word.en, te: L.follow_up.te + ": " + state.word.te })),
+  // The word is the briefing's own level word for the same item: due = WATCH for a watch check, ALERT for an
+  // urgent or reportable one; escalated = ALERT; lapsed = UNKNOWN (no answer came, so it is not known).
+  const high = f && (f.urgency === "urgent" || f.urgency === "notifiable_suspect");
+  const level = f && { due: high ? "alert" : "watch", escalated: "alert", lapsed: "unknown" }[f.state];
+  if (!level || !f.text_en) return null;  // scheduled and closed have nothing to say
+  const word = L["level_" + level];
+  return el("div", { class: "fu fu-" + f.state + (high && f.state === "due" ? " fu-high" : ""), role: "group" },
+    el("div", { class: "fu-head" }, icon(level),
+      stacked({ en: L.follow_up.en + ": " + word.en, te: L.follow_up.te + ": " + word.te })),
     stacked({ en: f.text_en, te: f.text_te }, "say"));
 }
 
