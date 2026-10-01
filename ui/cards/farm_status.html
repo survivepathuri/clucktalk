@@ -40,6 +40,7 @@ button:focus-visible, .tile:focus-visible { outline: 4px solid var(--focus); out
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
 .brand { font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: .02em; white-space: nowrap; }
 .brand span[lang="te"] { font-weight: 400; }
+.badges { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .badge { background: var(--badge-bg); color: var(--badge-text); border-radius: 999px; padding: 6px 14px;
   font-size: 16px; font-weight: 700; white-space: nowrap; }
 .titlerow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
@@ -82,6 +83,11 @@ h1 [lang="te"] { font-weight: 600; font-size: 23px; }
 .house .kpi .l { font-size: 17px; }
 .house .kpi .l [lang="te"] { font-size: 16px; }
 .say { font-size: 18px; }
+.fu { display: flex; flex-direction: column; gap: 4px; border: 2px solid var(--line); border-radius: 14px; padding: 8px 12px; }
+.fu.fu-escalated { border-color: var(--alert); border-width: 3px; } .fu.fu-due { border-color: var(--watch); }
+.fu-head { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 16px; }
+.fu-head svg { width: 22px; height: 22px; flex: none; }
+.fu-head [lang="te"] { display: block; font-weight: 600; font-size: 14px; }
 .say [lang="te"] { display: block; font-size: 17px; color: var(--muted); margin-top: 2px; }
 
 .band { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -253,6 +259,7 @@ const ICONS = {  // distinct shapes, so status reads without colour (spec: never
   watch: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.8L23 21.5H1z" fill="currentColor"/><rect x="10.8" y="8" width="2.4" height="7.5" rx="1" fill="var(--bg)"/><circle cx="12" cy="18.2" r="1.5" fill="var(--bg)"/></svg>',
   alert: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 1h9.2L23 7.4v9.2L16.6 23H7.4L1 16.6V7.4z" fill="currentColor"/><rect x="10.7" y="5.5" width="2.6" height="9" rx="1" fill="var(--bg)"/><circle cx="12" cy="18" r="1.7" fill="var(--bg)"/></svg>',
   unknown: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M9 9.2a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.9v.6" fill="none" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.8" r="1.5" fill="var(--bg)"/></svg>',
+  info: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M12 11v6" stroke="var(--bg)" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="7.2" r="1.5" fill="var(--bg)"/></svg>',
   back: '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 function icon(name) { const s = el("span", { "aria-hidden": "true", style: "display:inline-flex" }); s.innerHTML = ICONS[name]; return s; }
@@ -262,10 +269,17 @@ function pill(level) {
     icon(level), el("span", { lang: "en" }, t.en), el("span", { lang: "te" }, t.te));
 }
 
+function badges(sc) {  // "Demo data" always in demo mode; "Demo clock: +N days" only while the server's demo clock is on
+  const demo = SERVER_DEMO === true || (sc && sc.demo_data) ? el("div", { class: "badge", role: "note" }, bi(L.demo_badge)) : null;
+  const m = lastResult && lastResult._meta && lastResult._meta["clucktalk/demo_clock"];  // rides in _meta, not structuredContent
+  if (!m) return demo;
+  return el("div", { class: "badges" }, demo,
+    el("div", { class: "badge", role: "note", "data-xm-skip": true }, bi({ en: m.label_en, te: m.label_te })));
+}
 function header(sc) {
   const top = el("div", { class: "top" },
     el("div", { class: "brand", "data-xm-skip": true }, el("span", { lang: "en" }, APP.name), " · ", el("span", { lang: "te" }, APP.name_te)),
-    SERVER_DEMO === true || (sc && sc.demo_data) ? el("div", { class: "badge", role: "note" }, bi(L.demo_badge)) : null);
+    badges(sc));
   return top;
 }
 function dateText(iso) { const [y, m, d] = iso.split("-"); return d + "-" + m + "-" + y; }
@@ -323,6 +337,18 @@ function levelTag(level) {
     el("span", { lang: "te", class: "tag-te" }, L["level_" + level].te)));
 }
 
+// ---------- the follow-up chip: its state as icon AND word, then the sentence the voice says (verbatim) ----------
+function followUpChip(h) {
+  const f = h.follow_up;
+  const state = f && { due: { icon: "info", word: L.level_info }, escalated: { icon: "alert", word: L.level_alert },
+    lapsed: { icon: "unknown", word: L.level_unknown } }[f.state];
+  if (!state || !f.text_en) return null;  // scheduled and closed have nothing to say
+  return el("div", { class: "fu fu-" + f.state, role: "group" },
+    el("div", { class: "fu-head" }, icon(state.icon),
+      stacked({ en: L.follow_up.en + ": " + state.word.en, te: L.follow_up.te + ": " + state.word.te })),
+    stacked({ en: f.text_en, te: f.text_te }, "say"));
+}
+
 // ---------- views ----------
 function farmView(sc) {
   const root = el("main", { id: "root", class: "farm" });
@@ -336,12 +362,14 @@ function farmView(sc) {
     const p = "houses." + i;
     const f = h.findings[0];
     const tile = el("button", { class: "tile edge-" + h.level, type: "button",
-      "aria-label": h.label_en + ", " + L["level_" + h.level].en + ". " + (f ? f.text_en : h.summary_en),
+      "aria-label": h.label_en + ", " + L["level_" + h.level].en + ". " + (f ? f.text_en : h.summary_en)
+        + (h.follow_up && h.follow_up.text_en ? " " + h.follow_up.text_en : ""),
       onclick: () => openHouse(h.house_id, tile) },
       pill(h.level),
       el("div", { class: "hname" }, bi({ en: h.label_en, te: h.label_te })),
       el("div", { class: "kpis" }, deathsKpi(h, p, sc.as_of), feedKpi(h, p, true), thirdKpi(h, p, true)),
       f ? stacked({ en: f.text_en, te: f.text_te }, "say") : null,
+      followUpChip(h),
       metaLine(h, sc.as_of));  // least important line last: on short screens it is what falls below the fold
     grid.append(tile);
   });
@@ -372,6 +400,7 @@ function houseView(sc) {
   } else {
     root.append(stacked({ en: h.summary_en, te: h.summary_te }, "say"));
   }
+  root.append(followUpChip(h));
   root.append(el("button", { class: "action", type: "button", onclick: () => openFarm() }, icon("back"), bi(L.back_all)));
   return root;
 }

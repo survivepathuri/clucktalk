@@ -40,6 +40,7 @@ button:focus-visible, .row:focus-visible { outline: 4px solid var(--focus); outl
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
 .brand { font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: .02em; white-space: nowrap; }
 .brand span[lang="te"] { font-weight: 400; }
+.badges { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .badge { background: var(--badge-bg); color: var(--badge-text); border-radius: 999px; padding: 6px 14px;
   font-size: 16px; font-weight: 700; white-space: nowrap; }
 .titlerow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 6px; flex-wrap: wrap; }
@@ -207,10 +208,17 @@ const ICONS = {
 };
 function icon(name) { const s = el("span", { "aria-hidden": "true", style: "display:inline-flex" }); s.innerHTML = ICONS[name]; return s; }
 
+function badges(sc) {  // "Demo data" always in demo mode; "Demo clock: +N days" only while the server's demo clock is on
+  const demo = SERVER_DEMO === true || (sc && sc.demo_data) ? el("div", { class: "badge", role: "note" }, bi(L.demo_badge)) : null;
+  const m = lastResult && lastResult._meta && lastResult._meta["clucktalk/demo_clock"];  // rides in _meta, not structuredContent
+  if (!m) return demo;
+  return el("div", { class: "badges" }, demo,
+    el("div", { class: "badge", role: "note", "data-xm-skip": true }, bi({ en: m.label_en, te: m.label_te })));
+}
 function header(sc) {
   return el("div", { class: "top" },
     el("div", { class: "brand", "data-xm-skip": true }, el("span", { lang: "en" }, APP.name), " · ", el("span", { lang: "te" }, APP.name_te)),
-    SERVER_DEMO === true || (sc && sc.demo_data) ? el("div", { class: "badge", role: "note" }, bi(L.demo_badge)) : null);
+    badges(sc));
 }
 function dateText(iso) { const [y, m, d] = iso.split("-"); return d + "-" + m + "-" + y; }
 

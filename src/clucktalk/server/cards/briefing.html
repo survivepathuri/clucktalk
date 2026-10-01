@@ -42,6 +42,7 @@ button:focus-visible, .track:focus-visible { outline: 4px solid var(--focus); ou
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
 .brand { font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: .02em; white-space: nowrap; }
 .brand span[lang="te"] { font-weight: 400; }
+.badges { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .badge { background: var(--badge-bg); color: var(--badge-text); border-radius: 999px; padding: 6px 14px;
   font-size: 16px; font-weight: 700; white-space: nowrap; }
 .titlerow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 10px; flex-wrap: wrap; }
@@ -63,6 +64,8 @@ h1 [lang="te"] { font-weight: 600; font-size: 23px; }
 .tag { border: 2px solid var(--muted); border-radius: 999px; padding: 2px 12px; font-size: 14px; font-weight: 700; color: var(--muted); }
 .tag.health { border-color: var(--neg); color: var(--neg); }
 .tag.sim { border-style: dashed; }
+.tag.follow { border-color: var(--best); color: var(--best); display: inline-flex; align-items: center; gap: 6px; }
+.tag svg { width: 18px; height: 18px; flex: none; }
 .what { font-size: 21px; }
 .what [lang="te"] { display: block; font-size: 18px; color: var(--muted); margin-top: 4px; }
 .nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 6px 0 10px; }
@@ -98,7 +101,7 @@ h1 [lang="te"] { font-weight: 600; font-size: 23px; }
 </main>
 <script>
 "use strict";
-const L = {"briefing_title": {"en": "Daily briefing", "te": "రోజువారీ బ్రీఫింగ్"}, "demo_badge": {"en": "Demo data", "te": "డెమో డేటా"}, "generic_error": {"en": "Sorry, I couldn't do that just now.", "te": "క్షమించండి, ఇప్పుడు అది చేయలేకపోయాను."}, "generic_next": {"en": "Please ask me again in a moment.", "te": "దయచేసి కొద్దిసేపటి తర్వాత మళ్ళీ అడగండి."}, "health_first": {"en": "Health first", "te": "ఆరోగ్యం ముందు"}, "level_alert": {"en": "ALERT", "te": "శ్రద్ధ అవసరం"}, "level_info": {"en": "REMINDER", "te": "గుర్తుచేత"}, "level_watch": {"en": "WATCH", "te": "గమనించాలి"}, "loading": {"en": "Loading", "te": "లోడ్ అవుతోంది"}, "next": {"en": "Next", "te": "తర్వాత"}, "previous": {"en": "Previous", "te": "వెనుకకు"}, "simulated": {"en": "Simulated", "te": "డెమో అంచనా"}, "sorry": {"en": "Sorry", "te": "క్షమించండి"}};
+const L = {"briefing_title": {"en": "Daily briefing", "te": "రోజువారీ బ్రీఫింగ్"}, "demo_badge": {"en": "Demo data", "te": "డెమో డేటా"}, "follow_up": {"en": "Follow-up", "te": "ఫాలో-అప్"}, "generic_error": {"en": "Sorry, I couldn't do that just now.", "te": "క్షమించండి, ఇప్పుడు అది చేయలేకపోయాను."}, "generic_next": {"en": "Please ask me again in a moment.", "te": "దయచేసి కొద్దిసేపటి తర్వాత మళ్ళీ అడగండి."}, "health_first": {"en": "Health first", "te": "ఆరోగ్యం ముందు"}, "level_alert": {"en": "ALERT", "te": "శ్రద్ధ అవసరం"}, "level_info": {"en": "REMINDER", "te": "గుర్తుచేత"}, "level_watch": {"en": "WATCH", "te": "గమనించాలి"}, "loading": {"en": "Loading", "te": "లోడ్ అవుతోంది"}, "next": {"en": "Next", "te": "తర్వాత"}, "previous": {"en": "Previous", "te": "వెనుకకు"}, "simulated": {"en": "Simulated", "te": "డెమో అంచనా"}, "sorry": {"en": "Sorry", "te": "క్షమించండి"}};
 const APP = {"name": "CluckTalk", "name_te": "కోడి మిత్ర"};
 const SERVER_DEMO = "@SERVER_DEMO@";  // stamped by the server at startup: badge on every card, errors too
 const NUM_FIXTURES = [[0, "0"], [7, "7"], [88, "88"], [88.0, "88"], [941, "941"], [1012, "1,012"], [3883, "3,883"], [4862, "4,862"], [12345, "12,345"], [123456, "1,23,456"], [12345678, "1,23,45,678"], [2.9, "2.9"], [1.23, "1.23"], [38.5, "38.5"], [0.05, "0.05"], [1568.25, "1,568.25"], [100000.5, "1,00,000.5"], [-0.5, "-0.5"], [-3, "-3"], [-1234.5, "-1,234.5"]];  // [value, Python render.num(value)] pairs, written at build time
@@ -190,6 +193,7 @@ function bi(t, sep) { return [el("span", { lang: "en" }, t.en), sep === undefine
 function stacked(t, cls) { return el("div", { class: cls }, el("span", { lang: "en" }, t.en), el("span", { lang: "te" }, t.te)); }
 
 const ICONS = {
+  followup: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20.5 3v5.5H15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   unknown: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M9 9.2a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.9v.6" fill="none" stroke="var(--bg)" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.8" r="1.5" fill="var(--bg)"/></svg>',
   alert: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5l11 20H1z" fill="currentColor"/><path d="M12 9v6" stroke="var(--bg)" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="18.2" r="1.5" fill="var(--bg)"/></svg>',
   watch: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="var(--bg)" stroke-width="2.4"/></svg>',
@@ -197,10 +201,17 @@ const ICONS = {
 };
 function icon(name) { const s = el("span", { "aria-hidden": "true", style: "display:inline-flex" }); s.innerHTML = ICONS[name]; return s; }
 
+function badges(sc) {  // "Demo data" always in demo mode; "Demo clock: +N days" only while the server's demo clock is on
+  const demo = SERVER_DEMO === true || (sc && sc.demo_data) ? el("div", { class: "badge", role: "note" }, bi(L.demo_badge)) : null;
+  const m = lastResult && lastResult._meta && lastResult._meta["clucktalk/demo_clock"];  // rides in _meta, not structuredContent
+  if (!m) return demo;
+  return el("div", { class: "badges" }, demo,
+    el("div", { class: "badge", role: "note", "data-xm-skip": true }, bi({ en: m.label_en, te: m.label_te })));
+}
 function header(sc) {
   return el("div", { class: "top" },
     el("div", { class: "brand", "data-xm-skip": true }, el("span", { lang: "en" }, APP.name), " · ", el("span", { lang: "te" }, APP.name_te)),
-    SERVER_DEMO === true || (sc && sc.demo_data) ? el("div", { class: "badge", role: "note" }, bi(L.demo_badge)) : null);
+    badges(sc));
 }
 function dateText(iso) { const [y, m, d] = iso.split("-"); return d + "-" + m + "-" + y; }
 
@@ -208,6 +219,7 @@ function dateText(iso) { const [y, m, d] = iso.split("-"); return d + "-" + m + 
 function slide(item, index, total) {
   const level = L["level_" + item.level];
   const tags = [];
+  if (item.category === "follow_up") tags.push(el("span", { class: "tag follow" }, icon("followup"), bi(L.follow_up)));
   if (item.pinned) tags.push(el("span", { class: "tag health" }, bi(L.health_first)));
   if (item.simulated) tags.push(el("span", { class: "tag sim" }, bi(L.simulated)));
   return el("section", { class: "slide " + item.level, role: "group", "aria-roledescription": "slide",

@@ -36,6 +36,10 @@ FARM_STATUS_LABELS: dict[str, Text] = {
     "level_watch": Text("WATCH", "గమనించాలి"),
     "level_alert": Text("ALERT", "శ్రద్ధ అవసరం"),
     "level_unknown": Text("UNKNOWN", "తెలియదు"),
+    # The follow-up chip (docs/DESIGN.md section 18): due = REMINDER, escalated = ALERT, lapsed = UNKNOWN. These three
+    # words are pairs already reviewed on the briefing and above; only "Follow-up" is new.
+    "level_info": Text("REMINDER", "గుర్తుచేత"),
+    "follow_up": Text("Follow-up", "ఫాలో-అప్"),
     "farm_title": Text("Farm status", "ఫారం స్థితి"),
     "demo_badge": Text("Demo data", "డెమో డేటా"),
     "deaths_today": Text("Deaths today", "ఈరోజు మరణాలు"),
@@ -143,6 +147,7 @@ BRIEFING_LABELS: dict[str, Text] = {
     "level_watch": Text("WATCH", "గమనించాలి"),
     "level_info": Text("REMINDER", "గుర్తుచేత"),
     "health_first": Text("Health first", "ఆరోగ్యం ముందు"),
+    "follow_up": Text("Follow-up", "ఫాలో-అప్"),
     "simulated": Text("Simulated", "డెమో అంచనా"),
     "previous": Text("Previous", "వెనుకకు"),
     "next": Text("Next", "తర్వాత"),
