@@ -10,7 +10,6 @@ The tool only reads: it computes the facts in a few milliseconds and never waits
 
 from __future__ import annotations
 
-from datetime import timedelta
 from typing import Annotated, Any, Literal
 
 from mcp.server.apps import Apps
@@ -21,12 +20,10 @@ from clucktalk.agents import AiServices
 from clucktalk.agents.briefing import BriefingRanker, RankView
 from clucktalk.domain.briefing import (
     MAX_ITEMS,
-    NOTIFIABLE_DAYS,
     SPOKEN_ITEMS,
     Category,
     Fact,
     apply_order,
-    check_urgency,
     collect_facts,
 )
 from clucktalk.domain.follow_up import FollowUp, FollowUpState
@@ -39,7 +36,7 @@ from clucktalk.server.farm_state import DemoFarmSource
 from clucktalk.server.render import num
 from clucktalk.server.tools import Capability, CapabilityRegistry
 from clucktalk.server.tools.farm_status import SAFETY_STEP, _feed_stock_finding, _finding
-from clucktalk.server.tools.follow_up import check_said_text, follow_up_text, surfaced_follow_up
+from clucktalk.server.tools.follow_up import check_said_text, follow_up_text, shed_health
 from clucktalk.server.tools.follow_up import when_ago as _when
 from clucktalk.server.tools.health import AI_LABEL, DISCLAIMER, TEST_MODEL_LABEL
 
@@ -280,20 +277,14 @@ def build_briefing(source: DemoFarmSource, ranker: BriefingRanker, more: bool = 
     handed_off: set[str] = set()
     logged: set[str] = set()
     follow_ups: dict[str, FollowUp] = {}
-    since = as_of - timedelta(days=NOTIFIABLE_DAYS)
     for house in farm.houses:
-        fup = surfaced_follow_up(source, farm.farm_id, house, as_of)  # stored checks + answers + the date: no model
-        if fup is not None and fup.state in (FollowUpState.ESCALATED, FollowUpState.DUE):
-            follow_ups[house.house_id] = fup
-        check = store.latest_health_check(farm.farm_id, house.house_id)
-        if check is not None:
-            checks[house.house_id] = check
-        recent[house.house_id] = store.recent_health_checks(farm.farm_id, house.house_id, since)
-        handed_off |= {  # only a confirmed vet handoff (written after "yes") ends a suspected reportable disease item
-            c.check_id
-            for c in recent[house.house_id]
-            if check_urgency(c) is Urgency.NOTIFIABLE_SUSPECT and store.handoff_for_check(c.check_id) is not None
-        }
+        health = shed_health(source, farm.farm_id, house, as_of)  # stored checks + answers + the date: no model
+        if health.follow_up is not None and health.follow_up.state in (FollowUpState.ESCALATED, FollowUpState.DUE):
+            follow_ups[house.house_id] = health.follow_up
+        if health.check is not None:
+            checks[house.house_id] = health.check
+        recent[house.house_id] = health.recent
+        handed_off |= health.handed_off
         if any(r.day == as_of for r in store.records(farm.farm_id, house.house_id)):
             logged.add(house.house_id)
     facts = collect_facts(farm, as_of, checks, frozenset(logged), recent, frozenset(handed_off), follow_ups)

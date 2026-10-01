@@ -14,19 +14,29 @@ from mcp.server.apps import Apps
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field
 
+from clucktalk.domain.briefing import Category
 from clucktalk.domain.errors import DomainError
 from clucktalk.domain.feed import plan_feed
 from clucktalk.domain.houses import resolve_house
 from clucktalk.domain.models import Farm, House, HouseKind
 from clucktalk.domain.profile import FarmMode
 from clucktalk.domain.status import Finding, Level, house_status
+from clucktalk.domain.triage import Urgency
 from clucktalk.i18n import Text
 from clucktalk.server.cards import FARM_STATUS_URI, farm_status_html
 from clucktalk.server.errors import domain_error_result
 from clucktalk.server.farm_state import DemoFarmSource
 from clucktalk.server.render import num, plural
 from clucktalk.server.tools import Capability, CapabilityRegistry, unavailable_text, whole_farm_or
-from clucktalk.server.tools.follow_up import FollowUpView, follow_up_line, follow_up_view, surfaced_follow_up
+from clucktalk.server.tools.follow_up import (
+    FollowUpView,
+    ShedHealth,
+    check_said_text,
+    follow_up_line,
+    follow_up_view,
+    shed_health,
+    warns_vet,
+)
 
 logger = logging.getLogger("clucktalk.server")
 
@@ -46,6 +56,16 @@ class FindingOut(BaseModel):
     text_en: str
     text_te: str
     values: dict[str, float]
+
+
+class OpenCheckOut(BaseModel):
+    """The shed's open health check when the status speaks it (a shed that is not OK says why): the numbers behind
+    the sentence, so every spoken number is also here."""
+
+    model_config = ConfigDict(extra="forbid")
+    urgency: Literal["watch", "urgent", "notifiable_suspect"]  # the health check's own level
+    days_ago: int
+    ready: bool  # False while the check runs or after it failed: the level is then the code floor from the signs
 
 
 class HouseStatusOut(BaseModel):
@@ -78,6 +98,7 @@ class HouseStatusOut(BaseModel):
     feed_days_covered_is_minimum: bool | None  # None when cover is unknown
     findings: list[FindingOut]
     follow_up: FollowUpView | None = None  # this shed's follow-up after a health check, if it has one
+    open_health_check: OpenCheckOut | None = None  # the open check spoken for this shed, when there is one
 
 
 class HouseUnavailableOut(BaseModel):
@@ -215,7 +236,8 @@ def _feed_stock_finding(days: int, stock_kg: float) -> FindingOut:
     return FindingOut(code="feed_stock_low", level="watch", text_en=en, text_te=te, values={"days_covered": days})
 
 
-def _house_out(farm: Farm, house: House, as_of) -> HouseStatusOut:
+def _house_out(farm: Farm, house: House, as_of, floor: LevelName = "ok") -> HouseStatusOut:
+    """``floor``: the level the shed's open health check or follow-up asks for; the shed is never shown lower."""
     st = house_status(house, as_of)
     is_today = st.latest_record_day == as_of
     findings = [_finding(f, st.breed, is_today) for f in st.findings]
@@ -232,7 +254,7 @@ def _house_out(farm: Farm, house: House, as_of) -> HouseStatusOut:
         logger.info("status for %s: feed cover unavailable (%s)", house.house_id, err.customer_message)
     order = {"alert": 0, "watch": 1, "ok": 2}
     findings.sort(key=lambda f: order[f.level])
-    level: LevelName = min((f.level for f in findings), key=lambda lv: order[lv], default="ok")
+    level: LevelName = min((*(f.level for f in findings), floor), key=lambda lv: order[lv])
 
     avg_w = None if st.avg_weight_g is None else round(st.avg_weight_g)
     tgt_w = None if st.target_weight_g is None else round(st.target_weight_g)
@@ -302,27 +324,48 @@ FEED_PLAN_HINT_CONTRACT = Text(  # contract farm: the company supplies feed (doc
 )
 
 
-def _closing(spoken: list[FindingOut], contract: bool) -> list[Text]:
-    """Follow-up steps only for findings that were actually read out."""
+def _closing(spoken: list[FindingOut], contract: bool, vet_line: bool = False) -> list[Text]:
+    """Follow-up steps only for findings that were actually read out. ``vet_line``: a shed read out has an urgent
+    check or a suspected reportable disease (open, or carried by its follow-up): the same vet step as a death spike."""
     codes = {f.code for f in spoken}
     extra = []
-    if "mortality_spike" in codes:
+    if "mortality_spike" in codes or vet_line:
         extra.append(SAFETY_STEP)
     if "feed_stock_low" in codes:
         extra.append(FEED_PLAN_HINT_CONTRACT if contract else FEED_PLAN_HINT)
     return extra
 
 
-def _attach_follow_up(
-    source: DemoFarmSource, farm: Farm, house: House, as_of: date, out: HouseStatusOut
-) -> Text | None:
-    """Put the shed's follow-up (if it has one) on its status, and return the one sentence spoken for it, if any."""
-    fup = surfaced_follow_up(source, farm.farm_id, house, as_of)
-    if fup is None:
-        return None
+_FACT_LEVEL: dict[Level, LevelName] = {Level.ALERT: "alert", Level.WATCH: "watch", Level.OK: "ok"}
+
+
+def _health_floor(health: ShedHealth) -> LevelName:
+    """The level the shed's open health check or follow-up asks for: the briefing's own level for its health item
+    (urgent or reportable: alert; watch: watch; escalated follow-up: alert; due follow-up: at least watch)."""
+    return "ok" if health.fact is None else _FACT_LEVEL[health.fact.level]
+
+
+def _attach_health(house: House, as_of: date, health: ShedHealth, out: HouseStatusOut) -> Text | None:
+    """Put the shed's follow-up (if it has one) on its status, and return the one sentence spoken for its health: the
+    follow-up question or escalation, the open check's own sentence (so a shed that is not OK says why), or a lapsed
+    follow-up's "no answer"."""
     label = Text(house.label_en, house.label_te)
-    out.follow_up = follow_up_view(fup, label, as_of)
-    return follow_up_line(fup, label, as_of)
+    fup = health.follow_up
+    if fup is not None:
+        out.follow_up = follow_up_view(fup, label, as_of)
+    fact = health.fact
+    if fact is not None and fact.category is Category.OPEN_HEALTH_CHECK:
+        urgency = next(u for u in Urgency if u.code == fact.values["urgency"])
+        days, ready = int(fact.values["days_ago"]), bool(fact.values["ready"])
+        out.open_health_check = OpenCheckOut(urgency=urgency.code, days_ago=days, ready=ready)  # type: ignore[arg-type]
+        return check_said_text(label, urgency, days, ready)
+    return None if fup is None else follow_up_line(fup, label, as_of)
+
+
+def _needs_vet_line(health: ShedHealth) -> bool:
+    """An urgent check or a suspected reportable disease (open, or carried by its follow-up): the vet closing line."""
+    fact = health.fact
+    return fact is not None and warns_vet(next(u for u in Urgency if u.code == fact.values["urgency"]))
 
 
 def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOutput:
@@ -330,23 +373,31 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
     order = {"alert": 0, "watch": 1, "ok": 2}
     house_ref = whole_farm_or(house_ref)
     follow_up_lines: dict[str, Text] = {}
+    vet_houses: set[str] = set()
     if house_ref is not None:
         house = resolve_house(farm, house_ref)
-        out = _house_out(farm, house, as_of)  # DomainError propagates: the one house asked about failed
+        health = shed_health(source, farm.farm_id, house, as_of)
+        # A DomainError propagates here: the one shed asked about failed.
+        out = _house_out(farm, house, as_of, _health_floor(health))
         houses, unavailable = [out], []
         spoken = out.findings[:MAX_SPOKEN_FINDINGS]
         parts = [Text(out.summary_en, out.summary_te)] + [Text(f.text_en, f.text_te) for f in spoken]
-        line = _attach_follow_up(source, farm, house, as_of, out)
+        line = _attach_health(house, as_of, health, out)
         if line is not None:
             parts.append(line)
+        if _needs_vet_line(health):
+            vet_houses.add(house.house_id)
     else:
         houses, unavailable = [], []
         for house in sorted(farm.houses, key=lambda h: h.number):
             try:
-                out = _house_out(farm, house, as_of)
-                line = _attach_follow_up(source, farm, house, as_of, out)
+                health = shed_health(source, farm.farm_id, house, as_of)
+                out = _house_out(farm, house, as_of, _health_floor(health))
+                line = _attach_health(house, as_of, health, out)
                 if line is not None:
                     follow_up_lines[house.house_id] = line
+                if _needs_vet_line(health):
+                    vet_houses.add(house.house_id)
                 houses.append(out)
             except DomainError as err:
                 unavailable.append(
@@ -367,7 +418,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
         spoken = []
         for h in houses:
             head = _level_sentence(h)
-            line = follow_up_lines.get(h.house_id)  # the one spoken follow-up sentence this shed has, if any
+            line = follow_up_lines.get(h.house_id)  # the one spoken health sentence this shed has, if any
             tail = Text(f" {line.en}", f" {line.te}") if line is not None else Text("", "")
             if not h.findings:
                 items.append(Text(head.en + tail.en, head.te + tail.te))
@@ -383,7 +434,8 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
             parts.append(
                 Text("There are more houses; ask about one by shed number.", "ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి.")
             )
-    parts += _closing(spoken, source.profile().mode is FarmMode.CONTRACT)
+        vet_houses &= {h.house_id for h in houses[:MAX_SPOKEN_HOUSES]}  # only the sheds actually read out
+    parts += _closing(spoken, source.profile().mode is FarmMode.CONTRACT, bool(vet_houses))
     level = min((h.level for h in houses), key=lambda lv: order[lv], default="unknown")
     if unavailable and level == "ok":
         level = "watch"  # some houses could not be checked: not everything is known to be fine

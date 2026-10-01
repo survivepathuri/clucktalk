@@ -16,13 +16,15 @@ argument. Telugu: review status per string in docs/TELUGU_REVIEW.md.
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import date, datetime
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta
 from typing import Annotated, Any, Literal
 
 from mcp.server.mcpserver import MCPServer
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import BaseModel, ConfigDict
 
+from clucktalk.domain.briefing import NOTIFIABLE_DAYS, Fact, check_urgency, health_fact
 from clucktalk.domain.errors import DomainError, NoHealthCheck
 from clucktalk.domain.follow_up import (
     FollowUp,
@@ -439,6 +441,32 @@ def surfaced_follow_up(source: DemoFarmSource, farm_id: str, house: House, today
         if best is None or key < best[0]:
             best = (key, fup)
     return None if best is None else best[1]
+
+
+@dataclass(frozen=True)
+class ShedHealth:
+    """Everything stored about one shed's health that the briefing and the farm status read, gathered in one place so
+    both work from the same inputs (review finding H1)."""
+
+    check: HealthCheck | None  # the shed's latest check
+    recent: tuple[HealthCheck, ...]  # its checks from the last NOTIFIABLE_DAYS days
+    handed_off: frozenset[str]  # ids of suspected-reportable checks whose vet handoff was confirmed
+    follow_up: FollowUp | None  # the follow-up worth showing today, in any state
+    fact: Fact | None  # its one health item (open check or follow-up), the same one the briefing lists
+
+
+def shed_health(source: DemoFarmSource, farm_id: str, house: House, as_of: date) -> ShedHealth:
+    """Stored checks, answers and handoffs for one shed and the day: no model, nothing slow."""
+    store = source.store
+    fup = surfaced_follow_up(source, farm_id, house, as_of)
+    check = store.latest_health_check(farm_id, house.house_id)
+    recent = store.recent_health_checks(farm_id, house.house_id, as_of - timedelta(days=NOTIFIABLE_DAYS))
+    handed = frozenset(  # only a confirmed vet handoff (written after "yes") ends a suspected reportable disease item
+        c.check_id
+        for c in recent
+        if check_urgency(c) is Urgency.NOTIFIABLE_SUSPECT and store.handoff_for_check(c.check_id) is not None
+    )
+    return ShedHealth(check, recent, handed, fup, health_fact(house, as_of, check, recent, handed, fup))
 
 
 class FollowUpView(BaseModel):

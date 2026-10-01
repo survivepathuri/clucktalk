@@ -180,6 +180,46 @@ def _follow_up_fact(house: House, as_of: date, fup: FollowUp | None, replaced: F
     )
 
 
+def health_fact(
+    house: House,
+    as_of: date,
+    check: HealthCheck | None,
+    recent: Sequence[HealthCheck],
+    handed_off: Collection[str],
+    follow_up: FollowUp | None = None,
+) -> Fact | None:
+    """The one health item for a shed from its stored checks and follow-up: its open health check, or (replacing it,
+    never both) an escalated or due follow-up that is never lower than the check item. The briefing lists it and the
+    farm status takes its level from it, so the two always agree for the same shed and day (review finding H1)."""
+    shown = _check_to_show(as_of, check, recent, handed_off)
+    if shown is None:
+        open_check = None
+    else:
+        urgency = check_urgency(shown)
+        days_ago = max(0, (as_of - shown.created_at.date()).days)
+        urgent = urgency >= Urgency.URGENT
+        level = Level.ALERT if urgent else Level.WATCH
+        severity = _severity(level)
+        if urgency is Urgency.NOTIFIABLE_SUSPECT:
+            severity = NOTIFIABLE_SEVERITY
+        elif urgent:
+            severity = URGENT_CHECK_SEVERITY
+        open_check = Fact(
+            _fact_id(Category.OPEN_HEALTH_CHECK, house.house_id),
+            Category.OPEN_HEALTH_CHECK,
+            level,
+            severity,
+            True,
+            house.house_id,
+            house.number,
+            {"urgency": urgency.code, "days_ago": days_ago, "ready": _answered(shown)},
+        )
+    # An escalated or due follow-up replaces this shed's open health-check item (never both): it is the one item the
+    # farmer needs for this shed, and it never ranks lower than the check item it replaces.
+    follow_fact = _follow_up_fact(house, as_of, follow_up, open_check)
+    return follow_fact if follow_fact is not None else open_check
+
+
 def _house_facts(
     farm: Farm,
     house: House,
@@ -248,36 +288,9 @@ def _house_facts(
             )
             break
 
-    shown = _check_to_show(as_of, check, recent, handed_off)
-    if shown is not None:
-        urgency = check_urgency(shown)
-        days_ago = max(0, (as_of - shown.created_at.date()).days)
-        urgent = urgency >= Urgency.URGENT
-        level = Level.ALERT if urgent else Level.WATCH
-        severity = _severity(level)
-        if urgency is Urgency.NOTIFIABLE_SUSPECT:
-            severity = NOTIFIABLE_SEVERITY
-        elif urgent:
-            severity = URGENT_CHECK_SEVERITY
-        open_check = Fact(
-            _fact_id(Category.OPEN_HEALTH_CHECK, house.house_id),
-            Category.OPEN_HEALTH_CHECK,
-            level,
-            severity,
-            True,
-            house.house_id,
-            house.number,
-            {"urgency": urgency.code, "days_ago": days_ago, "ready": _answered(shown)},
-        )
-    else:
-        open_check = None
-    # An escalated or due follow-up replaces this shed's open health-check item (never both): it is the one item the
-    # farmer needs for this shed, and it never ranks lower than the check item it replaces.
-    follow_fact = _follow_up_fact(house, as_of, follow_up, open_check)
-    if follow_fact is not None:
-        facts.append(follow_fact)
-    elif open_check is not None:
-        facts.append(open_check)
+    health = health_fact(house, as_of, check, recent, handed_off, follow_up)
+    if health is not None:
+        facts.append(health)
 
     try:
         plan = plan_feed(farm, house, as_of)

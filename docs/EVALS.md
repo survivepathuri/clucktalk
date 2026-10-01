@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-10-01T18:09:17+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
+Run 2026-10-01T18:34:26+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -50,5 +50,8 @@ Run 2026-10-01T18:09:17+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | contract-terms-refuses-the-retired-mortality-argument | PASS | — |
 | followup-urgent-check-keeps-its-warning-the-next-day | PASS | — |
 | followup-reportable-check-keeps-its-warning-the-next-day | PASS | — |
+| status-reportable-check-is-alert-never-doing-well | PASS | — |
+| status-due-follow-up-is-watch-never-doing-well | PASS | — |
+| status-escalated-follow-up-is-alert-never-doing-well | PASS | — |
 
-**Score: 46/46**
+**Score: 49/49**

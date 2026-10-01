@@ -2888,6 +2888,212 @@
           ]
         }
       ]
+    },
+    {
+      "id": "status-reportable-check-is-alert-never-doing-well",
+      "description": "Review finding H1: right after a suspected reportable disease the shed is ALERT on the farm status (and the farm badge), the spoken line says why, never 'doing well', and the vet line is spoken.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "swollen_head",
+              "discoloured_comb",
+              "sudden_deaths"
+            ]
+          },
+          "checks": [
+            {
+              "field": "urgency",
+              "op": "eq",
+              "value": "notifiable_suspect"
+            }
+          ]
+        },
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "doing well"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "signs of a possible reportable disease"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "call your vet if deaths continue"
+            }
+          ]
+        },
+        {
+          "tool": "get_farm_status",
+          "args": {},
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "House 1 is doing well"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "status-due-follow-up-is-watch-never-doing-well",
+      "description": "Review finding H1: three days after a watch check the follow-up is due and the shed is WATCH on the farm status, not 'doing well'.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "checks": [
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            },
+            {
+              "field": "houses.0.level",
+              "op": "eq",
+              "value": "watch"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "doing well"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "needs a closer look"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "status-escalated-follow-up-is-alert-never-doing-well",
+      "description": "Review finding H1: after 'worse' is saved the follow-up is escalated and the shed is ALERT on the farm status, with the vet line, never 'doing well'.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "checks": [
+            {
+              "field": "follow_up_in_days",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            }
+          ]
+        },
+        {
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "worse",
+            "proposal_id": "$proposal_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "escalated"
+            },
+            {
+              "field": "houses.0.level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "doing well"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "To be safe, contact your vet or doctor."
+            }
+          ]
+        }
+      ]
     }
   ]
 }
