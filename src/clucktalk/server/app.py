@@ -5,7 +5,9 @@ Layers, outermost first:
    must carry ``Authorization: Bearer <token>``.
 2. ``ProtocolVersionGate``: only initialize-handshake protocol versions reach the SDK. The SDK would route a
    2026-07-28 header to its stateless path; CluckTalk targets 2025-11-25 (docs/VERSIONS.md).
-3. SDK Streamable HTTP app with explicit Host/Origin allow-lists (DNS-rebinding protection) and sessions.
+3. ``ProtocolErrorGate``: the SDK's two protocol-level answers that echo the input or library text (a body that is
+   not a JSON-RPC request, an unknown method name) become short fixed JSON-RPC errors. No tool result is touched.
+4. SDK Streamable HTTP app with explicit Host/Origin allow-lists (DNS-rebinding protection) and sessions.
 
 Run (Windows):  python tasks.py serve
 """
@@ -24,7 +26,7 @@ from mcp.server.streamable_http import MCP_PROTOCOL_VERSION_HEADER
 from mcp.server.transport_security import TransportSecuritySettings
 from mcp_types.version import HANDSHAKE_PROTOCOL_VERSIONS, LATEST_HANDSHAKE_VERSION
 from starlette.datastructures import Headers
-from starlette.types import ASGIApp, Receive, Scope, Send
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from clucktalk.agents import AiServices, demo_ai, live_ai
 from clucktalk.config import APP_NAME, ConfigError, Settings, load_settings
@@ -122,6 +124,85 @@ class ProtocolVersionGate:
         await self.app(scope, receive, send)
 
 
+INVALID_REQUEST_MESSAGE = "Invalid request: not a JSON-RPC 2.0 request."  # protocol text, never farmer-facing
+METHOD_NOT_FOUND_MESSAGE = "Method not found"
+_INVALID_REQUEST, _METHOD_NOT_FOUND = -32600, -32601  # the JSON-RPC 2.0 codes for these two errors
+_SDK_VALIDATION_CODE = -32602  # what the SDK answers (with pydantic's text) for a body that is not a request
+
+
+def _scrub_protocol_error(status: int, payload: bytes) -> bytes:
+    """The fixed answer for the two SDK errors that repeat the input or library text; ``payload`` unchanged for every
+    other answer. Only an object with an ``error`` and no ``result`` is ever rewritten, so a tool result is never
+    touched (a tool failure is a ``result`` with ``isError``)."""
+    if status != 400 and str(_METHOD_NOT_FOUND).encode() not in payload:
+        return payload  # the cheap test: nothing else is looked at, the common answer is not even parsed
+    try:
+        body = json.loads(payload)
+    except ValueError:
+        logger.warning("a JSON response of %d bytes (status %d) did not parse; sent unchanged", len(payload), status)
+        return payload
+    error = body.get("error") if isinstance(body, dict) else None
+    if not isinstance(error, dict) or "result" in body:
+        return payload
+    if (
+        status == 400
+        and error.get("code") == _SDK_VALIDATION_CODE
+        and str(error.get("message", "")).startswith("Validation error")
+    ):
+        fixed = {"jsonrpc": "2.0", "id": None, "error": {"code": _INVALID_REQUEST, "message": INVALID_REQUEST_MESSAGE}}
+    elif error.get("code") == _METHOD_NOT_FOUND:
+        request_id = body.get("id")
+        fixed = {
+            "jsonrpc": "2.0",
+            "id": request_id if isinstance(request_id, (str, int)) else None,
+            "error": {"code": _METHOD_NOT_FOUND, "message": METHOD_NOT_FOUND_MESSAGE},
+        }
+    else:
+        return payload
+    return json.dumps(fixed).encode("utf-8")
+
+
+class ProtocolErrorGate:
+    """Wraps the SDK app. A POST answered with JSON is held until complete, so the two SDK answers that echo the input
+    or pydantic's text (F1 and F2 of Step 48B) can be replaced by a short fixed one; every other response, and every
+    non-JSON one (an event stream), passes through as it is."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http" or scope["method"] != "POST":
+            await self.app(scope, receive, send)
+            return
+        held: Message | None = None
+        body = bytearray()
+        passthrough = False
+
+        async def capture(message: Message) -> None:
+            nonlocal held, passthrough
+            if passthrough or (message["type"] != "http.response.start" and held is None):
+                await send(message)
+                return
+            if message["type"] == "http.response.start":
+                if Headers(raw=message.get("headers", [])).get("content-type", "").startswith("application/json"):
+                    held = message
+                else:
+                    passthrough = True
+                    await send(message)
+                return
+            body.extend(message.get("body", b""))
+            if message.get("more_body", False):
+                return
+            assert held is not None
+            payload = _scrub_protocol_error(held["status"], bytes(body))
+            headers = [(k, v) for k, v in held.get("headers", []) if k.lower() != b"content-length"]
+            headers.append((b"content-length", str(len(payload)).encode()))
+            await send({**held, "headers": headers})
+            await send({"type": "http.response.body", "body": payload})
+
+        await self.app(scope, receive, capture)
+
+
 class BearerAuth:
     def __init__(self, app: ASGIApp, token: str) -> None:
         self.app = app
@@ -202,6 +283,7 @@ def build_app(settings: Settings, server: MCPServer | None = None) -> ASGIApp:
         transport_security=_transport_security(settings),
         host=settings.host,
     )
+    app = ProtocolErrorGate(app)
     app = ProtocolVersionGate(app)
     if settings.auth_token:
         app = BearerAuth(app, settings.auth_token)

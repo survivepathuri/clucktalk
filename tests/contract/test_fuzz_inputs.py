@@ -76,30 +76,9 @@ def rig(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Rig]:
 STRICT_LEAKS = re.compile(r"Traceback|File \"|site-packages|\.py\"|sqlite3\.")  # never allowed, in any answer
 
 
-def sdk_protocol_finding(r: httpx2.Response) -> str | None:
-    """The two known SDK behaviours of the transport layer (mcp 2.2.0), pinned as findings below, not hidden:
-    F1: a body that parses as JSON but is not a JSON-RPC request gets a 400 whose message is pydantic's validation
-    text (with a link to errors.pydantic.dev and the input value); F2: an unknown method is echoed back in ``data``."""
-    try:
-        error = r.json()["error"]
-    except (ValueError, KeyError, TypeError):
-        return None
-    if (
-        r.status_code == 400
-        and error.get("code") == -32602
-        and str(error.get("message", "")).startswith("Validation error")
-    ):
-        return "F1"
-    if error.get("code") == -32601:
-        return "F2"
-    return None
-
-
 def assert_safe(r: httpx2.Response, what: str) -> None:
     assert r.status_code < 500, (what, r.status_code, r.text[:300])
     assert not STRICT_LEAKS.search(r.text), (what, STRICT_LEAKS.search(r.text).group(0), r.text[:300])
-    if sdk_protocol_finding(r):
-        return  # pinned by the two finding tests below
     assert not LEAKS.search(r.text), (what, LEAKS.search(r.text).group(0), r.text[:300])
     if r.status_code >= 400 or '"isError":true' in r.text or '"error"' in r.text[:200]:
         assert len(r.content) <= MAX_ERROR_BYTES, (what, len(r.content))  # an error never echoes the input back
@@ -313,25 +292,24 @@ def test_duplicate_request_ids_in_two_calls_each_get_their_own_answer(rig: Rig):
     assert first.json()["id"] == second.json()["id"] == 1
 
 
-# -- findings, pinned as observed (reported, not changed: any fix needs a new error string) ----------------------------
-def test_a_body_that_is_not_a_json_rpc_request_gets_the_sdks_pydantic_text_pinned_finding_f1(rig: Rig):
-    """FINDING F1: ``null``, ``42``, ``[]``, a missing method, a wrong ``jsonrpc`` value and the like answer 400 with
-    code -32602 and pydantic's "Validation error: N validation errors for union[...]" text, an errors.pydantic.dev
-    link and the input value, about 1 KB. It is not a 500 and has no traceback or file path. Same family as FL-002."""
+# -- findings F1 and F2 (fixed in Step 48C); F3 to F5 are pinned as observed ------------------------------------------
+def test_a_body_that_is_not_a_json_rpc_request_gets_a_short_fixed_error_finding_f1_fixed(rig: Rig):
+    """FINDING F1 (Step 48B), fixed in Step 48C: ``null``, ``42``, ``[]``, a missing method, a wrong ``jsonrpc`` value
+    and the like answered 400 with pydantic's text, a link and the input value. Now one short fixed error; the full
+    set is in test_protocol_errors.py."""
     for body in (b"null", b"42", b"[]", b'{"jsonrpc":"2.0","id":1}', b'{"jsonrpc":"1.0","id":1,"method":"ping"}'):
         r = rig.post_raw(body)
-        assert r.status_code == 400 and sdk_protocol_finding(r) == "F1", (body, r.status_code, r.text[:120])
-        assert "errors.pydantic.dev" in r.text and "Traceback" not in r.text
-        assert len(r.content) < 2000
+        assert r.status_code == 400 and r.json()["error"]["code"] == -32600, (body, r.status_code, r.text[:120])
+        assert "pydantic" not in r.text and len(r.content) < 200
 
 
-def test_an_unknown_method_is_echoed_back_in_the_answer_pinned_finding_f2(rig: Rig):
-    """FINDING F2: ``Method not found`` carries the requested method name in ``data``, however long (1 MB in, 1 MB out).
-    It is bounded by the request size limit (below) and is the JSON-RPC server's own behaviour."""
+def test_an_unknown_method_is_not_echoed_back_finding_f2_fixed(rig: Rig):
+    """FINDING F2 (Step 48B), fixed in Step 48C: ``Method not found`` carried the requested method name in ``data``,
+    however long (1 MB in, 1 MB out). Now a small standard error without the name."""
     r = rig.post_raw(json.dumps({"jsonrpc": "2.0", "id": 1, "method": "no/such/method"}).encode())
-    assert r.json()["error"] == {"code": -32601, "message": "Method not found", "data": "no/such/method"}
+    assert r.json()["error"] == {"code": -32601, "message": "Method not found"}
     big = rig.post_raw(RAW_BODIES["huge method"])
-    assert sdk_protocol_finding(big) == "F2" and len(big.content) > 1_000_000
+    assert big.json()["error"]["code"] == -32601 and len(big.content) < 200
 
 
 def test_a_request_body_over_the_size_limit_is_413_and_the_server_stays_healthy(rig: Rig):
