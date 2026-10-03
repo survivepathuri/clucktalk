@@ -24,22 +24,21 @@ from clucktalk.domain.briefing import (
     Category,
     Fact,
     apply_order,
-    collect_facts,
 )
-from clucktalk.domain.follow_up import FollowUp, FollowUpState
+from clucktalk.domain.follow_up import FollowUpState
 from clucktalk.domain.models import Farm, House
 from clucktalk.domain.status import Finding, Level
-from clucktalk.domain.triage import HealthCheck, Urgency
+from clucktalk.domain.triage import Urgency
 from clucktalk.i18n import Text
 from clucktalk.server.cards import BRIEFING_URI, briefing_html
 from clucktalk.server.farm_state import DemoFarmSource
 from clucktalk.server.render import num
 from clucktalk.server.tools import Capability, CapabilityRegistry
 from clucktalk.server.tools.farm_status import SAFETY_STEP, _feed_stock_finding, _finding
-from clucktalk.server.tools.follow_up import check_said_text, follow_up_text, shed_health
+from clucktalk.server.tools.follow_up import check_said_text, follow_up_text
 from clucktalk.server.tools.follow_up import when_ago as _when
 from clucktalk.server.tools.health import AI_LABEL, DISCLAIMER, TEST_MODEL_LABEL
-from clucktalk.server.tools.safety import SafetyOut, briefing_safety
+from clucktalk.server.tools.safety import SafetyOut, briefing_safety, fact_items, facts_for, item_needs_safety_step
 
 TOOL = "get_daily_briefing"
 LevelName = Literal["alert", "watch", "info"]
@@ -252,15 +251,7 @@ def _ai_out(view: RankView) -> BriefingAiOut:
     )
 
 
-def _needs_safety_step(item: ItemOut) -> bool:
-    """A death alert, or a stored check that says urgent or a suspected reportable disease: the same next step."""
-    if item.category in ("mortality_spike", "recent_logged_spike", "cum_mortality_high"):
-        return item.pinned
-    # an urgent or reportable check keeps its vet line the day after, when the follow-up item carries the check
-    return item.category in ("open_health_check", "follow_up") and item.values.get("urgency") in (
-        "urgent",
-        "notifiable_suspect",
-    )
+_needs_safety_step = item_needs_safety_step  # the one rule lives in safety.py; the status reads it too
 
 
 def _closing(page: list[ItemOut]) -> list[Text]:
@@ -274,23 +265,7 @@ def _closing(page: list[ItemOut]) -> list[Text]:
 
 def build_briefing(source: DemoFarmSource, ranker: BriefingRanker, more: bool = False) -> BriefingOutput:
     farm, as_of = source.snapshot()
-    store = source.store
-    checks = {}
-    recent: dict[str, tuple[HealthCheck, ...]] = {}
-    handed_off: set[str] = set()
-    logged: set[str] = set()
-    follow_ups: dict[str, FollowUp] = {}
-    for house in farm.houses:
-        health = shed_health(source, farm.farm_id, house, as_of)  # stored checks + answers + the date: no model
-        if health.follow_up is not None and health.follow_up.state in (FollowUpState.ESCALATED, FollowUpState.DUE):
-            follow_ups[house.house_id] = health.follow_up
-        if health.check is not None:
-            checks[house.house_id] = health.check
-        recent[house.house_id] = health.recent
-        handed_off |= health.handed_off
-        if any(r.day == as_of for r in store.records(farm.farm_id, house.house_id)):
-            logged.add(house.house_id)
-    facts = collect_facts(farm, as_of, checks, frozenset(logged), recent, frozenset(handed_off), follow_ups)
+    facts = facts_for(source, farm, as_of)  # stored checks + answers + the date: no model
     view = ranker.view(farm.farm_id, as_of, facts)
     # The split between the first three (read first) and the rest ("more") always comes from the rules order, so
     # "more" reads what the first answer promised whatever the AI has stored since (Rule 11 review 2026-09-30, M1).
@@ -347,7 +322,7 @@ def build_briefing(source: DemoFarmSource, ranker: BriefingRanker, more: bool = 
         total_items=len(ordered),
         more_available=more_available,
         ai=_ai_out(view),
-        safety=briefing_safety(level, items, _needs_safety_step),
+        safety=briefing_safety(level, fact_items(facts), _needs_safety_step),
     )
 
 

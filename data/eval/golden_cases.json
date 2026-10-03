@@ -4323,6 +4323,124 @@
           ]
         }
       ]
+    },
+    {
+      "id": "safety-field-the-seeded-spike-advises-the-vet-on-the-status-of-shed-two-and-not-of-shed-one",
+      "description": "On the fresh demo farm the seeded death spike on shed two makes the status of shed two ALERT and advise the vet, with mortality_spike as a reason code, exactly as the briefing does; shed one has no spike, so its status stays OK with no vet advice.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed two"
+          },
+          "checks": [
+            {
+              "field": "safety.level",
+              "op": "eq",
+              "value": "ALERT"
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "safety.reason_codes",
+              "op": "contains",
+              "value": "mortality_spike"
+            }
+          ]
+        },
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "safety.level",
+              "op": "eq",
+              "value": "OK"
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": false
+            },
+            {
+              "field": "safety.reason_codes",
+              "op": "eq",
+              "value": []
+            }
+          ]
+        },
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "safety.reason_codes",
+              "op": "contains",
+              "value": "mortality_spike"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "safety-field-the-whole-farm-status-advises-the-vet-like-the-briefing-for-the-seeded-spike",
+      "description": "On the fresh demo farm the whole-farm status and the daily briefing both say ALERT, advise the vet and name mortality_spike: the two tools agree on vet_contact_advised for the same farm state.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {},
+          "checks": [
+            {
+              "field": "safety.level",
+              "op": "eq",
+              "value": "ALERT"
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "safety.reason_codes",
+              "op": "contains",
+              "value": "mortality_spike"
+            }
+          ]
+        },
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "safety.level",
+              "op": "eq",
+              "value": "ALERT"
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "safety.reason_codes",
+              "op": "contains",
+              "value": "mortality_spike"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

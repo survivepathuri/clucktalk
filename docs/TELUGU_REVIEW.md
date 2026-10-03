@@ -143,30 +143,30 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 | 125 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:153` |  |
 | 126 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:156` |  |
 | 127 | label_te | డెమో గడియారం: +{days} రోజులు | `src/clucktalk/server/errors.py:40` |  |
-| 128 | Here's your briefing for today. | ఈరోజు మీ బ్రీఫింగ్ ఇది. | `src/clucktalk/server/tools/briefing.py:48` |  |
-| 129 | Here's the rest. | మిగిలినవి ఇవి. | `src/clucktalk/server/tools/briefing.py:49` |  |
-| 130 | Nothing needs your attention today. | ఈరోజు మీ శ్రద్ధ అవసరమయ్యేది ఏమీ లేదు. | `src/clucktalk/server/tools/briefing.py:50` |  |
-| 131 | Say 'more' to hear the rest. | మిగిలినవి వినాలంటే 'మరిన్ని' అనండి. | `src/clucktalk/server/tools/briefing.py:51` |  |
-| 132 | That's everything for today. | ఈరోజుకు ఇంతే. | `src/clucktalk/server/tools/briefing.py:52` |  |
-| 133 | There are more things; ask about one shed for details. | ఇంకా విషయాలు ఉన్నాయి; వివరాల కోసం ఒక షెడ్ గురించి అడగండి. | `src/clucktalk/server/tools/briefing.py:53` |  |
-| 134 | Ask me for the health check result. | ఆరోగ్య తనిఖీ ఫలితం కోసం నన్ను అడగండి. | `src/clucktalk/server/tools/briefing.py:54` |  |
-| 135 | Ask me for the sell-day plan. | అమ్మకం రోజు ప్రణాళిక కోసం నన్ను అడగండి. | `src/clucktalk/server/tools/briefing.py:55` |  |
-| 136 | and | మరియు | `src/clucktalk/server/tools/briefing.py:56` |  |
-| 137 | Health items come first by safety rules; AI (Amazon Nova on Bedrock) orders the other items in the first three. | ఆరోగ్య అంశాలు భద్రతా నియమాల ప్రకారం ముందుంటాయి; మొదటి మూడింటిలో మిగిలిన అంశాల క్రమాన్ని AI (బెడ్‌రాక్‌పై Amazon Nova) నిర్ణయించింది. | `src/clucktalk/server/tools/briefing.py:60` |  |
-| 138 | The saved AI ordering was unreadable, so the items are in the rules order. | సేవ్ చేసిన AI క్రమం చదవడానికి వీలుకాలేదు, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి. | `src/clucktalk/server/tools/briefing.py:64` |  |
-| 139 | AI ordering is still preparing; showing the rules order for now. | AI క్రమం ఇంకా సిద్ధమవుతోంది; ప్రస్తుతం నియమాల క్రమం చూపిస్తున్నాను. | `src/clucktalk/server/tools/briefing.py:68` |  |
-| 140 | AI ordering didn't finish, so the items are in the rules order. | AI క్రమం పూర్తి కాలేదు, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి. | `src/clucktalk/server/tools/briefing.py:72` |  |
-| 141 | Today's AI limit is reached, so the items are in the rules order. | ఈరోజు AI పరిమితి అయిపోయింది, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి. | `src/clucktalk/server/tools/briefing.py:76` |  |
-| 142 | simulated estimate | అంచనా (డెమో) | `src/clucktalk/server/tools/briefing.py:78` |  |
-| 143 | tomorrow | రేపు | `src/clucktalk/server/tools/briefing.py:139` |  |
-| 144 | in {index} days | {index} రోజుల్లో | `src/clucktalk/server/tools/briefing.py:140` |  |
-| 145 | House {n} | షెడ్ {n} | `src/clucktalk/server/tools/briefing.py:171` |  |
-| 146 | No entry yet today for {listed.en}. | ఈరోజు ఇంకా నమోదు కాలేదు: {listed.te}. | `src/clucktalk/server/tools/briefing.py:173` |  |
-| 147 | Birds ate {drop}% less than expected. | కోళ్లు అంచనా కంటే {drop}% తక్కువ తిన్నాయి. | `src/clucktalk/server/tools/briefing.py:189` |  |
-| 148 | {num(deaths)} birds died {when.en}, after hardly any deaths the week before. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం దాదాపు ఏవీ చనిపోలేదు. | `src/clucktalk/server/tools/briefing.py:196` |  |
-| 149 | {num(deaths)} birds died {when.en}, against about {num(base)} a day the week before. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం రోజుకు సుమారు {num(base)}. | `src/clucktalk/server/tools/briefing.py:199` |  |
-| 150 | may be near its best time to sell: the best day looks like {when.en} ({SIMULATED.en}). | అమ్మడానికి మంచి సమయం దగ్గరలో ఉండవచ్చు: మంచి రోజు {when.te} ({SIMULATED.te}). | `src/clucktalk/server/tools/briefing.py:220` |  |
-| 151 | Today's briefing | ఈరోజు బ్రీఫింగ్ | `src/clucktalk/server/tools/briefing.py:384` |  |
+| 128 | Here's your briefing for today. | ఈరోజు మీ బ్రీఫింగ్ ఇది. | `src/clucktalk/server/tools/briefing.py:47` |  |
+| 129 | Here's the rest. | మిగిలినవి ఇవి. | `src/clucktalk/server/tools/briefing.py:48` |  |
+| 130 | Nothing needs your attention today. | ఈరోజు మీ శ్రద్ధ అవసరమయ్యేది ఏమీ లేదు. | `src/clucktalk/server/tools/briefing.py:49` |  |
+| 131 | Say 'more' to hear the rest. | మిగిలినవి వినాలంటే 'మరిన్ని' అనండి. | `src/clucktalk/server/tools/briefing.py:50` |  |
+| 132 | That's everything for today. | ఈరోజుకు ఇంతే. | `src/clucktalk/server/tools/briefing.py:51` |  |
+| 133 | There are more things; ask about one shed for details. | ఇంకా విషయాలు ఉన్నాయి; వివరాల కోసం ఒక షెడ్ గురించి అడగండి. | `src/clucktalk/server/tools/briefing.py:52` |  |
+| 134 | Ask me for the health check result. | ఆరోగ్య తనిఖీ ఫలితం కోసం నన్ను అడగండి. | `src/clucktalk/server/tools/briefing.py:53` |  |
+| 135 | Ask me for the sell-day plan. | అమ్మకం రోజు ప్రణాళిక కోసం నన్ను అడగండి. | `src/clucktalk/server/tools/briefing.py:54` |  |
+| 136 | and | మరియు | `src/clucktalk/server/tools/briefing.py:55` |  |
+| 137 | Health items come first by safety rules; AI (Amazon Nova on Bedrock) orders the other items in the first three. | ఆరోగ్య అంశాలు భద్రతా నియమాల ప్రకారం ముందుంటాయి; మొదటి మూడింటిలో మిగిలిన అంశాల క్రమాన్ని AI (బెడ్‌రాక్‌పై Amazon Nova) నిర్ణయించింది. | `src/clucktalk/server/tools/briefing.py:59` |  |
+| 138 | The saved AI ordering was unreadable, so the items are in the rules order. | సేవ్ చేసిన AI క్రమం చదవడానికి వీలుకాలేదు, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి. | `src/clucktalk/server/tools/briefing.py:63` |  |
+| 139 | AI ordering is still preparing; showing the rules order for now. | AI క్రమం ఇంకా సిద్ధమవుతోంది; ప్రస్తుతం నియమాల క్రమం చూపిస్తున్నాను. | `src/clucktalk/server/tools/briefing.py:67` |  |
+| 140 | AI ordering didn't finish, so the items are in the rules order. | AI క్రమం పూర్తి కాలేదు, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి. | `src/clucktalk/server/tools/briefing.py:71` |  |
+| 141 | Today's AI limit is reached, so the items are in the rules order. | ఈరోజు AI పరిమితి అయిపోయింది, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి. | `src/clucktalk/server/tools/briefing.py:75` |  |
+| 142 | simulated estimate | అంచనా (డెమో) | `src/clucktalk/server/tools/briefing.py:77` |  |
+| 143 | tomorrow | రేపు | `src/clucktalk/server/tools/briefing.py:138` |  |
+| 144 | in {index} days | {index} రోజుల్లో | `src/clucktalk/server/tools/briefing.py:139` |  |
+| 145 | House {n} | షెడ్ {n} | `src/clucktalk/server/tools/briefing.py:170` |  |
+| 146 | No entry yet today for {listed.en}. | ఈరోజు ఇంకా నమోదు కాలేదు: {listed.te}. | `src/clucktalk/server/tools/briefing.py:172` |  |
+| 147 | Birds ate {drop}% less than expected. | కోళ్లు అంచనా కంటే {drop}% తక్కువ తిన్నాయి. | `src/clucktalk/server/tools/briefing.py:188` |  |
+| 148 | {num(deaths)} birds died {when.en}, after hardly any deaths the week before. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం దాదాపు ఏవీ చనిపోలేదు. | `src/clucktalk/server/tools/briefing.py:195` |  |
+| 149 | {num(deaths)} birds died {when.en}, against about {num(base)} a day the week before. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం రోజుకు సుమారు {num(base)}. | `src/clucktalk/server/tools/briefing.py:198` |  |
+| 150 | may be near its best time to sell: the best day looks like {when.en} ({SIMULATED.en}). | అమ్మడానికి మంచి సమయం దగ్గరలో ఉండవచ్చు: మంచి రోజు {when.te} ({SIMULATED.te}). | `src/clucktalk/server/tools/briefing.py:219` |  |
+| 151 | Today's briefing | ఈరోజు బ్రీఫింగ్ | `src/clucktalk/server/tools/briefing.py:359` |  |
 | 152 | That request timed out, so nothing changed. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:32` |  |
 | 153 | That request was replaced by a newer one, so nothing changed. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:35` |  |
 | 154 | That's different from what I read back, so nothing changed yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:39` |  |
@@ -356,7 +356,7 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 | 30 | Friday | శుక్రవారం | `src/clucktalk/server/render.py:14` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 31 | Saturday | శనివారం | `src/clucktalk/server/render.py:14` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 32 | Sunday | ఆదివారం | `src/clucktalk/server/render.py:14` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 33 | today | ఈరోజు | `src/clucktalk/server/tools/briefing.py:137` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 33 | today | ఈరోజు | `src/clucktalk/server/tools/briefing.py:136` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 34 | {h.label_en} is doing well. | {h.label_te} బాగుంది. | `src/clucktalk/server/tools/farm_status.py:147` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 35 | {h.label_en} needs a closer look. | {h.label_te} ని కొంచెం గమనించాలి. | `src/clucktalk/server/tools/farm_status.py:148` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 36 | {h.label_en} needs attention now. | {h.label_te} కి వెంటనే శ్రద్ధ అవసరం. | `src/clucktalk/server/tools/farm_status.py:149` | Pathuri Venkateswara Rao | 2026-09-27 |
@@ -382,8 +382,8 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 | 56 | , laying {num(hen_day)}% {when.en} | , {when.te} గుడ్ల ఉత్పత్తి {num(hen_day)}% | `src/clucktalk/server/tools/farm_status.py:311` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 57 | Please check the birds today and call your vet if deaths continue. | దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ డాక్టర్‌కి ఫోన్ చేయండి. | `src/clucktalk/server/tools/farm_status.py:319` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 58 | Ask me for a feed plan to hear how much to order. | ఎంత ఆర్డర్ చేయాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి. | `src/clucktalk/server/tools/farm_status.py:323` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 59 | Here's your farm today. | ఈరోజు మీ ఫారం స్థితి. | `src/clucktalk/server/tools/farm_status.py:421` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 60 | There are more houses; ask about one by shed number. | ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి. | `src/clucktalk/server/tools/farm_status.py:440` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 59 | Here's your farm today. | ఈరోజు మీ ఫారం స్థితి. | `src/clucktalk/server/tools/farm_status.py:422` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 60 | There are more houses; ask about one by shed number. | ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి. | `src/clucktalk/server/tools/farm_status.py:441` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 61 | How a shed is doing | షెడ్ ఎలా ఉందో | `src/clucktalk/server/tools/farm_status.py:494` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 62 | pre-starter | ప్రీ-స్టార్టర్ | `src/clucktalk/server/tools/feed.py:39` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 63 | starter | స్టార్టర్ | `src/clucktalk/server/tools/feed.py:39` | Pathuri Venkateswara Rao | 2026-09-27 |

@@ -255,7 +255,7 @@ against a freshly started mock-mode server, checked against literal field values
 (`scripts/eval_fast.py`). Writes `docs/EVALS.md` with a real pass/fail count; never fakes a score (Rule 6).
 v0 covers a handful of read-only, single-call cases (farm status, feed reorder, and `plan_sale`'s before /
 at / after break-even and rising-mortality stories); contract-mode's multi-step confirmation flow is covered by
-the contract test suite instead, since this runner is single-call by design. The suite has 63 cases
+the contract test suite instead, since this runner is single-call by design. The suite has 65 cases
 (the table in `docs/EVALS.md` is the count; a harness test keeps this number equal to it). Multi-step cases (`steps`, `save`,
 `poll_until`) and model-fixture cases (`model_fixture`, `tests/fakes.py`) came with the agents (§18); a case marked
 `fresh_state` runs on a server of its own, so its answer cannot depend on what earlier cases changed.
@@ -403,10 +403,15 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
   - **The structured `safety` field (review finding M6, stage 1, Step 47C).** `get_daily_briefing` and `get_farm_status`
     carry `safety: {level: OK|WATCH|ALERT|UNKNOWN, reason_codes: [...], vet_contact_advised}` in `structuredContent` on
     every successful answer (an error result has no `structuredContent` by design). One shared helper
-    (`server/tools/safety.py`) derives it only from rules that already exist: the level is the card's own level word, so it
-    equals the card level and cannot be lower than the rules behind it; the codes are the existing fact categories,
-    finding codes, health urgency and follow-up state; `vet_contact_advised` is the briefing's closing-step rule, the
-    status's vet-line rule, or an escalated follow-up. Alexa+ composes its own speech, so this exists for a host to
+    (`server/tools/safety.py`) derives it only from rules that already exist, and (Step 48C) from the SAME facts for both
+    tools: `facts_for` gathers the briefing facts of the farm (or of the one shed asked about) and `item_needs_safety_step`
+    is the one "contact the vet" rule, so for the same farm state the briefing and the farm status agree on
+    `vet_contact_advised`, `level` and `reason_codes`. The level is the card's own level word, raised to the facts' level
+    when a fact is higher, so it equals the card level and cannot be lower than the rules behind it; the one case where it
+    is higher is a death spike logged on an earlier day this week, which the briefing lists and the status card does not
+    (the card still says the shed is fine: a known gap, a card change needs new wording); the codes are the fact
+    categories, health urgency and follow-up state; `vet_contact_advised` is the closing-step rule or an escalated
+    follow-up. Alexa+ composes its own speech, so this exists for a host to
     surface urgency and we do not claim Alexa+ uses it. Stage 2 (not built) is the health-check and follow-up tools.
   - **An unknown house name is cleaned and shortened before it is spoken (review finding L2, Step 47C).** The error
     "I couldn't find a shed called X" says X through `spoken_name` in `domain/errors.py`: markup removed, only letters and

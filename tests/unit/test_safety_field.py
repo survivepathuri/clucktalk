@@ -82,5 +82,56 @@ def test_items_below_watch_give_no_reason_codes():
 
 
 def test_the_status_builder_marks_not_checked_and_no_house_checked():
-    s = status_safety("unknown", [], [NS()], False)
+    # the status builder now reads the facts (the unavailable shed is a not_checked fact), like the briefing
+    s = status_safety("unknown", [_item("not_checked", "watch")], lambda item: False)
     assert s.level == "UNKNOWN" and s.reason_codes == ["not_checked", "no_house_checked"]
+
+
+# -- Step 48C part A: one rule, one gathering, for both tools -------------------------------------------------------
+from clucktalk.server.tools.safety import item_needs_safety_step  # noqa: E402
+
+
+def _fact(category, level, pinned=True, **values):
+    return NS(category=category, level=level, pinned=pinned, values=values)
+
+
+@pytest.mark.parametrize("category", ["mortality_spike", "recent_logged_spike", "cum_mortality_high"])
+def test_a_pinned_death_fact_needs_the_vet_step_and_an_unpinned_one_does_not(category):
+    assert item_needs_safety_step(_fact(category, "alert")) is True
+    assert item_needs_safety_step(_fact(category, "alert", pinned=False)) is False
+
+
+@pytest.mark.parametrize(("urgency", "expected"), [("watch", False), ("routine", False), ("urgent", True)])
+def test_a_health_check_needs_the_vet_step_only_when_urgent_or_reportable(urgency, expected):
+    assert item_needs_safety_step(_fact("open_health_check", "alert", urgency=urgency)) is expected
+    assert item_needs_safety_step(_fact("follow_up", "alert", urgency=urgency)) is expected
+    assert item_needs_safety_step(_fact("open_health_check", "alert", urgency="notifiable_suspect")) is True
+
+
+def test_the_status_and_the_briefing_builders_give_the_same_answer_for_the_same_items():
+    items = [_fact("mortality_spike", "alert"), _fact("feed_stock_low", "watch", pinned=False)]
+    a = briefing_safety("alert", items, item_needs_safety_step)
+    b = status_safety("alert", items, item_needs_safety_step)
+    assert a == b and a.vet_contact_advised is True and a.reason_codes == ["mortality_spike", "feed_stock_low"]
+
+
+def test_the_level_is_raised_to_the_facts_when_the_card_is_lower_and_never_lowered():
+    items = [_fact("recent_logged_spike", "alert")]
+    assert status_safety("ok", items, item_needs_safety_step).level == "ALERT"
+    assert status_safety("alert", [], item_needs_safety_step).level == "ALERT"
+    assert (
+        status_safety("ok", [_fact("feed_stock_low", "watch", pinned=False)], item_needs_safety_step).level == "WATCH"
+    )
+    assert (
+        status_safety("unknown", [_fact("not_checked", "watch", pinned=False)], item_needs_safety_step).level
+        == "UNKNOWN"
+    )
+
+
+def test_a_simulated_item_is_a_reason_code_only_when_nothing_else_explains_the_level():
+    sale = NS(category="sale_window", level="watch", pinned=False, values={}, simulated=True)
+    spike = _fact("mortality_spike", "alert")
+    both = status_safety("alert", [spike, sale], item_needs_safety_step)
+    assert both.reason_codes == ["mortality_spike"]
+    alone = status_safety("watch", [sale], item_needs_safety_step)
+    assert alone.reason_codes == ["sale_window"] and alone.level == "WATCH" and alone.vet_contact_advised is False

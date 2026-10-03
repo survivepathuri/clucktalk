@@ -40,7 +40,7 @@ A follow-up asks how a shed is now compared with its health check: better, the s
 
 ## The `safety` field
 
-`get_daily_briefing` and `get_farm_status` carry `safety` in `structuredContent` on every successful answer: `level` (`OK`, `WATCH`, `ALERT`, `UNKNOWN`), `reason_codes` (codes, never sentences) and `vet_contact_advised`. The level always equals the card's level and is never lower than the rules behind it. When `vet_contact_advised` is true, include the step to contact the vet or doctor in your answer. Alexa+ words its own answer, and CluckTalk does not claim it reads this field; it is there so a host can surface urgency. Health checks and follow-up answers do not carry it yet.
+`get_daily_briefing` and `get_farm_status` carry `safety` in `structuredContent` on every successful answer: `level` (`OK`, `WATCH`, `ALERT`, `UNKNOWN`), `reason_codes` (codes, never sentences) and `vet_contact_advised`. The level equals the card's level, or is higher when a rule the card does not show applies, and is never lower than the rules behind it. The briefing and the farm status give the same values for the same farm. When `vet_contact_advised` is true, include the step to contact the vet or doctor in your answer. Alexa+ words its own answer, and CluckTalk does not claim it reads this field; it is there so a host can surface urgency. Health checks and follow-up answers do not carry it yet.
 
 ## Changes need an explicit yes
 

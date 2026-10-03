@@ -44,6 +44,7 @@ BASE = datetime(2026, 9, 29, 10, 0, tzinfo=IST)
 HOUSES = (1, 2, 3)
 OUTCOMES = ("better", "same", "worse", "not_sure")
 LEVEL_WORD = {"ok": "OK", "info": "OK", "none": "OK", "watch": "WATCH", "alert": "ALERT", "unknown": "UNKNOWN"}
+LEVEL_WORD_INV = {"OK": "ok", "WATCH": "watch", "ALERT": "alert", "UNKNOWN": "watch"}
 RANK = {"ok": 0, "info": 0, "none": 0, "watch": 1, "alert": 2}
 HEALTH_CATEGORIES = ("open_health_check", "follow_up")
 
@@ -216,20 +217,42 @@ async def surfaces(world: World) -> tuple[dict, dict, dict[int, dict]]:
     return brief, farm, shed
 
 
+def assert_safety_level_vs_card(safety_level: str, card_level: str, records_logged: bool) -> None:
+    if records_logged:
+        assert RANK[LEVEL_WORD_INV[safety_level]] >= RANK[card_level], (safety_level, card_level)
+    else:
+        assert safety_level == LEVEL_WORD[card_level], (safety_level, card_level)
+
+
 def check_levels_agree(world: World, brief: dict, farm: dict, shed: dict[int, dict], records_logged: bool) -> None:
     assert brief["safety"]["level"] == LEVEL_WORD[brief["level"]], (brief["level"], brief["safety"])
-    assert farm["safety"]["level"] == LEVEL_WORD[farm["level"]], (farm["level"], farm["safety"])
+    # Step 48C: the safety level is never lower than the card, and equals it unless a death record was logged (a spike
+    # from an earlier day is a briefing fact the status card does not show; the safety field then says ALERT).
+    assert_safety_level_vs_card(farm["safety"]["level"], farm["level"], records_logged)
     for n in HOUSES:
         one = shed[n]["houses"][0]
         whole = next(h for h in farm["houses"] if h["house_id"] == f"house-{n}")
         assert one["level"] == whole["level"], (n, one["level"], whole["level"])
-        assert shed[n]["safety"]["level"] == LEVEL_WORD[one["level"]]
+        assert_safety_level_vs_card(shed[n]["safety"]["level"], one["level"], records_logged)
         health = [RANK[i["level"]] for i in brief["items"] if i["house_id"] == f"house-{n}"
                   and i["category"] in HEALTH_CATEGORIES]  # fmt: skip
         if not records_logged:  # a logged death record adds briefing / status items the other does not count
             every = [RANK[i["level"]] for i in brief["items"] if i["house_id"] == f"house-{n}"]
             assert RANK[one["level"]] == max(every, default=0), (n, one["level"], brief["items"])
         assert RANK[one["level"]] >= max(health, default=0), (n, one["level"], brief["items"])
+
+
+def check_briefing_and_status_agree_on_safety(brief: dict, farm: dict, shed: dict[int, dict]) -> None:
+    """Step 48C part A: for the same farm state the briefing and the farm status agree on vet_contact_advised, level
+    and reason_codes; a shed's status never says more than the whole farm; the sheds together say what it says."""
+    assert farm["safety"] == brief["safety"], (farm["safety"], brief["safety"])
+    one = [shed[n]["safety"] for n in HOUSES]
+    assert all(s["vet_contact_advised"] <= brief["safety"]["vet_contact_advised"] for s in one), (one, brief["safety"])
+    assert any(s["vet_contact_advised"] for s in one) == brief["safety"]["vet_contact_advised"], (one, brief["safety"])
+    assert all(RANK[LEVEL_WORD_INV[s["level"]]] <= RANK[LEVEL_WORD_INV[brief["safety"]["level"]]] for s in one)
+    # (the simulated sale window is a reason only when it is the sole one, so it can differ between a shed and the farm)
+    shed_codes = {c for s in one for c in s["reason_codes"]} - {"sale_window"}
+    assert set(brief["safety"]["reason_codes"]) >= shed_codes, (one, brief["safety"])
 
 
 def check_open_follow_ups_are_visible(world: World, brief: dict, farm: dict, shed: dict[int, dict]) -> None:
@@ -326,6 +349,7 @@ async def replay(sequence: list[Any]) -> None:
         client.session.validate_tool_result = no_output_validation  # type: ignore[method-assign]
         brief, farm, shed = await surfaces(world)  # the seeded farm before any event
         check_levels_agree(world, brief, farm, shed, records_logged)
+        check_briefing_and_status_agree_on_safety(brief, farm, shed)
         for event in sequence:
             await apply(world, event)
             records_logged |= isinstance(event, Record)
@@ -333,6 +357,7 @@ async def replay(sequence: list[Any]) -> None:
             check_escalation_does_not_lapse(world, seen, event)
             brief, farm, shed = await surfaces(world)
             check_levels_agree(world, brief, farm, shed, records_logged)
+            check_briefing_and_status_agree_on_safety(brief, farm, shed)
             check_open_follow_ups_are_visible(world, brief, farm, shed)
             check_an_open_urgent_check_stays_visible(world, shed)
 
@@ -383,6 +408,10 @@ SCENARIOS = {
     ],
     "an urgent check on the shed whose seeded spike the check did not see is escalated at once": [
         Check(2, Urgency.URGENT)
+    ],
+    "a death spike logged yesterday: the briefing still advises the vet today and so does the status": [
+        Record(1, 0, 60),
+        MoveClock(1),
     ],
     "a death spike after a watch check": [Check(1, Urgency.WATCH), MoveClock(1), Record(1, 0, 400), MoveClock(3)],
 }

@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-10-04T01:27:16+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
+Run 2026-10-04T01:57:33+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -67,5 +67,7 @@ Run 2026-10-04T01:27:16+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | safety-field-a-watch-check-is-watch-and-the-status-does-not-advise-the-vet | PASS | — |
 | safety-field-the-briefing-and-the-whole-farm-status-agree-on-the-seeded-spike | PASS | — |
 | safety-field-a-same-answer-to-a-watch-follow-up-escalates-and-advises-the-vet-on-the-status | PASS | — |
+| safety-field-the-seeded-spike-advises-the-vet-on-the-status-of-shed-two-and-not-of-shed-one | PASS | — |
+| safety-field-the-whole-farm-status-advises-the-vet-like-the-briefing-for-the-seeded-spike | PASS | — |
 
-**Score: 63/63**
+**Score: 65/65**
