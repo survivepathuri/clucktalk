@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-10-04T00:07:48+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
+Run 2026-10-04T01:27:16+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -61,5 +61,11 @@ Run 2026-10-04T00:07:48+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | followup-spike-already-in-the-check-is-not-news | PASS | — |
 | followup-urgent-unanswered-does-not-lapse-on-day-eight | PASS | — |
 | followup-watch-unanswered-still-lapses | PASS | — |
+| safety-field-a-quiet-shed-is-ok-with-no-codes-and-no-vet-advice | PASS | — |
+| safety-field-an-urgent-open-check-is-alert-and-advises-the-vet-on-status-and-briefing | PASS | — |
+| safety-field-an-unanswered-urgent-follow-up-is-still-alert-and-advises-the-vet-on-day-twelve | PASS | — |
+| safety-field-a-watch-check-is-watch-and-the-status-does-not-advise-the-vet | PASS | — |
+| safety-field-the-briefing-and-the-whole-farm-status-agree-on-the-seeded-spike | PASS | — |
+| safety-field-a-same-answer-to-a-watch-follow-up-escalates-and-advises-the-vet-on-the-status | PASS | — |
 
-**Score: 57/57**
+**Score: 63/63**
