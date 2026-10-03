@@ -16,28 +16,28 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 
 | # | English | Telugu | Where | Reviewer |
 |---|---|---|---|---|
-| 1 | {label_en} is a layer flock, so sell-day planning by live weight doesn't apply to it. | {label_te} గుడ్ల మంద, కాబట్టి బరువు ఆధారంగా అమ్మకం రోజు ప్రణాళిక దీనికి వర్తించదు. | `src/clucktalk/domain/errors.py:91` |  |
-| 2 | Ask me about its egg production or feed instead. | బదులుగా గుడ్ల ఉత్పత్తి లేదా ఫీడ్ గురించి అడగండి. | `src/clucktalk/domain/errors.py:92` |  |
-| 3 | There's nothing waiting for your yes or no right now, so nothing changed. | ఇప్పుడు మీ 'అవును' లేదా 'వద్దు' కోసం ఏదీ ఎదురుచూడటం లేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/domain/errors.py:103` |  |
-| 4 | Tell me again what you'd like to change. | మీరు ఏమి మార్చాలనుకుంటున్నారో మళ్ళీ చెప్పండి. | `src/clucktalk/domain/errors.py:104` |  |
-| 5 | {label_en} only has room for {max_possible} more deaths that day once every other day is counted, so {deaths} can't be right. | ప్రతి ఇతర రోజునూ లెక్కిస్తే, ఆ రోజు {label_te}కి గరిష్టంగా {max_possible} మరణాలకే చోటుంది, కాబట్టి {deaths} సరైనవి కావు. | `src/clucktalk/domain/errors.py:119` |  |
-| 6 | Check the number and try again. | సంఖ్యను సరిచూసి మళ్ళీ చెప్పండి. | `src/clucktalk/domain/errors.py:120` |  |
-| 7 | I only record the name of a medicine or vaccine for {label_en}, never a dose. | {label_te} కోసం మందు లేదా వ్యాక్సిన్ పేరు మాత్రమే నమోదు చేస్తాను, డోస్ కాదు. | `src/clucktalk/domain/errors.py:134` |  |
-| 8 | Follow the label or your vet/company for the dose; tell me just the name. | డోస్ కోసం లేబుల్ లేదా మీ వెట్/కంపెనీని అనుసరించండి; పేరు మాత్రమే చెప్పండి. | `src/clucktalk/domain/errors.py:135` |  |
-| 9 | I didn't catch anything to record for {label_en}. | {label_te} కోసం రికార్డ్ చేయడానికి ఏమీ అందలేదు. | `src/clucktalk/domain/errors.py:146` |  |
-| 10 | Tell me deaths, feed bags, a weight sample, or a medicine or vaccine given. | మరణాలు, ఫీడ్ బస్తాలు, బరువు నమూనా, లేదా ఇచ్చిన మందు లేదా వ్యాక్సిన్ చెప్పండి. | `src/clucktalk/domain/errors.py:147` |  |
-| 11 | I have an average weight for {label_en} but not how many birds were weighed. | {label_te} సగటు బరువు నాకు వచ్చింది, కానీ ఎన్ని కోళ్లను తూచారో తెలియలేదు. | `src/clucktalk/domain/errors.py:158` |  |
-| 12 | Tell me how many birds you weighed to get that average. | ఆ సగటు కోసం ఎన్ని కోళ్లను తూచారో చెప్పండి. | `src/clucktalk/domain/errors.py:159` |  |
-| 13 | I can't log a record for {label_en} in the future. | {label_te} కి భవిష్యత్తు రోజుకు రికార్డ్ నమోదు చేయలేను. | `src/clucktalk/domain/errors.py:171` |  |
-| 14 | Tell me about today or an earlier day. | ఈరోజు లేదా అంతకుముందు రోజు గురించి చెప్పండి. | `src/clucktalk/domain/errors.py:172` |  |
-| 15 | {label_en} wasn't placed yet on that day, so I can't log a record for it. | ఆ రోజుకి {label_te} ఇంకా వేయలేదు, కాబట్టి రికార్డ్ నమోదు చేయలేను. | `src/clucktalk/domain/errors.py:178` |  |
-| 16 | Tell me about a day on or after the house started. | ఇంటి ప్రారంభమైన రోజు లేదా తర్వాతి రోజు గురించి చెప్పండి. | `src/clucktalk/domain/errors.py:179` |  |
-| 17 | I didn't catch whether that was a yes or a no, so nothing changed. | అది 'అవును'నా 'వద్దు'నా అని నాకు అర్థం కాలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/domain/errors.py:191` |  |
-| 18 | Please say yes or no. | దయచేసి 'అవును' లేదా 'వద్దు' అని చెప్పండి. | `src/clucktalk/domain/errors.py:192` |  |
-| 19 | I didn't catch any sign of illness to check for {label_en}. | {label_te} కోసం తనిఖీ చేయడానికి జబ్బు లక్షణం ఏదీ అందలేదు. | `src/clucktalk/domain/errors.py:203` |  |
-| 20 | Tell me what you see, for example coughing, swelling of the head, or birds not eating. | మీరు ఏమి చూస్తున్నారో చెప్పండి, ఉదాహరణకు దగ్గు, తల వాపు, లేదా కోళ్లు మేత తినకపోవడం. | `src/clucktalk/domain/errors.py:204` |  |
-| 21 | I don't have a health check for {label_en} yet. | {label_te} కి ఇంకా ఆరోగ్య తనిఖీ లేదు. | `src/clucktalk/domain/errors.py:215` |  |
-| 22 | Tell me what signs you see in that shed, and I'll check it. | ఆ షెడ్‌లో మీరు చూస్తున్న లక్షణాలు చెప్పండి, నేను తనిఖీ చేస్తాను. | `src/clucktalk/domain/errors.py:216` |  |
+| 1 | {label_en} is a layer flock, so sell-day planning by live weight doesn't apply to it. | {label_te} గుడ్ల మంద, కాబట్టి బరువు ఆధారంగా అమ్మకం రోజు ప్రణాళిక దీనికి వర్తించదు. | `src/clucktalk/domain/errors.py:117` |  |
+| 2 | Ask me about its egg production or feed instead. | బదులుగా గుడ్ల ఉత్పత్తి లేదా ఫీడ్ గురించి అడగండి. | `src/clucktalk/domain/errors.py:118` |  |
+| 3 | There's nothing waiting for your yes or no right now, so nothing changed. | ఇప్పుడు మీ 'అవును' లేదా 'వద్దు' కోసం ఏదీ ఎదురుచూడటం లేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/domain/errors.py:129` |  |
+| 4 | Tell me again what you'd like to change. | మీరు ఏమి మార్చాలనుకుంటున్నారో మళ్ళీ చెప్పండి. | `src/clucktalk/domain/errors.py:130` |  |
+| 5 | {label_en} only has room for {max_possible} more deaths that day once every other day is counted, so {deaths} can't be right. | ప్రతి ఇతర రోజునూ లెక్కిస్తే, ఆ రోజు {label_te}కి గరిష్టంగా {max_possible} మరణాలకే చోటుంది, కాబట్టి {deaths} సరైనవి కావు. | `src/clucktalk/domain/errors.py:145` |  |
+| 6 | Check the number and try again. | సంఖ్యను సరిచూసి మళ్ళీ చెప్పండి. | `src/clucktalk/domain/errors.py:146` |  |
+| 7 | I only record the name of a medicine or vaccine for {label_en}, never a dose. | {label_te} కోసం మందు లేదా వ్యాక్సిన్ పేరు మాత్రమే నమోదు చేస్తాను, డోస్ కాదు. | `src/clucktalk/domain/errors.py:160` |  |
+| 8 | Follow the label or your vet/company for the dose; tell me just the name. | డోస్ కోసం లేబుల్ లేదా మీ వెట్/కంపెనీని అనుసరించండి; పేరు మాత్రమే చెప్పండి. | `src/clucktalk/domain/errors.py:161` |  |
+| 9 | I didn't catch anything to record for {label_en}. | {label_te} కోసం రికార్డ్ చేయడానికి ఏమీ అందలేదు. | `src/clucktalk/domain/errors.py:172` |  |
+| 10 | Tell me deaths, feed bags, a weight sample, or a medicine or vaccine given. | మరణాలు, ఫీడ్ బస్తాలు, బరువు నమూనా, లేదా ఇచ్చిన మందు లేదా వ్యాక్సిన్ చెప్పండి. | `src/clucktalk/domain/errors.py:173` |  |
+| 11 | I have an average weight for {label_en} but not how many birds were weighed. | {label_te} సగటు బరువు నాకు వచ్చింది, కానీ ఎన్ని కోళ్లను తూచారో తెలియలేదు. | `src/clucktalk/domain/errors.py:184` |  |
+| 12 | Tell me how many birds you weighed to get that average. | ఆ సగటు కోసం ఎన్ని కోళ్లను తూచారో చెప్పండి. | `src/clucktalk/domain/errors.py:185` |  |
+| 13 | I can't log a record for {label_en} in the future. | {label_te} కి భవిష్యత్తు రోజుకు రికార్డ్ నమోదు చేయలేను. | `src/clucktalk/domain/errors.py:197` |  |
+| 14 | Tell me about today or an earlier day. | ఈరోజు లేదా అంతకుముందు రోజు గురించి చెప్పండి. | `src/clucktalk/domain/errors.py:198` |  |
+| 15 | {label_en} wasn't placed yet on that day, so I can't log a record for it. | ఆ రోజుకి {label_te} ఇంకా వేయలేదు, కాబట్టి రికార్డ్ నమోదు చేయలేను. | `src/clucktalk/domain/errors.py:204` |  |
+| 16 | Tell me about a day on or after the house started. | ఇంటి ప్రారంభమైన రోజు లేదా తర్వాతి రోజు గురించి చెప్పండి. | `src/clucktalk/domain/errors.py:205` |  |
+| 17 | I didn't catch whether that was a yes or a no, so nothing changed. | అది 'అవును'నా 'వద్దు'నా అని నాకు అర్థం కాలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/domain/errors.py:217` |  |
+| 18 | Please say yes or no. | దయచేసి 'అవును' లేదా 'వద్దు' అని చెప్పండి. | `src/clucktalk/domain/errors.py:218` |  |
+| 19 | I didn't catch any sign of illness to check for {label_en}. | {label_te} కోసం తనిఖీ చేయడానికి జబ్బు లక్షణం ఏదీ అందలేదు. | `src/clucktalk/domain/errors.py:229` |  |
+| 20 | Tell me what you see, for example coughing, swelling of the head, or birds not eating. | మీరు ఏమి చూస్తున్నారో చెప్పండి, ఉదాహరణకు దగ్గు, తల వాపు, లేదా కోళ్లు మేత తినకపోవడం. | `src/clucktalk/domain/errors.py:230` |  |
+| 21 | I don't have a health check for {label_en} yet. | {label_te} కి ఇంకా ఆరోగ్య తనిఖీ లేదు. | `src/clucktalk/domain/errors.py:241` |  |
+| 22 | Tell me what signs you see in that shed, and I'll check it. | ఆ షెడ్‌లో మీరు చూస్తున్న లక్షణాలు చెప్పండి, నేను తనిఖీ చేస్తాను. | `src/clucktalk/domain/errors.py:242` |  |
 | 23 | Photo input (placeholder, not yet validated on real photos) | ఫోటో ఇన్‌పుట్ (ప్లేస్‌హోల్డర్, నిజమైన ఫోటోలపై ఇంకా పరీక్షించలేదు) | `src/clucktalk/domain/photos.py:17` |  |
 | 24 | A placeholder photo is attached. It was not analyzed, and it did not change the result. | ఒక ప్లేస్‌హోల్డర్ ఫోటో జత చేయబడింది. దాన్ని విశ్లేషించలేదు, ఫలితాన్ని అది మార్చలేదు. | `src/clucktalk/domain/photos.py:21` |  |
 | 25 | coughing | దగ్గు | `src/clucktalk/domain/triage.py:42` |  |
@@ -325,16 +325,16 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 | # | English | Telugu | Where | Reviewed by | Date |
 |---|---|---|---|---|---|
 | 1 | CluckTalk | కోడి మిత్ర | `src/clucktalk/config.py:17` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 2 | I couldn't find a shed called {reference}. | {reference} అనే షెడ్ నాకు కనబడలేదు. | `src/clucktalk/domain/errors.py:26` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 3 | Your sheds are {', '.join(known_labels)}. Which one do you mean? | మీ షెడ్లు: {', '.join(known_labels_te)}. మీరు ఏది అడుగుతున్నారు? | `src/clucktalk/domain/errors.py:27` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 4 | I don't have a verified growth standard for {breed} yet, so I can't compare weight or feed to target. | {breed} కి ధృవీకరించిన పెరుగుదల ప్రమాణం నా దగ్గర ఇంకా లేదు, కాబట్టి బరువు లేదా ఫీడ్‌ను లక్ష్యంతో పోల్చలేను. | `src/clucktalk/domain/errors.py:37` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 5 | Ask me how the shed is doing instead. | బదులుగా షెడ్ ఎలా ఉందో అడగండి. | `src/clucktalk/domain/errors.py:38` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 6 | I don't have enough recent records to work out {what}. | {what_te} లెక్కించడానికి నా దగ్గర సరిపడా తాజా రికార్డులు లేవు. | `src/clucktalk/domain/errors.py:48` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 7 | Add today's readings for this shed, then ask me again. | ఈ షెడ్ ఈరోజు రీడింగులు నమోదు చేసి, మళ్ళీ అడగండి. | `src/clucktalk/domain/errors.py:49` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 8 | I can plan only {days_left} more {'day' if days_left == 1 else 'days'} for {label_en}, up to day {max_day} of the {breed} growth table. | {label_te} కి {breed} పెరుగుదల పట్టికలోని {max_day}వ రోజు వరకు, ఇంకా {days_left} రోజులకే ప్రణాళిక చేయగలను. | `src/clucktalk/domain/errors.py:64` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 9 | Ask me for {days_left} {'day' if days_left == 1 else 'days'} or fewer. | {days_left} రోజులు లేదా అంతకంటే తక్కువకు అడగండి. | `src/clucktalk/domain/errors.py:65` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 10 | {label_en} has reached the end of the {breed} growth table (day {max_day}), so I can't project its feed. | {label_te} {breed} పెరుగుదల పట్టిక చివరి రోజు ({max_day}) కి చేరింది, కాబట్టి ఫీడ్‌ను అంచనా వేయలేను. | `src/clucktalk/domain/errors.py:73` | Pathuri Venkateswara Rao | 2026-09-27 |
-| 11 | Ask me how the shed is doing instead. | బదులుగా షెడ్ ఎలా ఉందో అడగండి. | `src/clucktalk/domain/errors.py:74` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 2 | I couldn't find a shed called {reference}. | {reference} అనే షెడ్ నాకు కనబడలేదు. | `src/clucktalk/domain/errors.py:52` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 3 | Your sheds are {', '.join(known_labels)}. Which one do you mean? | మీ షెడ్లు: {', '.join(known_labels_te)}. మీరు ఏది అడుగుతున్నారు? | `src/clucktalk/domain/errors.py:53` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 4 | I don't have a verified growth standard for {breed} yet, so I can't compare weight or feed to target. | {breed} కి ధృవీకరించిన పెరుగుదల ప్రమాణం నా దగ్గర ఇంకా లేదు, కాబట్టి బరువు లేదా ఫీడ్‌ను లక్ష్యంతో పోల్చలేను. | `src/clucktalk/domain/errors.py:63` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 5 | Ask me how the shed is doing instead. | బదులుగా షెడ్ ఎలా ఉందో అడగండి. | `src/clucktalk/domain/errors.py:64` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 6 | I don't have enough recent records to work out {what}. | {what_te} లెక్కించడానికి నా దగ్గర సరిపడా తాజా రికార్డులు లేవు. | `src/clucktalk/domain/errors.py:74` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 7 | Add today's readings for this shed, then ask me again. | ఈ షెడ్ ఈరోజు రీడింగులు నమోదు చేసి, మళ్ళీ అడగండి. | `src/clucktalk/domain/errors.py:75` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 8 | I can plan only {days_left} more {'day' if days_left == 1 else 'days'} for {label_en}, up to day {max_day} of the {breed} growth table. | {label_te} కి {breed} పెరుగుదల పట్టికలోని {max_day}వ రోజు వరకు, ఇంకా {days_left} రోజులకే ప్రణాళిక చేయగలను. | `src/clucktalk/domain/errors.py:90` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 9 | Ask me for {days_left} {'day' if days_left == 1 else 'days'} or fewer. | {days_left} రోజులు లేదా అంతకంటే తక్కువకు అడగండి. | `src/clucktalk/domain/errors.py:91` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 10 | {label_en} has reached the end of the {breed} growth table (day {max_day}), so I can't project its feed. | {label_te} {breed} పెరుగుదల పట్టిక చివరి రోజు ({max_day}) కి చేరింది, కాబట్టి ఫీడ్‌ను అంచనా వేయలేను. | `src/clucktalk/domain/errors.py:99` | Pathuri Venkateswara Rao | 2026-09-27 |
+| 11 | Ask me how the shed is doing instead. | బదులుగా షెడ్ ఎలా ఉందో అడగండి. | `src/clucktalk/domain/errors.py:100` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 12 | a feed plan for {house.label_en} | {house.label_te} ఫీడ్ ప్లాన్ | `src/clucktalk/domain/feed.py:104` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 13 | I can plan feed for {MIN_HORIZON_DAYS} to {MAX_HORIZON_DAYS} days ahead. | నేను {MIN_HORIZON_DAYS} నుండి {MAX_HORIZON_DAYS} రోజుల వరకు ఫీడ్ ప్లాన్ చేయగలను. | `src/clucktalk/domain/feed.py:137` | Pathuri Venkateswara Rao | 2026-09-27 |
 | 14 | How many days should I plan for? | ఎన్ని రోజులకు ప్రణాళిక చేయాలి? | `src/clucktalk/domain/feed.py:138` | Pathuri Venkateswara Rao | 2026-09-27 |

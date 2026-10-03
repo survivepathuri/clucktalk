@@ -111,3 +111,11 @@ def test_the_safety_field_limitation_is_stated_in_plain_words():
     assert "we do not claim Alexa+ uses it" in design and "Stage 2 (not built)" in design
     rules = _flat((SKILL / "references" / "safety-rules.md").read_text(encoding="utf-8"))
     assert "does not claim it reads this field" in rules and "do not carry it yet" in rules
+
+
+# -- Step 47C part C: the unknown-shed echo is described honestly -----------------------------------------------------
+def test_the_unknown_shed_name_cleaning_is_stated_in_the_readme_and_design():
+    for name, text in (("README", README), ("DESIGN", DESIGN)):
+        flat = _flat(text)
+        assert "at most 24 characters" in flat and "emoji" in flat, name
+        assert "no name-free" in flat or "no name-free sentence" in flat, name

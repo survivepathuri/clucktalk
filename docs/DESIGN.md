@@ -405,6 +405,13 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     finding codes, health urgency and follow-up state; `vet_contact_advised` is the briefing's closing-step rule, the
     status's vet-line rule, or an escalated follow-up. Alexa+ composes its own speech, so this exists for a host to
     surface urgency and we do not claim Alexa+ uses it. Stage 2 (not built) is the health-check and follow-up tools.
+  - **An unknown house name is cleaned and shortened before it is spoken (review finding L2, Step 47C).** The error
+    "I couldn't find a shed called X" says X through `spoken_name` in `domain/errors.py`: markup removed, only letters and
+    digits of any script (with their combining marks), single spaces, at most 24 characters; control characters, emoji and
+    punctuation become a space and invisible formatting characters are dropped. The real shed labels in the next step
+    are untouched. When nothing is left (an empty or emoji-only name) the sentence is still spoken with an empty name,
+    because no name-free string exists yet: a name-free "I couldn't find that shed" could replace the echo after native
+    review of its Telugu.
   - **A spike logged on the day of the check** counts when the check did not already know it (review finding H2,
     approved 2026-10-03, no schema change): the check stores the latest count it saw (`latest_record_day`,
     `deaths_latest`), and the check-day record is news when the check saw no count for that day or fewer deaths than

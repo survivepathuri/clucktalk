@@ -4,7 +4,32 @@ Telugu: review status per string in docs/TELUGU_REVIEW.md."""
 
 from __future__ import annotations
 
+import re
+import unicodedata
 from datetime import date
+
+SPOKEN_NAME_LIMIT = 24  # the most characters of a name the farmer typed or said that an error will speak back
+_MARKUP = re.compile(r"<[^>]*>")
+
+
+def spoken_name(raw: str) -> str:
+    """A name the farmer gave, made safe to say back (review finding L2): markup removed, only letters and digits of
+    any script (and the marks that belong to a letter, such as Telugu vowel signs), single spaces, at most
+    ``SPOKEN_NAME_LIMIT`` characters. Control characters, emoji and punctuation become a space; invisible formatting
+    characters (zero-width, direction marks) are dropped. Returns "" when nothing is left."""
+    out: list[str] = []
+    for ch in _MARKUP.sub(" ", unicodedata.normalize("NFC", raw)):
+        category = unicodedata.category(ch)
+        if ch.isalnum():
+            out.append(ch)
+        elif category.startswith("M") and out and out[-1] != " ":
+            out.append(ch)
+        elif category == "Cf":
+            continue
+        else:
+            out.append(" ")
+    text = re.sub(r" +", " ", "".join(out)).strip()
+    return text[:SPOKEN_NAME_LIMIT].rstrip()
 
 
 class DomainError(Exception):
@@ -20,6 +45,7 @@ class DomainError(Exception):
 
 class UnknownHouse(DomainError):
     def __init__(self, reference: str, known_labels: list[str], known_labels_te: list[str]) -> None:
+        reference = spoken_name(reference)  # never the raw text: cleaned and shortened before it is spoken
         super().__init__(
             f"I couldn't find a shed called {reference}.",
             f"Your sheds are {', '.join(known_labels)}. Which one do you mean?",

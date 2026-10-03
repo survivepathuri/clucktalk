@@ -79,6 +79,11 @@ plain words: Alexa+ composes its own speech from a tool's result and its descrip
 in our sentence can be left out. The field exists so a host can surface the urgency itself. We do not claim Alexa+ uses
 it, and it is not yet on the health-check and follow-up answers.
 
+**Unknown shed names.** If a farmer names a shed that does not exist, the error repeats the name only after it is
+cleaned and shortened (letters and digits, at most 24 characters; control characters, emoji and markup removed), then lists
+the real sheds. An empty or emoji-only name is spoken as an empty name, because the project has no name-free sentence
+for it yet.
+
 ## Demo clock (for recordings only)
 
 `python tasks.py serve --demo-days-later 3` (or `run`) makes "today" three days later, so a recording can show how a
