@@ -117,7 +117,7 @@ def main(env: Mapping[str, str] | None = None) -> int:
     if path.exists() or path.with_name(path.name + "-journal").exists():
         print(
             f"demo-three-days: {path} already exists, so it is not changed. "
-            "Start fresh with: python tasks.py reset-demo",
+            "Start fresh with: python tasks.py reset-demo --yes",
             file=sys.stderr,
         )
         return 2
@@ -126,7 +126,7 @@ def main(env: Mapping[str, str] | None = None) -> int:
         _run_day(settings, env, 1, _day_one)
     except (StepFailed, StoreError, OSError) as exc:  # fail loud: a half-built file is never presented as ready
         print(f"demo-three-days: FAILED: {exc}. The partly built file {path} stays for inspection; "
-              "python tasks.py reset-demo removes it.", file=sys.stderr)  # fmt: skip
+              "python tasks.py reset-demo --yes clears it.", file=sys.stderr)  # fmt: skip
         return 1
     print(f"demo-three-days: built {path} (demo-clock state; the live farm state file was not opened).")
     print("  day 0: shed one watch check, shed two urgent check (seeded spike). day 1: shed two answered 'worse'.")

@@ -71,9 +71,7 @@ def test_no_library_text_in_any_known_body_of_these_two_families(rig: Rig):  # n
             error = r.json()["error"]
         except (ValueError, KeyError, TypeError):
             continue
-        if error.get("code") in (-32600, -32601, -32602) and r.status_code in (200, 400):
-            if error.get("message", "").startswith("Parse error"):
-                continue  # not part of F1 or F2 (invalid JSON text), left as it is
+        if error.get("code") in (-32600, -32601, -32602, -32700) and r.status_code in (200, 400):
             assert not LIBRARY_TEXT.search(r.text), (name, r.text[:200])
 
 
@@ -94,5 +92,36 @@ def test_a_non_json_body_keeps_the_sdk_parse_error_status(rig: Rig):  # noqa: F8
 
 def test_the_server_stays_healthy_after_these_requests(rig: Rig):  # noqa: F811
     for body in NOT_A_REQUEST.values():
+        rig.post_raw(body)
+    rig.healthy()
+
+
+PARSE_ERROR = {"jsonrpc": "2.0", "id": None, "error": {"code": -32700, "message": "Parse error"}}
+MALFORMED = {
+    "a lone brace": b"{",
+    "truncated": b'{"jsonrpc":"2.0","id":1,"method":"tools/li',
+    "not JSON": b"hello " + MARK.encode(),
+    "trailing comma": b'{"jsonrpc":"2.0","id":1,"method":"ping",}',
+    "single quotes": b"{'jsonrpc': '2.0'}",
+    "empty body": b"",
+    "binary": bytes(range(256)),
+    "invalid UTF-8": b'{"a":"' + bytes([0xFF, 0xFE]) + MARK.encode() + b'"}',
+    "an unclosed string of 1 MB": b'{"jsonrpc":"2.0","method":"' + b"x" * 1_000_000,
+    "5000 open brackets": b"[" * 5000,
+}
+
+
+@pytest.mark.parametrize("name", list(MALFORMED))
+def test_a_body_that_is_not_json_gets_the_standard_parse_error_and_no_library_text(rig: Rig, name: str):  # noqa: F811
+    before = rig.state()
+    r = rig.post_raw(MALFORMED[name])
+    assert r.status_code == 400, (name, r.status_code, r.text[:200])
+    assert r.json() == PARSE_ERROR, r.text[:200]
+    assert MARK not in r.text and not LIBRARY_TEXT.search(r.text) and len(r.content) < 200
+    assert rig.state() == before
+
+
+def test_the_server_is_healthy_after_the_malformed_bodies(rig: Rig):  # noqa: F811
+    for body in MALFORMED.values():
         rig.post_raw(body)
     rig.healthy()

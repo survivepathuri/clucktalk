@@ -166,7 +166,7 @@ class SqliteStore:
             raise StoreError(
                 f"{self.path} is a demo-clock state file (it holds dates shifted by the demo clock), so it is not "
                 "opened without the demo clock. Start with the clock (python tasks.py serve --demo-days-later N) "
-                "or delete it: python tasks.py reset-demo"
+                "or delete it: python tasks.py reset-demo --yes"
             )
         if demo_clock and has_schema and not marked:
             raise StoreError(
@@ -199,7 +199,7 @@ class SqliteStore:
             elif row["value"] != SCHEMA_VERSION:
                 raise StoreError(
                     f"{self.path} has state schema {row['value']}, this version needs {SCHEMA_VERSION}. "
-                    "Run: python tasks.py reset-demo"
+                    "Run: python tasks.py reset-demo --yes"
                 )
 
     def _create_follow_up_table(self) -> None:
@@ -216,7 +216,7 @@ class SqliteStore:
         except sqlite3.Error as exc:
             raise StoreError(
                 f"{self.path} has state schema {found} and could not be migrated to {SCHEMA_VERSION} ({exc}). "
-                "Nothing was changed. Run: python tasks.py reset-demo"
+                "Nothing was changed. Run: python tasks.py reset-demo --yes"
             ) from exc
 
     def _migrate_v3_to_v4(self) -> None:
@@ -239,7 +239,7 @@ class SqliteStore:
         except sqlite3.Error as exc:
             raise StoreError(
                 f"{self.path} has state schema 3 and could not be migrated to 4 ({exc}). "
-                "Nothing was changed. Run: python tasks.py reset-demo"
+                "Nothing was changed. Run: python tasks.py reset-demo --yes"
             ) from exc
 
     def close(self) -> None:

@@ -5,8 +5,9 @@ Layers, outermost first:
    must carry ``Authorization: Bearer <token>``.
 2. ``ProtocolVersionGate``: only initialize-handshake protocol versions reach the SDK. The SDK would route a
    2026-07-28 header to its stateless path; CluckTalk targets 2025-11-25 (docs/VERSIONS.md).
-3. ``ProtocolErrorGate``: the SDK's two protocol-level answers that echo the input or library text (a body that is
-   not a JSON-RPC request, an unknown method name) become short fixed JSON-RPC errors. No tool result is touched.
+3. ``ProtocolErrorGate``: the SDK's protocol-level answers that echo the input or library text (a body that is not
+   JSON, a body that is not a JSON-RPC request, an unknown method name) become short fixed JSON-RPC errors. No
+   tool result is touched.
 4. SDK Streamable HTTP app with explicit Host/Origin allow-lists (DNS-rebinding protection) and sessions.
 
 Run (Windows):  python tasks.py serve
@@ -126,7 +127,8 @@ class ProtocolVersionGate:
 
 INVALID_REQUEST_MESSAGE = "Invalid request: not a JSON-RPC 2.0 request."  # protocol text, never farmer-facing
 METHOD_NOT_FOUND_MESSAGE = "Method not found"
-_INVALID_REQUEST, _METHOD_NOT_FOUND = -32600, -32601  # the JSON-RPC 2.0 codes for these two errors
+PARSE_ERROR_MESSAGE = "Parse error"  # the JSON-RPC 2.0 standard names, with no library text
+_INVALID_REQUEST, _METHOD_NOT_FOUND, _PARSE_ERROR = -32600, -32601, -32700  # the JSON-RPC 2.0 codes
 _SDK_VALIDATION_CODE = -32602  # what the SDK answers (with pydantic's text) for a body that is not a request
 
 
@@ -150,6 +152,10 @@ def _scrub_protocol_error(status: int, payload: bytes) -> bytes:
         and str(error.get("message", "")).startswith("Validation error")
     ):
         fixed = {"jsonrpc": "2.0", "id": None, "error": {"code": _INVALID_REQUEST, "message": INVALID_REQUEST_MESSAGE}}
+    elif (
+        status == 400 and error.get("code") == _PARSE_ERROR and str(error.get("message", "")).startswith("Parse error")
+    ):
+        fixed = {"jsonrpc": "2.0", "id": None, "error": {"code": _PARSE_ERROR, "message": PARSE_ERROR_MESSAGE}}
     elif error.get("code") == _METHOD_NOT_FOUND:
         request_id = body.get("id")
         fixed = {
