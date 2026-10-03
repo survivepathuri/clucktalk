@@ -417,7 +417,7 @@ Merged from FL-010 (2026-10-01 audit).
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-28
 
-**Impact:** One request can stay unanswered for at least 40 seconds (the longest we waited; the test itself waits 3 s) and holds its connection open. The session and every other request keep working, and the session can still be ended. CluckTalk's own confirmation flow was not affected.
+**Impact:** One request can stay unanswered for at least 40 seconds (the longest we waited; the test itself waits 3 s) and holds its connection open. The session and every other request keep working, and the session can still be ended. CluckTalk's own confirmation flow was not affected. On one CI run (Windows, Python 3.13, 2026-10-03) the second request was answered at once with HTTP 500 "Session terminated before the request completed" instead: the first request's clean-up had closed the stream they share.
 
 **Tool / service:** MCP Python SDK `mcp` 2.2.0, server Streamable HTTP transport (`json_response=True`), protocol 2025-11-25
 

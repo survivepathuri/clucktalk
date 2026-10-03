@@ -167,7 +167,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Medium
 **Task:** Test that a repeated confirmation applies once.
 **Steps:** Sent 5 concurrent tools/call requests with the same JSON-RPC id.
-**Expected vs actual:** Expected answers or a duplicate-id error. Only 1 to 2 of 5 got a response; one request can stay unanswered for at least 40 seconds.
+**Expected vs actual:** Expected answers or a duplicate-id error. Only 1 to 2 of 5 got a response; one request can stay unanswered for at least 40 seconds, or on some runs gets a 500.
 **Workaround:** Distinct ids in the test client.
 **Suggestion:** MCP Python SDK maintainers: reject an in-flight duplicate id with -32600 and log it.
 **Reproduce:** `.venv\Scripts\python -m pytest -q tests\contract\test_concurrency.py::test_two_overlapping_requests_with_the_same_id_leave_one_unanswered_pinned_finding`

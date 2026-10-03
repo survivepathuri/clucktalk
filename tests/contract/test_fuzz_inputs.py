@@ -19,6 +19,9 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
+from clucktalk.agents import AiServices
+from clucktalk.agents.model import RulesModel
+from clucktalk.agents.runner import ManualRunner
 from clucktalk.server.farm_state import DemoFarmSource
 from clucktalk.store.sqlite import SqliteStore
 from tests.contract.conftest import FIXED_DAY, LiveServer, _start
@@ -67,7 +70,11 @@ class Rig:
 def rig(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Rig]:
     path = tmp_path_factory.mktemp("fuzz") / "farm.sqlite3"
     source = DemoFarmSource(clock=lambda: FIXED_DAY, store=SqliteStore(path))
-    live, stop = _start({}, source=source)
+    # A job queue the test drives itself: an accepted health check is never analysed in the background, so no stored
+    # row changes between the "before" and "after" snapshots of an error answer (CI flake of 2026-10-03: a row went
+    # from "analyzing" to "ready" in between on Windows).
+    ai = AiServices(model=RulesModel(), budget=None, runner=ManualRunner())
+    live, stop = _start({}, source=source, ai=ai)
     yield Rig(live, path)
     stop()
     source.store.close()

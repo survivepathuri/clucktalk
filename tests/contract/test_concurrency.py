@@ -8,6 +8,7 @@ discards it at once); the session count is bounded by the SDK's own limit and id
 from __future__ import annotations
 
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
@@ -162,6 +163,22 @@ def test_fifty_parallel_initialize_requests_give_fifty_distinct_working_sessions
 
 
 # -- (4) the Accept finding: what a rejected request leaves behind --------------------------------------------------
+def settled(manager: Any, expected: int | None = None, timeout: float = 5.0) -> int:
+    """The session count once the server has finished discarding the transports it built for rejected requests (that
+    clean-up runs on the server thread, a moment after the response; CI flake of 2026-10-03). With ``expected`` it waits
+    until the count equals it; without, until the count is the same on two reads 50 ms apart. A session that is really
+    kept never goes away, so a leak still fails after ``timeout`` seconds."""
+    deadline = time.monotonic() + timeout
+    last = len(manager._server_instances)
+    while time.monotonic() < deadline:
+        time.sleep(0.05)
+        now = len(manager._server_instances)
+        if (now == expected) if expected is not None else (now == last):
+            return now
+        last = now
+    return len(manager._server_instances)
+
+
 @pytest.fixture
 def sessions():
     holder: list[Any] = []
@@ -185,7 +202,7 @@ def test_a_post_with_no_accept_for_json_is_406_and_leaves_no_session_behind_pinn
     406 carries an ``mcp-session-id`` header and the log says "Created new transport". The session is not kept: the
     count does not grow, however many are sent, and the id in the header is not usable (404). No leak."""
     live, manager = sessions
-    before = len(manager._server_instances)
+    before = settled(manager)
     ids = []
     for _ in range(25):
         r = httpx2.post(
@@ -196,7 +213,7 @@ def test_a_post_with_no_accept_for_json_is_406_and_leaves_no_session_behind_pinn
         )
         assert r.status_code == 406
         ids.append(r.headers.get("mcp-session-id"))
-    assert len(manager._server_instances) == before
+    assert settled(manager, before) == before
     stray = next(i for i in ids if i)
     assert live.post({"jsonrpc": "2.0", "id": 2, "method": "ping"}, session_id=stray).status_code == 404
 
@@ -213,11 +230,11 @@ def test_a_post_with_no_accept_for_json_is_406_and_leaves_no_session_behind_pinn
 )
 def test_no_other_rejected_request_leaves_a_session_behind(sessions: tuple[LiveServer, Any], what, kwargs, status):
     live, manager = sessions
-    before = len(manager._server_instances)
+    before = settled(manager)
     headers = {"accept": "application/json, text/event-stream", **kwargs.pop("headers")}
     for _ in range(10):
         assert httpx2.post(live.url, headers=headers, timeout=10, **kwargs).status_code == status, what
-    assert len(manager._server_instances) == before, what
+    assert settled(manager, before) == before, what
 
 
 def test_an_initialize_that_is_never_ended_keeps_its_session_until_the_idle_timeout_pinned(
@@ -229,10 +246,10 @@ def test_an_initialize_that_is_never_ended_keeps_its_session_until_the_idle_time
     live, manager = sessions
     assert manager.session_idle_timeout == 30 * 60
     assert manager.max_sessions == 10_000
-    before = len(manager._server_instances)
+    before = settled(manager)
     for _ in range(5):
         live.initialize()
-    assert len(manager._server_instances) == before + 5  # never ended: still open
+    assert settled(manager, before + 5) == before + 5  # never ended: still open
 
 
 # -- a finding from this part: two requests in flight with the same JSON-RPC id --------------------------------------
@@ -246,13 +263,19 @@ def test_two_overlapping_requests_with_the_same_id_leave_one_unanswered_pinned_f
     def go(_: int) -> str:
         barrier.wait(timeout=10)
         try:
-            return str(post_tool(rig, "get_help", {}, rid=5, timeout=3).status_code)
+            r = post_tool(rig, "get_help", {}, rid=5, timeout=3)
+            return (
+                str(r.status_code) if "Session terminated" in r.text or r.status_code == 200 else f"other {r.text[:80]}"
+            )
         except httpx2.ReadTimeout:
             return "unanswered"
 
     with ThreadPoolExecutor(max_workers=2) as pool:
         outcomes = sorted(pool.map(go, [0, 1]))
-    assert outcomes == ["200", "unanswered"], outcomes
+    # One request is answered. The other either stays unanswered or, when the first one's clean-up closes the stream
+    # they share, is answered 500 with the SDK's own "Session terminated before the request completed" (seen on CI,
+    # Windows 3.13, 2026-10-03; never in 40 local runs). Never two answers, and no other status or text.
+    assert outcomes in (["200", "unanswered"], ["200", "500"]), outcomes
     assert not rig.call("get_help").get("isError")  # the session still serves new requests
     ended = httpx2.delete(rig.live.url, headers=rig.live.headers(rig.sid), timeout=10)
     assert ended.status_code == 200  # and can still be ended
