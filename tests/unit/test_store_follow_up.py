@@ -253,7 +253,9 @@ def test_a_later_clock_changes_the_state_of_the_same_stored_answers_and_only_thr
     s = SqliteStore(path)
     assert _derive(s, check.check_id, CHECK_DAY).state is FollowUpState.SCHEDULED
     assert _derive(s, check.check_id, CHECK_DAY + timedelta(days=1)).state is FollowUpState.DUE
-    assert _derive(s, check.check_id, CHECK_DAY + timedelta(days=9)).state is FollowUpState.LAPSED
+    assert (
+        _derive(s, check.check_id, CHECK_DAY + timedelta(days=9)).state is FollowUpState.ESCALATED
+    )  # M5: an unanswered urgent check
     s.close()
 
 

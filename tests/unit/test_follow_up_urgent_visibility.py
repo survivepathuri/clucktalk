@@ -32,11 +32,11 @@ def test_a_newer_lower_check_never_hides_a_due_follow_up(urgency):
         assert _state(old, today=DUE + timedelta(days=1), others=[old, newer]).state is S.DUE, lower
 
 
-def test_a_newer_lower_check_never_hides_an_urgent_follow_up_that_is_scheduled_or_lapsed():
+def test_a_newer_lower_check_never_hides_an_urgent_follow_up_that_is_scheduled_or_unanswered_past_the_window():
     old = _check(Urgency.URGENT)
     newer = _check(Urgency.ROUTINE, day=CHECK_DAY, hour=11)
     assert _state(old, today=CHECK_DAY, others=[old, newer]).state is S.SCHEDULED
-    assert _state(old, today=LAPSED, others=[old, newer]).state is S.LAPSED
+    assert _state(old, today=LAPSED, others=[old, newer]).state is S.ESCALATED  # M5: it no longer lapses
 
 
 @pytest.mark.parametrize("urgency", HIGH)

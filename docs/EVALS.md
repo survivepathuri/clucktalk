@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-10-03T20:52:25+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
+Run 2026-10-03T22:34:26+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -59,5 +59,7 @@ Run 2026-10-03T20:52:25+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | followup-urgent-check-this-morning-stays-after-a-lower-check-this-afternoon | PASS | — |
 | followup-spike-logged-after-the-check-the-same-day-overrides-better | PASS | — |
 | followup-spike-already-in-the-check-is-not-news | PASS | — |
+| followup-urgent-unanswered-does-not-lapse-on-day-eight | PASS | — |
+| followup-watch-unanswered-still-lapses | PASS | — |
 
-**Score: 55/55**
+**Score: 57/57**

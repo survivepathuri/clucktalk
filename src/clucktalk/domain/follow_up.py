@@ -69,6 +69,8 @@ class EscalationReason(StrEnum):
     SAID_WORSE = "said_worse"
     SAID_NOT_SURE = "said_not_sure"
     RECORD_BOOK_SPIKE = "record_book_spike"
+    # No confirmed vet handoff for a check that needs one: a reportable suspect that was answered, or an urgent or
+    # reportable check still unanswered after the 7-day window (one code, so the stable list is unchanged).
     REPORTABLE_WITHOUT_VET_HANDOFF = "reportable_without_vet_handoff"
 
 
@@ -207,6 +209,16 @@ def _latest_spike_after(house: House, check: HealthCheck, today: date) -> date |
     return None
 
 
+def _unanswered_past_lapse(urgency: Urgency, handed: bool, answered: bool, due_day: date, today: date) -> bool:
+    """Review finding M5: an urgent check or a suspected reportable disease that nobody answered and that has no
+    confirmed vet handoff does not lapse silently once the 7-day window ends; it stays escalated until an answer
+    closes it, a vet handoff is confirmed, or a newer check of equal or higher urgency takes it over. A watch check's
+    follow-up keeps the lapse. The one place this rule lives; the briefing, the farm status and the cards read the
+    state it produces."""
+    past_lapse = today > due_day + timedelta(days=FOLLOW_UP_LAPSE_AFTER_DUE_DAYS)
+    return urgency >= Urgency.URGENT and not handed and not answered and past_lapse
+
+
 def follow_up_state(
     check: HealthCheck,
     answers: Sequence[FollowUpAnswer],
@@ -260,6 +272,8 @@ def follow_up_state(
         reasons.append(EscalationReason.RECORD_BOOK_SPIKE)
     if answers and _unhanded_reportable(check, handed_off):
         reasons.append(EscalationReason.REPORTABLE_WITHOUT_VET_HANDOFF)
+    if _unanswered_past_lapse(urgency, handed, bool(answers), due_day, today):
+        reasons.append(EscalationReason.REPORTABLE_WITHOUT_VET_HANDOFF)  # the one code for "still needs a vet"
 
     def done(state: FollowUpState, out: Outcome | None, why: tuple[EscalationReason, ...], spike: date | None):
         return FollowUp(state, check.check_id, urgency, due_day, out, why, spike, handed, check_day)

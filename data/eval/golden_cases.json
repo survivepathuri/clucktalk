@@ -3774,6 +3774,113 @@
           ]
         }
       ]
+    },
+    {
+      "id": "followup-urgent-unanswered-does-not-lapse-on-day-eight",
+      "description": "An urgent check nobody answered, with no vet handoff, is still shown as escalated with the vet line after the 7-day window (review finding M5).",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed two",
+            "signs": [
+              "coughing",
+              "sneezing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            }
+          ]
+        },
+        {
+          "demo_days_later": 12,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed two"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "escalated"
+            },
+            {
+              "field": "houses.0.level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "To be safe, contact your vet or doctor."
+            }
+          ]
+        },
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "To be safe, contact your vet or doctor."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-watch-unanswered-still-lapses",
+      "description": "A watch check nobody answered still lapses after the 7-day window and is never read as better.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            }
+          ]
+        },
+        {
+          "demo_days_later": 12,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "lapsed"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "better"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

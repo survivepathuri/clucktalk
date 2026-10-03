@@ -125,11 +125,12 @@ def test_a_confirmed_vet_handoff_ends_it(rig):
     assert _status(rig, house="shed 1")["houses"][0]["follow_up"] is None
 
 
-def test_it_lapses_by_the_existing_seven_day_rule_even_with_a_lower_check_present(rig):
+def test_it_does_not_lapse_after_the_seven_day_window_even_with_a_lower_check_present(rig):
+    # M5 (Step 47C): the old rule lapsed it (state "lapsed", no item); it now stays escalated
     _check_at(rig, Urgency.URGENT, days_ago=12)
     _check_at(rig, Urgency.ROUTINE, days_ago=0)
-    assert _status(rig, house="shed 1")["houses"][0]["follow_up"]["state"] == "lapsed"
-    assert _item(rig) is None
+    assert _status(rig, house="shed 1")["houses"][0]["follow_up"]["state"] == "escalated"
+    assert _item(rig) is not None
 
 
 # -- which check an answer attaches to ---------------

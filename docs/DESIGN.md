@@ -251,7 +251,7 @@ against a freshly started mock-mode server, checked against literal field values
 (`scripts/eval_fast.py`). Writes `docs/EVALS.md` with a real pass/fail count; never fakes a score (Rule 6).
 v0 covers a handful of read-only, single-call cases (farm status, feed reorder, and `plan_sale`'s before /
 at / after break-even and rising-mortality stories); contract-mode's multi-step confirmation flow is covered by
-the contract test suite instead, since this runner is single-call by design. The suite has 55 cases
+the contract test suite instead, since this runner is single-call by design. The suite has 57 cases
 (the table in `docs/EVALS.md` is the count; a harness test keeps this number equal to it). Multi-step cases (`steps`, `save`,
 `poll_until`) and model-fixture cases (`model_fixture`, `tests/fakes.py`) came with the agents (§18); a case marked
 `fresh_state` runs on a server of its own, so its answer cannot depend on what earlier cases changed.
@@ -373,8 +373,8 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     from the day after the check (a same-day "better" must not close a follow-up that was never asked). A second
     "better" on a closed follow-up has nothing to add and is an error; "same", "worse" or "not sure" still reopens it.
   - **State** (`follow_up_state`, a pure function; the date is a parameter, never read from a clock): none, scheduled,
-    due (3 days after a "watch" check, 1 day after an "urgent" or suspected reportable one), lapsed (7 days after due;
-    never read as "better"), closed, escalated, superseded. The windows are our own rules, not sourced figures, defined
+    due (3 days after a "watch" check, 1 day after an "urgent" or suspected reportable one), lapsed (7 days after due, for a watch check;
+    never read as "better"; an unanswered urgent or reportable one escalates instead, see M5 below), closed, escalated, superseded. The windows are our own rules, not sourced figures, defined
     in one place. The most severe answer ever given wins (better < same < not sure < worse), so a later answer can never
     lower an earlier one. "Better" only closes the follow-up; it never lowers or clears the check's urgency, and it
     never closes a suspected reportable disease that has no confirmed vet handoff.
@@ -388,6 +388,14 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     "better" recorded as not better) ends with that line, in the read-back and after the "yes", even after a vet handoff
     and even when a newer check of equal or higher urgency exists; "Done." alone is never spoken for it** (review
     finding H4).
+  - **An unanswered urgent or reportable follow-up does not lapse (review finding M5, Step 47C).** With no answer and
+    no confirmed vet handoff, once the 7-day window after the due day has passed, the follow-up of an urgent check or a
+    suspected reportable disease is ESCALATED (reason code `reportable_without_vet_handoff`, the one code for "still
+    needs a vet"; no new string: the existing escalation sentence with the vet line) instead of LAPSED. It stays until an
+    answer closes it ("better" closes an urgent one; an unhanded reportable one stays), a vet handoff is confirmed, or a
+    newer check of equal or higher urgency takes it over. The rule is `_unanswered_past_lapse` in `domain/follow_up.py`;
+    the briefing, the farm status and the cards read the state it produces, and a sweep test (every urgency, every
+    day) checks that they agree. A watch check keeps the 7-day lapse.
   - **A spike logged on the day of the check** counts when the check did not already know it (review finding H2,
     approved 2026-10-03, no schema change): the check stores the latest count it saw (`latest_record_day`,
     `deaths_latest`), and the check-day record is news when the check saw no count for that day or fewer deaths than
@@ -405,7 +413,7 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     urgency never hides it. **The same holds for every follow-up of an urgent check or a suspected reportable disease,
     escalated or not (review finding H3, approved 2026-10-01)**: it stays visible, still as the one item carrying the
     check's warning plus the question, until "better" closes it (under the existing safety conditions), a newer check
-    of equal or higher urgency exists, the vet handoff is confirmed, or the 7-day lapse; a "worse", "same" or "not
+    of equal or higher urgency exists, the vet handoff is confirmed, or (for a watch check only) the 7-day lapse; a "worse", "same" or "not
     sure" for it is always accepted. On the day of the check, before the follow-up is due, the briefing's own rule
     keeps the urgent check for the usual 3 days behind a newer lower one too (the two rules, `_superseded` and
     `_check_to_show`, change together). A watch check's follow-up is still taken over by any newer check on the shed.

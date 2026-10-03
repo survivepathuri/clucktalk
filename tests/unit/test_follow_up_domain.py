@@ -239,7 +239,9 @@ def test_lapsed_only_after_seven_days_past_due(urgency):
     due_day = _state(check, today=CHECK_DAY).due_day
     assert _state(check, today=due_day + timedelta(days=6)).state is S.DUE
     assert _state(check, today=due_day + timedelta(days=7)).state is S.DUE  # the seventh day is still due
-    assert _state(check, today=due_day + timedelta(days=8)).state is S.LAPSED
+    # M5 (Step 47C): only a watch check lapses; an unanswered urgent or reportable one escalates instead
+    expected = S.LAPSED if urgency is Urgency.WATCH else S.ESCALATED
+    assert _state(check, today=due_day + timedelta(days=8)).state is expected
 
 
 @pytest.mark.parametrize("urgency", [Urgency.WATCH, Urgency.URGENT, Urgency.NOTIFIABLE_SUSPECT])
@@ -247,9 +249,12 @@ def test_no_answer_never_counts_as_better_not_even_lapsed(urgency):
     check = _check(urgency)
     for offset in range(0, 60):
         fup = _state(check, today=CHECK_DAY + timedelta(days=offset))
-        assert fup.state in {S.SCHEDULED, S.DUE, S.LAPSED}
-        assert fup.outcome is None and fup.state is not S.CLOSED and fup.reasons == ()
-    assert _state(check, today=CHECK_DAY + timedelta(days=40)).state is S.LAPSED
+        # M5 (Step 47C): the urgent / reportable ones end ESCALATED (never closed, never "better"), a watch one LAPSED
+        assert fup.state in {S.SCHEDULED, S.DUE, S.LAPSED, S.ESCALATED}
+        assert fup.outcome is None and fup.state is not S.CLOSED
+        assert fup.reasons == () or fup.state is S.ESCALATED
+    late = _state(check, today=CHECK_DAY + timedelta(days=40)).state
+    assert late is (S.LAPSED if urgency is Urgency.WATCH else S.ESCALATED)
 
 
 # -- better closes, and only closes ---------------------------------------------------------------------------
@@ -432,10 +437,12 @@ def test_a_handoff_for_another_check_does_not_count():
     assert fup.state is S.ESCALATED
 
 
-def test_a_reportable_suspect_with_no_answer_is_asked_not_closed_or_escalated_by_the_clock():
+def test_a_reportable_suspect_with_no_answer_is_asked_and_never_closed_by_the_clock():
     check = _check(Urgency.NOTIFIABLE_SUSPECT)
     assert _state(check, today=CHECK_DAY + timedelta(days=1)).state is S.DUE
-    assert _state(check, today=CHECK_DAY + timedelta(days=50)).state is S.LAPSED  # lapsed is never "better"
+    # M5 (Step 47C): it no longer lapses; with no vet handoff it stays escalated, and is never "better"
+    late = _state(check, today=CHECK_DAY + timedelta(days=50))
+    assert late.state is S.ESCALATED and late.outcome is None
 
 
 def test_an_urgent_but_not_reportable_check_may_close_without_a_handoff():
