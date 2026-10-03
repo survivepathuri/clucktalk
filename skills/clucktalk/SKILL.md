@@ -22,9 +22,9 @@ The farm is always seeded, fictional demo data (live AI mode also runs on it). R
 
 | Tool | Use it when the farmer |
 |---|---|
-| `get_farm_status` | asks how a shed or the whole farm is doing |
+| `get_farm_status` | asks how a shed or the whole farm is doing right now (for today's priorities use `get_daily_briefing`) |
 | `plan_sale` | asks when to sell a broiler shed |
-| `get_daily_briefing` | asks for today's briefing, or says "more" after it |
+| `get_daily_briefing` | asks for today's briefing or what to do first today, or says "more" after it (for one shed's numbers use `get_farm_status`) |
 | `start_health_check` | describes signs of illness in a shed |
 | `get_health_check` | asks whether a health check is ready |
 | `prepare_vet_handoff` | wants the vet to get a health check summary |

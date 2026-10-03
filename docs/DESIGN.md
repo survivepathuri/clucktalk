@@ -57,6 +57,7 @@ Planned next (§13): farm profile (contract or independent, **built**), voice re
 ## 5. Tool contract rules
 Based on Amazon's Alexa+ MCP tool, schema and data design guidance.
 1. One tool = one customer intent; no overlaps. The description says when to call it, why, and what it returns.
+   `get_farm_status` is "how is it doing right now" (numbers plus the shed's open check or follow-up) and `get_daily_briefing` is "what to do first today" (a ranked list); each description names the other tool for the other job (review finding M8, a test pins it).
 2. One-shot extraction: accept all constraints in one call.
 3. Declare only what you honor. Output matches `outputSchema`; no undeclared fields.
 4. Always return something. Errors are structured (`isError: true`) with a customer-safe message and one next step: spoken English in `content`, English + Telugu in `_meta["clucktalk/error"]`, and no `structuredContent` (MCP 2025-11-25: structured results must conform to `outputSchema`). Never speak codes, tool names, JSON, or IDs.

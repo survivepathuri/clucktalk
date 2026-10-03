@@ -125,9 +125,11 @@ class FarmStatusOutput(BaseModel):
 
 
 DESCRIPTION = (
-    "Use when the farmer asks how a house (shed, kotam) or the whole farm is doing: deaths, feed intake, weight "
-    "vs breed target, and whether feed stock is running low. Give `house` for one house; omit it "
-    "for every house, worst first. Returns a short spoken summary plus the same numbers for the card."
+    "Use when the farmer asks how a house (shed, kotam) or the whole farm is doing right now: deaths, feed intake, "
+    "weight vs breed target, whether feed stock is running low, and any open health check or follow-up for that "
+    "house. Give `house` for one house; omit it for every house, worst first. Not for today's priorities across the "
+    "farm (use get_daily_briefing) and not for reporting new signs (use start_health_check). Returns a short spoken "
+    "summary plus the same numbers for the card."
 )
 HOUSE_PARAM = Field(
     default=None,

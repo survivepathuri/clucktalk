@@ -118,9 +118,10 @@ class BriefingOutput(BaseModel):
 
 
 DESCRIPTION = (
-    "Use when the farmer asks for today's briefing, the daily update, or what needs attention on the farm today. "
-    "Returns at most 5 ranked items (health alerts always first) and reads the top 3; set `more` to true when the "
-    "farmer says 'more' to hear the rest. Takes no shed: it covers the whole farm. Never gives a medicine or dose."
+    "Use when the farmer asks for today's briefing, the daily update, or what to do first today: a ranked list "
+    "across the whole farm. Returns at most 5 items (health alerts always first) and reads the top 3; set `more` to "
+    "true when the farmer says 'more' to hear the rest. Takes no shed. Not for one shed's numbers (use "
+    "get_farm_status). Never gives a medicine or dose."
 )
 MORE_PARAM = Field(default=False, description="True only when the farmer asks to hear more after the first items.")
 
