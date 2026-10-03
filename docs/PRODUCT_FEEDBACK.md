@@ -17,7 +17,7 @@ Questions 2, 4 and 5 are opinions or measurements that nothing in the repo recor
 
 ## 1. Alexa+ (docs, MCP Toolkit, validation tools)
 
-1. **Used for:** the product target. CluckTalk is a self-hosted MCP server (protocol 2025-11-25, Streamable HTTP) built to Amazon's published Alexa+ guidance (`docs/SOURCES.md`, `docs/DESIGN.md`). The Alexa+ docs were read, not run: no real Alexa+ device or the official validation tools were used (FL-024).
+1. **Used for:** the product target. CluckTalk is a self-hosted MCP server (implements MCP 2025-11-25 over Streamable HTTP; the SDK also negotiates older versions, no minimum is enforced) built to Amazon's published Alexa+ guidance (`docs/SOURCES.md`, `docs/DESIGN.md`). The Alexa+ docs were read, not run: no real Alexa+ device or the official validation tools were used (FL-024).
 2. What worked: TODO
 3. **Needs work (from the friction log):** FL-009 (no MCP Apps card size, `ui/*` methods, CSP or fonts), FL-017 (no statement on proactive notifications or identifying household members for MCP add-ons), FL-024 (no self-serve path to the Alexa AI CLI / Local Inspector for participants; documentation-based, no install attempted). The rest: TODO
 4. Onboarding, zero to hello world: TODO (FL-024 covers only the validation-tool prerequisite)

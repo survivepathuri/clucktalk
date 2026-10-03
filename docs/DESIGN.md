@@ -22,7 +22,7 @@ Planned next (§13): farm profile (contract or independent, **built**), voice re
 │ Device mode: Headless (Echo Dot) | Screen (Show / Fire TV)    │
 │ Shows "Still working…" for async tools · "Demo data" badge    │
 └────────────────────────────┬──────────────────────────────────┘
-                             │ MCP 2025-11-25, Streamable HTTP
+                             │ MCP 2025-11-25 (Streamable HTTP)
                              ▼
 ┌───────────────────────────────────────────────────────────────┐
 │ CluckTalk MCP server: FAST PATH (< 500 ms p95)                │
@@ -53,7 +53,7 @@ Planned next (§13): farm profile (contract or independent, **built**), voice re
 1. Validate the `Origin` header on Streamable HTTP requests. Allowed: the server's own two loopback origins, plus any exact origins listed in `CLUCKTALK_ALLOWED_ORIGINS` (never `*`; refused at config load). CORS headers are sent only for those extra origins (exact origin echoed, `Vary: Origin`, `Mcp-Session-Id` exposed, no credentials), by a layer outside the Origin and bearer checks so a preflight is answered; any other Origin still gets 403 with no CORS headers. The bind stays 127.0.0.1.
 2. Bind to `127.0.0.1` in local mode; require an auth token whenever the server is reachable from other hosts.
 3. Handle `Mcp-Session-Id` correctly; reject unknown sessions cleanly.
-4. **Protocol version, as observed (Step 48A; `tests/contract/test_protocol_conformance.py` pins it, `python tasks.py probe-protocol-version` reproduces it).** `initialize` is answered with the version the client asked for when the SDK knows it (2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05 are each answered with themselves); an unknown or newer body version (e.g. 2026-07-28) is answered with 2025-11-25. So the server does **not** refuse a client that asks for a version older than 2025-11-25. A later request's `MCP-Protocol-Version` header is not compared with the negotiated version; only a header outside the handshake set is refused (400). POST needs an `Accept` that allows JSON (a missing header or `text/event-stream` alone is 406); GET needs `text/event-stream`; DELETE without a session is 400, with an unknown or already-ended session 404. Whether these are right for Alexa+ is not verified; the server behaviour was deliberately not changed.
+4. **Protocol version, as observed (Step 48A; `tests/contract/test_protocol_conformance.py` pins it, `python tasks.py probe-protocol-version` reproduces it).** `initialize` is answered with the version the client asked for when the SDK knows it (2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05 are each answered with themselves); an unknown or newer body version (e.g. 2026-07-28) is answered with 2025-11-25. **Decision (2026-10-04): keep this; no floor is enforced.** The server implements MCP 2025-11-25 over Streamable HTTP; for compatibility the SDK also negotiates 2025-06-18, 2025-03-26 and 2024-11-05 (see `python tasks.py probe-protocol-version`); we do not enforce a minimum version. Documented limitations: it accepts a missing or different `MCP-Protocol-Version` header on an established session, and a POST without an `Accept` header returns 406 but still creates an SDK session (examined in Step 48B part C). A later request's `MCP-Protocol-Version` header is not compared with the negotiated version; only a header outside the handshake set is refused (400). POST needs an `Accept` that allows JSON (a missing header or `text/event-stream` alone is 406); GET needs `text/event-stream`; DELETE without a session is 400, with an unknown or already-ended session 404. Whether these are right for Alexa+ is not verified; the server behaviour was deliberately not changed.
 
 ## 5. Tool contract rules
 Based on Amazon's Alexa+ MCP tool, schema and data design guidance.
@@ -150,7 +150,7 @@ The product name lives in one config constant (`APP_NAME` in `src/clucktalk/conf
 ## 12. Known pitfalls and countermeasures
 | Pitfall | Countermeasure | Enforced by |
 |---|---|---|
-| Wrong or old protocol version / transport | 2025-11-25 + Streamable HTTP; version stated in README; Inspector transcript saved | Contract test on `initialize` |
+| Wrong or old protocol version / transport | Implements 2025-11-25 over Streamable HTTP (older versions negotiated by the SDK, no floor); version stated in README; Inspector transcript saved | Contract test on `initialize` |
 | Tools that return nothing or malformed errors | Always a structured result or `isError` | Contract tests |
 | Schema parameters the server ignores | "Declare only what you honor" review | Independent review |
 | Overlapping or vague tool descriptions | One intent per tool; tool-selection golden cases | Golden suite |

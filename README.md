@@ -1,6 +1,6 @@
 # CluckTalk (కోడి మిత్ర)
 
-The voice farm manager for India's **broiler** poultry farmers. A self-hosted MCP server (spec 2025-11-25,
+The voice farm manager for India's **broiler** poultry farmers. A self-hosted MCP server (implements MCP 2025-11-25 over
 Streamable HTTP) plus an Agent Skill, built for the Alexa+ add-on program.
 
 > **Status**: in development. Nothing below is claimed working unless it has evidence in `docs/evidence/` or a
@@ -73,7 +73,7 @@ number is the same on both (tested). **That equality holds in the Simulator only
 its own speech from the tool result and the tool descriptions, so the words it says can differ from ours; the card
 still shows the tool's own sentence. We cannot script Alexa's wording, and no Alexa+ device has loaded CluckTalk.
 
-To see which MCP protocol version the server answers with for 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05, run `python tasks.py probe-protocol-version` (temporary state file, no AWS; it reports what it saw and judges nothing).
+The server implements MCP 2025-11-25 over Streamable HTTP; for compatibility the SDK also negotiates 2025-06-18, 2025-03-26 and 2024-11-05, and we do not enforce a minimum version. Known limits: it accepts a missing or different `MCP-Protocol-Version` header on an established session, and a POST without an `Accept` header returns 406 but still creates an SDK session. To see what it answers for each version, run `python tasks.py probe-protocol-version` (temporary state file, no AWS; it reports what it saw and judges nothing).
 
 **The `safety` field.** `get_daily_briefing` and `get_farm_status` also return a structured `safety` object (`level`
 OK / WATCH / ALERT / UNKNOWN, `reason_codes`, `vet_contact_advised`) that equals the card's level. The limitation, in
