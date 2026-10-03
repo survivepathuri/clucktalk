@@ -135,3 +135,11 @@ def test_a_simulated_item_is_a_reason_code_only_when_nothing_else_explains_the_l
     assert both.reason_codes == ["mortality_spike"]
     alone = status_safety("watch", [sale], item_needs_safety_step)
     assert alone.reason_codes == ["sale_window"] and alone.level == "WATCH" and alone.vet_contact_advised is False
+
+
+def test_a_simulated_hint_alone_never_raises_the_status_level_but_the_briefing_card_level_stands():
+    sale = NS(category="sale_window", level="watch", pinned=False, values={}, simulated=True)
+    status = status_safety("ok", [sale], item_needs_safety_step)  # the status card has no sale item: OK, no reason
+    assert status.level == "OK" and status.reason_codes == []
+    briefing = briefing_safety("watch", [sale], item_needs_safety_step)  # the briefing card says watch: so does safety
+    assert briefing.level == "WATCH" and briefing.reason_codes == ["sale_window"]

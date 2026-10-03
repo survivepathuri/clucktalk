@@ -256,7 +256,7 @@ against a freshly started mock-mode server, checked against literal field values
 (`scripts/eval_fast.py`). Writes `docs/EVALS.md` with a real pass/fail count; never fakes a score (Rule 6).
 v0 covers a handful of read-only, single-call cases (farm status, feed reorder, and `plan_sale`'s before /
 at / after break-even and rising-mortality stories); contract-mode's multi-step confirmation flow is covered by
-the contract test suite instead, since this runner is single-call by design. The suite has 65 cases
+the contract test suite instead, since this runner is single-call by design. The suite has 67 cases
 (the table in `docs/EVALS.md` is the count; a harness test keeps this number equal to it). Multi-step cases (`steps`, `save`,
 `poll_until`) and model-fixture cases (`model_fixture`, `tests/fakes.py`) came with the agents (§18); a case marked
 `fresh_state` runs on a server of its own, so its answer cannot depend on what earlier cases changed.
@@ -408,9 +408,11 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     tools: `facts_for` gathers the briefing facts of the farm (or of the one shed asked about) and `item_needs_safety_step`
     is the one "contact the vet" rule, so for the same farm state the briefing and the farm status agree on
     `vet_contact_advised`, `level` and `reason_codes`. The level is the card's own level word, raised to the facts' level
-    when a fact is higher, so it equals the card level and cannot be lower than the rules behind it; the one case where it
-    is higher is a death spike logged on an earlier day this week, which the briefing lists and the status card does not
-    (the card still says the shed is fine: a known gap, a card change needs new wording); the codes are the fact
+    when a (non-simulated) fact is higher, so it equals the card level and cannot be lower than the rules behind it. Since
+    Step 48D a death spike logged on an earlier day this week (`recent_logged_spike`) is on the shed's status card too: an
+    ALERT finding with the briefing's own sentence (`recent_spike_text`, no new wording), the ALERT level sentence and the
+    existing vet step, so the card, the safety field and the briefing agree. The simulated sale window is a market hint:
+    it is on the briefing card (watch) and never raises the status card or its safety level; the codes are the fact
     categories, health urgency and follow-up state; `vet_contact_advised` is the closing-step rule or an escalated
     follow-up. Alexa+ composes its own speech, so this exists for a host to
     surface urgency and we do not claim Alexa+ uses it. Stage 2 (not built) is the health-check and follow-up tools.

@@ -76,9 +76,9 @@ still shows the tool's own sentence. We cannot script Alexa's wording, and no Al
 The server implements MCP 2025-11-25 over Streamable HTTP; for compatibility the SDK also negotiates 2025-06-18, 2025-03-26 and 2024-11-05, and we do not enforce a minimum version. Known limits: it accepts a missing or different `MCP-Protocol-Version` header on an established session, a POST without an `Accept` header returns 406 (the SDK builds a transport for it and discards it at once; no session is left open, tested), and two simultaneous requests with the same JSON-RPC id in one session leave one unanswered. Sessions that clients never end stay open until the SDK's 30-minute idle timeout, at most 10,000 at once. To see what it answers for each version, run `python tasks.py probe-protocol-version` (temporary state file, no AWS; it reports what it saw and judges nothing).
 
 **The `safety` field.** `get_daily_briefing` and `get_farm_status` also return a structured `safety` object (`level`
-OK / WATCH / ALERT / UNKNOWN, `reason_codes`, `vet_contact_advised`) that equals the card's level, or is higher when a rule
-the card does not show applies (a death spike logged on an earlier day this week). The briefing and the farm status read it
-from the same facts, so they agree on it for the same farm. The limitation, in
+OK / WATCH / ALERT / UNKNOWN, `reason_codes`, `vet_contact_advised`) that equals the card's level. The briefing and the farm status read it
+from the same facts, so they agree on it for the same farm; a death spike logged on an earlier day this week is on the
+shed's status card too (the same sentence the briefing uses). The limitation, in
 plain words: Alexa+ composes its own speech from a tool's result and its description, so a safety step that lives only
 in our sentence can be left out. The field exists so a host can surface the urgency itself. We do not claim Alexa+ uses
 it, and it is not yet on the health-check and follow-up answers.

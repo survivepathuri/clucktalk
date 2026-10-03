@@ -14,7 +14,7 @@ from mcp.server.apps import Apps
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field
 
-from clucktalk.domain.briefing import Category
+from clucktalk.domain.briefing import Category, Fact, recent_spike_fact
 from clucktalk.domain.errors import DomainError
 from clucktalk.domain.feed import plan_feed
 from clucktalk.domain.houses import resolve_house
@@ -36,6 +36,7 @@ from clucktalk.server.tools.follow_up import (
     follow_up_view,
     shed_health,
     warns_vet,
+    when_ago,
 )
 from clucktalk.server.tools.safety import SafetyOut, fact_items, facts_for, item_needs_safety_step, status_safety
 
@@ -229,6 +230,34 @@ def _when(is_today: bool) -> Text:
     return Text("today", "ఈరోజు") if is_today else Text("in the latest count", "తాజా లెక్కలో")
 
 
+def recent_spike_text(deaths: int, base: int, days_ago: int) -> Text:
+    """The sentence for a death spike logged on an earlier day this week: the one the daily briefing has always used,
+    now also on the farm status, so both say the same words (Step 48D)."""
+    when = when_ago(days_ago)
+    if base == 0:
+        return Text(
+            f"{num(deaths)} birds died {when.en}, after hardly any deaths the week before.",
+            f"{when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం దాదాపు ఏవీ చనిపోలేదు.",
+        )
+    return Text(
+        f"{num(deaths)} birds died {when.en}, against about {num(base)} a day the week before.",
+        f"{when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం రోజుకు సుమారు {num(base)}.",
+    )
+
+
+def _recent_spike_finding(spike: Fact) -> FindingOut:
+    v = spike.values
+    deaths, base, ago = int(v["deaths"]), round(float(v["baseline_daily_avg"])), int(v["days_ago"])
+    text = recent_spike_text(deaths, base, ago)
+    return FindingOut(
+        code=Category.RECENT_LOGGED_SPIKE.value,
+        level="alert",
+        text_en=text.en,
+        text_te=text.te,
+        values={"deaths": deaths, "baseline_per_day": base, "days_ago": ago},
+    )
+
+
 def _feed_stock_finding(days: int, stock_kg: float) -> FindingOut:
     if stock_kg <= 0:
         en, te = "There is no feed stock left.", "ఫీడ్ నిల్వ అయిపోయింది."
@@ -256,6 +285,9 @@ def _house_out(farm: Farm, house: House, as_of, floor: LevelName = "ok") -> Hous
         # Stock cover is optional detail in a status answer; the card shows it as unknown (None), and
         # plan_feed gives the farmer the reason when asked directly.
         logger.info("status for %s: feed cover unavailable (%s)", house.house_id, err.customer_message)
+    earlier_spike = recent_spike_fact(house, as_of)
+    if earlier_spike is not None:  # a spike logged earlier this week: the briefing lists it, so the card says it too
+        findings.append(_recent_spike_finding(earlier_spike))
     order = {"alert": 0, "watch": 1, "ok": 2}
     findings.sort(key=lambda f: order[f.level])
     level: LevelName = min((*(f.level for f in findings), floor), key=lambda lv: order[lv])
@@ -333,7 +365,7 @@ def _closing(spoken: list[FindingOut], contract: bool, vet_line: bool = False) -
     check or a suspected reportable disease (open, or carried by its follow-up): the same vet step as a death spike."""
     codes = {f.code for f in spoken}
     extra = []
-    if "mortality_spike" in codes or vet_line:
+    if "mortality_spike" in codes or "recent_logged_spike" in codes or vet_line:
         extra.append(SAFETY_STEP)
     if "feed_stock_low" in codes:
         extra.append(FEED_PLAN_HINT_CONTRACT if contract else FEED_PLAN_HINT)

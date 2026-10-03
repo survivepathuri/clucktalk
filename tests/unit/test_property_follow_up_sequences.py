@@ -217,35 +217,39 @@ async def surfaces(world: World) -> tuple[dict, dict, dict[int, dict]]:
     return brief, farm, shed
 
 
-def assert_safety_level_vs_card(safety_level: str, card_level: str, records_logged: bool) -> None:
-    if records_logged:
-        assert RANK[LEVEL_WORD_INV[safety_level]] >= RANK[card_level], (safety_level, card_level)
-    else:
-        assert safety_level == LEVEL_WORD[card_level], (safety_level, card_level)
+def assert_safety_level_vs_card(safety_level: str, card_level: str) -> None:
+    """Step 48D: the card level, the safety level and the briefing agree in every state, with or without a death record
+    (a spike logged on an earlier day is on the status card too)."""
+    assert safety_level == LEVEL_WORD[card_level], (safety_level, card_level)
 
 
 def check_levels_agree(world: World, brief: dict, farm: dict, shed: dict[int, dict], records_logged: bool) -> None:
     assert brief["safety"]["level"] == LEVEL_WORD[brief["level"]], (brief["level"], brief["safety"])
-    # Step 48C: the safety level is never lower than the card, and equals it unless a death record was logged (a spike
-    # from an earlier day is a briefing fact the status card does not show; the safety field then says ALERT).
-    assert_safety_level_vs_card(farm["safety"]["level"], farm["level"], records_logged)
+    assert_safety_level_vs_card(farm["safety"]["level"], farm["level"])
     for n in HOUSES:
         one = shed[n]["houses"][0]
         whole = next(h for h in farm["houses"] if h["house_id"] == f"house-{n}")
         assert one["level"] == whole["level"], (n, one["level"], whole["level"])
-        assert_safety_level_vs_card(shed[n]["safety"]["level"], one["level"], records_logged)
+        assert_safety_level_vs_card(shed[n]["safety"]["level"], one["level"])
         health = [RANK[i["level"]] for i in brief["items"] if i["house_id"] == f"house-{n}"
                   and i["category"] in HEALTH_CATEGORIES]  # fmt: skip
-        if not records_logged:  # a logged death record adds briefing / status items the other does not count
-            every = [RANK[i["level"]] for i in brief["items"] if i["house_id"] == f"house-{n}"]
-            assert RANK[one["level"]] == max(every, default=0), (n, one["level"], brief["items"])
+        # (the simulated sale window is a market hint: the briefing lists it at watch, the status card has no sale item)
+        every = [RANK[i["level"]] for i in brief["items"] if i["house_id"] == f"house-{n}" and not i["simulated"]]
+        assert RANK[one["level"]] == max(every, default=0), (n, one["level"], brief["items"])
         assert RANK[one["level"]] >= max(health, default=0), (n, one["level"], brief["items"])
 
 
 def check_briefing_and_status_agree_on_safety(brief: dict, farm: dict, shed: dict[int, dict]) -> None:
     """Step 48C part A: for the same farm state the briefing and the farm status agree on vet_contact_advised, level
     and reason_codes; a shed's status never says more than the whole farm; the sheds together say what it says."""
-    assert farm["safety"] == brief["safety"], (farm["safety"], brief["safety"])
+    sale_only = brief["safety"]["reason_codes"] == ["sale_window"]  # the briefing lists the simulated sale window; the
+    if (
+        sale_only
+    ):  # status never did, and a market hint is not a safety reason: the status says OK, nothing else differs
+        assert farm["safety"] == {"level": "OK", "reason_codes": [], "vet_contact_advised": False}, farm["safety"]
+        assert brief["safety"]["vet_contact_advised"] is False
+    else:
+        assert farm["safety"] == brief["safety"], (farm["safety"], brief["safety"])
     one = [shed[n]["safety"] for n in HOUSES]
     assert all(s["vet_contact_advised"] <= brief["safety"]["vet_contact_advised"] for s in one), (one, brief["safety"])
     assert any(s["vet_contact_advised"] for s in one) == brief["safety"]["vet_contact_advised"], (one, brief["safety"])

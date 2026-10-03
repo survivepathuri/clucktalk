@@ -232,6 +232,32 @@ def health_fact(
     return follow_fact if follow_fact is not None else open_check
 
 
+def recent_spike_fact(house: House, as_of: date) -> Fact | None:
+    """The most recent death spike logged on an earlier day inside the trailing week (not the latest record's own
+    count, which is the status's mortality_spike). The briefing lists it and the farm status shows it too, so the two
+    agree on the shed's level (Step 48D)."""
+    records = house.records_until(as_of)
+    latest = records[-1]  # the caller has a status for this house, so there is at least one record
+    for rec in reversed(records):
+        if rec.day >= latest.day:
+            continue
+        if (as_of - rec.day).days > RECENT_SPIKE_DAYS - 1:
+            break
+        spike = spike_finding(house, records, rec)
+        if spike is not None:
+            return Fact(
+                _fact_id(Category.RECENT_LOGGED_SPIKE, house.house_id),
+                Category.RECENT_LOGGED_SPIKE,
+                Level.ALERT,
+                _severity(Level.ALERT),
+                True,
+                house.house_id,
+                house.number,
+                {**spike.values, "days_ago": (as_of - rec.day).days},
+            )
+    return None
+
+
 def _house_facts(
     farm: Farm,
     house: House,
@@ -277,28 +303,9 @@ def _house_facts(
             )
         )
 
-    records = house.records_until(as_of)
-    latest = records[-1]  # house_status succeeded, so there is at least one record
-    for rec in reversed(records):  # the most recent spike inside the trailing week that is not today's own count
-        if rec.day >= latest.day:
-            continue
-        if (as_of - rec.day).days > RECENT_SPIKE_DAYS - 1:
-            break
-        spike = spike_finding(house, records, rec)
-        if spike is not None:
-            facts.append(
-                Fact(
-                    _fact_id(Category.RECENT_LOGGED_SPIKE, house.house_id),
-                    Category.RECENT_LOGGED_SPIKE,
-                    Level.ALERT,
-                    _severity(Level.ALERT),
-                    True,
-                    house.house_id,
-                    house.number,
-                    {**spike.values, "days_ago": (as_of - rec.day).days},
-                )
-            )
-            break
+    recent_spike = recent_spike_fact(house, as_of)
+    if recent_spike is not None:
+        facts.append(recent_spike)
 
     health = health_fact(house, as_of, check, recent, handed_off, follow_up)
     if health is not None:

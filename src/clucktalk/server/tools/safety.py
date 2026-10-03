@@ -143,9 +143,12 @@ def briefing_safety(card_level: str, items: Sequence[Any], needs_safety_step: Ca
         i.category == "follow_up" and i.values.get("state") == "escalated" for i in items
     )
     out = safety_from(card_level, codes, vet)
-    from_facts = "ALERT" if any(i.level == "alert" for i in items) else "WATCH" if codes else "OK"
+    real = [i for i in items if not getattr(i, "simulated", False)]  # a simulated market hint never raises safety
+    from_facts = "ALERT" if any(i.level == "alert" for i in real) else "WATCH" if _reason_codes(real) else "OK"
     if _RANK[from_facts] > _RANK[out.level]:
         out = out.model_copy(update={"level": from_facts})
+    if out.level == "OK" and out.reason_codes:  # OK says nothing: a simulated hint on its own is not a reason
+        out = out.model_copy(update={"reason_codes": []})
     return out
 
 

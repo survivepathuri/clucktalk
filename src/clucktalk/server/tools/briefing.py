@@ -32,11 +32,9 @@ from clucktalk.domain.triage import Urgency
 from clucktalk.i18n import Text
 from clucktalk.server.cards import BRIEFING_URI, briefing_html
 from clucktalk.server.farm_state import DemoFarmSource
-from clucktalk.server.render import num
 from clucktalk.server.tools import Capability, CapabilityRegistry
-from clucktalk.server.tools.farm_status import SAFETY_STEP, _feed_stock_finding, _finding
+from clucktalk.server.tools.farm_status import SAFETY_STEP, _feed_stock_finding, _finding, recent_spike_text
 from clucktalk.server.tools.follow_up import check_said_text, follow_up_text
-from clucktalk.server.tools.follow_up import when_ago as _when
 from clucktalk.server.tools.health import AI_LABEL, DISCLAIMER, TEST_MODEL_LABEL
 from clucktalk.server.tools.safety import SafetyOut, briefing_safety, fact_items, facts_for, item_needs_safety_step
 
@@ -189,14 +187,7 @@ def _render(fact: Fact, farm: Farm) -> tuple[Text, dict[str, Any]]:
             return _prefixed(_label(house), body), {"drop_pct": drop}
         case Category.RECENT_LOGGED_SPIKE:
             deaths, base, ago = int(v["deaths"]), round(float(v["baseline_daily_avg"])), int(v["days_ago"])
-            when = _when(ago)
-            if base == 0:
-                en = f"{num(deaths)} birds died {when.en}, after hardly any deaths the week before."
-                te = f"{when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం దాదాపు ఏవీ చనిపోలేదు."
-            else:
-                en = f"{num(deaths)} birds died {when.en}, against about {num(base)} a day the week before."
-                te = f"{when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం రోజుకు సుమారు {num(base)}."
-            return _prefixed(_label(house), Text(en, te)), {
+            return _prefixed(_label(house), recent_spike_text(deaths, base, ago)), {
                 "deaths": deaths,
                 "baseline_per_day": base,
                 "days_ago": ago,
