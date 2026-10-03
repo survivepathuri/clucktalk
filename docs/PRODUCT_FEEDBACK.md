@@ -71,9 +71,9 @@ Questions 2, 4 and 5 are opinions or measurements that nothing in the repo recor
 4. Onboarding, zero to hello world: TODO
 5. Build again, yes or no and why: TODO
 
-## 8. Python tooling: ruff 0.16.9, pytest 9.1.1; Node.js (optional card test)
+## 8. Python tooling: ruff 0.16.9, pytest 9.1.1, hypothesis 6.168.3; Node.js (optional card test)
 
-1. **Used for:** lint and format (`ruff`), the harness, unit and contract tests (`pytest`), all run by `python tasks.py check`; Node.js only for the card number-format test, which is skipped when Node is missing.
+1. **Used for:** lint and format (`ruff`), the harness, unit and contract tests (`pytest`), property-based and fuzz tests (`hypothesis`, a dev dependency only, license MPL-2.0 as its package metadata states it), all run by `python tasks.py check`; Node.js only for the card number-format test, which is skipped when Node is missing.
 2. What worked: TODO
 3. What needs work: TODO
 4. Onboarding, zero to hello world: TODO

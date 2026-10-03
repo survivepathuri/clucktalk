@@ -184,13 +184,14 @@ Tool / service: MCP Python SDK `mcp` 2.2.0, server Streamable HTTP transport (`j
 Tag: [Alexa+/MCP]
 Task attempted: Contract test that a repeated "yes" (the same `set_farm_mode` confirmation sent 5 times at once, as a retrying host might) is applied only once.
 Steps taken: 5 concurrent `tools/call` POSTs on one `Mcp-Session-Id`, all with JSON-RPC `id: 2` (a test-client mistake). Repeated with a read-only tool, and with distinct ids.
-Expected vs actual: Expected every POST to be answered, or a JSON-RPC error for the duplicate id. Actual: only 1-2 of the 5 POSTs got a response; the others hung until the client's 10 s timeout, with no server log line, for read-only tools too. With distinct ids all 5 answered in 13-29 ms. Cause in source: `mcp/server/streamable_http.py` stores each POST's response stream in `self._request_streams[request_id]` (line 645) without checking for an in-flight request with that id, so the later POST overwrites the earlier one's stream. The spec forbids reusing an id in a session, so the client was wrong, but the failure is a silent hang.
-Severity: Low
+Expected vs actual: Expected every POST to be answered, or a JSON-RPC error for the duplicate id. Actual: only 1-2 of the 5 POSTs got a response; the others hung until the client's 10 s timeout, with no server log line, for read-only tools too. (Step 48C: with two overlapping requests the second was still unanswered after 40 s.) With distinct ids all 5 answered in 13-29 ms. Cause in source: `mcp/server/streamable_http.py` stores each POST's response stream in `self._request_streams[request_id]` (line 645) without checking for an in-flight request with that id, so the later POST overwrites the earlier one's stream. The spec forbids reusing an id in a session, so the client was wrong, but the failure is a silent hang.
+Severity: Medium
+Impact: One request can stay unanswered for at least 40 seconds (the longest we waited; the test itself waits 3 s) and holds its connection open. The session and every other request keep working, and the session can still be ended. CluckTalk's own confirmation flow was not affected.
 Workaround: The test client now gives every concurrent request its own id. CluckTalk's confirmation flow still applied the change exactly once in the hanging run (1 applied, the answered repeats replayed).
 Actionable suggestion: Owner: MCP Python SDK maintainers (`mcp/server/streamable_http.py`, where the response stream is stored per request id). Reject a request whose id is already in flight on the session with a JSON-RPC error (-32600, 'duplicate request id') instead of overwriting the pending stream, and log a warning.
 Time cost: not recorded
-Reproduce: documentation-based, no command (found with a scratch test that was not saved; the cause is in `mcp/server/streamable_http.py`, line 645 in `mcp` 2.2.0).
-Evidence: `docs/evidence/2026-09-28_farm_profile.md`.
+Reproduce: `tests\contract\test_concurrency.py::test_two_overlapping_requests_with_the_same_id_leave_one_unanswered_pinned_finding`; run it with `.venv\Scripts\python -m pytest -q tests\contract\test_concurrency.py::test_two_overlapping_requests_with_the_same_id_leave_one_unanswered_pinned_finding`. The cause is in `mcp/server/streamable_http.py`, line 645 in `mcp` 2.2.0.
+Evidence: `tests/contract/test_concurrency.py`; `docs/evidence/2026-09-28_farm_profile.md`.
 
 ### FL-012: New-account setup: the recommended CLI identity silently depends on the account plan; Bedrock-on-Free-plan is undocumented
 Date: 2026-09-28

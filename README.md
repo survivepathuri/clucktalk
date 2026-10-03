@@ -88,6 +88,15 @@ cleaned and shortened (letters and digits, at most 24 characters; control charac
 the real sheds. An empty or emoji-only name is spoken as an empty name, because the project has no name-free sentence
 for it yet.
 
+## Known SDK behaviors
+
+Things the MCP Python SDK (`mcp` 2.2.0) or our shed-name reader does that you might not expect. Each one has a test that pins it, so a change after an SDK upgrade shows up as a failing test.
+
+- **An odd request id is accepted without an answer.** A JSON-RPC id that is an object, a list or a decimal number gets an empty `202`, as if the request were a notification, instead of an error. Nothing is changed or saved. (`test_..._finding_f3` in `tests/contract/test_fuzz_inputs.py`.)
+- **The shed-name reader ignores symbols and non-Latin words.** It keeps only plain letters and digits, so `shed -1` and `🐔 1` both mean shed 1. It never maps a name to a different shed, and a name with two different numbers is refused. This is our own reader, not the SDK's. (`..._finding_f4`.)
+- **Two overlapping requests with the same JSON-RPC id in one session leave one unanswered.** One request can stay unanswered for at least 40 seconds. The protocol requires unique ids, so this is a client mistake, but nothing tells the client. The session and the other requests keep working. This is friction entry FL-011. (`tests/contract/test_concurrency.py`.)
+- **Session limits are the SDK defaults, which we do not change:** at most 10,000 sessions at once, and a session nobody ends is closed after 30 minutes without a request.
+
 ## Demo clock (for recordings only)
 
 `python tasks.py serve --demo-days-later 3` (or `run`) makes "today" three days later, so a recording can show how a
