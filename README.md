@@ -73,6 +73,8 @@ number is the same on both (tested). **That equality holds in the Simulator only
 its own speech from the tool result and the tool descriptions, so the words it says can differ from ours; the card
 still shows the tool's own sentence. We cannot script Alexa's wording, and no Alexa+ device has loaded CluckTalk.
 
+To see which MCP protocol version the server answers with for 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05, run `python tasks.py probe-protocol-version` (temporary state file, no AWS; it reports what it saw and judges nothing).
+
 **The `safety` field.** `get_daily_briefing` and `get_farm_status` also return a structured `safety` object (`level`
 OK / WATCH / ALERT / UNKNOWN, `reason_codes`, `vet_contact_advised`) that equals the card's level. The limitation, in
 plain words: Alexa+ composes its own speech from a tool's result and its description, so a safety step that lives only

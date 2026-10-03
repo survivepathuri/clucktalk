@@ -8,6 +8,7 @@ Windows (cmd); on Linux/macOS use python3 instead of python:
     python tasks.py run         Start the local demo (Simulator + MCP server, mock mode)
     python tasks.py serve --demo-days-later 3   (also for run) demo clock: "today" is 3 days later; demo mode only
     python tasks.py demo-three-days   Build the demo-clock state for the "three days later" recording (demo mode only)
+    python tasks.py probe-protocol-version   Print which MCP protocol version a temporary server answers with
     python tasks.py reset-demo  Delete the local farm state and the demo-clock state (.local/), so the demo starts fresh
 
 Every step prints PASS / FAIL / SKIP, and the run exits non-zero if any step fails.
@@ -210,6 +211,12 @@ def demo_three_days() -> int:
     return subprocess.call([str(VENV_PY), "-B", str(ROOT / "scripts" / "demo_three_days.py")], cwd=ROOT, env=env)
 
 
+def probe_protocol_version() -> int:
+    """Start the server on a temporary state file, send initialize for four protocol versions, print the answers."""
+    _require_venv()
+    return subprocess.call([str(VENV_PY), "-B", str(ROOT / "scripts" / "probe_protocol_version.py")], cwd=ROOT)
+
+
 def _wait_for_port(port: int, proc: subprocess.Popen, seconds: float = 20) -> bool:
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
@@ -308,6 +315,7 @@ COMMANDS = {
     "eval-fast": eval_fast,
     "run": run,
     "demo-three-days": demo_three_days,
+    "probe-protocol-version": probe_protocol_version,
     "reset-demo": reset_demo,
 }
 
