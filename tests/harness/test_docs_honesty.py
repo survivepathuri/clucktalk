@@ -100,3 +100,14 @@ def test_the_same_day_spike_limit_is_stated_in_the_readme_and_design():
         flat = _flat(text)
         assert "after a same-day vet handoff is not caught by the follow-up" in flat, name
         assert "birds died yesterday" in flat, name
+
+
+# -- Step 47C part D: the structured safety field is described honestly --------------------------------------------
+def test_the_safety_field_limitation_is_stated_in_plain_words():
+    flat = _flat(README)
+    assert "composes its own speech" in flat and "can be left out" in flat
+    assert "We do not claim Alexa+ uses it" in flat and "not yet on the health-check and follow-up answers" in flat
+    design = _flat(DESIGN)
+    assert "we do not claim Alexa+ uses it" in design and "Stage 2 (not built)" in design
+    rules = _flat((SKILL / "references" / "safety-rules.md").read_text(encoding="utf-8"))
+    assert "does not claim it reads this field" in rules and "do not carry it yet" in rules

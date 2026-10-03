@@ -397,6 +397,14 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     newer check of equal or higher urgency takes it over. The rule is `_unanswered_past_lapse` in `domain/follow_up.py`;
     the briefing, the farm status and the cards read the state it produces, and a sweep test (every urgency, every
     day) checks that they agree. A watch check keeps the 7-day lapse.
+  - **The structured `safety` field (review finding M6, stage 1, Step 47C).** `get_daily_briefing` and `get_farm_status`
+    carry `safety: {level: OK|WATCH|ALERT|UNKNOWN, reason_codes: [...], vet_contact_advised}` in `structuredContent` on
+    every successful answer (an error result has no `structuredContent` by design). One shared helper
+    (`server/tools/safety.py`) derives it only from rules that already exist: the level is the card's own level word, so it
+    equals the card level and cannot be lower than the rules behind it; the codes are the existing fact categories,
+    finding codes, health urgency and follow-up state; `vet_contact_advised` is the briefing's closing-step rule, the
+    status's vet-line rule, or an escalated follow-up. Alexa+ composes its own speech, so this exists for a host to
+    surface urgency and we do not claim Alexa+ uses it. Stage 2 (not built) is the health-check and follow-up tools.
   - **A spike logged on the day of the check** counts when the check did not already know it (review finding H2,
     approved 2026-10-03, no schema change): the check stores the latest count it saw (`latest_record_day`,
     `deaths_latest`), and the check-day record is news when the check saw no count for that day or fewer deaths than

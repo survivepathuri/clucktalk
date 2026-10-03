@@ -73,6 +73,12 @@ number is the same on both (tested). **That equality holds in the Simulator only
 its own speech from the tool result and the tool descriptions, so the words it says can differ from ours; the card
 still shows the tool's own sentence. We cannot script Alexa's wording, and no Alexa+ device has loaded CluckTalk.
 
+**The `safety` field.** `get_daily_briefing` and `get_farm_status` also return a structured `safety` object (`level`
+OK / WATCH / ALERT / UNKNOWN, `reason_codes`, `vet_contact_advised`) that equals the card's level. The limitation, in
+plain words: Alexa+ composes its own speech from a tool's result and its description, so a safety step that lives only
+in our sentence can be left out. The field exists so a host can surface the urgency itself. We do not claim Alexa+ uses
+it, and it is not yet on the health-check and follow-up answers.
+
 ## Demo clock (for recordings only)
 
 `python tasks.py serve --demo-days-later 3` (or `run`) makes "today" three days later, so a recording can show how a

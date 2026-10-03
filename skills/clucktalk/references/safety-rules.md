@@ -35,8 +35,12 @@ A follow-up asks how a shed is now compared with its health check: better, the s
 - "Same", "worse" and "not sure" mean contact your vet or doctor. The tool says it in those words, also after a vet summary was sent and also when a newer check exists; "Done." alone is never the answer to them. Keep the step if you rephrase, do not soften it and do not replace it with advice. On Alexa+ the assistant words its own answer, so do not promise a farmer exact wording.
 - "Better" after a spike in the record book is still recorded as worse. Do not argue with the record book.
 - The follow-up tool sends nothing. The vet summary is a different tool with its own read-back and its own yes.
-- A follow-up nobody answered lapses and says so ("there was no answer to the follow-up"). It never reads as better.
+- A watch follow-up nobody answered lapses and says so ("there was no answer to the follow-up"). It never reads as better. An unanswered follow-up of an urgent check or a suspected reportable disease with no vet summary sent does not lapse: it stays escalated, with the vet line, until an answer, a vet summary or a newer check of the same or higher urgency ends it.
 - Once a vet summary is sent for a check, a later worse, same or not sure answer is still heard and escalates again; a later better only closes it. No second vet summary is offered for the same check.
+
+## The `safety` field
+
+`get_daily_briefing` and `get_farm_status` carry `safety` in `structuredContent` on every successful answer: `level` (`OK`, `WATCH`, `ALERT`, `UNKNOWN`), `reason_codes` (codes, never sentences) and `vet_contact_advised`. The level always equals the card's level and is never lower than the rules behind it. When `vet_contact_advised` is true, include the step to contact the vet or doctor in your answer. Alexa+ words its own answer, and CluckTalk does not claim it reads this field; it is there so a host can surface urgency. Health checks and follow-up answers do not carry it yet.
 
 ## Changes need an explicit yes
 

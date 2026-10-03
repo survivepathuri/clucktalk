@@ -39,6 +39,7 @@ from clucktalk.server.tools.farm_status import SAFETY_STEP, _feed_stock_finding,
 from clucktalk.server.tools.follow_up import check_said_text, follow_up_text, shed_health
 from clucktalk.server.tools.follow_up import when_ago as _when
 from clucktalk.server.tools.health import AI_LABEL, DISCLAIMER, TEST_MODEL_LABEL
+from clucktalk.server.tools.safety import SafetyOut, briefing_safety
 
 TOOL = "get_daily_briefing"
 LevelName = Literal["alert", "watch", "info"]
@@ -115,6 +116,7 @@ class BriefingOutput(BaseModel):
     total_items: int  # every fact found today; items holds the first MAX_ITEMS
     more_available: bool  # this answer read the first few and "more" reads the rest
     ai: BriefingAiOut
+    safety: SafetyOut  # the structured safety step: level = the card level, why, and whether to contact the vet
 
 
 DESCRIPTION = (
@@ -345,6 +347,7 @@ def build_briefing(source: DemoFarmSource, ranker: BriefingRanker, more: bool = 
         total_items=len(ordered),
         more_available=more_available,
         ai=_ai_out(view),
+        safety=briefing_safety(level, items, _needs_safety_step),
     )
 
 

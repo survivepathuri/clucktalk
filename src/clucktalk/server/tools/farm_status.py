@@ -37,6 +37,7 @@ from clucktalk.server.tools.follow_up import (
     shed_health,
     warns_vet,
 )
+from clucktalk.server.tools.safety import SafetyOut, status_safety
 
 logger = logging.getLogger("clucktalk.server")
 
@@ -122,6 +123,7 @@ class FarmStatusOutput(BaseModel):
     level: LevelName | Literal["unknown"]  # "unknown" when no house could be checked (never a silent "ok")
     houses: list[HouseStatusOut]
     unavailable: list[HouseUnavailableOut]
+    safety: SafetyOut  # the structured safety step: level = the card level, why, and whether to contact the vet
 
 
 DESCRIPTION = (
@@ -389,6 +391,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
             parts.append(line)
         if _needs_vet_line(health):
             vet_houses.add(house.house_id)
+        vet_rule = bool(vet_houses)
     else:
         houses, unavailable = [], []
         for house in sorted(farm.houses, key=lambda h: h.number):
@@ -436,6 +439,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
             parts.append(
                 Text("There are more houses; ask about one by shed number.", "ఇంకా షెడ్లు ఉన్నాయి; షెడ్ నంబర్ చెప్పి అడగండి.")
             )
+        vet_rule = bool(vet_houses)  # any shed the rule says needs the vet line, read out or not (the safety field)
         vet_houses &= {h.house_id for h in houses[:MAX_SPOKEN_HOUSES]}  # only the sheds actually read out
     parts += _closing(spoken, source.profile().mode is FarmMode.CONTRACT, bool(vet_houses))
     level = min((h.level for h in houses), key=lambda lv: order[lv], default="unknown")
@@ -449,6 +453,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
         level=level,
         houses=houses,
         unavailable=unavailable,
+        safety=status_safety(level, houses, unavailable, vet_rule),
     )
 
 
