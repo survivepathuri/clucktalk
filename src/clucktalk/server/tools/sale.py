@@ -115,8 +115,10 @@ DESCRIPTION = (
     "Use when the farmer asks when to sell a broiler shed, whether to wait, or about the best day, break-even day "
     "or growing charge for selling. Give `house` for one house (omit for every broiler shed on the farm) and "
     "optionally `live_price_per_kg` when the farmer states today's rate. Independent farms: the best day to sell "
-    "and the ₹ difference. Contract farms: no market price is used; instead how FCR and the growing charge change "
-    "with each extra day. Not for layer flocks (ask get_farm_status or plan_feed instead)."
+    "and the ₹ difference. The market price is a simulated value from a simulated feed, not a real market quote; a "
+    'rate the farmer states with `live_price_per_kg` is used as given, and the result text says "Simulated" '
+    "whenever it uses the simulated price. Contract farms: no market price is used; instead how FCR and the "
+    "growing charge change with each extra day. Not for layer flocks (ask get_farm_status or plan_feed instead)."
 )
 HOUSE_PARAM = Field(
     default=None,

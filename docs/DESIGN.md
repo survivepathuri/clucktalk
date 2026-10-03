@@ -57,6 +57,7 @@ Planned next (§13): farm profile (contract or independent, **built**), voice re
 ## 5. Tool contract rules
 Based on Amazon's Alexa+ MCP tool, schema and data design guidance.
 1. One tool = one customer intent; no overlaps. The description says when to call it, why, and what it returns.
+   Descriptions never claim real-time or live data, and a tool with simulated data says so: `plan_sale` says its market price is a simulated value, not a real market quote, that a rate the farmer states is used as given, and that the result text says "Simulated" (Step 47C, a test pins it).
    `get_farm_status` is "how is it doing right now" (numbers plus the shed's open check or follow-up) and `get_daily_briefing` is "what to do first today" (a ranked list); each description names the other tool for the other job (review finding M8, a test pins it).
 2. One-shot extraction: accept all constraints in one call.
 3. Declare only what you honor. Output matches `outputSchema`; no undeclared fields.

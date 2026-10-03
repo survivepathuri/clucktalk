@@ -7,7 +7,7 @@ Which tool for which words. One tool is one intent. The farmer's shed words are 
 | Tool | Changes something? | Has a card? | Needs | Use it when the farmer |
 |---|---|---|---|---|
 | `get_farm_status` | no | yes | `house` optional; omit for the whole farm | asks how a shed or the farm is doing right now: deaths, feed intake, weight against the breed target, feed stock running low, and any open health check or follow-up for that shed. Not for today's priorities (use `get_daily_briefing`) and not for new signs (use `start_health_check`) |
-| `plan_sale` | no | yes | `house` optional, `live_price_per_kg` if the farmer states today's rate | asks when to sell a broiler shed, whether to wait, the best day or the break-even day. Not for layer flocks |
+| `plan_sale` | no | yes | `house` optional, `live_price_per_kg` if the farmer states today's rate | asks when to sell a broiler shed, whether to wait, the best day or the break-even day. The market price is simulated unless the farmer states a rate; the result says so. Not for layer flocks |
 | `get_daily_briefing` | no | yes | `more: true` to hear the rest | asks for today's briefing, the daily update, or what to do first today. Covers the whole farm and takes no shed; not for one shed's numbers (use `get_farm_status`). Reads the top 3 of at most 5 items; health items come first |
 | `start_health_check` | yes (stores a check) | yes | `house`, `signs` (mapped onto the allowed values), the farmer's own words in `symptoms` | describes signs of illness in a shed |
 | `get_health_check` | no | yes | `house` or `check_id` | asks whether a health check is ready or what it found |
