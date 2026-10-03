@@ -1,3 +1,4 @@
 # Dev/harness tools. Exact pins; versions verified on PyPI 2026-09-27 (see docs/VERSIONS.md).
 ruff==0.16.9
 pytest==9.1.1
+hypothesis==6.168.3  # property-based tests (Step 48B); verified on PyPI 2026-10-04, requires Python >=3.10
