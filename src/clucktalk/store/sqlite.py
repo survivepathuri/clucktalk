@@ -137,9 +137,42 @@ def record_from_json(text: str) -> DailyRecord:
     )
 
 
+DEMO_CLOCK_MARKER = ("demo_clock", "1")  # meta row that marks a file as the demo clock's (never a live file)
+
+
+def _read_marker(path: str) -> tuple[bool, bool]:
+    """(the file has a schema, it is marked as a demo-clock file), read-only: a refused file is never written to."""
+    if path == MEMORY or not Path(path).exists():
+        return False, False
+    con = sqlite3.connect(f"{Path(path).resolve().as_uri()}?mode=ro", uri=True)
+    try:
+        has_schema = con.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone() is not None
+        marked = con.execute("SELECT value FROM meta WHERE key = ?", (DEMO_CLOCK_MARKER[0],)).fetchone() is not None
+        return has_schema, marked
+    except sqlite3.OperationalError:  # no meta table: an empty file
+        return False, False
+    finally:
+        con.close()
+
+
 class SqliteStore:
-    def __init__(self, path: Path | str = MEMORY) -> None:
+    def __init__(self, path: Path | str = MEMORY, *, demo_clock: bool = False) -> None:
+        """``demo_clock``: this is the demo clock's state file. A new file is marked as one; an existing file must
+        agree: a demo-clock file is refused without the demo clock, and a live file is refused with it (nothing is
+        written to a refused file)."""
         self.path = str(path)
+        has_schema, marked = _read_marker(self.path)
+        if marked and not demo_clock:
+            raise StoreError(
+                f"{self.path} is a demo-clock state file (it holds dates shifted by the demo clock), so it is not "
+                "opened without the demo clock. Start with the clock (python tasks.py serve --demo-days-later N) "
+                "or delete it: python tasks.py reset-demo"
+            )
+        if demo_clock and has_schema and not marked:
+            raise StoreError(
+                f"{self.path} is a live state file, so it is never used with the demo clock. "
+                "The demo clock has its own file; remove CLUCKTALK_STATE_PATH or point it elsewhere."
+            )
         if self.path != MEMORY:
             Path(self.path).parent.mkdir(parents=True, exist_ok=True)
         # isolation_level=None: no implicit transactions; atomic() issues BEGIN IMMEDIATE / COMMIT itself.
@@ -156,6 +189,8 @@ class SqliteStore:
             if row is None:
                 self._create_follow_up_table()
                 self._db.execute("INSERT INTO meta (key, value) VALUES ('schema_version', ?)", (SCHEMA_VERSION,))
+                if demo_clock:
+                    self._db.execute("INSERT INTO meta (key, value) VALUES (?, ?)", DEMO_CLOCK_MARKER)
             elif row["value"] in ("3", "4"):
                 # The whole chain is inside this one transaction: a failure in any step undoes every step.
                 if row["value"] == "3":

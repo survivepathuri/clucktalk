@@ -39,7 +39,7 @@ English and Telugu speak the same numbers. The farmer's language decides which s
 
 - A "Demo data" badge on every card in demo mode.
 - "Simulated" on market prices, sensors, the supplier message and the vet message.
-- A "Demo clock: +N days" badge, only while the operator has turned the demo clock on for a recording. It comes from `_meta`, not `structuredContent`, and it never appears when the clock is off. Do not describe the shifted date as real.
+- A "Demo clock: +N days" badge, only while the operator has turned the demo clock on for a recording. It comes from `_meta`, not `structuredContent`, and it never appears when the clock is off. Do not describe the shifted date as real. Its honest scope: it shifts follow-up and briefing dates only; flock ages, record-book entries and the sale plan do not move, so never present it as time passing for the flock.
 
 ## Errors and waiting
 

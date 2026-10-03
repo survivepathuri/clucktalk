@@ -7,7 +7,7 @@ Windows (cmd); on Linux/macOS use python3 instead of python:
     python tasks.py serve       Start only the MCP server (demo data, http://127.0.0.1:8765/mcp)
     python tasks.py run         Start the local demo (Simulator + MCP server, mock mode)
     python tasks.py serve --demo-days-later 3   (also for run) demo clock: "today" is 3 days later; demo mode only
-    python tasks.py reset-demo  Delete the local farm state (.local/), so the demo story starts fresh
+    python tasks.py reset-demo  Delete the local farm state and the demo-clock state (.local/), so the demo starts fresh
 
 Every step prints PASS / FAIL / SKIP, and the run exits non-zero if any step fails.
 A skipped step is always shown with its reason. Nothing is silently skipped (Rule 6).
@@ -260,13 +260,15 @@ def reset_demo() -> int:
     from clucktalk.config import ConfigError, load_settings  # stdlib-only module: safe outside the venv
 
     try:
-        path = load_settings().state_path  # config accepts only a .sqlite3 file, so nothing else can be deleted
+        settings = load_settings()
     except ConfigError as exc:
         print(f"reset-demo: configuration error: {exc}", file=sys.stderr)
         return 2
-    targets = [p for p in (path, path.with_name(path.name + "-journal")) if p.exists()]
+    # Both files: the live state and the demo clock's own (config accepts only .sqlite3 files, so nothing else can go).
+    paths = (settings.state_path, settings.demo_clock_state_path)
+    targets = [q for p in paths for q in (p, p.with_name(p.name + "-journal")) if q.exists()]
     if not targets:
-        print(f"reset-demo: nothing to reset ({path} does not exist).")
+        print(f"reset-demo: nothing to reset ({paths[0]} and {paths[1]} do not exist).")
         return 0
     for target in targets:
         try:

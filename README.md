@@ -71,6 +71,16 @@ number is the same on both (tested). **That equality holds in the Simulator only
 its own speech from the tool result and the tool descriptions, so the words it says can differ from ours; the card
 still shows the tool's own sentence. We cannot script Alexa's wording, and no Alexa+ device has loaded CluckTalk.
 
+## Demo clock (for recordings only)
+
+`python tasks.py serve --demo-days-later 3` (or `run`) makes "today" three days later, so a recording can show how a
+follow-up asks about a shed days after a health check. Its **honest scope: it shifts follow-up and briefing dates only.**
+Flock ages, the record-book entries and the sale plan do not move (the seeded farm is rebuilt for the shifted date, so
+they look exactly as before), so a video must not present it as time passing for the flock. It is demo mode only (live
+mode refuses it) and no tool can set it. It uses a **separate state file** next to the live one
+(`.local/clucktalk_demo_clock.sqlite3`, marked as a demo-clock file) and never the live farm state; a demo-clock file
+is refused without the clock, and `python tasks.py reset-demo` clears both files.
+
 ## Roadmap
 
 - **Layer farming.** The domain layer already models egg-laying flocks (status, feed planning), but the current

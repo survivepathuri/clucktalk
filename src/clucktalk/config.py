@@ -19,8 +19,11 @@ TAGLINE_EN = "The voice farm manager for India's poultry farmers."
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
-# Local farm state (profile, proposals, records). .local/ is gitignored; `python tasks.py reset-demo` deletes it.
+# Local farm state (profile, proposals, records). .local/ is gitignored; `python tasks.py reset-demo` deletes it, and
+# the separate demo-clock file next to it (Settings.demo_clock_state_path).
 DEFAULT_STATE_PATH = REPO_ROOT / ".local" / "clucktalk.sqlite3"
+# The demo clock's own state file is the live file's name plus this suffix (the one place the name is built).
+DEMO_CLOCK_STATE_SUFFIX = "_demo_clock"
 
 # Hard cap on live model calls per day (user decision 2026-09-29): a lower cap may be configured, never a higher one.
 AI_HARD_DAILY_CAP = 100
@@ -54,6 +57,17 @@ class Settings:
     @property
     def is_local(self) -> bool:
         return self.host in _LOCAL_HOSTS
+
+    @property
+    def demo_clock_state_path(self) -> Path:
+        """The state file used while the demo clock is on: a sibling of the live file with its own name. The demo
+        clock writes shifted dates (checks, answers, proposals), so it must never share a file with the live state."""
+        return self.state_path.with_name(f"{self.state_path.stem}{DEMO_CLOCK_STATE_SUFFIX}{self.state_path.suffix}")
+
+    @property
+    def active_state_path(self) -> Path:
+        """The one file the server opens: the demo-clock file when the clock is on, otherwise the live file."""
+        return self.demo_clock_state_path if self.demo_days_later else self.state_path
 
 
 def _parse_bool(env: Mapping[str, str], name: str, default: bool) -> bool:

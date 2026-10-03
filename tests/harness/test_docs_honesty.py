@@ -63,3 +63,33 @@ def test_the_skill_says_four_cards_serve_five_tools():
     text = (SKILL / "references" / "voice-and-cards.md").read_text(encoding="utf-8")
     assert "Four cards serve five tools" in text
     assert "Five tools have one" not in text and "four tools have a card" not in text.lower()
+
+
+# -- Step 47B part B: the demo clock's honest scope ------------------------------------------------------------------
+def _flat(text: str) -> str:
+    return " ".join(text.split())
+
+
+def test_the_demo_clock_scope_is_stated_in_the_readme_design_and_skill():
+    skill = (SKILL / "references" / "voice-and-cards.md").read_text(encoding="utf-8")
+    skill_md = (SKILL / "SKILL.md").read_text(encoding="utf-8")
+    for name, text in (("README", README), ("DESIGN", DESIGN), ("skill", skill), ("SKILL.md", skill_md)):
+        flat = _flat(text).lower()
+        assert "follow-up and briefing dates only" in flat, name
+        assert "flock ages" in flat and "record-book entries" in flat and "sale plan do not move" in flat, name
+        assert "time passing for the flock" in flat, name
+
+
+def test_the_demo_clock_uses_its_own_state_file_and_reset_demo_clears_both():
+    for name, text in (("README", README), ("DESIGN", DESIGN)):
+        flat = _flat(text)
+        assert "separate state file" in flat and "never the live" in flat, name
+    assert "reset-demo` clears both files" in _flat(README)
+
+
+def test_the_demo_clock_file_has_one_name_in_code_readme_and_design():
+    from clucktalk.config import DEFAULT_STATE_PATH, DEMO_CLOCK_STATE_SUFFIX, load_settings
+
+    name = load_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_DEMO_DAYS_LATER": "3"}).demo_clock_state_path.name
+    assert name == f"{DEFAULT_STATE_PATH.stem}{DEMO_CLOCK_STATE_SUFFIX}.sqlite3" == "clucktalk_demo_clock.sqlite3"
+    assert f".local/{name}" in README and f".local/{name}" in DESIGN

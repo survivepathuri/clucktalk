@@ -426,7 +426,13 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
   - **Demo clock** (for the video's "three days later" and the golden cases): `CLUCKTALK_DEMO_DAYS_LATER=N` (0 to 30), or
     `python tasks.py serve|run --demo-days-later N`. It shifts the injected `today` and `now` of the farm source by whole
     days (`DemoClock` in `server/farm_state.py`; real time is read only in `now_ist`, a test enforces it); nothing stored
-    is rewritten, so a restart with a different N reads the same data. It is **never an MCP tool** (a test checks that no
+    is rewritten. **It uses a separate state file** (`Settings.demo_clock_state_path`, a sibling of the live file named
+    `<live stem>_demo_clock.sqlite3`, by default `.local/clucktalk_demo_clock.sqlite3`, created fresh and marked in its `meta` table), never the live file: the live
+    file is not opened while the clock is on (a test hashes it before and after), a demo-clock file is refused without
+    the clock and a live file is refused with it, both with a clear error and nothing written, and `python tasks.py
+    reset-demo` clears both files. No record is ever invented. **Honest scope: it shifts follow-up and briefing dates
+    only.** The seeded farm is rebuilt for the shifted date, so flock ages, the record-book entries and the sale plan do
+    not move, and the video must not present it as time passing for the flock. It is **never an MCP tool** (a test checks that no
     tool name or argument looks like it, and that sending such an argument changes nothing), is **refused in live mode**
     (`MOCK_BEDROCK` not true: a clear `ConfigError`), and is off by default (then the output is unchanged). While on,
     every tool result (errors too) carries `_meta["clucktalk/demo_clock"]` = days, "Demo clock: +N days" and its Telugu;

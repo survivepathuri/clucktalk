@@ -210,6 +210,12 @@ def build_app(settings: Settings, server: MCPServer | None = None) -> ASGIApp:
     return app
 
 
+def open_state_store(settings: Settings) -> SqliteStore:
+    """The one state file this run uses: the demo-clock file when the demo clock is on (a separate file, marked as
+    such), otherwise the live file. The live file is never opened while the clock is on."""
+    return SqliteStore(settings.active_state_path, demo_clock=bool(settings.demo_days_later))
+
+
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     try:
@@ -220,9 +226,9 @@ def main() -> int:
     import uvicorn
 
     try:
-        store = SqliteStore(settings.state_path)
+        store = open_state_store(settings)
     except (StoreError, sqlite3.Error, OSError) as exc:  # fail loud: never run without the farmer's saved state
-        print(f"State store error ({settings.state_path}): {exc}", file=sys.stderr)
+        print(f"State store error ({settings.active_state_path}): {exc}", file=sys.stderr)
         return 2
     demo_clock = DemoClock(settings.demo_days_later) if settings.demo_days_later else None
     source = DemoFarmSource(store=store, demo_clock=demo_clock)
@@ -247,7 +253,9 @@ def main() -> int:
     print(f"Allowed browser origins: {', '.join(settings.allowed_origins)}")
     if settings.extra_origins:
         print(f"CORS enabled only for: {', '.join(settings.extra_origins)} (CLUCKTALK_ALLOWED_ORIGINS)")
-    print(f"Farm state: {settings.state_path} (python tasks.py reset-demo restores the demo story)")
+    print(f"Farm state: {settings.active_state_path} (python tasks.py reset-demo restores the demo story)")
+    if demo_clock is not None:
+        print("The live farm state file is not opened while the demo clock is on (a separate demo-clock file is used).")
     uvicorn.run(build_app(settings, server), host=settings.host, port=settings.port, log_level="info")
     return 0
 

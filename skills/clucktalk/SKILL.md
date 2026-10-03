@@ -63,6 +63,7 @@ A card tap never stands in for a spoken yes. Never invent an answer for the farm
 - Every result has `text_en`, `text_te` and `structuredContent`. Speak the sentence in the farmer's language and keep every number. In a host that speaks the tool's own text (the local Simulator) the card shows that same sentence and the same numbers; on Alexa+ the assistant words its own answer, so never promise exact wording to a farmer.
 - Voice-only devices (an Echo Dot class device) get no card. The spoken answer must be complete on its own and must never refer to a screen. Offer at most 5 options.
 - Where a card exists, the tool declares it in `_meta.ui.resourceUri`. A tap on a card calls the same tool as voice and gives the same answer.
+- The operator's demo clock (recordings only) shifts follow-up and briefing dates only; flock ages, record-book entries and the sale plan do not move, so never present it as time passing for the flock.
 
 ## Errors
 
