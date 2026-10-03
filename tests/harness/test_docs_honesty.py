@@ -93,3 +93,10 @@ def test_the_demo_clock_file_has_one_name_in_code_readme_and_design():
     name = load_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_DEMO_DAYS_LATER": "3"}).demo_clock_state_path.name
     assert name == f"{DEFAULT_STATE_PATH.stem}{DEMO_CLOCK_STATE_SUFFIX}.sqlite3" == "clucktalk_demo_clock.sqlite3"
     assert f".local/{name}" in README and f".local/{name}" in DESIGN
+
+
+def test_the_same_day_spike_limit_is_stated_in_the_readme_and_design():
+    for name, text in (("README", README), ("DESIGN", DESIGN)):
+        flat = _flat(text)
+        assert "after a same-day vet handoff is not caught by the follow-up" in flat, name
+        assert "birds died yesterday" in flat, name

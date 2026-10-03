@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-10-01T20:53:05+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
+Run 2026-10-03T20:52:25+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -57,5 +57,7 @@ Run 2026-10-01T20:53:05+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | followup-not-sure-after-a-handoff-and-a-newer-check-still-says-contact-the-vet | PASS | — |
 | followup-urgent-stays-visible-after-a-newer-lower-check | PASS | — |
 | followup-urgent-check-this-morning-stays-after-a-lower-check-this-afternoon | PASS | — |
+| followup-spike-logged-after-the-check-the-same-day-overrides-better | PASS | — |
+| followup-spike-already-in-the-check-is-not-news | PASS | — |
 
-**Score: 53/53**
+**Score: 55/55**

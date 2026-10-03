@@ -59,7 +59,9 @@ mode (real Bedrock/Polly) needs an AWS account; see `docs/AWS_SETUP.md`.
   reportable disease gets the report-and-isolate steps. The vet summary is a **simulated SMS** to a demo contact.
 - **Follow-up** (`report_health_follow_up`): days after a flagged check the next briefing or farm status asks how the shed
   is now. "Same", "worse" and "not sure" always end with "To be safe, contact your vet or doctor." Nothing is pushed;
-  CluckTalk only speaks when the farmer asks.
+  CluckTalk only speaks when the farmer asks. A death spike logged after the check counts as "worse", including one
+  logged on the check's own day after the check; one logged after a same-day vet handoff is not caught by the follow-up
+  (the briefing's separate "N birds died yesterday" item still shows it).
 - **What can you do?** (`get_help`).
 - A local **Alexa+ Simulator** (Echo Show / Echo Dot device modes, voice and text, a developer panel showing the
   exact MCP wire).

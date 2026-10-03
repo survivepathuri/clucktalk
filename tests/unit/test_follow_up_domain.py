@@ -333,11 +333,68 @@ def test_a_spike_with_no_answer_yet_is_already_an_escalation():
     assert fup.state is S.ESCALATED and fup.outcome is O.WORSE and fup.reasons == (EscalationReason.RECORD_BOOK_SPIKE,)
 
 
-def test_a_spike_on_the_day_of_the_check_or_before_it_is_not_news():
+def _check_that_saw(check: HealthCheck, *, latest_day: date | None, deaths: int | None, spike: bool) -> HealthCheck:
+    """``check`` as if its stored input had captured the record book's latest count (day, deaths, spike flag)."""
+    seen = replace(
+        check.input,
+        latest_record_day=latest_day.isoformat() if latest_day else None,
+        deaths_latest=deaths,
+        mortality_spike=spike,
+    )
+    return replace(check, input=seen)
+
+
+# Step 47B part C (review finding H2, approved option 1): the old test was one test with two cases. Its old
+# meaning is kept here for the cases where the check had already SEEN the spike (or the spike is older than the
+# check); the new case, where the check-day record shows more deaths than the check stored, is the next test.
+def test_a_spike_before_the_check_or_one_the_check_already_saw_is_not_news():
     check = _check(Urgency.WATCH)
-    for spike_day in (CHECK_DAY, CHECK_DAY - timedelta(days=3)):
-        fup = _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=4), spike_day=spike_day)
-        assert fup.state is S.CLOSED and fup.spike_day is None
+    fup = _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=4),
+                 spike_day=CHECK_DAY - timedelta(days=3))  # fmt: skip
+    assert fup.state is S.CLOSED and fup.spike_day is None
+    saw = _check_that_saw(check, latest_day=CHECK_DAY, deaths=400, spike=True)
+    fup = _state(saw, [_answer(saw, O.BETTER)], today=CHECK_DAY + timedelta(days=4), spike_day=CHECK_DAY)
+    assert fup.state is S.CLOSED and fup.spike_day is None
+
+
+def test_a_check_day_spike_the_stored_input_did_not_contain_is_news():
+    """The check stored fewer deaths (2) than the check-day record now has (400): it was logged after the check."""
+    check = _check(Urgency.WATCH)
+    assert check.input.latest_record_day == CHECK_DAY.isoformat() and check.input.deaths_latest == 2
+    fup = _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=4), spike_day=CHECK_DAY)
+    assert fup.state is S.ESCALATED and fup.spike_day == CHECK_DAY
+    assert fup.reasons == (EscalationReason.RECORD_BOOK_SPIKE,) and fup.outcome is O.WORSE
+
+
+def test_a_check_day_spike_is_news_when_the_check_saw_no_count_that_day_or_none_at_all():
+    check = _check(Urgency.WATCH)
+    for latest_day, deaths in ((CHECK_DAY - timedelta(days=1), 2), (None, None), (CHECK_DAY, None)):
+        c = _check_that_saw(check, latest_day=latest_day, deaths=deaths, spike=False)
+        fup = _state(c, [_answer(c, O.BETTER)], today=CHECK_DAY + timedelta(days=4), spike_day=CHECK_DAY)
+        assert fup.state is S.ESCALATED and fup.spike_day == CHECK_DAY, (latest_day, deaths)
+
+
+def test_a_check_day_count_equal_to_or_lower_than_the_stored_one_is_not_news():
+    check = _check(Urgency.WATCH)
+    for deaths in (400, 900):
+        c = _check_that_saw(check, latest_day=CHECK_DAY, deaths=deaths, spike=True)
+        fup = _state(c, [_answer(c, O.BETTER)], today=CHECK_DAY + timedelta(days=4), spike_day=CHECK_DAY)
+        assert fup.state is S.CLOSED, deaths
+
+
+def test_a_check_day_spike_does_not_count_when_there_is_no_spike_in_the_record_book():
+    check = _check(Urgency.WATCH)
+    fup = _state(check, [_answer(check, O.BETTER)], today=CHECK_DAY + timedelta(days=4))
+    assert fup.state is S.CLOSED and fup.spike_day is None
+
+
+def test_a_check_day_spike_after_a_same_day_vet_handoff_is_the_documented_limit():
+    """Not caught by the follow-up (the separate "N birds died yesterday" briefing item still shows it)."""
+    check = _check(Urgency.URGENT)
+    sent_at = check.created_at + timedelta(hours=1)
+    house = _house(CHECK_DAY)
+    fup = follow_up_state(check, (), {check.check_id: sent_at}, house, CHECK_DAY + timedelta(days=1))
+    assert fup.spike_day is None and EscalationReason.RECORD_BOOK_SPIKE not in fup.reasons
 
 
 def test_a_spike_after_today_does_not_exist_yet():
@@ -667,7 +724,8 @@ def test_the_follow_up_sees_a_spike_exactly_when_the_status_finding_does():
 
 
 def test_only_days_after_the_check_and_up_to_today_count():
-    check = _check(Urgency.WATCH)
+    # the check stored the check-day count with the spike in it (H2: otherwise that day is news, see above)
+    check = _check_that_saw(_check(Urgency.WATCH), latest_day=CHECK_DAY, deaths=400, spike=True)
     for spike_day, today, seen in [
         (CHECK_DAY - timedelta(days=1), TODAY, False),
         (CHECK_DAY, TODAY, False),  # the day of the check: it is what the check was about

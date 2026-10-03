@@ -251,7 +251,7 @@ against a freshly started mock-mode server, checked against literal field values
 (`scripts/eval_fast.py`). Writes `docs/EVALS.md` with a real pass/fail count; never fakes a score (Rule 6).
 v0 covers a handful of read-only, single-call cases (farm status, feed reorder, and `plan_sale`'s before /
 at / after break-even and rising-mortality stories); contract-mode's multi-step confirmation flow is covered by
-the contract test suite instead, since this runner is single-call by design. The suite has 53 cases
+the contract test suite instead, since this runner is single-call by design. The suite has 55 cases
 (the table in `docs/EVALS.md` is the count; a harness test keeps this number equal to it). Multi-step cases (`steps`, `save`,
 `poll_until`) and model-fixture cases (`model_fixture`, `tests/fakes.py`) came with the agents (§18); a case marked
 `fresh_state` runs on a server of its own, so its answer cannot depend on what earlier cases changed.
@@ -388,6 +388,13 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     "better" recorded as not better) ends with that line, in the read-back and after the "yes", even after a vet handoff
     and even when a newer check of equal or higher urgency exists; "Done." alone is never spoken for it** (review
     finding H4).
+  - **A spike logged on the day of the check** counts when the check did not already know it (review finding H2,
+    approved 2026-10-03, no schema change): the check stores the latest count it saw (`latest_record_day`,
+    `deaths_latest`), and the check-day record is news when the check saw no count for that day or fewer deaths than
+    the record has now. A spike the check already contained, and any spike before the check day, is not news.
+    **Remaining limit:** a spike logged after a same-day vet handoff is not caught by the follow-up (the handoff
+    ends what came before it, and a same-day record cannot be told apart from the handoff's own day); the separate
+    "N birds died yesterday" briefing item still shows it.
   - **A vet handoff ends what came before it, not what comes after it.** After a handoff for a check the follow-up shows
     as handled until something new is said or logged. A "worse", "same" or "not sure" given AFTER the handoff (or a death
     spike on a day after it) escalates again; a "better" after it is accepted and only closes. An answer at the very

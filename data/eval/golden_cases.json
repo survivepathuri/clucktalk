@@ -3609,6 +3609,171 @@
           ]
         }
       ]
+    },
+    {
+      "id": "followup-spike-logged-after-the-check-the-same-day-overrides-better",
+      "description": "A death spike logged on the day of the check, after the check, is news: 'better' the next days is recorded as worse (review finding H2).",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            }
+          ]
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed one",
+            "deaths": 600
+          },
+          "save": {
+            "log_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            }
+          ]
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed one",
+            "deaths": 600,
+            "proposal_id": "$log_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "demo_days_later": 3,
+          "tool": "report_health_follow_up",
+          "args": {
+            "house": "shed one",
+            "outcome": "better"
+          },
+          "save": {
+            "proposal_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "recorded_as",
+              "op": "eq",
+              "value": "worse"
+            },
+            {
+              "field": "record_book_worse",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "escalated",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "followup-spike-already-in-the-check-is-not-news",
+      "description": "The spike was logged before the check and the check saw it: it is not new, so a later 'better' is not turned into worse by it.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed one",
+            "deaths": 600
+          },
+          "save": {
+            "log_id": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            }
+          ]
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed one",
+            "deaths": 600,
+            "proposal_id": "$log_id",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "tool": "start_health_check",
+          "args": {
+            "house": "shed one",
+            "signs": [
+              "coughing"
+            ]
+          },
+          "save": {
+            "check_id": "check_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "analyzing"
+            }
+          ]
+        },
+        {
+          "demo_days_later": 2,
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed one"
+          },
+          "checks": [
+            {
+              "field": "houses.0.follow_up.state",
+              "op": "eq",
+              "value": "due"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

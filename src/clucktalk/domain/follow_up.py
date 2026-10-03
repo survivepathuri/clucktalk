@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from enum import StrEnum
 
-from clucktalk.domain.models import House
+from clucktalk.domain.models import DailyRecord, House
 from clucktalk.domain.proposals import PROPOSAL_ID_PATTERN
 from clucktalk.domain.status import spike_finding
 from clucktalk.domain.triage import CheckStatus, HealthCheck, Urgency
@@ -182,10 +182,25 @@ def answerable(check: HealthCheck, today: date) -> bool:
     return today > check.created_at.date()
 
 
-def _latest_spike_after(house: House, check_day: date, today: date) -> date | None:
+def _check_day_record_is_news(check: HealthCheck, rec: DailyRecord) -> bool:
+    """Is the record of the CHECK's own day something the check did not know? The check stores the latest count it saw
+    (``latest_record_day``, ``deaths_latest``). The record is news when the check saw no count for that day, or saw
+    fewer deaths than the record has now: it was logged, or raised, after the check (review finding H2)."""
+    seen = check.input
+    if seen.latest_record_day != rec.day.isoformat() or seen.deaths_latest is None:
+        return True
+    return rec.deaths > seen.deaths_latest
+
+
+def _latest_spike_after(house: House, check: HealthCheck, today: date) -> date | None:
+    """The latest day after the check with a death spike; the check's own day counts only if it is news. A spike on
+    an earlier day is not news. (After a same-day vet handoff the day is not counted: see ``follow_up_state``.)"""
+    check_day = check.created_at.date()
     records = house.records_until(today)
     for rec in reversed(records):
-        if rec.day <= check_day:
+        if rec.day < check_day:
+            break
+        if rec.day == check_day and not _check_day_record_is_news(check, rec):
             break
         if spike_finding(house, records, rec) is not None:
             return rec.day
@@ -226,7 +241,7 @@ def follow_up_state(
         return FollowUp(FollowUpState.NONE, check.check_id, urgency, None, None, (), None, handed, check_day)
     due_day = check_day + timedelta(days=wait)
 
-    spike_day = _latest_spike_after(house, check_day, today)
+    spike_day = _latest_spike_after(house, check, today)
     sent_at = handed_off.get(check.check_id) if isinstance(handed_off, Mapping) else None
     if handed:
         # What can escalate now: only what came after the handoff. With no send time known, nothing did.
