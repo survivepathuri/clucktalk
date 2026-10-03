@@ -1,147 +1,183 @@
 # Friction log: submission copy (short)
 
-Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm manager for Indian poultry farmers. Highest severity first. Origin: Amazon (Alexa+ docs, AWS, Bedrock), MCP Apps SDK (the MCP Apps spec and reference host) or third-party MCP SDK (Python `mcp` SDK, MCP spec, MCP Inspector). The full version is `DEVPOST_FRICTION_PASTE.md`.
+Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm manager for Indian poultry farmers. Amazon-owned entries first (Entries 1 to 5 are the ones Amazon's teams most need), then MCP and MCP Apps entries that matter to Alexa+ developers, then the least Amazon-related. Severity is one word, rated for the owner of the criticised tool. The FL number is the stable id used in `FRICTION_LOG.md`; the full version is `DEVPOST_FRICTION_PASTE.md`.
 
 
-## FL-014: New-account Bedrock access has three hidden gates
-**Origin:** Amazon · **Severity:** High
-**What happened:** Bedrock reported our models AVAILABLE and AUTHORIZED, but every inference quota was 0 (Nova Lite on-demand requests per minute: default 2,000, account 0). Support then enabled "reduced quotas" without numbers; Haiku 4.5 still lacked a Marketplace agreement, and the first Nova 2 Lite call was denied: "Your account is currently being verified."
-**Workaround:** Compare quotas per model with the CLI, check agreementAvailability, wait out verification; demo mode stayed the working path.
-**Suggestion:** Show quota and verification status in GetFoundationModelAvailability.
-**Why this matters to Alexa+ developers:** A new account can look ready and still be refused on the first real call; no read-only check shows the verification gate.
+## Entry 1 (FL-014): New-account Bedrock access has three hidden gates
+**Tag:** [AWS/Bedrock/Nova] · **Origin:** Amazon · **Severity:** High
+**Task:** Make the first live Bedrock call on a new account.
+**Steps:** Checked availability and quotas with the CLI, opened two Support cases, then called Nova 2 Lite.
+**Expected vs actual:** Models showed AVAILABLE and AUTHORIZED, but every inference quota was 0, Support's reply gave no numbers, and the call failed with an "account is being verified" error that no read-only check shows.
+**Workaround:** Compare quotas per model, wait out verification, keep demo mode.
+**Suggestion:** Bedrock team: return quota and verification status in GetFoundationModelAvailability; Support replies should state the new quotas.
+**Reproduce:** Commands in docs/AWS_SETUP.md §5; new account only.
 
 
-## FL-024: Alexa AI CLI / Local Inspector has no self-serve path (documentation-based, blocked at the prerequisite, no install was attempted)
-**Origin:** Amazon · **Severity:** High for participants
-**What happened:** The hackathon Resources page does not mention the CLI. The Alexa+ setup page says to use the AWS account provided to an Alexa Solutions Architect, assume a role in an Amazon-owned account and install from a private registry. Prerequisites list macOS or Ubuntu only (we use Windows 11); the Local Inspector guide sits behind a Developer Console login.
-**Workaround:** Used the MCP Inspector, the ext-apps basic-host and our own Simulator.
-**Suggestion:** Give participants an access path or publish the Local Inspector, and state Windows support.
-**Why this matters to Alexa+ developers:** Participants have no documented self-serve path to the official validation tool.
+## Entry 2 (FL-024): Alexa AI CLI / Local Inspector has no self-serve path
+**Tag:** [Alexa+/MCP] · **Origin:** Amazon · **Severity:** High
+**Task:** Set up the Alexa AI CLI / Local Inspector as a hackathon participant.
+**Steps:** Read the hackathon Resources page and the Alexa+ setup page.
+**Expected vs actual:** Expected a self-serve path. The setup asks for an AWS account provided by an Alexa Solutions Architect, lists macOS and Ubuntu only, and keeps the Local Inspector guide behind a Developer Console login.
+**Workaround:** MCP Inspector, ext-apps basic-host and our own Simulator.
+**Suggestion:** Alexa+ docs team and organizers: name a participant access path or publish the Local Inspector guide, and state Windows support.
+**Reproduce:** Documentation-based, no command.
 
 
-## FL-001: Middleware results leak resultType onto the 2025-11-25 wire
-**Origin:** third-party MCP SDK · **Severity:** Medium
-**What happened:** A server middleware returned a CallToolResult for a 2025-11-25 client. The response contained "resultType":"complete", a 2026-07-28 field, because the SDK never reshapes a middleware result (mcp 2.2.0).
-**Workaround:** Dump the model ourselves with exclude={"result_type"}; a contract test guards it.
-**Suggestion:** Run middleware results through the per-version serializer, or document that they are not version-shaped.
-**Why this matters to Alexa+ developers:** A customer-safe error returned from middleware carries a 2026-07-28 field unless the server strips it.
+## Entry 3 (FL-009): Alexa+ docs give no MCP Apps container size, messages, CSP or fonts
+**Tag:** [Alexa+/MCP] · **Origin:** Amazon · **Severity:** Medium
+**Task:** Size the farm-status card for Echo Show and phone.
+**Steps:** Read four Alexa+ pages, searched developer.amazon.com, fell back to APL device docs.
+**Expected vs actual:** Expected an MCP Apps rendering profile. The docs state support but give no container size, supported ui/* messages, CSP or font availability.
+**Workaround:** Responsive card tested at four sizes; tap-to-call is optional.
+**Suggestion:** Alexa+ docs team: publish an "MCP Apps on Alexa+" page with size per device class, supported ui/* requests, CSP, Indic font policy, and whether card-initiated tools/call is allowed.
+**Reproduce:** Documentation-based, no command.
 
 
-## FL-002: Default tool error text includes the tool name and validation details
-**Origin:** third-party MCP SDK · **Severity:** Medium
-**What happened:** Alexa+ guidance says tool errors are customer-safe. In mcp 2.2.0 an unexpected exception becomes "Error executing tool <name>" and argument-validation failures return pydantic text with field names, as isError content a voice host may read aloud. No option changes this.
-**Workaround:** A tools/call middleware validates arguments itself and replaces non-contract errors with a bilingual safe message.
-**Suggestion:** Add a tool_error_formatter hook to MCPServer.
-**Why this matters to Alexa+ developers:** The SDK default puts the tool name and validation details in error text that a voice host may read aloud.
+## Entry 4 (FL-017): Alexa+ docs: proactive notifications and household identity for MCP add-ons
+**Tag:** [Alexa+/MCP] · **Origin:** Amazon · **Severity:** Medium
+**Task:** Plan an owner-and-worker flow with alerts to the owner.
+**Steps:** Read the ProactiveNotificationSource page, MCP Toolkit overview and account-linking page.
+**Expected vs actual:** Expected an MCP way to push a notification, or how a request identifies a household member. Proactive notifications are documented only for smart-home add-ons; household members are not mentioned.
+**Workaround:** Pull-only alerts; one linked account per person.
+**Suggestion:** Alexa+ docs team: add clear answers on MCP proactive notifications and identity fields to the Overview and Account Linking pages.
+**Reproduce:** Documentation-based, no command.
 
 
-## FL-004: Unclear whether outputSchema applies to isError results
-**Origin:** third-party MCP SDK · **Severity:** Medium
-**What happened:** The Python SDK client skips output validation when isError is true, but Inspector 2.8.0 validated the error's structuredContent against the success schema and rejected it. The spec says servers MUST provide conforming structured results and is silent about errors.
-**Workaround:** Errors carry no structuredContent; bilingual details go in _meta.
-**Suggestion:** State in the Tools spec whether outputSchema constrains isError results.
-**Why this matters to Alexa+ developers:** The SDK client and the Inspector disagree, so a structured error can be rejected by one and accepted by the other.
+## Entry 5 (FL-013): AWS India account: plan not shown, credit rules scattered
+**Tag:** [AWS account/credits] · **Origin:** Amazon · **Severity:** Medium
+**Task:** Confirm the plan, and Claude-on-Bedrock and credit rules, for a new AWS India account.
+**Steps:** Checked four Billing pages; read the AWS India differences and Anthropic articles.
+**Expected vs actual:** Expected the console to show the plan as the docs say; it shows none, and no page says whether credits cover Marketplace-billed Bedrock models.
+**Workaround:** aws freetier get-account-plan-state; Pay by Invoice; Nova as fallback.
+**Suggestion:** Billing and AWS India docs teams: show the plan on Billing home (or say why not); answer the credits question.
+**Reproduce:** Documentation-based, no command.
 
 
-## FL-007: MCP Apps default CSP has no font-src; fall-through of a blocked font source is undocumented
-**Origin:** MCP Apps SDK · **Severity:** Medium
-**What happened:** The spec default has no font-src, so even an inlined data: font is blocked; the reference host allows it. No doc says whether a CSP-blocked @font-face source falls through; a Chrome 153 test showed it does. Other engines and the Alexa+ renderer are untested.
-**Workaround:** Inline the font, list an https copy second, fall back to system fonts, log a warning.
-**Suggestion:** Add font-src 'self' data: to the default CSP and document how to ship non-Latin fonts.
-**Why this matters to Alexa+ developers:** A bundled Telugu font may silently be lost on a strict host; Alexa+ font availability is not published.
+## Entry 6 (FL-012): New-account CLI setup silently depends on the account plan
+**Tag:** [AWS account/credits] · **Origin:** Amazon · **Severity:** Medium
+**Task:** Plan a least-privilege CLI identity and Bedrock use on a new account.
+**Steps:** Read the CLI, Identity Center, Billing plan and Bedrock model-access pages.
+**Expected vs actual:** Expected one page for a new Free-plan account. The recommended setup upgrades the plan through AWS Organizations, which no setup page says; no page says if Anthropic models work on Free.
+**Workaround:** Check the plan first, choose Paid knowingly, verify with a real call.
+**Suggestion:** CLI, Identity Center and Billing teams: add a "new account" note and a table of Bedrock providers usable on Free.
+**Reproduce:** Documentation-based, no command.
 
 
-## FL-009: Alexa+ docs give no MCP Apps card size, ui/* methods, CSP or fonts
-**Origin:** Amazon · **Severity:** Medium
-**What happened:** The Alexa+ pages state MCP Apps support and the under 500 ms latency requirement, but give no container size, display modes, supported MCP Apps messages, CSP or font availability (Telugu included). Device sizes had to come from APL docs, which describe skills, not add-on cards.
-**Workaround:** A responsive card, checked at 1024x600, 960x600, 960x480 and a 390x844 phone in our Simulator.
-**Suggestion:** Publish an "MCP Apps on Alexa+" page with container sizes, supported requests, CSP and font policy.
-**Why this matters to Alexa+ developers:** Card sizes and fonts cannot be designed from the Alexa+ docs.
+## Entry 7 (FL-019): AWS CLI on Windows truncates a redirected Converse reply
+**Tag:** [AWS/Bedrock/Nova] · **Origin:** Amazon · **Severity:** Medium
+**Task:** Save a Bedrock Converse reply to a file on Windows.
+**Steps:** Ran converse with --output json redirected to result.json.
+**Expected vs actual:** The call succeeded, but the CLI crashed on an emoji (charmap codec error) and left a 149-byte truncated file.
+**Workaround:** PYTHONIOENCODING=utf-8 PYTHONUTF8=1.
+**Suggestion:** AWS CLI team: default to UTF-8 for redirected output on Windows; write a temp file and rename on success.
+**Reproduce:** The Steps command on Windows; needs a reply with an emoji.
 
 
-## FL-012: New-account setup: the recommended CLI identity depends on the account plan
-**Origin:** Amazon · **Severity:** Medium
-**What happened:** The CLI guide recommends IAM Identity Center; only an organization instance gives single sign-on, and the Billing page says Free plans upgrade to a paid plan if you join AWS Organizations. No setup page says so, and no page states whether Anthropic models on Bedrock work on a Free plan.
-**Workaround:** Check the plan first, choose the Paid plan knowingly with budget alerts, verify Bedrock with a real call.
-**Suggestion:** Add a new-account note to the getting-started pages and a Free-plan table for Bedrock providers.
-**Why this matters to Alexa+ developers:** Following the recommended CLI setup can change a new account's plan.
+## Entry 8 (FL-015): Billing CLI error does not name the setting
+**Tag:** [AWS account/credits] · **Origin:** Amazon · **Severity:** Low
+**Task:** Read credits with a least-privilege SSO role.
+**Steps:** Ran aws billing get-credits with a role that allows billing:GetCredits.
+**Expected vs actual:** Expected credits, or an error naming the setting. Got "IAM user access not activated" for a non-IAM-user caller.
+**Workaround:** Read credits in the console as root.
+**Suggestion:** AWS Billing team: name "IAM user and role access to Billing information" and where the root user enables it, in the error text.
+**Reproduce:** aws billing get-credits --account-id <id> --start-date <epoch> --profile <sso profile>.
 
 
-## FL-013: AWS India (AISPL) account: plan not shown in the console; credit rules missing
-**Origin:** Amazon · **Severity:** Medium
-**What happened:** The Billing docs say the console home shows the plan, but none of the pages we checked did; credits showed ($120 active). The Marketplace card problem is only in the Bedrock-Anthropic article. No page says whether promotional credits apply to Marketplace-billed Bedrock models.
-**Workaround:** Check the plan with aws freetier get-account-plan-state, set Pay by Invoice early, keep Amazon Nova as a fallback.
-**Suggestion:** Show the plan on the Billing home for every account; document credits versus Marketplace-billed models.
-**Why this matters to Alexa+ developers:** A new AWS India account cannot confirm its plan or credit rules from the docs.
+## Entry 9 (FL-020): Nova 2 Lite image read: blue half called white
+**Tag:** [AWS/Bedrock/Nova] · **Origin:** Amazon · **Severity:** Low
+**Task:** Check that Nova 2 Lite takes an image with a forced tool call.
+**Steps:** Two paid calls: text only, then a 64x64 two-colour PNG.
+**Expected vs actual:** Forced tool use worked with the image, but the blue half was read as white (one sample, an observation).
+**Workaround:** Photo findings may only add signs; real photos tested before any claim.
+**Suggestion:** Bedrock docs team: state the recommended image resolution for Nova 2 Lite and which models support toolChoice "tool".
+**Reproduce:** Documentation-based, no command (parameters in docs/AWS_SETUP.md §5.3).
 
 
-## FL-017: Alexa+ docs do not say whether MCP add-ons can send proactive notifications or identify household members
-**Origin:** Amazon · **Severity:** Medium
-**What happened:** Alexa.ProactiveNotificationSource is documented only for Smart Home add-ons; neither it nor the MCP Toolkit overview says whether an MCP add-on can trigger it. The account-linking page says only that Alexa includes the access token in every request; it does not say whether any field tells household members apart.
-**Workaround:** Pull-based alerts only; worker attribution through separately linked accounts.
-**Suggestion:** Publish whether MCP add-ons can use proactive notifications and which identity fields exist.
-**Why this matters to Alexa+ developers:** Features that depend on push or per-person identity cannot be designed from the docs.
+## Entry 10 (FL-007): MCP Apps default CSP blocks even inlined fonts
+**Tag:** [MCP Apps] · **Origin:** MCP Apps SDK · **Severity:** Medium
+**Task:** Bundle a Telugu font in a card under the MCP Apps default CSP.
+**Steps:** Read the spec CSP and the reference host; built a strict-CSP mode; probed in Chrome.
+**Expected vs actual:** The default CSP has no font-src, so data: fonts are blocked; the reference host allows them; the spec is silent on fall-through (Chrome falls through).
+**Workaround:** Inline font, system-font fallback, and a warning message.
+**Suggestion:** ext-apps spec maintainers: add font-src 'self' data: or a fonts field. Question to the Alexa+ team: does its renderer apply the default CSP literally?
+**Reproduce:** font_probe.py in docs/evidence/2026-09-28_strict_csp/.
 
 
-## FL-019: AWS CLI on Windows truncates a Bedrock response file when the reply has an emoji
-**Origin:** Amazon · **Severity:** Medium
-**What happened:** Redirecting aws bedrock-runtime converse output to a file failed with 'charmap' codec can't encode character '\U0001f414'. The call succeeded, but the file was left truncated at 149 bytes with no marker, and the usage counts were lost.
-**Workaround:** Re-ran with PYTHONIOENCODING=utf-8 PYTHONUTF8=1.
-**Suggestion:** Default to UTF-8 for redirected output on Windows and avoid leaving partial files.
-**Why this matters to Alexa+ developers:** On Windows a Bedrock response can be silently truncated when the model's reply contains an emoji.
+## Entry 11 (FL-002): Default tool errors name the tool and validation fields
+**Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Medium
+**Task:** Return customer-safe tool errors for a voice host.
+**Steps:** Read the SDK's tool error handling.
+**Expected vs actual:** Expected a hook. Errors carry "Error executing tool <name>" or pydantic field text that a voice host may read aloud.
+**Workaround:** A middleware validates arguments and replaces errors.
+**Suggestion:** MCP Python SDK maintainers: add MCPServer(tool_error_formatter=...).
+**Reproduce:** Documentation-based, no command.
 
 
-## FL-003: Localhost default Origin allow-list accepts every localhost port
-**Origin:** third-party MCP SDK · **Severity:** Low
-**What happened:** For a localhost host, mcp 2.2.0 auto-allows http://127.0.0.1:*, http://localhost:* and http://[::1]:*, so a page from any local port passes the Origin check.
-**Workaround:** Pass explicit TransportSecuritySettings with our own host:port; a contract test guards it.
-**Suggestion:** Default to the bound port or document the wildcard.
-**Why this matters to Alexa+ developers:** On a local MCP server any local page passes the default Origin check.
+## Entry 12 (FL-004): Does outputSchema apply to isError results?
+**Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Medium
+**Task:** Return a structured error from a tool with an outputSchema.
+**Steps:** Called an unknown shed through the Python SDK client and the Inspector CLI.
+**Expected vs actual:** The SDK client skips validation on isError; Inspector 2.8.0 rejected the error against the success schema; the spec is silent.
+**Workaround:** Error results carry no structuredContent.
+**Suggestion:** MCP spec, SDK and Inspector maintainers: state whether outputSchema constrains isError results and align both clients.
+**Reproduce:** Documentation-based, no command.
 
 
-## FL-006: MCP Apps spec example uses clientInfo; the schema requires appInfo
-**Origin:** MCP Apps SDK · **Severity:** Low
-**What happened:** The spec's hand-rolled example sends initialize with clientInfo, while McpUiInitializeRequest is ui/initialize with required appInfo, appCapabilities and protocolVersion.
-**Workaround:** The card follows the types file.
-**Suggestion:** Fix the example and check spec examples against the schema in CI.
-**Why this matters to Alexa+ developers:** A card written from the spec example would be rejected by a validating host.
+## Entry 13 (FL-001): Middleware results leak resultType onto the 2025-11-25 wire
+**Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Medium
+**Task:** Return a safe result from a server middleware.
+**Steps:** Returned a CallToolResult at protocol 2025-11-25 and called it with curl.
+**Expected vs actual:** Expected the normal wire shape. The response carried resultType, a 2026-07-28 field, because middleware results are never reshaped.
+**Workaround:** Dump the model without result_type; a contract test guards it.
+**Suggestion:** MCP Python SDK maintainers: run middleware results through the per-version serializer, or document it.
+**Reproduce:** pytest tests\contract\test_tools.py::test_no_2026_fields_on_the_2025_11_25_wire
 
 
-## FL-008: The SDK drops the server's capabilities.extensions on a 2025-11-25 connection
-**Origin:** third-party MCP SDK · **Severity:** Low
-**What happened:** mcp 2.2.0 reads the client's io.modelcontextprotocol/ui extension but the 2025-11-25 ServerCapabilities model has no extensions field, so the initialize result cannot declare the Apps extension. Tool _meta.ui.resourceUri and the card resource work.
-**Workaround:** None needed for hosts that discover cards through the tool meta; contract tests pin the shape.
-**Suggestion:** Document which protocol versions carry server extensions, or pass them under experimental.
-**Why this matters to Alexa+ developers:** Hosts must discover cards through the tool's _meta.ui.resourceUri.
+## Entry 14 (FL-008): SDK drops the server's extensions capability on 2025-11-25
+**Tag:** [MCP Apps] · **Origin:** third-party MCP SDK · **Severity:** Low
+**Task:** Serve the card through the SDK's Apps extension on 2025-11-25.
+**Steps:** Probed initialize, tools/list and resources over HTTP.
+**Expected vs actual:** Expected capabilities.extensions in initialize. The 2025-11-25 model has no such field, though tool meta and resources work.
+**Workaround:** None needed; hosts find cards through tool _meta.
+**Suggestion:** MCP Python SDK maintainers: document which versions carry extensions, or pass it through experimental.
+**Reproduce:** Documentation-based, no command (probe not saved).
 
 
-## FL-011: Two in-flight requests with the same JSON-RPC id: one is never answered
-**Origin:** third-party MCP SDK · **Severity:** Low
-**What happened:** Five concurrent tools/call POSTs on one session with the same id: only 1-2 got a response; the rest hung for 10 s with no server log line. The SDK stores each response stream by id without checking for an in-flight request. With distinct ids all five answered in 13-29 ms.
-**Workaround:** Give every concurrent request its own id.
-**Suggestion:** Reject a duplicate in-flight id with a JSON-RPC error.
-**Why this matters to Alexa+ developers:** A retrying host that reuses an id can leave requests unanswered silently.
+## Entry 15 (FL-003): Localhost Origin allow-list accepts every port
+**Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Low
+**Task:** Validate Origin on the local server.
+**Steps:** Read streamable_http_app.
+**Expected vs actual:** Expected only the server's own origin. The default allows any localhost port.
+**Workaround:** Explicit allow-list plus a contract test.
+**Suggestion:** MCP Python SDK maintainers: default to the bound port, or document the wildcard.
+**Reproduce:** pytest tests\contract\test_transport.py::test_other_localhost_port_origin_is_403
 
 
-## FL-015: billing get-credits says "IAM user access not activated" to an Identity Center role
-**Origin:** Amazon · **Severity:** Low
-**What happened:** aws billing get-credits with a least-privilege SSO role returned AccessDeniedException ... IAM user access not activated. The caller is not an IAM user; the needed setting is "IAM user and role access to Billing information" (root only), which the message does not name.
-**Workaround:** Read credits in the Billing console as root.
-**Suggestion:** Name the setting and where to turn it on in the error.
-**Why this matters to Alexa+ developers:** The error names the wrong cause for a role.
+## Entry 16 (FL-006): MCP Apps spec example disagrees with its schema
+**Tag:** [MCP Apps] · **Origin:** MCP Apps SDK · **Severity:** Low
+**Task:** Write a card against the documented postMessage protocol.
+**Steps:** Followed the spec example and checked spec.types.ts.
+**Expected vs actual:** The example sends initialize with clientInfo; the schema wants ui/initialize with appInfo.
+**Workaround:** Followed the types file.
+**Suggestion:** ext-apps spec maintainers: fix the example and check spec examples against the schema in CI.
+**Reproduce:** Documentation-based, no command.
 
 
-## FL-020: Nova 2 Lite: image input with forced tool call works, but one colour was misread
-**Origin:** Amazon · **Severity:** Low
-**What happened:** Before building photo triage we tested Nova 2 Lite with a forced toolChoice and a synthetic 64x64 image (left red, right blue). It returned a well-formed toolUse with right: white. One sample, so an observation, not a benchmark. botocore documents toolChoice only as "If supported by model".
-**Workaround:** Photo findings may only add signs, never lower urgency.
-**Suggestion:** Document recommended image resolution and which models support the tool choice.
-**Why this matters to Alexa+ developers:** Image input and forced tool use work, but the docs do not say which models support them.
+## Entry 17 (FL-011): Duplicate in-flight JSON-RPC id hangs silently
+**Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Low
+**Task:** Test that a repeated confirmation applies once.
+**Steps:** Sent 5 concurrent tools/call requests with the same JSON-RPC id.
+**Expected vs actual:** Expected answers or a duplicate-id error. Only 1 to 2 of 5 got a response; the rest hung.
+**Workaround:** Distinct ids in the test client.
+**Suggestion:** MCP Python SDK maintainers: reject an in-flight duplicate id with -32600 and log it.
+**Reproduce:** Documentation-based, no command (scratch test; cause in streamable_http.py line 645).
 
 
-## FL-021: ext-apps basic-host cannot be built from its README
-**Origin:** MCP Apps SDK · **Severity:** Low
-**What happened:** npm ci --ignore-scripts then npm run build failed with Cannot find module '@modelcontextprotocol/ext-apps' (TS2307): the dependency is a workspace link to the repo root, which must be built first and needs bun, whose package refuses to run under --ignore-scripts. The README mentions none of this. Cost about 20 minutes.
-**Workaround:** Run only bun's install.js, build the root, then the host.
-**Suggestion:** State the root build and bun requirement, or ship a prebuilt host.
-**Why this matters to Alexa+ developers:** It slows testing a card in the reference host.
+## Entry 18 (FL-021): basic-host cannot be built from its README
+**Tag:** [MCP Apps] · **Origin:** MCP Apps SDK · **Severity:** Low
+**Task:** Build the reference basic-host to test our cards.
+**Steps:** Ran npm ci --ignore-scripts, then npm run build in examples/basic-host.
+**Expected vs actual:** The README says npm install and start; the build failed because the repo root must be built first and bun is needed.
+**Workaround:** Run bun's install script, build the root, then the host (about 20 minutes).
+**Suggestion:** ext-apps maintainers: update the basic-host README or ship a prebuilt host.
+**Reproduce:** Commands in docs/evidence/2026-10-01_basic_host/README.md.
