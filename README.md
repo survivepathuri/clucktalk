@@ -83,6 +83,28 @@ mode refuses it) and no tool can set it. It uses a **separate state file** next 
 (`.local/clucktalk_demo_clock.sqlite3`, marked as a demo-clock file) and never the live farm state; a demo-clock file
 is refused without the clock, and `python tasks.py reset-demo` clears both files.
 
+## See three days later in 3 commands
+
+For a recording of how the follow-up asks about a shed days after a health check (mock mode, venv only, no AWS):
+
+```
+python tasks.py demo-three-days
+python tasks.py serve --demo-days-later 3
+python tasks.py reset-demo
+```
+
+1. `demo-three-days` builds the separate demo-clock state file by making real MCP calls: a watch check on shed one and an
+   urgent check on shed two on day 0, and the "worse" answer for shed two on day 1. It refuses live mode, never opens the
+   live farm state, and refuses to overwrite an existing demo-clock file.
+2. `serve --demo-days-later 3` serves that file with "today" three days later. Open it in the ext-apps basic-host
+   (`SERVERS=["http://127.0.0.1:8765/mcp"]`, `CLUCKTALK_ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080`;
+   see `docs/evidence/2026-10-01_basic_host/README.md`) at `http://localhost:8080/` and call `get_daily_briefing` and
+   `get_farm_status`.
+3. `reset-demo` clears both state files, so the story can start again.
+
+The honest scope is the one above: follow-up and briefing dates only; flock ages, record-book entries and the sale plan
+do not move.
+
 ## Roadmap
 
 - **Layer farming.** The domain layer already models egg-laying flocks (status, feed planning), but the current

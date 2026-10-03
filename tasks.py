@@ -7,6 +7,7 @@ Windows (cmd); on Linux/macOS use python3 instead of python:
     python tasks.py serve       Start only the MCP server (demo data, http://127.0.0.1:8765/mcp)
     python tasks.py run         Start the local demo (Simulator + MCP server, mock mode)
     python tasks.py serve --demo-days-later 3   (also for run) demo clock: "today" is 3 days later; demo mode only
+    python tasks.py demo-three-days   Build the demo-clock state for the "three days later" recording (demo mode only)
     python tasks.py reset-demo  Delete the local farm state and the demo-clock state (.local/), so the demo starts fresh
 
 Every step prints PASS / FAIL / SKIP, and the run exits non-zero if any step fails.
@@ -202,6 +203,13 @@ def eval_fast() -> int:
     return _run([VENV_PY, "-B", ROOT / "scripts" / "eval_fast.py"])
 
 
+def demo_three_days() -> int:
+    """Build the demo-clock state file by making the Session 4 MCP calls (scripts/demo_three_days.py)."""
+    _require_venv()
+    env = _demo_env("demo-three-days")
+    return subprocess.call([str(VENV_PY), "-B", str(ROOT / "scripts" / "demo_three_days.py")], cwd=ROOT, env=env)
+
+
 def _wait_for_port(port: int, proc: subprocess.Popen, seconds: float = 20) -> bool:
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
@@ -299,6 +307,7 @@ COMMANDS = {
     "serve": serve,
     "eval-fast": eval_fast,
     "run": run,
+    "demo-three-days": demo_three_days,
     "reset-demo": reset_demo,
 }
 

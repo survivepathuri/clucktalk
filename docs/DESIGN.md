@@ -437,7 +437,7 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     `<live stem>_demo_clock.sqlite3`, by default `.local/clucktalk_demo_clock.sqlite3`, created fresh and marked in its `meta` table), never the live file: the live
     file is not opened while the clock is on (a test hashes it before and after), a demo-clock file is refused without
     the clock and a live file is refused with it, both with a clear error and nothing written, and `python tasks.py
-    reset-demo` clears both files. No record is ever invented. **Honest scope: it shifts follow-up and briefing dates
+    reset-demo` clears both files. `python tasks.py demo-three-days` (scripts/demo_three_days.py) builds that file for the "three days later" recording by making real MCP calls over HTTP (day 0 clock: a watch check on shed one, an urgent check on shed two; day 1 clock: the "worse" answer on shed two), refuses live mode and an existing demo-clock file, and prints the serve command at +3 and the basic-host URLs. No record is ever invented. **Honest scope: it shifts follow-up and briefing dates
     only.** The seeded farm is rebuilt for the shifted date, so flock ages, the record-book entries and the sale plan do
     not move, and the video must not present it as time passing for the flock. It is **never an MCP tool** (a test checks that no
     tool name or argument looks like it, and that sending such an argument changes nothing), is **refused in live mode**
