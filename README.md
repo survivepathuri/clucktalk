@@ -114,7 +114,7 @@ For a recording of how the follow-up asks about a shed days after a health check
 ```
 python tasks.py demo-three-days
 python tasks.py serve --demo-days-later 3
-python tasks.py reset-demo
+python tasks.py reset-demo --yes
 ```
 
 1. `demo-three-days` builds the separate demo-clock state file by making real MCP calls: a watch check on shed one and an
@@ -124,7 +124,9 @@ python tasks.py reset-demo
    (`SERVERS=["http://127.0.0.1:8765/mcp"]`, `CLUCKTALK_ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080`;
    see `docs/evidence/2026-10-01_basic_host/README.md`) at `http://localhost:8080/` and call `get_daily_briefing` and
    `get_farm_status`.
-3. `reset-demo` clears both state files, so the story can start again.
+3. `reset-demo --yes` clears both state files, so the story can start again.
+
+**`reset-demo` never destroys real data silently.** Run on its own it only lists each state file with its size and record counts and changes nothing; it needs `--yes` to act. The demo-clock file (it holds only shifted demo dates) is deleted; any other state file is moved to a `backups` folder next to it (`.local/backups`) with a timestamp, never deleted, so a farm you entered by hand can be put back by moving the file back.
 
 The honest scope is the one above: follow-up and briefing dates only; flock ages, record-book entries and the sale plan
 do not move.

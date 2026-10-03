@@ -35,7 +35,7 @@ def test_reset_demo_clears_both_files_and_only_those(monkeypatch, tmp_path, caps
     _make(demo, True)
     monkeypatch.setenv("CLUCKTALK_STATE_PATH", str(live))
     monkeypatch.setenv("MOCK_BEDROCK", "true")
-    assert tasks.reset_demo() == 0
+    assert tasks.reset_demo(["--yes"]) == 0
     assert not live.exists() and not demo.exists() and other.exists()
     out = capsys.readouterr().out
     assert str(live) in out and str(demo) in out
@@ -45,14 +45,14 @@ def test_reset_demo_works_when_only_one_of_the_two_exists(monkeypatch, tmp_path)
     live, demo = tmp_path / "farm.sqlite3", tmp_path / "farm_demo_clock.sqlite3"
     _make(demo, True)
     monkeypatch.setenv("CLUCKTALK_STATE_PATH", str(live))
-    assert tasks.reset_demo() == 0 and not demo.exists()
+    assert tasks.reset_demo(["--yes"]) == 0 and not demo.exists()
     _make(live, False)
-    assert tasks.reset_demo() == 0 and not live.exists()
+    assert tasks.reset_demo(["--yes"]) == 0 and not live.exists()
 
 
 def test_reset_demo_with_nothing_to_reset_says_so(monkeypatch, tmp_path, capsys):
     monkeypatch.setenv("CLUCKTALK_STATE_PATH", str(tmp_path / "farm.sqlite3"))
-    assert tasks.reset_demo() == 0
+    assert tasks.reset_demo(["--yes"]) == 0
     assert "nothing to reset" in capsys.readouterr().out
 
 

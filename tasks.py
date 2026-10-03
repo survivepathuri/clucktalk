@@ -9,7 +9,8 @@ Windows (cmd); on Linux/macOS use python3 instead of python:
     python tasks.py serve --demo-days-later 3   (also for run) demo clock: "today" is 3 days later; demo mode only
     python tasks.py demo-three-days   Build the demo-clock state for the "three days later" recording (demo mode only)
     python tasks.py probe-protocol-version   Print which MCP protocol version a temporary server answers with
-    python tasks.py reset-demo  Delete the local farm state and the demo-clock state (.local/), so the demo starts fresh
+    python tasks.py reset-demo --yes   Reset the local farm state (.local/): the live file is MOVED to .local/backups,
+                                       the demo-clock file is deleted. Without --yes it only lists what it would do
 
 Every step prints PASS / FAIL / SKIP, and the run exits non-zero if any step fails.
 A skipped step is always shown with its reason. Nothing is silently skipped (Rule 6).
@@ -269,8 +270,50 @@ def run() -> int:
                     p.kill()
 
 
-def reset_demo() -> int:
-    """Delete the local farm state (profile, proposals, records), so the demo tells its seeded story again."""
+_COUNTED_TABLES = (  # what a farmer may have entered: shown before anything is touched
+    ("records", "daily records"),
+    ("health_checks", "health checks"),
+    ("vet_handoffs", "vet handoffs"),
+    ("proposals", "saved changes"),
+    ("follow_up_answers", "follow-up answers"),
+)
+
+
+def _describe_state_file(path: Path) -> tuple[bool, str]:
+    """(marked as a demo-clock file, a one-line description with the size and the record counts). Read-only: the file
+    is opened with mode=ro, so looking at it can never change it."""
+    import sqlite3
+
+    size = f"{path.stat().st_size} bytes"
+    try:
+        db = sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True)
+        try:
+            marked = db.execute("SELECT 1 FROM meta WHERE key = 'demo_clock'").fetchone() is not None
+            counts = []
+            for table, label in _COUNTED_TABLES:
+                try:
+                    counts.append(f"{db.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0]} {label}")
+                except sqlite3.OperationalError:  # a table this schema version does not have
+                    continue
+        finally:
+            db.close()
+    except sqlite3.DatabaseError:
+        return False, f"{size}, not a readable database"
+    return marked, f"{size}, " + (", ".join(counts) if counts else "no record tables")
+
+
+def reset_demo(args: list[str] | None = None) -> int:
+    """Clear the local farm state so the demo tells its seeded story again, without destroying real data silently.
+
+    Lists every file with its size and record counts first. Without ``--yes`` that is all it does. With ``--yes`` the
+    demo-clock file (marked as such, holds only shifted demo dates) is deleted; any other state file is MOVED to a
+    ``backups`` folder next to it with a timestamp, never deleted. There is no marker for a demo-seeded live file, so
+    every unmarked file is treated as possibly real."""
+    args = [] if args is None else args
+    if args not in ([], ["--yes"]):
+        print("reset-demo: the only option is --yes.", file=sys.stderr)
+        print(__doc__)
+        return 2
     sys.path.insert(0, str(ROOT / "src"))
     from clucktalk.config import ConfigError, load_settings  # stdlib-only module: safe outside the venv
 
@@ -281,22 +324,57 @@ def reset_demo() -> int:
         return 2
     # Both files: the live state and the demo clock's own (config accepts only .sqlite3 files, so nothing else can go).
     paths = (settings.state_path, settings.demo_clock_state_path)
-    targets = [q for p in paths for q in (p, p.with_name(p.name + "-journal")) if q.exists()]
-    if not targets:
+    plan: list[tuple[Path, bool]] = []  # (state file, delete it: it is marked as a demo-clock file)
+    for path in paths:
+        if not path.exists():
+            continue
+        marked, description = _describe_state_file(path)
+        plan.append((path, marked))
+        what = "demo-clock file, will be deleted" if marked else f"will be MOVED to {path.parent / 'backups'}"
+        print(f"reset-demo: {path}: {description} ({what})")
+    if not plan:
         print(f"reset-demo: nothing to reset ({paths[0]} and {paths[1]} do not exist).")
         return 0
-    for target in targets:
-        try:
-            target.unlink()
-        except PermissionError:
-            print(
-                f"reset-demo: {target} is in use. Stop the running demo (Ctrl+C), then run reset-demo again.",
-                file=sys.stderr,
-            )
-            return 1
-        print(f"reset-demo: deleted {target}")
+    if args != ["--yes"]:
+        print(
+            "reset-demo: nothing was changed. Run it again with --yes to do this: python tasks.py reset-demo --yes",
+            file=sys.stderr,
+        )
+        return 2
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    for path, delete in plan:
+        for target in (path, path.with_name(path.name + "-journal")):
+            if not target.exists():
+                continue
+            try:
+                if delete:
+                    target.unlink()
+                    print(f"reset-demo: deleted {target}")
+                else:
+                    kept = _backup_name(target, stamp)
+                    kept.parent.mkdir(exist_ok=True)
+                    target.rename(kept)
+                    print(f"reset-demo: moved {target} to {kept}")
+            except PermissionError:
+                print(
+                    f"reset-demo: {target} is in use. Stop the running demo (Ctrl+C), then run reset-demo again.",
+                    file=sys.stderr,
+                )
+                return 1
     print("reset-demo: done. The next start tells the seeded demo story (independent farm).")
     return 0
+
+
+def _backup_name(target: Path, stamp: str) -> Path:
+    """backups/<name>.<timestamp><suffix>, never an existing file (a second reset in one second gets a counter)."""
+    base = target.parent / "backups"
+    stem, dot, suffix = target.name.partition(".")
+    for n in range(1000):
+        tag = stamp if n == 0 else f"{stamp}-{n}"
+        candidate = base / f"{stem}.{tag}{dot}{suffix}"
+        if not candidate.exists():
+            return candidate
+    raise FileExistsError(f"no free backup name for {target.name} in {base}")
 
 
 def _not_built_yet(command: str) -> int:
@@ -336,6 +414,8 @@ def main() -> int:
         print(__doc__)
         return 2
     extra = sys.argv[2:]
+    if sys.argv[1] == "reset-demo":
+        return reset_demo(extra)
     if extra and not (sys.argv[1] in ("serve", "run") and _demo_days_flag(extra)):
         print(__doc__)
         return 2

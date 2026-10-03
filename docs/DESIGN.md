@@ -174,7 +174,7 @@ Most Indian broiler farms grow birds under contract: the integrator supplies chi
 - Contract mode: no sale planning and no feed purchasing. Feed answers name the bags to ask the supervisor for, with no price (the company supplies feed). `plan_sale` (§16, built) shows FCR and, once terms are saved, the growing charge instead of a market-price recommendation. Sending a **feed request to the supervisor** (propose → "yes" → send; simulated, labeled) is planned.
 - Contract terms (base rate, standard FCR, incentive and deduction rates: four numbers) are entered by the farmer with `set_contract_terms` (**built**: storage only, via the confirmation pattern; the full Contract Earnings Tracker with sensitivity answers is §13.3, planned).
 - Independent mode: `plan_sale` (built, §16) and feed orders with confirmation (order/confirm flow planned).
-- State lives in a local SQLite file behind a `Store` interface (`clucktalk.store`), so a cloud store can replace it; `python tasks.py reset-demo` restores the seeded story.
+- State lives in a local SQLite file behind a `Store` interface (`clucktalk.store`), so a cloud store can replace it; `python tasks.py reset-demo --yes` restores the seeded story (without `--yes` it only lists the files with sizes and record counts; a state file not marked as a demo-clock file is moved to `.local/backups` with a timestamp, never deleted; only the demo-clock file is deleted).
 
 ### 13.2 Voice record book
 - One utterance, all fields (§5 rule 2): deaths, feed used (bags or kg), weight sample, medicine or vaccine given. Farmer vocabulary includes Hinglish (*mar gaye* died, *dana* feed, *bori* bag, *teeka* vaccine, *dawai* medicine).

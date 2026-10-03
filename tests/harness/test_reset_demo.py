@@ -1,4 +1,5 @@
-"""`python tasks.py reset-demo` deletes the local farm state and nothing else (docs/DESIGN.md §13.1)."""
+"""`python tasks.py reset-demo --yes` clears the local farm state and nothing else (docs/DESIGN.md §13.1): the state
+file is moved to backups, the demo-clock file is deleted. test_reset_demo_safety.py covers the safety rules."""
 
 from __future__ import annotations
 
@@ -13,11 +14,15 @@ ROOT = Path(__file__).resolve().parents[2]
 def _reset(state_path: Path) -> subprocess.CompletedProcess:
     env = {**os.environ, "CLUCKTALK_STATE_PATH": str(state_path)}
     return subprocess.run(
-        [sys.executable, "-B", str(ROOT / "tasks.py"), "reset-demo"], capture_output=True, text=True, cwd=ROOT, env=env
+        [sys.executable, "-B", str(ROOT / "tasks.py"), "reset-demo", "--yes"],
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+        env=env,
     )
 
 
-def test_deletes_the_state_file_and_its_journal_only(tmp_path):
+def test_moves_the_state_file_and_its_journal_only(tmp_path):
     state = tmp_path / "clucktalk.sqlite3"
     journal = tmp_path / "clucktalk.sqlite3-journal"
     neighbour = tmp_path / "notes.txt"
@@ -26,7 +31,7 @@ def test_deletes_the_state_file_and_its_journal_only(tmp_path):
     r = _reset(state)
     assert r.returncode == 0, r.stdout + r.stderr
     assert not state.exists() and not journal.exists() and neighbour.exists()
-    assert "deleted" in r.stdout and "done" in r.stdout
+    assert "moved" in r.stdout and "done" in r.stdout  # the unmarked file is moved to backups, never deleted
 
 
 def test_nothing_to_reset_is_not_an_error(tmp_path):

@@ -85,7 +85,7 @@ def test_it_refuses_to_overwrite_an_existing_demo_clock_file(farm, capsys):
 def test_reset_demo_clears_the_file_it_built(farm):
     live, demo_file = farm
     assert demo.main() == 0 and demo_file.exists()
-    assert tasks.reset_demo() == 0
+    assert tasks.reset_demo(["--yes"]) == 0
     assert not demo_file.exists() and not live.exists()
 
 
