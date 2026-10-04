@@ -19,8 +19,9 @@ TAGLINE_EN = "The voice farm manager for India's poultry farmers."
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
-# Local farm state (profile, proposals, records). .local/ is gitignored; `python tasks.py reset-demo` deletes it, and
-# the separate demo-clock file next to it (Settings.demo_clock_state_path).
+# Local farm state (profile, proposals, records). .local/ is gitignored. `python tasks.py reset-demo --yes` moves this
+# file to a backups folder next to it (never deletes it) and deletes only the separate demo-clock file next to it
+# (Settings.demo_clock_state_path).
 DEFAULT_STATE_PATH = REPO_ROOT / ".local" / "clucktalk.sqlite3"
 # The demo clock's own state file is the live file's name plus this suffix (the one place the name is built).
 DEMO_CLOCK_STATE_SUFFIX = "_demo_clock"
@@ -92,7 +93,7 @@ def _parse_port(env: Mapping[str, str], name: str, default: int) -> int:
 
 def _state_path(raw: str) -> Path:
     """A relative path is taken from the repo root, so the server and reset-demo agree whatever the working
-    directory; it must be a .sqlite3 file (reset-demo deletes only such a file)."""
+    directory; it must be a .sqlite3 file (reset-demo touches only such a file: it moves it to backups)."""
     if not raw:
         return DEFAULT_STATE_PATH
     path = Path(raw)

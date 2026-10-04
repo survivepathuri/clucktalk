@@ -341,7 +341,10 @@ def main() -> int:
     print(f"Allowed browser origins: {', '.join(settings.allowed_origins)}")
     if settings.extra_origins:
         print(f"CORS enabled only for: {', '.join(settings.extra_origins)} (CLUCKTALK_ALLOWED_ORIGINS)")
-    print(f"Farm state: {settings.active_state_path} (python tasks.py reset-demo restores the demo story)")
+    print(
+        f"Farm state: {settings.active_state_path} "
+        "(python tasks.py reset-demo --yes starts a fresh demo story; the live file is moved to backups)"
+    )
     if demo_clock is not None:
         print("The live farm state file is not opened while the demo clock is on (a separate demo-clock file is used).")
     uvicorn.run(build_app(settings, server), host=settings.host, port=settings.port, log_level="info")
