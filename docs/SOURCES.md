@@ -81,6 +81,19 @@ These two pages were read by the project owner; the tool that wrote this reposit
 
 The Local Inspector itself was not run (its install guide needs a Developer Console login, FL-024); `inspector-replay` replays the documented flow and is not Amazon's tool.
 
+## Weather forecast: Open-Meteo (read 2026-10-04, Step 50W-B)
+Read directly from https://open-meteo.com/en/docs and https://open-meteo.com/en/terms on 2026-10-04 (a page-reading tool, so the quotes are short and the rest is marked "not stated" or "not verified").
+| Used for | What the page says | Where we use it |
+|---|---|---|
+| The forecast endpoint | The endpoint is `/v1/forecast`; it takes WGS84 `latitude` and `longitude`, hourly variables in `hourly`, `timezone` (default "GMT"; `auto` resolves the coordinates to the local zone) and `forecast_days` (0 to 16, default 7) | `server/weather.py`: `/v1/forecast`, `hourly=temperature_2m`, `timezone=GMT`, `forecast_days=3`. The host name `api.open-meteo.com` is **not verified**: the page text I read gave the path only |
+| The air temperature | "Air temperature at 2 meters above ground" is `temperature_2m` | Only this field is requested |
+| The answer shape | An `hourly` object with a `time` array (ISO 8601, e.g. `2022-07-01T00:00`, no zone suffix) and one array per variable; `hourly_units`; `utc_offset_seconds` ("Applied timezone offset from the &timezone= parameter") | Times are read as UTC because the request says `timezone=GMT`; any other shape is "unavailable" |
+| No API key | An API key is "Only required to commercial use" | None is sent or stored |
+| Free-tier limits | "Less than 10'000 API calls per day", "5'000 per hour", "600 per minute" | A 30 minute in-process cache keeps one farm far below these |
+| Non-commercial only | "You may only use the free API services for non-commercial purposes" (examples include apps with subscriptions or advertising and integration into commercial products); commercial use needs a paid plan | The live adapter is opt-in; a commercial use of CluckTalk would need Open-Meteo's paid plan |
+| Attribution | Users "accept to the CC-BY 4.0 licence"; **the exact attribution wording was not stated in what I read: not verified** | Every weather line names Open-Meteo as the source and says the data is a forecast; the README names the licence |
+Rate limits beyond those above, the host name and the attribution wording: not verified. The forecast is an outdoor value for one point; nothing here is a shed-interior temperature.
+
 ## Device sizes and visual guidance for cards (checked 2026-09-27)
 | Used for | Source | What it supports |
 |---|---|---|
