@@ -9,6 +9,7 @@ Windows (cmd); on Linux/macOS use python3 instead of python:
     python tasks.py serve --demo-days-later 3   (also for run) demo clock: "today" is 3 days later; demo mode only
     python tasks.py demo-three-days   Build the demo-clock state for the "three days later" recording (demo mode only)
     python tasks.py probe-protocol-version   Print which MCP protocol version a temporary server answers with
+    python tasks.py inspector-replay   Replay the documented Local Inspector flow (our replay, not Amazon's tool)
     python tasks.py notices     Write NOTICE: the project license and every pinned dependency's declared license
     python tasks.py reset-demo --yes   Reset the local farm state (.local/): the live file is MOVED to .local/backups,
                                        the demo-clock file is deleted. Without --yes it only lists what it would do
@@ -213,6 +214,12 @@ def demo_three_days() -> int:
     _require_venv()
     env = _demo_env("demo-three-days")
     return subprocess.call([str(VENV_PY), "-B", str(ROOT / "scripts" / "demo_three_days.py")], cwd=ROOT, env=env)
+
+
+def inspector_replay() -> int:
+    """OUR replay of the flow documented on Amazon's Local Inspector page (not Amazon's tool; it was not run)."""
+    _require_venv()
+    return subprocess.call([str(VENV_PY), "-B", str(ROOT / "scripts" / "inspector_replay.py")], cwd=ROOT)
 
 
 def probe_protocol_version() -> int:
@@ -512,6 +519,7 @@ COMMANDS = {
     "run": run,
     "demo-three-days": demo_three_days,
     "probe-protocol-version": probe_protocol_version,
+    "inspector-replay": inspector_replay,
     "reset-demo": reset_demo,
     "notices": notices,
 }
