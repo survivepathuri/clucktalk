@@ -73,7 +73,7 @@ Questions 2, 4 and 5 are opinions or measurements that nothing in the repo recor
 
 ## 8. Python tooling: ruff 0.16.9, pytest 9.1.1, hypothesis 6.168.3; Node.js (optional card test)
 
-1. **Used for:** lint and format (`ruff`), the harness, unit and contract tests (`pytest`), property-based and fuzz tests (`hypothesis`, a dev dependency only, license MPL-2.0 as its package metadata states it), all run by `python tasks.py check`; `python tasks.py notices` writes `NOTICE` from the installed package metadata (name, version and the license each package declares, for every pin in the two requirements files; a harness test fails if a pin is missing; run on Windows only so far); Node.js only for the card number-format test, which is skipped when Node is missing.
+1. **Used for:** lint and format (`ruff`), the harness, unit and contract tests (`pytest`), property-based and fuzz tests (`hypothesis`, a dev dependency only, license MPL-2.0 as its package metadata states it), all run by `python tasks.py check`; `python tasks.py notices` writes `NOTICE` from the installed package metadata (name, version and the license each package declares, for every pin in the two requirements files; a harness test checks it against the installed packages on every CI operating system and fails if a pin is missing or changed; the committed file was generated on Windows); Node.js only for the card number-format test, which is skipped when Node is missing.
 2. What worked: TODO
 3. What needs work: TODO
 4. Onboarding, zero to hello world: TODO

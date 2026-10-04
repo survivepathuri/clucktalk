@@ -53,6 +53,10 @@ seeded, clearly fictional data in mock mode.
 - **The cards were tested at sizes of 10 inches and below only**; nothing was tested at 11 inches and above.
 - **The sale-window hint** (`plan_sale`'s "best day to sell is within 3 days", simulated) shows on the daily briefing
   only. It never raises a shed's health status or its safety level.
+- **`NOTICE` (third-party licenses)** was generated on Windows by `python tasks.py notices` from the installed package
+  metadata. It is checked against the installed packages on every operating system the CI runs on (ubuntu and
+  windows), by a test: a missing or changed package fails it, and only a package its platform marker excludes (pywin32 on Linux)
+  may be listed there as not installed.
 - **Latency numbers are localhost, mock mode, no model call.** A network, a remote host and a real model add to them.
 - **No agronomic or veterinary review.** Thresholds and the reference curve are cited in `docs/SOURCES.md`; they were not validated with a vet or a farmer, and no tool gives a medicine or a dose.
 - **Odd behaviours of the MCP SDK and of our shed-name reader** are listed under "Known SDK behaviors" below.
