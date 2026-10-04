@@ -68,7 +68,7 @@ this repository, not that Alexa+ has seen it.
 
 | Claim | Status | Evidence |
 |---|---|---|
-| The server implements MCP 2025-11-25 over Streamable HTTP (and negotiates three older versions, with no floor) | VERIFIED | `tests/contract/test_protocol_conformance.py`; `python tasks.py probe-protocol-version` |
+| The server implements MCP 2025-11-25 over Streamable HTTP (and negotiates three older versions, with no floor) | VERIFIED | `tests/contract/test_protocol_conformance.py`; the probe table in `python tasks.py verify` |
 | The documented Local Inspector flow (JSON-only `Accept`, protocolVersion 2025-06-18) works against the server | VERIFIED (our replay, not Amazon's tool) | `python tasks.py inspector-replay`; `tests/harness/test_inspector_replay.py` |
 | Every tool answers well under 500 ms at p95 on localhost, mock mode | VERIFIED (localhost only) | `python tasks.py inspector-replay`; `python tasks.py readiness` |
 | The locally checkable Alexa+ requirements we encoded are met | VERIFIED (our checklist, not an Amazon verdict) | `python tasks.py readiness`; `docs/ALEXA_READINESS.md` |
