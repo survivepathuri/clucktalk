@@ -9,6 +9,8 @@ Only real experiences. Never batched, never invented.
 
 Every entry uses the six official fields (task attempted, steps taken, expected vs actual, severity, workaround, actionable suggestion) plus date, tag, `Time cost:` (only what was recorded in the sessions, otherwise "not recorded"), `Reproduce:` (a real command or the exact test name, otherwise "documentation-based, no command") and `Evidence:` (only files that exist in this repo). Every suggestion names the owner, the page or mechanism and the concrete change; open points are phrased as questions to the owner.
 
+**Counts:** 26 FL numbers (FL-001 to FL-026): 23 live entries (19 in this file, 4 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
+
 **FL numbers are stable ids.** They are never reused or renumbered, so every reference in the code, the docs and the submission copies stays valid. FL-010, FL-016 and FL-018 were merged into FL-007 and FL-014 (2026-10-01 audit); their numbers remain as short stubs.
 
 Audit of 2026-10-01: three pairs of entries that describe one problem were merged; the merged entry keeps the lowest number and says "merged from". Every FL number below stays valid. Submission copies: `docs/DEVPOST_FRICTION_PASTE.md` (full) and `docs/DEVPOST_FRICTION_PASTE_SHORT.md`.
@@ -30,6 +32,7 @@ Audit of 2026-10-01: three pairs of entries that describe one problem were merge
 | FL-021 | [MCP Apps] | this file |
 | FL-022, FL-023, FL-025 | [Dev] | `docs/DEV_NOTES.md` (FL-022 includes its recurrence note) |
 | FL-024 | [Alexa+/MCP] | this file |
+| FL-026 | [Alexa+/MCP] | this file |
 
 ---
 
@@ -340,3 +343,20 @@ Evidence: none in the repo (documentation-based).
 
 ### FL-025: A card bundle built on Windows from a CRLF template differed from the Linux and CI build, and the local check could not see it
 Moved to `docs/DEV_NOTES.md` ([Dev], CI). The number stays valid.
+
+
+### FL-026: Alexa+ docs do not state which MCP protocolVersion Alexa+ sends or requires, and the Local Inspector example uses a different one than the track asks for
+Date: 2026-10-04
+Tool / service: Alexa+ developer documentation: Alexa+ MCP QuickStart (section "MCP requirements for Alexa+", last updated Jul 10, 2026) and Alexa+ Add-on Local Inspector (step "Initialize the MCP session", last updated Aug 3, 2026); our server on MCP Python SDK 2.2.0
+Tag: [Alexa+/MCP]
+Task attempted: Connect an MCP server to Alexa+ following the documentation and decide which MCP protocolVersion to implement.
+Steps taken: Read the QuickStart page (section "MCP requirements for Alexa+") and the Local Inspector page (step "Initialize the MCP session"); both were read by the project owner. Compared them with what our own server answers.
+Expected vs actual: Expected the docs to state which protocolVersion Alexa+ and the Local Inspector send or require. Actual: the QuickStart names the 2025-11-25 specification only as the version that deprecated the standalone HTTP+SSE transport and states no minimum protocolVersion; the Local Inspector example initialize request sends protocolVersion 2025-06-18 with clientInfo name addon-local-inspector. (The hackathon track rules, read separately, ask for 2025-11-25 or later.)
+Severity: Low
+Impact: A builder cannot tell which version Alexa+ negotiates, or whether a server should refuse older versions.
+Workaround: Our server implements 2025-11-25 and answers older versions with the version the client asked for. `python tasks.py probe-protocol-version` prints OUR server's answers and `python tasks.py inspector-replay` replays the documented flow; neither shows Amazon's behavior.
+Actionable suggestion: Owner: Alexa+ MCP Toolkit documentation team. State the minimum and the negotiated protocolVersion on the QuickStart page, say whether servers should accept or refuse older versions, and align the Local Inspector example with that statement.
+Time cost: not recorded
+Reproduce: documentation-based, no command (plus `python tasks.py probe-protocol-version` and `python tasks.py inspector-replay` for our own server only).
+Evidence: `docs/SOURCES.md` (both pages); `tests/contract/test_protocol_conformance.py`; `scripts/probe_protocol_version.py`; `scripts/inspector_replay.py`.
+See also: FR-008 (the related distributionCountries question).

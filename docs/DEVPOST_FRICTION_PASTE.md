@@ -236,7 +236,34 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 **Why this matters to Alexa+ developers:** Nova 2 Lite took image input with a forced tool call, but misread a colour in one small test, and the Converse docs do not say which models support forced tool choice.
 
 
-## Entry 10 (FL-007): MCP Apps default CSP has no `font-src`, so even an inlined (data:) font is blocked; the reference host allows it; the spec does not say whether a CSP-blocked `@font-face` source falls through
+## Entry 10 (FL-026): Alexa+ docs do not state which MCP protocolVersion Alexa+ sends or requires, and the Local Inspector example uses a different one than the track asks for
+
+**Origin:** Amazon · **Tag:** [Alexa+/MCP] · **Severity:** Low · **Date:** 2026-10-04
+
+**Impact:** A builder cannot tell which version Alexa+ negotiates, or whether a server should refuse older versions.
+
+**Tool / service:** Alexa+ developer documentation: Alexa+ MCP QuickStart (section "MCP requirements for Alexa+", last updated Jul 10, 2026) and Alexa+ Add-on Local Inspector (step "Initialize the MCP session", last updated Aug 3, 2026); our server on MCP Python SDK 2.2.0
+
+**Task attempted:** Connect an MCP server to Alexa+ following the documentation and decide which MCP protocolVersion to implement.
+
+**Steps taken:** Read the QuickStart page (section "MCP requirements for Alexa+") and the Local Inspector page (step "Initialize the MCP session"); both were read by the project owner. Compared them with what our own server answers.
+
+**Expected vs actual:** Expected the docs to state which protocolVersion Alexa+ and the Local Inspector send or require. Actual: the QuickStart names the 2025-11-25 specification only as the version that deprecated the standalone HTTP+SSE transport and states no minimum protocolVersion; the Local Inspector example initialize request sends protocolVersion 2025-06-18 with clientInfo name addon-local-inspector. (The hackathon track rules, read separately, ask for 2025-11-25 or later.)
+
+**Workaround:** Our server implements 2025-11-25 and answers older versions with the version the client asked for. `python tasks.py probe-protocol-version` prints OUR server's answers and `python tasks.py inspector-replay` replays the documented flow; neither shows Amazon's behavior.
+
+**Actionable suggestion:** Owner: Alexa+ MCP Toolkit documentation team. State the minimum and the negotiated protocolVersion on the QuickStart page, say whether servers should accept or refuse older versions, and align the Local Inspector example with that statement.
+
+**Time cost:** not recorded
+
+**Reproduce:** documentation-based, no command (plus `python tasks.py probe-protocol-version` and `python tasks.py inspector-replay` for our own server only).
+
+**Evidence in the repo:** `docs/SOURCES.md` (both pages); `tests/contract/test_protocol_conformance.py`; `scripts/probe_protocol_version.py`; `scripts/inspector_replay.py`.
+
+**Why this matters to Alexa+ developers:** The docs give a builder no protocolVersion to implement or to refuse, and the Local Inspector example uses a different one than the hackathon track asks for, so a builder cannot tell which one to follow.
+
+
+## Entry 11 (FL-007): MCP Apps default CSP has no `font-src`, so even an inlined (data:) font is blocked; the reference host allows it; the spec does not say whether a CSP-blocked `@font-face` source falls through
 
 **Origin:** MCP Apps SDK · **Tag:** [MCP Apps] · **Severity:** Medium · **Date:** 2026-09-27
 
@@ -265,7 +292,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** A card that bundles a Telugu font works on the reference host but may silently lose it on a host that applies the spec's default CSP, and Alexa+ font availability is not published (FL-009).
 
 
-## Entry 11 (FL-002): Default tool error text includes the tool name and validation details
+## Entry 12 (FL-002): Default tool error text includes the tool name and validation details
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-27
 
@@ -290,7 +317,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** Alexa+ guidance says tool errors must be customer-safe, but the SDK default puts the tool name and validation details in error text that a voice host may read aloud.
 
 
-## Entry 12 (FL-004): Unclear whether `outputSchema` applies to `isError` results; SDK and Inspector disagree
+## Entry 13 (FL-004): Unclear whether `outputSchema` applies to `isError` results; SDK and Inspector disagree
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-27
 
@@ -315,7 +342,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** The SDK client and the Inspector disagree on whether an error result must match the tool's output schema, so a structured error can be rejected by one and accepted by the other.
 
 
-## Entry 13 (FL-001): Middleware results skip per-version shaping, so `resultType` leaks onto the 2025-11-25 wire
+## Entry 14 (FL-001): Middleware results skip per-version shaping, so `resultType` leaks onto the 2025-11-25 wire
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-27
 
@@ -340,7 +367,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** A customer-safe error returned from server middleware carries a 2026-07-28 field onto the 2025-11-25 wire unless the server strips it itself.
 
 
-## Entry 14 (FL-008): On a 2025-11-25 connection, SDK 2.2.0 drops the server's `capabilities.extensions`, so the Apps extension is invisible in `initialize`
+## Entry 15 (FL-008): On a 2025-11-25 connection, SDK 2.2.0 drops the server's `capabilities.extensions`, so the Apps extension is invisible in `initialize`
 
 **Origin:** third-party MCP SDK · **Tag:** [MCP Apps] · **Severity:** Low · **Date:** 2026-09-27
 
@@ -365,7 +392,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** On a 2025-11-25 connection a server cannot declare the Apps extension in its initialize result; hosts must discover cards through the tool's _meta.ui.resourceUri.
 
 
-## Entry 15 (FL-003): Localhost default Origin allow-list accepts every localhost port
+## Entry 16 (FL-003): Localhost default Origin allow-list accepts every localhost port
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Low · **Date:** 2026-09-27
 
@@ -390,7 +417,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** On a local MCP server, a page served from any local port passes the SDK's default Origin check.
 
 
-## Entry 16 (FL-006): MCP Apps spec example sends `clientInfo` in `ui/initialize`, but the schema requires `appInfo`
+## Entry 17 (FL-006): MCP Apps spec example sends `clientInfo` in `ui/initialize`, but the schema requires `appInfo`
 
 **Origin:** MCP Apps SDK · **Tag:** [MCP Apps] · **Severity:** Low · **Date:** 2026-09-27
 
@@ -413,7 +440,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** A card written from the spec's own example would be rejected by a host that validates against the schema.
 
 
-## Entry 17 (FL-011): Two in-flight requests with the same JSON-RPC id on one session: the SDK silently never answers one
+## Entry 18 (FL-011): Two in-flight requests with the same JSON-RPC id on one session: the SDK silently never answers one
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-28
 
@@ -440,7 +467,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** A retrying host that reuses a JSON-RPC id on one session can leave requests unanswered with no server log line.
 
 
-## Entry 18 (FL-021): ext-apps basic-host cannot be built with `npm ci --ignore-scripts`: it needs the unbuilt repo root, bun, and bun's postinstall
+## Entry 19 (FL-021): ext-apps basic-host cannot be built with `npm ci --ignore-scripts`: it needs the unbuilt repo root, bun, and bun's postinstall
 
 **Origin:** MCP Apps SDK · **Tag:** [MCP Apps] · **Severity:** Low · **Date:** 2026-10-01
 

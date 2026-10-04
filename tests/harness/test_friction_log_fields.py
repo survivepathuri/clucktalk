@@ -96,3 +96,80 @@ def test_the_template_in_the_log_names_the_same_fields():
     )
     for field in REQUIRED:
         assert f"{field}:" in template, field
+
+
+# -- Step 49b part C: FL-026, FR-008, the counts and the Devpost copies -----------------------------------------------
+def _fl_numbers(text: str, pattern: str) -> list[str]:
+    return re.findall(pattern, text)
+
+
+def test_the_header_counts_equal_the_entries_found():
+    log = (ROOT / "FRICTION_LOG.md").read_text(encoding="utf-8")
+    m = re.search(r"\*\*Counts:\*\* (\d+) FL numbers .*?: (\d+) live entries \((\d+) in this file, (\d+) in", log)
+    assert m, "the log header states the counts"
+    numbers, live, here, dev = (int(x) for x in m.groups())
+    found = [fl for _, fl, _ in ENTRIES]
+    assert numbers == len(set(found)) == 26
+    assert live == len(LIVE) == here + dev
+    assert here == len([1 for n, _, _ in LIVE if n == "FRICTION_LOG.md"]) and dev == len(
+        [1 for n, _, _ in LIVE if n == "docs/DEV_NOTES.md"]
+    )
+
+
+def test_fl_026_is_a_low_severity_alexa_docs_entry_that_says_what_it_does_not_show():
+    body = next(b for _, fl, b in LIVE if fl == "FL-026")
+    fields = _fields(body)
+    assert fields["Severity"] == "Low" and fields["Tag"] == "[Alexa+/MCP]" and fields["Date"] == "2026-10-04"
+    assert "2025-06-18" in fields["Expected vs actual"] and "addon-local-inspector" in fields["Expected vs actual"]
+    assert "2025-11-25" in fields["Expected vs actual"] and "no minimum protocolVersion" in fields["Expected vs actual"]
+    assert "neither shows Amazon's behavior" in fields["Workaround"]
+    assert fields["Time cost"] == "not recorded" and fields["Reproduce"].startswith("documentation-based, no command")
+    assert "Alexa+ MCP Toolkit documentation team" in fields["Actionable suggestion"]
+    for path in re.findall(r"`([^`]+\.(?:md|py))`", fields["Evidence"]):
+        assert (ROOT / path.split(" ")[0]).exists(), path
+
+
+def test_fr_008_is_a_nice_to_have_question_tied_to_fl_026():
+    text = (ROOT / "FEATURE_REQUESTS.md").read_text(encoding="utf-8")
+    block = text.split("### FR-008:")[1].split("\n### ")[0]
+    assert "Priority: Nice-to-have" in block and "Related friction-log entry: FL-026" in block
+    assert "distributionCountries" in block and "a question, not a claim" in block and "IN" in block
+    assert "Alexa+ MCP Toolkit documentation team" in block
+
+
+PASTES = ("docs/DEVPOST_FRICTION_PASTE.md", "docs/DEVPOST_FRICTION_PASTE_SHORT.md")
+
+
+@pytest.mark.parametrize("name", PASTES)
+def test_each_devpost_copy_has_every_live_non_dev_entry_once_in_numbered_order(name):
+    text = (ROOT / name).read_text(encoding="utf-8")
+    headings = re.findall(r"(?m)^## Entry (\d+) \((FL-\d{3})\)", text)
+    assert [int(n) for n, _ in headings] == list(range(1, len(headings) + 1))
+    expected = {fl for n, fl, _ in LIVE if n == "FRICTION_LOG.md"}
+    assert sorted(fl for _, fl in headings) == sorted(expected)
+
+
+@pytest.mark.parametrize("name", PASTES)
+def test_fl_026_is_entry_10_right_after_fl_020_and_the_priority_five_stay_on_top(name):
+    text = (ROOT / name).read_text(encoding="utf-8")
+    order = [fl for _, fl in re.findall(r"(?m)^## Entry (\d+) \((FL-\d{3})\)", text)]
+    assert order[:5] == ["FL-014", "FL-024", "FL-009", "FL-017", "FL-013"]
+    assert order[order.index("FL-020") + 1] == "FL-026" and order.index("FL-026") == 9
+
+
+def test_every_short_entry_is_under_120_words():
+    text = (ROOT / PASTES[1]).read_text(encoding="utf-8")
+    entries = re.split(r"(?m)^## Entry ", text)[1:]
+    assert len(entries) >= 19
+    for entry in entries:
+        assert len(entry.split()) < 120, entry.splitlines()[0]
+
+
+def test_fl_026_agrees_across_the_log_and_both_copies():
+    log = next(b for _, fl, b in LIVE if fl == "FL-026")
+    for name in PASTES:
+        text = (ROOT / name).read_text(encoding="utf-8")
+        entry = text.split("(FL-026)")[1].split("\n## Entry ")[0]
+        assert "Severity:** Low" in entry and "[Alexa+/MCP]" in entry and "Origin:** Amazon" in entry
+        assert "2025-06-18" in entry and "2025-11-25" in entry
+    assert "Severity: Low" in log

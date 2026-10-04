@@ -78,3 +78,11 @@ Priority: Nice-to-have
 Problem it solves (who, when): The Billing docs say the console home shows the plan (Free or Paid), but on our AWS India account it did not, so we had to find the plan with a CLI call after login. Choosing between plans decides what the recommended CLI setup does to a new account, so a new builder wants to see it. A workaround exists (`aws freetier get-account-plan-state`).
 Related friction-log entry: FL-013 (also FL-012)
 Proposed behavior: Show the account plan and an upgrade option on the Billing home for every account, or document why it is absent for AISPL accounts.
+
+### FR-008: Document which distributionCountries values an MCP add-on may use
+Date: 2026-10-04
+Product / service: Alexa+ MCP Toolkit documentation (QuickStart, addon.json schema reference)
+Priority: Nice-to-have
+Problem it solves (who, when): A builder for farmers in India reads an addon.json example whose distributionCountries lists only US, and cannot tell from the docs whether other countries such as IN are supported for MCP add-ons. This is a question, not a claim that they are or are not.
+Related friction-log entry: FL-026
+Proposed behavior: List the distributionCountries values an MCP add-on may use (and any per-country requirements) on the QuickStart page next to the addon.json example. Owner: the Alexa+ MCP Toolkit documentation team.
