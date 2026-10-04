@@ -77,6 +77,9 @@ this repository, not that Alexa+ has seen it.
 | Spoken numbers equal card numbers (in the Simulator) | VERIFIED | `tests/crossmodal.py`; `tests/contract/test_card.py`; `docs/evidence/2026-09-27_card_and_simulator.md` |
 | `reset-demo` never destroys real data silently | VERIFIED | `tests/harness/test_reset_demo_safety.py` |
 | The golden eval suite passes in mock mode | VERIFIED (mock mode, no AWS) | `python tasks.py eval-fast`; `docs/EVALS.md` |
+| Weather reminders come only from the farmer's own rules file, never change a level, the safety field or the vet advice, and leave every answer byte-identical when the file is absent | VERIFIED | `tests/unit/test_property_weather_isolation.py`; `tests/contract/test_weather_display.py` |
+| The weather lines in the demo (the forecast and the example rules) | SIMULATED | `tests/unit/test_weather_server.py`; `docs/weather_rules.example.json` |
+| Weather from the live Open-Meteo service | UNVERIFIED (tested only with a fake transport, not run against the real service) | `tests/unit/test_weather_server.py`; `docs/SOURCES.md` |
 | The server runs on an Alexa+ device, or passes Amazon's review | UNVERIFIED | none; see "Known limitations" |
 | The Local Inspector itself accepts the server | UNVERIFIED | none; `FRICTION_LOG.md` FL-024 |
 | Telugu wording is natural and correct | UNVERIFIED | `docs/TELUGU_REVIEW.md` (pending native review) |
@@ -178,6 +181,53 @@ Things the MCP Python SDK (`mcp` 2.2.0) or our shed-name reader does that you mi
 - **The shed-name reader ignores symbols and non-Latin words.** It keeps only plain letters and digits, so `shed -1` and `🐔 1` both mean shed 1. It never maps a name to a different shed, and a name with two different numbers is refused. This is our own reader, not the SDK's. (`..._finding_f4`.)
 - **Two overlapping requests with the same JSON-RPC id in one session leave one unanswered.** One request can stay unanswered for at least 40 seconds, or, on some runs, is answered at once with a 500 "Session terminated before the request completed" (the SDK's own message). The protocol requires unique ids, so this is a client mistake, but nothing tells the client. The session and the other requests keep working. This is friction entry FL-011. (`tests/contract/test_concurrency.py`.)
 - **Session limits are the SDK defaults, which we do not change:** at most 10,000 sessions at once, and a session nobody ends is closed after 30 minutes without a request.
+
+## Weather reminders
+
+**What it is.** If you write your own outdoor-temperature rules in a small file, the daily briefing and the farm status
+add one reminder line per rule that an hourly outdoor forecast matches. A rule says: "when the lowest or the highest
+forecast temperature over the next N hours is below (or above) the number you set, show your own note". The number, the
+hours ahead and the note are yours, and the note is shown exactly as you wrote it. The repository ships only
+`docs/weather_rules.example.json` with two example rules (below 20 and above 30, with placeholder notes): they are
+examples, never defaults, and never used unless you point at the file. The example settings (the lowest or the highest value
+over 12 hours) are example settings until the farmer answers the questions below. The reported rule (cover the curtains
+below 20 degrees outside; spray a little water lightly above 30 degrees outside, with the curtains covered) was relayed by the
+builder and not yet confirmed by the farmer.
+
+**What it is not.** It gives no advice: the line states the forecast and shows your note, nothing more. It is not a
+temperature inside the shed: a forecast is an outdoor value for one point (your farm's latitude and longitude, which you
+write in the file). The farmer's target of 20 to 30 degrees on average inside the shed for the whole cycle is not stored or
+compared with anything, and nothing in the code claims a shed-interior value. It is not real-time: the data is an hourly
+forecast, and each line says when it was fetched. There is no push: a line appears only when you ask for the briefing or the
+status. The rules are set in a config file now; entering them by voice is a roadmap item (it needs a new tool). The feature
+never changes a shed's health status, safety level, reason codes, vet advice or any card level (a property test checks it),
+and it adds no tool and no card.
+
+**Default: off.** The feature is off unless the rules file exists. With no file, nothing is built, nothing is asked of any weather service, no network call
+is possible, and every answer is byte-identical to what it was before (`tests/contract/test_weather_display.py` compares
+against a recorded baseline). The farm status then has no `weather_reminders` key.
+
+**Demo** (Windows cmd; simulated forecast, no network):
+
+```
+set CLUCKTALK_WEATHER_RULES_PATH=docs\weather_rules.example.json
+python tasks.py serve
+```
+
+Then ask for the farm status or the briefing. The simulated forecast is a fixed daily curve from 16 to 33 degrees, so
+the lines appear when it crosses the example numbers within the next 12 hours (that depends on the hour of day). They are
+labelled Demo data and Simulated, and the farm status lists them in its separate `weather_reminders` field.
+
+**Live forecast (opt-in).** `CLUCKTALK_WEATHER_LIVE=true` (and the rules file) turns on one adapter for
+Open-Meteo: hourly `temperature_2m` only, no API key, a timeout of at most 3 seconds, a 30 minute cache that records when the
+data was fetched, and a plain "no weather reminder" sentence when the forecast cannot be fetched. Open-Meteo's free service is
+for non-commercial use only and asks for attribution under CC-BY 4.0; every weather line names its source (details and what
+is not verified: `docs/SOURCES.md`). The adapter is tested only with a fake transport and has not been run against the real
+service. If you ever use CluckTalk commercially, that needs Open-Meteo's paid plan.
+
+**Questions the farmer must answer (we do not guess).** Does "below 20" mean the night minimum or the moment? How many hours
+ahead? What time of day? Is 20 to 30 degrees inside the shed or outside? Is it a daily average or at all times? Does it change
+with the age of the birds?
 
 ## Demo clock (for recordings only)
 
