@@ -40,3 +40,26 @@ HELP_NOTHING_YET = Text(
     en="My farm tools are still being set up, so right now I can only explain what I do.",
     te="నా ఫారం సేవలు ఇంకా సిద్ధమవుతున్నాయి, కాబట్టి ప్రస్తుతం నేను ఏమి చేస్తానో మాత్రమే చెప్పగలను.",
 )
+
+# Weather reminders (Step 50W-B). Forecast lines for the farmer's own outdoor-temperature rules. The Telugu below is a
+# DRAFT awaiting native review (it is pending in docs/TELUGU_REVIEW.md). {source}: "Open-Meteo", or the existing
+# "Simulated" label; {time}: when the forecast was fetched; the farmer's own note is inserted exactly as he wrote it.
+WEATHER_LINE = Text(
+    en=(
+        "Forecast (hourly, outdoors at your farm's location, source: {source}; not real-time; fetched at {time}): "
+        "{stat} is {value} degrees, {comparator} the number you set ({threshold})."
+    ),
+    te=(
+        "అంచనా (గంటవారీ, మీ ఫారం ప్రాంతంలో బయట, మూలం: {source}; ప్రస్తుత కొలత కాదు; {time} కి తెచ్చినది): "
+        "{stat} {value} డిగ్రీలు, మీరు పెట్టిన సంఖ్య ({threshold}) కంటే {comparator}."
+    ),
+)
+WEATHER_LOWEST = Text(en="the lowest temperature", te="అత్యల్ప ఉష్ణోగ్రత")
+WEATHER_HIGHEST = Text(en="the highest temperature", te="అత్యధిక ఉష్ణోగ్రత")
+WEATHER_BELOW = Text(en="below", te="తక్కువ")
+WEATHER_ABOVE = Text(en="above", te="ఎక్కువ")
+WEATHER_NOTE = Text(en="Your note: {note}.", te="మీ గమనిక: {note}.")
+WEATHER_UNAVAILABLE = Text(
+    en="I couldn't get the weather forecast just now, so there is no weather reminder.",
+    te="ఇప్పుడు వాతావరణ అంచనా దొరకలేదు, కాబట్టి వాతావరణ గుర్తు లేదు.",
+)

@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-10-04T03:04:11+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
+Run 2026-10-04T13:55:28+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -71,5 +71,10 @@ Run 2026-10-04T03:04:11+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | safety-field-the-whole-farm-status-advises-the-vet-like-the-briefing-for-the-seeded-spike | PASS | — |
 | safety-field-the-status-of-shed-three-carries-the-earlier-spike-and-the-vet-step | PASS | — |
 | safety-field-the-whole-farm-status-and-the-briefing-name-the-earlier-spike | PASS | — |
+| weather-a-matching-rule-shows-one-line-per-rule-after-the-health-text-and-changes-no-level | PASS | — |
+| weather-a-rule-that-does-not-match-shows-nothing | PASS | — |
+| weather-no-rule-in-the-file-shows-nothing-and-asks-for-nothing | PASS | — |
+| weather-feature-off-the-answers-carry-nothing-weather-related | PASS | — |
+| weather-an-unavailable-forecast-says-so-and-changes-nothing-else | PASS | — |
 
-**Score: 67/67**
+**Score: 72/72**

@@ -22,8 +22,17 @@ from clucktalk.domain.models import Farm, House, HouseKind
 from clucktalk.domain.profile import FarmMode
 from clucktalk.domain.status import Finding, Level, house_status
 from clucktalk.domain.triage import Urgency
-from clucktalk.i18n import Text
-from clucktalk.server.cards import FARM_STATUS_URI, farm_status_html
+from clucktalk.i18n import (
+    WEATHER_ABOVE,
+    WEATHER_BELOW,
+    WEATHER_HIGHEST,
+    WEATHER_LINE,
+    WEATHER_LOWEST,
+    WEATHER_NOTE,
+    WEATHER_UNAVAILABLE,
+    Text,
+)
+from clucktalk.server.cards import BRIEFING_LABELS, FARM_STATUS_URI, farm_status_html
 from clucktalk.server.errors import domain_error_result
 from clucktalk.server.farm_state import DemoFarmSource
 from clucktalk.server.render import num, plural
@@ -125,6 +134,30 @@ class FarmStatusOutput(BaseModel):
     houses: list[HouseStatusOut]
     unavailable: list[HouseUnavailableOut]
     safety: SafetyOut  # the structured safety step: level = the card level, why, and whether to contact the vet
+    # The farmer's own weather reminders (Step 50W-B). Absent from the answer unless he has a rules file; it never feeds
+    # level, safety or the vet advice, which are computed before and without it.
+    weather_reminders: list[WeatherReminderOut] | None = None
+
+
+class WeatherReminderOut(BaseModel):
+    """One matched weather rule. Every number in its sentence is a value here; an outdoor forecast value, never a
+    shed-interior one."""
+
+    model_config = ConfigDict(extra="forbid")
+    rule_id: str
+    stat: Literal["min", "max"]
+    comparator: Literal["below", "above"]
+    threshold_c: float  # the farmer's number
+    value_c: float  # the forecast minimum or maximum over his window
+    at: str  # the first hour that value occurs (ISO 8601)
+    fetched_hour: int
+    fetched_minute: int
+    source: str  # "Open-Meteo" or "simulated"
+    simulated: bool
+    is_example: bool
+    note: str | None  # the farmer's own words, exactly as he entered them
+    text_en: str
+    text_te: str
 
 
 DESCRIPTION = (
@@ -404,6 +437,62 @@ def _needs_vet_line(health: ShedHealth) -> bool:
     return fact is not None and warns_vet(next(u for u in Urgency if u.code == fact.values["urgency"]))
 
 
+def weather_parts(source: DemoFarmSource) -> tuple[list[Text], list[WeatherReminderOut] | None]:
+    """The weather lines for the end of a spoken answer, and the status's structured list. ``([], None)`` unless the
+    farmer has a rules file with at least one rule (the feature is then off: nothing is built, asked for or shown)."""
+    service = getattr(source, "weather", None)
+    if service is None:
+        return [], None
+    view = service.check()
+    if view.status == "off":
+        return [], None
+    if view.status != "ok":
+        return [WEATHER_UNAVAILABLE], []
+    texts: list[Text] = []
+    items: list[WeatherReminderOut] = []
+    fetched = view.fetched_at
+    assert fetched is not None  # an "ok" view always says when the forecast was fetched
+    when = f"{fetched.hour:02d}:{fetched.minute:02d}"
+    for reminder in view.reminders:
+        rule, match = reminder.rule, reminder.match
+        src = BRIEFING_LABELS["simulated"] if view.simulated else Text(view.source, view.source)  # Open-Meteo is a name
+        stat = WEATHER_LOWEST if rule.stat == "min" else WEATHER_HIGHEST
+        comparator = WEATHER_BELOW if rule.comparator == "below" else WEATHER_ABOVE
+        value, threshold = round(match.value, 1), rule.threshold_c
+        line_en = WEATHER_LINE.en.format(
+            source=src.en, time=when, stat=stat.en, value=num(value), comparator=comparator.en, threshold=num(threshold)
+        )
+        line_te = WEATHER_LINE.te.format(
+            source=src.te, time=when, stat=stat.te, value=num(value), comparator=comparator.te, threshold=num(threshold)
+        )
+        if view.simulated or rule.is_example:
+            demo = BRIEFING_LABELS["demo_badge"]  # the existing "Demo data" label
+            line_en, line_te = f"{demo.en}. {line_en}", f"{demo.te}. {line_te}"
+        if rule.note is not None and rule.note.strip():
+            line_en += " " + WEATHER_NOTE.en.format(note=rule.note)
+            line_te += " " + WEATHER_NOTE.te.format(note=rule.note)
+        texts.append(Text(line_en, line_te))
+        items.append(
+            WeatherReminderOut(
+                rule_id=rule.id,
+                stat=rule.stat,  # type: ignore[arg-type]
+                comparator=rule.comparator,  # type: ignore[arg-type]
+                threshold_c=threshold,
+                value_c=value,
+                at=match.at.isoformat(),
+                fetched_hour=fetched.hour,
+                fetched_minute=fetched.minute,
+                source=view.source,
+                simulated=view.simulated,
+                is_example=rule.is_example,
+                note=rule.note,
+                text_en=line_en,
+                text_te=line_te,
+            )
+        )
+    return texts, items
+
+
 def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOutput:
     farm, as_of = source.snapshot()
     order = {"alert": 0, "watch": 1, "ok": 2}
@@ -474,6 +563,8 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
             )
         vet_houses &= {h.house_id for h in houses[:MAX_SPOKEN_HOUSES]}  # only the sheds actually read out
     parts += _closing(spoken, source.profile().mode is FarmMode.CONTRACT, bool(vet_houses))
+    weather_texts, weather_items = weather_parts(source)  # after everything else; it feeds nothing above or below
+    parts += weather_texts
     level = min((h.level for h in houses), key=lambda lv: order[lv], default="unknown")
     if unavailable and level == "ok":
         level = "watch"  # some houses could not be checked: not everything is known to be fine
@@ -486,7 +577,17 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
         houses=houses,
         unavailable=unavailable,
         safety=status_safety(level, fact_items(facts_for(source, farm, as_of, scope)), item_needs_safety_step),
+        weather_reminders=weather_items,
     )
+
+
+def _wire(out: FarmStatusOutput) -> dict:
+    """The structured answer. ``weather_reminders`` is left out entirely (not null) when the feature is off, so the
+    answer is byte-identical to what it was before the feature existed."""
+    data = out.model_dump(mode="json")
+    if out.weather_reminders is None:
+        del data["weather_reminders"]
+    return data
 
 
 def register(apps: Apps, registry: CapabilityRegistry, source: DemoFarmSource) -> None:
@@ -516,9 +617,7 @@ def register(apps: Apps, registry: CapabilityRegistry, source: DemoFarmSource) -
             out = build_status(source, house)
         except DomainError as err:
             return domain_error_result(err)
-        return CallToolResult(
-            content=[TextContent(type="text", text=out.text_en)], structured_content=out.model_dump(mode="json")
-        )
+        return CallToolResult(content=[TextContent(type="text", text=out.text_en)], structured_content=_wire(out))
 
     registry.add(
         Capability(

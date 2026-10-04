@@ -33,7 +33,13 @@ from clucktalk.i18n import Text
 from clucktalk.server.cards import BRIEFING_URI, briefing_html
 from clucktalk.server.farm_state import DemoFarmSource
 from clucktalk.server.tools import Capability, CapabilityRegistry
-from clucktalk.server.tools.farm_status import SAFETY_STEP, _feed_stock_finding, _finding, recent_spike_text
+from clucktalk.server.tools.farm_status import (
+    SAFETY_STEP,
+    _feed_stock_finding,
+    _finding,
+    recent_spike_text,
+    weather_parts,
+)
 from clucktalk.server.tools.follow_up import check_said_text, follow_up_text
 from clucktalk.server.tools.health import AI_LABEL, DISCLAIMER, TEST_MODEL_LABEL
 from clucktalk.server.tools.safety import SafetyOut, briefing_safety, fact_items, facts_for, item_needs_safety_step
@@ -300,6 +306,7 @@ def build_briefing(source: DemoFarmSource, ranker: BriefingRanker, more: bool = 
         if more_available:
             parts.append(MORE_OFFER)
     parts += _closing(page)
+    parts += weather_parts(source)[0]  # the farmer's own weather lines, last; they feed no level, item or safety field
     level: Literal["alert", "watch", "info", "none"] = (
         "none" if not ordered else _LEVEL_NAME[max((f.level for f in ordered), default=Level.OK)]
     )

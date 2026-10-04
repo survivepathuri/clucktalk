@@ -4561,6 +4561,339 @@
           ]
         }
       ]
+    },
+    {
+      "id": "weather-a-matching-rule-shows-one-line-per-rule-after-the-health-text-and-changes-no-level",
+      "description": "The farmer's two example rules (a minimum below 20 and a maximum above 30 over 12 hours, with his own note) match the simulated hourly forecast: the farm status and the briefing each end with one line per rule, labelled Demo data and Simulated. The status's structured weather_reminders list backs the numbers. The alert level, the safety field and the vet advice are exactly what they are without weather.",
+      "fresh_state": true,
+      "weather": {
+        "latitude": 0.0,
+        "longitude": 0.0,
+        "rules": [
+          {
+            "id": "cold",
+            "stat": "min",
+            "comparator": "below",
+            "threshold_c": 20,
+            "window_hours": 12,
+            "note": "kotam note",
+            "is_example": true
+          },
+          {
+            "id": "hot",
+            "stat": "max",
+            "comparator": "above",
+            "threshold_c": 30,
+            "window_hours": 12,
+            "note": "kotam note",
+            "is_example": true
+          }
+        ]
+      },
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {},
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "Please check the birds today and call your vet if deaths continue. Demo data. Forecast (hourly, outdoors at your farm's location, source: Simulated; not real-time; fetched at 02:00): the lowest temperature is 16 degrees, below the number you set (20). Your note: kotam note."
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "Forecast (hourly, outdoors at your farm's location, source: Simulated; not real-time; fetched at 02:00): the highest temperature is 31.9 degrees, above the number you set (30). Your note: kotam note."
+            },
+            {
+              "field": "weather_reminders.0.value_c",
+              "op": "eq",
+              "value": 16.0
+            },
+            {
+              "field": "weather_reminders.1.value_c",
+              "op": "eq",
+              "value": 31.9
+            },
+            {
+              "field": "weather_reminders.0.simulated",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "weather_reminders.0.is_example",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "safety.level",
+              "op": "eq",
+              "value": "ALERT"
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        },
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "Demo data. Forecast (hourly, outdoors at your farm's location, source: Simulated; not real-time; fetched at 02:00): the lowest temperature is 16 degrees, below the number you set (20). Your note: kotam note."
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "Forecast (hourly, outdoors at your farm's location, source: Simulated; not real-time; fetched at 02:00): the highest temperature is 31.9 degrees, above the number you set (30). Your note: kotam note."
+            },
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "safety.level",
+              "op": "eq",
+              "value": "ALERT"
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weather-a-rule-that-does-not-match-shows-nothing",
+      "description": "A rule whose number the simulated forecast never crosses (below minus 50) gives no line on the status or the briefing; the structured list is empty and the answer text is the one without weather.",
+      "fresh_state": true,
+      "weather": {
+        "latitude": 0.0,
+        "longitude": 0.0,
+        "rules": [
+          {
+            "id": "never",
+            "stat": "min",
+            "comparator": "below",
+            "threshold_c": -50,
+            "window_hours": 12,
+            "note": "kotam note"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {},
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "Forecast"
+            },
+            {
+              "field": "weather_reminders",
+              "op": "eq",
+              "value": []
+            },
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            }
+          ]
+        },
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "Forecast"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weather-no-rule-in-the-file-shows-nothing-and-asks-for-nothing",
+      "description": "A rules file with no rule turns nothing on: no weather text on the status or the briefing, and no weather_reminders key at all.",
+      "fresh_state": true,
+      "weather": {
+        "latitude": 0.0,
+        "longitude": 0.0,
+        "rules": []
+      },
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {},
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "Forecast"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "weather"
+            },
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            }
+          ]
+        },
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "Forecast"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "weather"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weather-feature-off-the-answers-carry-nothing-weather-related",
+      "description": "With no rules file at all (the default) the status and the briefing mention no forecast and no weather; the committed byte-for-byte baseline test covers the rest.",
+      "fresh_state": true,
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {},
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "Forecast"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "weather"
+            }
+          ]
+        },
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "Forecast"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "weather"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weather-an-unavailable-forecast-says-so-and-changes-nothing-else",
+      "description": "When the forecast cannot be fetched the status and the briefing end with one plain sentence that there is no weather reminder; the level, the safety field and the vet advice are unchanged.",
+      "fresh_state": true,
+      "weather": {
+        "latitude": 0.0,
+        "longitude": 0.0,
+        "rules": [
+          {
+            "id": "cold",
+            "stat": "min",
+            "comparator": "below",
+            "threshold_c": 20,
+            "window_hours": 12,
+            "note": "kotam note",
+            "is_example": true
+          },
+          {
+            "id": "hot",
+            "stat": "max",
+            "comparator": "above",
+            "threshold_c": 30,
+            "window_hours": 12,
+            "note": "kotam note",
+            "is_example": true
+          }
+        ],
+        "forecast": "unavailable"
+      },
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {},
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "call your vet if deaths continue. I couldn't get the weather forecast just now, so there is no weather reminder."
+            },
+            {
+              "field": "weather_reminders",
+              "op": "eq",
+              "value": []
+            },
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "safety.level",
+              "op": "eq",
+              "value": "ALERT"
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        },
+        {
+          "tool": "get_daily_briefing",
+          "args": {},
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "I couldn't get the weather forecast just now, so there is no weather reminder."
+            },
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

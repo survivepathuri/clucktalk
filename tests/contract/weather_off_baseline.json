@@ -1,0 +1,5045 @@
+{
+ "get_daily_briefing": {
+  "content": [
+   {
+    "text": "Here's your briefing for today. House 2: 26 birds died today, against about 4 a day this past week. House 3: 18 birds died today, against about 6 a day this past week. House 3: 16 birds died yesterday, against about 4 a day the week before. Say 'more' to hear the rest. Please check the birds today and call your vet if deaths continue.",
+    "type": "text"
+   }
+  ],
+  "structuredContent": {
+   "ai": {
+    "engine": "rules",
+    "label_en": "Demo rules (no AI model)",
+    "label_te": "డెమో నియమాలు (AI మోడల్ లేదు)",
+    "model_id": null,
+    "note": null
+   },
+   "as_of": "2026-09-29",
+   "demo_data": true,
+   "items": [
+    {
+     "category": "mortality_spike",
+     "fact_id": "mortality_spike:house-2",
+     "house_id": "house-2",
+     "label_en": "House 2",
+     "label_te": "షెడ్ 2",
+     "level": "alert",
+     "number": 2,
+     "pinned": true,
+     "rank": 1,
+     "simulated": false,
+     "spoken": true,
+     "text_en": "House 2: 26 birds died today, against about 4 a day this past week.",
+     "text_te": "షెడ్ 2: ఈరోజు 26 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 4.",
+     "values": {
+      "baseline_per_day": 4,
+      "deaths": 26
+     }
+    },
+    {
+     "category": "mortality_spike",
+     "fact_id": "mortality_spike:house-3",
+     "house_id": "house-3",
+     "label_en": "House 3",
+     "label_te": "షెడ్ 3",
+     "level": "alert",
+     "number": 3,
+     "pinned": true,
+     "rank": 2,
+     "simulated": false,
+     "spoken": true,
+     "text_en": "House 3: 18 birds died today, against about 6 a day this past week.",
+     "text_te": "షెడ్ 3: ఈరోజు 18 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 6.",
+     "values": {
+      "baseline_per_day": 6,
+      "deaths": 18
+     }
+    },
+    {
+     "category": "recent_logged_spike",
+     "fact_id": "recent_logged_spike:house-3",
+     "house_id": "house-3",
+     "label_en": "House 3",
+     "label_te": "షెడ్ 3",
+     "level": "alert",
+     "number": 3,
+     "pinned": true,
+     "rank": 3,
+     "simulated": false,
+     "spoken": true,
+     "text_en": "House 3: 16 birds died yesterday, against about 4 a day the week before.",
+     "text_te": "షెడ్ 3: నిన్న 16 కోళ్లు చనిపోయాయి; అంతకు ముందు వారం రోజుకు సుమారు 4.",
+     "values": {
+      "baseline_per_day": 4,
+      "days_ago": 1,
+      "deaths": 16
+     }
+    },
+    {
+     "category": "feed_intake_drop",
+     "fact_id": "feed_intake_drop:house-2",
+     "house_id": "house-2",
+     "label_en": "House 2",
+     "label_te": "షెడ్ 2",
+     "level": "watch",
+     "number": 2,
+     "pinned": false,
+     "rank": 4,
+     "simulated": false,
+     "spoken": false,
+     "text_en": "House 2: Birds ate 18% less than expected.",
+     "text_te": "షెడ్ 2: కోళ్లు అంచనా కంటే 18% తక్కువ తిన్నాయి.",
+     "values": {
+      "drop_pct": 18
+     }
+    },
+    {
+     "category": "feed_stock_low",
+     "fact_id": "feed_stock_low:house-2",
+     "house_id": "house-2",
+     "label_en": "House 2",
+     "label_te": "షెడ్ 2",
+     "level": "watch",
+     "number": 2,
+     "pinned": false,
+     "rank": 5,
+     "simulated": false,
+     "spoken": false,
+     "text_en": "House 2: Feed stock lasts about 2 days.",
+     "text_te": "షెడ్ 2: ఫీడ్ నిల్వ సుమారు 2 రోజులు సరిపోతుంది.",
+     "values": {
+      "days_covered": 2
+     }
+    }
+   ],
+   "level": "alert",
+   "more_available": true,
+   "safety": {
+    "level": "ALERT",
+    "reason_codes": [
+     "mortality_spike",
+     "recent_logged_spike",
+     "feed_intake_drop",
+     "feed_stock_low"
+    ],
+    "vet_contact_advised": true
+   },
+   "text_en": "Here's your briefing for today. House 2: 26 birds died today, against about 4 a day this past week. House 3: 18 birds died today, against about 6 a day this past week. House 3: 16 birds died yesterday, against about 4 a day the week before. Say 'more' to hear the rest. Please check the birds today and call your vet if deaths continue.",
+   "text_te": "ఈరోజు మీ బ్రీఫింగ్ ఇది. షెడ్ 2: ఈరోజు 26 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 4. షెడ్ 3: ఈరోజు 18 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 6. షెడ్ 3: నిన్న 16 కోళ్లు చనిపోయాయి; అంతకు ముందు వారం రోజుకు సుమారు 4. మిగిలినవి వినాలంటే 'మరిన్ని' అనండి. దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ డాక్టర్‌కి ఫోన్ చేయండి.",
+   "total_items": 7
+  }
+ },
+ "get_daily_briefing more": {
+  "content": [
+   {
+    "text": "Here's the rest. House 2: Birds ate 18% less than expected. House 2: Feed stock lasts about 2 days. There are more things; ask about one shed for details.",
+    "type": "text"
+   }
+  ],
+  "structuredContent": {
+   "ai": {
+    "engine": "rules",
+    "label_en": "Demo rules (no AI model)",
+    "label_te": "డెమో నియమాలు (AI మోడల్ లేదు)",
+    "model_id": null,
+    "note": null
+   },
+   "as_of": "2026-09-29",
+   "demo_data": true,
+   "items": [
+    {
+     "category": "mortality_spike",
+     "fact_id": "mortality_spike:house-2",
+     "house_id": "house-2",
+     "label_en": "House 2",
+     "label_te": "షెడ్ 2",
+     "level": "alert",
+     "number": 2,
+     "pinned": true,
+     "rank": 1,
+     "simulated": false,
+     "spoken": false,
+     "text_en": "House 2: 26 birds died today, against about 4 a day this past week.",
+     "text_te": "షెడ్ 2: ఈరోజు 26 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 4.",
+     "values": {
+      "baseline_per_day": 4,
+      "deaths": 26
+     }
+    },
+    {
+     "category": "mortality_spike",
+     "fact_id": "mortality_spike:house-3",
+     "house_id": "house-3",
+     "label_en": "House 3",
+     "label_te": "షెడ్ 3",
+     "level": "alert",
+     "number": 3,
+     "pinned": true,
+     "rank": 2,
+     "simulated": false,
+     "spoken": false,
+     "text_en": "House 3: 18 birds died today, against about 6 a day this past week.",
+     "text_te": "షెడ్ 3: ఈరోజు 18 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 6.",
+     "values": {
+      "baseline_per_day": 6,
+      "deaths": 18
+     }
+    },
+    {
+     "category": "recent_logged_spike",
+     "fact_id": "recent_logged_spike:house-3",
+     "house_id": "house-3",
+     "label_en": "House 3",
+     "label_te": "షెడ్ 3",
+     "level": "alert",
+     "number": 3,
+     "pinned": true,
+     "rank": 3,
+     "simulated": false,
+     "spoken": false,
+     "text_en": "House 3: 16 birds died yesterday, against about 4 a day the week before.",
+     "text_te": "షెడ్ 3: నిన్న 16 కోళ్లు చనిపోయాయి; అంతకు ముందు వారం రోజుకు సుమారు 4.",
+     "values": {
+      "baseline_per_day": 4,
+      "days_ago": 1,
+      "deaths": 16
+     }
+    },
+    {
+     "category": "feed_intake_drop",
+     "fact_id": "feed_intake_drop:house-2",
+     "house_id": "house-2",
+     "label_en": "House 2",
+     "label_te": "షెడ్ 2",
+     "level": "watch",
+     "number": 2,
+     "pinned": false,
+     "rank": 4,
+     "simulated": false,
+     "spoken": true,
+     "text_en": "House 2: Birds ate 18% less than expected.",
+     "text_te": "షెడ్ 2: కోళ్లు అంచనా కంటే 18% తక్కువ తిన్నాయి.",
+     "values": {
+      "drop_pct": 18
+     }
+    },
+    {
+     "category": "feed_stock_low",
+     "fact_id": "feed_stock_low:house-2",
+     "house_id": "house-2",
+     "label_en": "House 2",
+     "label_te": "షెడ్ 2",
+     "level": "watch",
+     "number": 2,
+     "pinned": false,
+     "rank": 5,
+     "simulated": false,
+     "spoken": true,
+     "text_en": "House 2: Feed stock lasts about 2 days.",
+     "text_te": "షెడ్ 2: ఫీడ్ నిల్వ సుమారు 2 రోజులు సరిపోతుంది.",
+     "values": {
+      "days_covered": 2
+     }
+    }
+   ],
+   "level": "alert",
+   "more_available": false,
+   "safety": {
+    "level": "ALERT",
+    "reason_codes": [
+     "mortality_spike",
+     "recent_logged_spike",
+     "feed_intake_drop",
+     "feed_stock_low"
+    ],
+    "vet_contact_advised": true
+   },
+   "text_en": "Here's the rest. House 2: Birds ate 18% less than expected. House 2: Feed stock lasts about 2 days. There are more things; ask about one shed for details.",
+   "text_te": "మిగిలినవి ఇవి. షెడ్ 2: కోళ్లు అంచనా కంటే 18% తక్కువ తిన్నాయి. షెడ్ 2: ఫీడ్ నిల్వ సుమారు 2 రోజులు సరిపోతుంది. ఇంకా విషయాలు ఉన్నాయి; వివరాల కోసం ఒక షెడ్ గురించి అడగండి.",
+   "total_items": 7
+  }
+ },
+ "get_farm_status": {
+  "content": [
+   {
+    "text": "Here's your farm today. House 2 needs attention now. 26 birds died today, against about 4 a day this past week. House 3 needs attention now. 18 birds died today, against about 6 a day this past week. House 1 is doing well. Please check the birds today and call your vet if deaths continue.",
+    "type": "text"
+   }
+  ],
+  "structuredContent": {
+   "as_of": "2026-09-29",
+   "demo_data": true,
+   "houses": [
+    {
+     "age_days": 23,
+     "avg_weight_g": 941,
+     "birds_placed": 4000,
+     "breed": "Ross 308",
+     "cum_mortality_pct": 2.9,
+     "deaths_7d": 50,
+     "deaths_latest": 26,
+     "farm_fcr": 1.23,
+     "feed_days_covered": 2,
+     "feed_days_covered_is_minimum": false,
+     "feed_latest_kg": 364,
+     "feed_per_bird_g": 93,
+     "findings": [
+      {
+       "code": "mortality_spike",
+       "level": "alert",
+       "text_en": "26 birds died today, against about 4 a day this past week.",
+       "text_te": "ఈరోజు 26 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 4.",
+       "values": {
+        "baseline_per_day": 4.0,
+        "deaths": 26.0
+       }
+      },
+      {
+       "code": "feed_intake_drop",
+       "level": "watch",
+       "text_en": "Birds ate 18% less than expected: 93 g per bird against 114 g.",
+       "text_te": "కోళ్లు అంచనా కంటే 18% తక్కువ తిన్నాయి: ఒక్కో కోడికి 93 గ్రా., అంచనా 114 గ్రా.",
+       "values": {
+        "drop_pct": 18.0,
+        "expected_per_bird_g": 114.0,
+        "per_bird_g": 93.0
+       }
+      },
+      {
+       "code": "feed_stock_low",
+       "level": "watch",
+       "text_en": "Feed stock lasts about 2 days.",
+       "text_te": "ఫీడ్ నిల్వ సుమారు 2 రోజులు సరిపోతుంది.",
+       "values": {
+        "days_covered": 2.0
+       }
+      }
+     ],
+     "follow_up": null,
+     "hen_day_pct": null,
+     "hen_day_pct_7d_avg": null,
+     "house_id": "house-2",
+     "kind": "broiler",
+     "label_en": "House 2",
+     "label_te": "షెడ్ 2",
+     "latest_record_day": "2026-09-29",
+     "level": "alert",
+     "live_birds": 3883,
+     "number": 2,
+     "open_health_check": null,
+     "summary_en": "House 2 needs attention now. Day 23, 3,883 birds, average weight 941 g against the Ross 308 target of 1,012 g.",
+     "summary_te": "షెడ్ 2 కి వెంటనే శ్రద్ధ అవసరం. 23వ రోజు, 3,883 కోళ్లు, సగటు బరువు 941 గ్రా. (Ross 308 లక్ష్యం 1,012 గ్రా.).",
+     "target_fcr": 1.14,
+     "target_weight_g": 1012
+    },
+    {
+     "age_days": 44,
+     "avg_weight_g": 2998,
+     "birds_placed": 4500,
+     "breed": "Ross 308",
+     "cum_mortality_pct": 2.7,
+     "deaths_7d": 56,
+     "deaths_latest": 18,
+     "farm_fcr": 1.54,
+     "feed_days_covered": 4,
+     "feed_days_covered_is_minimum": false,
+     "feed_latest_kg": 932,
+     "feed_per_bird_g": 212,
+     "findings": [
+      {
+       "code": "mortality_spike",
+       "level": "alert",
+       "text_en": "18 birds died today, against about 6 a day this past week.",
+       "text_te": "ఈరోజు 18 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 6.",
+       "values": {
+        "baseline_per_day": 6.0,
+        "deaths": 18.0
+       }
+      },
+      {
+       "code": "recent_logged_spike",
+       "level": "alert",
+       "text_en": "16 birds died yesterday, against about 4 a day the week before.",
+       "text_te": "నిన్న 16 కోళ్లు చనిపోయాయి; అంతకు ముందు వారం రోజుకు సుమారు 4.",
+       "values": {
+        "baseline_per_day": 4.0,
+        "days_ago": 1.0,
+        "deaths": 16.0
+       }
+      }
+     ],
+     "follow_up": null,
+     "hen_day_pct": null,
+     "hen_day_pct_7d_avg": null,
+     "house_id": "house-3",
+     "kind": "broiler",
+     "label_en": "House 3",
+     "label_te": "షెడ్ 3",
+     "latest_record_day": "2026-09-29",
+     "level": "alert",
+     "live_birds": 4377,
+     "number": 3,
+     "open_health_check": null,
+     "summary_en": "House 3 needs attention now. Day 44, 4,377 birds, average weight 2,998 g against the Ross 308 target of 2,998 g.",
+     "summary_te": "షెడ్ 3 కి వెంటనే శ్రద్ధ అవసరం. 44వ రోజు, 4,377 కోళ్లు, సగటు బరువు 2,998 గ్రా. (Ross 308 లక్ష్యం 2,998 గ్రా.).",
+     "target_fcr": 1.53,
+     "target_weight_g": 2998
+    },
+    {
+     "age_days": 34,
+     "avg_weight_g": 1568,
+     "birds_placed": 5000,
+     "breed": "Ross 308",
+     "cum_mortality_pct": 2.8,
+     "deaths_7d": 28,
+     "deaths_latest": 4,
+     "farm_fcr": 1.29,
+     "feed_days_covered": 5,
+     "feed_days_covered_is_minimum": false,
+     "feed_latest_kg": 826,
+     "feed_per_bird_g": 170,
+     "findings": [],
+     "follow_up": null,
+     "hen_day_pct": null,
+     "hen_day_pct_7d_avg": null,
+     "house_id": "house-1",
+     "kind": "broiler",
+     "label_en": "House 1",
+     "label_te": "షెడ్ 1",
+     "latest_record_day": "2026-09-29",
+     "level": "ok",
+     "live_birds": 4862,
+     "number": 1,
+     "open_health_check": null,
+     "summary_en": "House 1 is doing well. Day 34, 4,862 birds, average weight 1,568 g against the Ross 308 target of 1,616 g.",
+     "summary_te": "షెడ్ 1 బాగుంది. 34వ రోజు, 4,862 కోళ్లు, సగటు బరువు 1,568 గ్రా. (Ross 308 లక్ష్యం 1,616 గ్రా.).",
+     "target_fcr": 1.27,
+     "target_weight_g": 1616
+    }
+   ],
+   "level": "alert",
+   "safety": {
+    "level": "ALERT",
+    "reason_codes": [
+     "mortality_spike",
+     "recent_logged_spike",
+     "feed_intake_drop",
+     "feed_stock_low"
+    ],
+    "vet_contact_advised": true
+   },
+   "text_en": "Here's your farm today. House 2 needs attention now. 26 birds died today, against about 4 a day this past week. House 3 needs attention now. 18 birds died today, against about 6 a day this past week. House 1 is doing well. Please check the birds today and call your vet if deaths continue.",
+   "text_te": "ఈరోజు మీ ఫారం స్థితి. షెడ్ 2 కి వెంటనే శ్రద్ధ అవసరం. ఈరోజు 26 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 4. షెడ్ 3 కి వెంటనే శ్రద్ధ అవసరం. ఈరోజు 18 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 6. షెడ్ 1 బాగుంది. దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ డాక్టర్‌కి ఫోన్ చేయండి.",
+   "unavailable": []
+  }
+ },
+ "get_farm_status shed 2": {
+  "content": [
+   {
+    "text": "House 2 needs attention now. Day 23, 3,883 birds, average weight 941 g against the Ross 308 target of 1,012 g. 26 birds died today, against about 4 a day this past week. Birds ate 18% less than expected: 93 g per bird against 114 g. Feed stock lasts about 2 days. Please check the birds today and call your vet if deaths continue. Ask me for a feed plan to hear how much to order.",
+    "type": "text"
+   }
+  ],
+  "structuredContent": {
+   "as_of": "2026-09-29",
+   "demo_data": true,
+   "houses": [
+    {
+     "age_days": 23,
+     "avg_weight_g": 941,
+     "birds_placed": 4000,
+     "breed": "Ross 308",
+     "cum_mortality_pct": 2.9,
+     "deaths_7d": 50,
+     "deaths_latest": 26,
+     "farm_fcr": 1.23,
+     "feed_days_covered": 2,
+     "feed_days_covered_is_minimum": false,
+     "feed_latest_kg": 364,
+     "feed_per_bird_g": 93,
+     "findings": [
+      {
+       "code": "mortality_spike",
+       "level": "alert",
+       "text_en": "26 birds died today, against about 4 a day this past week.",
+       "text_te": "ఈరోజు 26 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 4.",
+       "values": {
+        "baseline_per_day": 4.0,
+        "deaths": 26.0
+       }
+      },
+      {
+       "code": "feed_intake_drop",
+       "level": "watch",
+       "text_en": "Birds ate 18% less than expected: 93 g per bird against 114 g.",
+       "text_te": "కోళ్లు అంచనా కంటే 18% తక్కువ తిన్నాయి: ఒక్కో కోడికి 93 గ్రా., అంచనా 114 గ్రా.",
+       "values": {
+        "drop_pct": 18.0,
+        "expected_per_bird_g": 114.0,
+        "per_bird_g": 93.0
+       }
+      },
+      {
+       "code": "feed_stock_low",
+       "level": "watch",
+       "text_en": "Feed stock lasts about 2 days.",
+       "text_te": "ఫీడ్ నిల్వ సుమారు 2 రోజులు సరిపోతుంది.",
+       "values": {
+        "days_covered": 2.0
+       }
+      }
+     ],
+     "follow_up": null,
+     "hen_day_pct": null,
+     "hen_day_pct_7d_avg": null,
+     "house_id": "house-2",
+     "kind": "broiler",
+     "label_en": "House 2",
+     "label_te": "షెడ్ 2",
+     "latest_record_day": "2026-09-29",
+     "level": "alert",
+     "live_birds": 3883,
+     "number": 2,
+     "open_health_check": null,
+     "summary_en": "House 2 needs attention now. Day 23, 3,883 birds, average weight 941 g against the Ross 308 target of 1,012 g.",
+     "summary_te": "షెడ్ 2 కి వెంటనే శ్రద్ధ అవసరం. 23వ రోజు, 3,883 కోళ్లు, సగటు బరువు 941 గ్రా. (Ross 308 లక్ష్యం 1,012 గ్రా.).",
+     "target_fcr": 1.14,
+     "target_weight_g": 1012
+    }
+   ],
+   "level": "alert",
+   "safety": {
+    "level": "ALERT",
+    "reason_codes": [
+     "mortality_spike",
+     "feed_intake_drop",
+     "feed_stock_low"
+    ],
+    "vet_contact_advised": true
+   },
+   "text_en": "House 2 needs attention now. Day 23, 3,883 birds, average weight 941 g against the Ross 308 target of 1,012 g. 26 birds died today, against about 4 a day this past week. Birds ate 18% less than expected: 93 g per bird against 114 g. Feed stock lasts about 2 days. Please check the birds today and call your vet if deaths continue. Ask me for a feed plan to hear how much to order.",
+   "text_te": "షెడ్ 2 కి వెంటనే శ్రద్ధ అవసరం. 23వ రోజు, 3,883 కోళ్లు, సగటు బరువు 941 గ్రా. (Ross 308 లక్ష్యం 1,012 గ్రా.). ఈరోజు 26 కోళ్లు చనిపోయాయి; గత వారం రోజుకు సుమారు 4. కోళ్లు అంచనా కంటే 18% తక్కువ తిన్నాయి: ఒక్కో కోడికి 93 గ్రా., అంచనా 114 గ్రా. ఫీడ్ నిల్వ సుమారు 2 రోజులు సరిపోతుంది. దయచేసి ఈరోజే కోళ్లను పరిశీలించండి, మరణాలు కొనసాగితే మీ డాక్టర్‌కి ఫోన్ చేయండి. ఎంత ఆర్డర్ చేయాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి.",
+   "unavailable": []
+  }
+ },
+ "tools/list": [
+  {
+   "_meta": {
+    "ui": {
+     "resourceUri": "ui://clucktalk/farm-status.html"
+    }
+   },
+   "annotations": {
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": true
+   },
+   "description": "Use when the farmer asks how a house (shed, kotam) or the whole farm is doing right now: deaths, feed intake, weight vs breed target, whether feed stock is running low, and any open health check or follow-up for that house. Give `house` for one house; omit it for every house, worst first. Not for today's priorities across the farm (use get_daily_briefing) and not for reporting new signs (use start_health_check). Returns a short spoken summary plus the same numbers for the card.",
+   "inputSchema": {
+    "properties": {
+     "house": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Which house. Accepts how farmers say it: 'shed 2', 'house two', 'kotam do', 'second shed', or a house_id such as 'house-2'. Omit (or say 'all') for the whole farm.",
+      "title": "House"
+     }
+    },
+    "title": "get_farm_statusArguments",
+    "type": "object"
+   },
+   "name": "get_farm_status",
+   "outputSchema": {
+    "$defs": {
+     "FindingOut": {
+      "additionalProperties": false,
+      "properties": {
+       "code": {
+        "title": "Code",
+        "type": "string"
+       },
+       "level": {
+        "enum": [
+         "ok",
+         "watch",
+         "alert"
+        ],
+        "title": "Level",
+        "type": "string"
+       },
+       "text_en": {
+        "title": "Text En",
+        "type": "string"
+       },
+       "text_te": {
+        "title": "Text Te",
+        "type": "string"
+       },
+       "values": {
+        "additionalProperties": {
+         "type": "number"
+        },
+        "title": "Values",
+        "type": "object"
+       }
+      },
+      "required": [
+       "code",
+       "level",
+       "text_en",
+       "text_te",
+       "values"
+      ],
+      "title": "FindingOut",
+      "type": "object"
+     },
+     "FollowUpView": {
+      "additionalProperties": false,
+      "description": "A shed's follow-up as farm status reports it (the card will show exactly this; docs/DESIGN.md §14).",
+      "properties": {
+       "check_id": {
+        "title": "Check Id",
+        "type": "string"
+       },
+       "days_ago": {
+        "title": "Days Ago",
+        "type": "integer"
+       },
+       "due_day": {
+        "title": "Due Day",
+        "type": "string"
+       },
+       "handed_off": {
+        "title": "Handed Off",
+        "type": "boolean"
+       },
+       "outcome": {
+        "anyOf": [
+         {
+          "enum": [
+           "better",
+           "same",
+           "worse",
+           "not_sure"
+          ],
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Outcome"
+       },
+       "reasons": {
+        "items": {
+         "type": "string"
+        },
+        "title": "Reasons",
+        "type": "array"
+       },
+       "state": {
+        "enum": [
+         "scheduled",
+         "due",
+         "closed",
+         "escalated",
+         "lapsed"
+        ],
+        "title": "State",
+        "type": "string"
+       },
+       "text_en": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Text En"
+       },
+       "text_te": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Text Te"
+       },
+       "urgency": {
+        "enum": [
+         "watch",
+         "urgent",
+         "notifiable_suspect"
+        ],
+        "title": "Urgency",
+        "type": "string"
+       }
+      },
+      "required": [
+       "check_id",
+       "state",
+       "urgency",
+       "days_ago",
+       "due_day",
+       "outcome",
+       "reasons",
+       "handed_off",
+       "text_en",
+       "text_te"
+      ],
+      "title": "FollowUpView",
+      "type": "object"
+     },
+     "HouseStatusOut": {
+      "additionalProperties": false,
+      "properties": {
+       "age_days": {
+        "title": "Age Days",
+        "type": "integer"
+       },
+       "avg_weight_g": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Avg Weight G"
+       },
+       "birds_placed": {
+        "title": "Birds Placed",
+        "type": "integer"
+       },
+       "breed": {
+        "title": "Breed",
+        "type": "string"
+       },
+       "cum_mortality_pct": {
+        "title": "Cum Mortality Pct",
+        "type": "number"
+       },
+       "deaths_7d": {
+        "title": "Deaths 7D",
+        "type": "integer"
+       },
+       "deaths_latest": {
+        "title": "Deaths Latest",
+        "type": "integer"
+       },
+       "farm_fcr": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Farm Fcr"
+       },
+       "feed_days_covered": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Feed Days Covered"
+       },
+       "feed_days_covered_is_minimum": {
+        "anyOf": [
+         {
+          "type": "boolean"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Feed Days Covered Is Minimum"
+       },
+       "feed_latest_kg": {
+        "title": "Feed Latest Kg",
+        "type": "integer"
+       },
+       "feed_per_bird_g": {
+        "title": "Feed Per Bird G",
+        "type": "integer"
+       },
+       "findings": {
+        "items": {
+         "$ref": "#/$defs/FindingOut"
+        },
+        "title": "Findings",
+        "type": "array"
+       },
+       "follow_up": {
+        "anyOf": [
+         {
+          "$ref": "#/$defs/FollowUpView"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "default": null
+       },
+       "hen_day_pct": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Hen Day Pct"
+       },
+       "hen_day_pct_7d_avg": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Hen Day Pct 7D Avg"
+       },
+       "house_id": {
+        "title": "House Id",
+        "type": "string"
+       },
+       "kind": {
+        "enum": [
+         "broiler",
+         "layer"
+        ],
+        "title": "Kind",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       },
+       "latest_record_day": {
+        "title": "Latest Record Day",
+        "type": "string"
+       },
+       "level": {
+        "enum": [
+         "ok",
+         "watch",
+         "alert"
+        ],
+        "title": "Level",
+        "type": "string"
+       },
+       "live_birds": {
+        "title": "Live Birds",
+        "type": "integer"
+       },
+       "number": {
+        "title": "Number",
+        "type": "integer"
+       },
+       "open_health_check": {
+        "anyOf": [
+         {
+          "$ref": "#/$defs/OpenCheckOut"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "default": null
+       },
+       "summary_en": {
+        "title": "Summary En",
+        "type": "string"
+       },
+       "summary_te": {
+        "title": "Summary Te",
+        "type": "string"
+       },
+       "target_fcr": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Target Fcr"
+       },
+       "target_weight_g": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Target Weight G"
+       }
+      },
+      "required": [
+       "house_id",
+       "number",
+       "label_en",
+       "label_te",
+       "kind",
+       "breed",
+       "level",
+       "summary_en",
+       "summary_te",
+       "latest_record_day",
+       "age_days",
+       "birds_placed",
+       "live_birds",
+       "deaths_latest",
+       "deaths_7d",
+       "cum_mortality_pct",
+       "feed_latest_kg",
+       "feed_per_bird_g",
+       "avg_weight_g",
+       "target_weight_g",
+       "farm_fcr",
+       "target_fcr",
+       "hen_day_pct",
+       "hen_day_pct_7d_avg",
+       "feed_days_covered",
+       "feed_days_covered_is_minimum",
+       "findings"
+      ],
+      "title": "HouseStatusOut",
+      "type": "object"
+     },
+     "HouseUnavailableOut": {
+      "additionalProperties": false,
+      "properties": {
+       "breed": {
+        "title": "Breed",
+        "type": "string"
+       },
+       "house_id": {
+        "title": "House Id",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       },
+       "message_en": {
+        "title": "Message En",
+        "type": "string"
+       },
+       "message_te": {
+        "title": "Message Te",
+        "type": "string"
+       },
+       "number": {
+        "title": "Number",
+        "type": "integer"
+       },
+       "values": {
+        "additionalProperties": {
+         "type": "number"
+        },
+        "title": "Values",
+        "type": "object"
+       }
+      },
+      "required": [
+       "house_id",
+       "number",
+       "label_en",
+       "label_te",
+       "breed",
+       "message_en",
+       "message_te",
+       "values"
+      ],
+      "title": "HouseUnavailableOut",
+      "type": "object"
+     },
+     "OpenCheckOut": {
+      "additionalProperties": false,
+      "description": "The shed's open health check when the status speaks it (a shed that is not OK says why): the numbers behind\nthe sentence, so every spoken number is also here.",
+      "properties": {
+       "days_ago": {
+        "title": "Days Ago",
+        "type": "integer"
+       },
+       "ready": {
+        "title": "Ready",
+        "type": "boolean"
+       },
+       "urgency": {
+        "enum": [
+         "watch",
+         "urgent",
+         "notifiable_suspect"
+        ],
+        "title": "Urgency",
+        "type": "string"
+       }
+      },
+      "required": [
+       "urgency",
+       "days_ago",
+       "ready"
+      ],
+      "title": "OpenCheckOut",
+      "type": "object"
+     },
+     "SafetyOut": {
+      "additionalProperties": false,
+      "properties": {
+       "level": {
+        "enum": [
+         "OK",
+         "WATCH",
+         "ALERT",
+         "UNKNOWN"
+        ],
+        "title": "Level",
+        "type": "string"
+       },
+       "reason_codes": {
+        "items": {
+         "type": "string"
+        },
+        "title": "Reason Codes",
+        "type": "array"
+       },
+       "vet_contact_advised": {
+        "title": "Vet Contact Advised",
+        "type": "boolean"
+       }
+      },
+      "required": [
+       "level",
+       "reason_codes",
+       "vet_contact_advised"
+      ],
+      "title": "SafetyOut",
+      "type": "object"
+     }
+    },
+    "additionalProperties": false,
+    "properties": {
+     "as_of": {
+      "title": "As Of",
+      "type": "string"
+     },
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "houses": {
+      "items": {
+       "$ref": "#/$defs/HouseStatusOut"
+      },
+      "title": "Houses",
+      "type": "array"
+     },
+     "level": {
+      "anyOf": [
+       {
+        "enum": [
+         "ok",
+         "watch",
+         "alert"
+        ],
+        "type": "string"
+       },
+       {
+        "const": "unknown",
+        "type": "string"
+       }
+      ],
+      "title": "Level"
+     },
+     "safety": {
+      "$ref": "#/$defs/SafetyOut"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     },
+     "unavailable": {
+      "items": {
+       "$ref": "#/$defs/HouseUnavailableOut"
+      },
+      "title": "Unavailable",
+      "type": "array"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "as_of",
+     "level",
+     "houses",
+     "unavailable",
+     "safety"
+    ],
+    "title": "FarmStatusOutput",
+    "type": "object"
+   },
+   "title": "Farm status"
+  },
+  {
+   "_meta": {
+    "ui": {
+     "resourceUri": "ui://clucktalk/sale-plan.html"
+    }
+   },
+   "annotations": {
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": true
+   },
+   "description": "Use when the farmer asks when to sell a broiler shed, whether to wait, or about the best day, break-even day or growing charge for selling. Give `house` for one house (omit for every broiler shed on the farm) and optionally `live_price_per_kg` when the farmer states today's rate. Independent farms: the best day to sell and the ₹ difference. The market price is a simulated value from a simulated feed, not a real market quote; a rate the farmer states with `live_price_per_kg` is used as given, and the result text says \"Simulated\" whenever it uses the simulated price. Contract farms: no market price is used; instead how FCR and the growing charge change with each extra day. Not for layer flocks (ask get_farm_status or plan_feed instead).",
+   "inputSchema": {
+    "properties": {
+     "house": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Which broiler house. Accepts 'shed 2', 'house two', 'kotam do', 'second shed', or a house_id. Omit for every broiler shed.",
+      "title": "House"
+     },
+     "live_price_per_kg": {
+      "anyOf": [
+       {
+        "exclusiveMinimum": 0,
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Today's live-bird rate in rupees per kg, if the farmer states it. Independent mode only.",
+      "title": "Live Price Per Kg"
+     }
+    },
+    "title": "plan_sale_toolArguments",
+    "type": "object"
+   },
+   "name": "plan_sale",
+   "outputSchema": {
+    "$defs": {
+     "DayOut": {
+      "additionalProperties": false,
+      "properties": {
+       "age_days": {
+        "title": "Age Days",
+        "type": "integer"
+       },
+       "day": {
+        "title": "Day",
+        "type": "string"
+       },
+       "fcr": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Fcr"
+       },
+       "feed_cost_inr": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Feed Cost Inr"
+       },
+       "feed_kg": {
+        "title": "Feed Kg",
+        "type": "integer"
+       },
+       "gain_value_inr": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Gain Value Inr"
+       },
+       "growing_charge_inr": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Growing Charge Inr"
+       },
+       "in_days": {
+        "title": "In Days",
+        "type": "integer"
+       },
+       "live_birds": {
+        "title": "Live Birds",
+        "type": "integer"
+       },
+       "marginal_profit_inr": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Marginal Profit Inr"
+       },
+       "mortality_loss_inr": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Mortality Loss Inr"
+       },
+       "net_vs_today_inr": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Net Vs Today Inr"
+       },
+       "rate_per_kg_inr": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Rate Per Kg Inr"
+       },
+       "weekday_en": {
+        "title": "Weekday En",
+        "type": "string"
+       },
+       "weekday_te": {
+        "title": "Weekday Te",
+        "type": "string"
+       },
+       "weight_g": {
+        "title": "Weight G",
+        "type": "integer"
+       },
+       "weight_gain_g": {
+        "title": "Weight Gain G",
+        "type": "integer"
+       }
+      },
+      "required": [
+       "day",
+       "weekday_en",
+       "weekday_te",
+       "in_days",
+       "age_days",
+       "live_birds",
+       "weight_g",
+       "weight_gain_g",
+       "feed_kg",
+       "fcr",
+       "gain_value_inr",
+       "feed_cost_inr",
+       "mortality_loss_inr",
+       "marginal_profit_inr",
+       "net_vs_today_inr",
+       "growing_charge_inr",
+       "rate_per_kg_inr"
+      ],
+      "title": "DayOut",
+      "type": "object"
+     },
+     "HouseSaleOut": {
+      "additionalProperties": false,
+      "description": "One house's plan. Always nested under PlanSaleOutput.plans (even a single-house query is a list of one),\nso the tool has exactly one output schema (docs/DESIGN.md §5 rule 3), the same pattern get_farm_status and\nplan_feed use.",
+      "properties": {
+       "as_of": {
+        "title": "As Of",
+        "type": "string"
+       },
+       "best_day_index": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Best Day Index"
+       },
+       "break_even_day_index": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Break Even Day Index"
+       },
+       "breed": {
+        "title": "Breed",
+        "type": "string"
+       },
+       "days": {
+        "items": {
+         "$ref": "#/$defs/DayOut"
+        },
+        "title": "Days",
+        "type": "array"
+       },
+       "demo_data": {
+        "title": "Demo Data",
+        "type": "boolean"
+       },
+       "farm_mode": {
+        "enum": [
+         "contract",
+         "independent"
+        ],
+        "title": "Farm Mode",
+        "type": "string"
+       },
+       "feed_price_per_kg_inr": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Feed Price Per Kg Inr"
+       },
+       "has_contract_terms": {
+        "title": "Has Contract Terms",
+        "type": "boolean"
+       },
+       "house_id": {
+        "title": "House Id",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       },
+       "live_price_per_kg_inr": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Live Price Per Kg Inr"
+       },
+       "mortality_rate_pct": {
+        "title": "Mortality Rate Pct",
+        "type": "number"
+       },
+       "mortality_rising": {
+        "title": "Mortality Rising",
+        "type": "boolean"
+       },
+       "number": {
+        "title": "Number",
+        "type": "integer"
+       },
+       "price_is_simulated": {
+        "title": "Price Is Simulated",
+        "type": "boolean"
+       },
+       "text_en": {
+        "title": "Text En",
+        "type": "string"
+       },
+       "text_te": {
+        "title": "Text Te",
+        "type": "string"
+       },
+       "weight_basis": {
+        "enum": [
+         "house_actual",
+         "breed_target"
+        ],
+        "title": "Weight Basis",
+        "type": "string"
+       }
+      },
+      "required": [
+       "text_en",
+       "text_te",
+       "demo_data",
+       "house_id",
+       "number",
+       "label_en",
+       "label_te",
+       "breed",
+       "as_of",
+       "farm_mode",
+       "weight_basis",
+       "live_price_per_kg_inr",
+       "price_is_simulated",
+       "feed_price_per_kg_inr",
+       "mortality_rate_pct",
+       "mortality_rising",
+       "has_contract_terms",
+       "days",
+       "best_day_index",
+       "break_even_day_index"
+      ],
+      "title": "HouseSaleOut",
+      "type": "object"
+     },
+     "HouseUnavailableOut": {
+      "additionalProperties": false,
+      "properties": {
+       "house_id": {
+        "title": "House Id",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       },
+       "message_en": {
+        "title": "Message En",
+        "type": "string"
+       },
+       "message_te": {
+        "title": "Message Te",
+        "type": "string"
+       },
+       "number": {
+        "title": "Number",
+        "type": "integer"
+       },
+       "values": {
+        "additionalProperties": {
+         "type": "number"
+        },
+        "title": "Values",
+        "type": "object"
+       }
+      },
+      "required": [
+       "house_id",
+       "number",
+       "label_en",
+       "label_te",
+       "message_en",
+       "message_te",
+       "values"
+      ],
+      "title": "HouseUnavailableOut",
+      "type": "object"
+     }
+    },
+    "additionalProperties": false,
+    "description": "The tool's one output shape. A single house: plans has one item, and the top text is that house's own\ntext. The whole farm: plans holds every broiler shed (worst break-even first), unavailable any that failed.",
+    "properties": {
+     "as_of": {
+      "title": "As Of",
+      "type": "string"
+     },
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "farm_mode": {
+      "enum": [
+       "contract",
+       "independent"
+      ],
+      "title": "Farm Mode",
+      "type": "string"
+     },
+     "plans": {
+      "items": {
+       "$ref": "#/$defs/HouseSaleOut"
+      },
+      "title": "Plans",
+      "type": "array"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     },
+     "unavailable": {
+      "items": {
+       "$ref": "#/$defs/HouseUnavailableOut"
+      },
+      "title": "Unavailable",
+      "type": "array"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "as_of",
+     "farm_mode",
+     "plans",
+     "unavailable"
+    ],
+    "title": "PlanSaleOutput",
+    "type": "object"
+   },
+   "title": "Sell-day plan"
+  },
+  {
+   "_meta": {
+    "ui": {
+     "resourceUri": "ui://clucktalk/briefing.html"
+    }
+   },
+   "annotations": {
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": true
+   },
+   "description": "Use when the farmer asks for today's briefing, the daily update, or what to do first today: a ranked list across the whole farm. Returns at most 5 items (health alerts always first) and reads the top 3; set `more` to true when the farmer says 'more' to hear the rest. Takes no shed. Not for one shed's numbers (use get_farm_status). Never gives a medicine or dose.",
+   "inputSchema": {
+    "properties": {
+     "more": {
+      "default": false,
+      "description": "True only when the farmer asks to hear more after the first items.",
+      "title": "More",
+      "type": "boolean"
+     }
+    },
+    "title": "get_daily_briefingArguments",
+    "type": "object"
+   },
+   "name": "get_daily_briefing",
+   "outputSchema": {
+    "$defs": {
+     "BriefingAiOut": {
+      "additionalProperties": false,
+      "properties": {
+       "engine": {
+        "title": "Engine",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       },
+       "model_id": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Model Id"
+       },
+       "note": {
+        "anyOf": [
+         {
+          "enum": [
+           "in_progress",
+           "no_answer",
+           "daily_limit",
+           "not_needed",
+           "unreadable"
+          ],
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Note"
+       }
+      },
+      "required": [
+       "engine",
+       "model_id",
+       "label_en",
+       "label_te",
+       "note"
+      ],
+      "title": "BriefingAiOut",
+      "type": "object"
+     },
+     "ItemOut": {
+      "additionalProperties": false,
+      "properties": {
+       "category": {
+        "title": "Category",
+        "type": "string"
+       },
+       "fact_id": {
+        "title": "Fact Id",
+        "type": "string"
+       },
+       "house_id": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "House Id"
+       },
+       "label_en": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Label En"
+       },
+       "label_te": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Label Te"
+       },
+       "level": {
+        "enum": [
+         "alert",
+         "watch",
+         "info"
+        ],
+        "title": "Level",
+        "type": "string"
+       },
+       "number": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Number"
+       },
+       "pinned": {
+        "title": "Pinned",
+        "type": "boolean"
+       },
+       "rank": {
+        "title": "Rank",
+        "type": "integer"
+       },
+       "simulated": {
+        "title": "Simulated",
+        "type": "boolean"
+       },
+       "spoken": {
+        "title": "Spoken",
+        "type": "boolean"
+       },
+       "text_en": {
+        "title": "Text En",
+        "type": "string"
+       },
+       "text_te": {
+        "title": "Text Te",
+        "type": "string"
+       },
+       "values": {
+        "additionalProperties": true,
+        "title": "Values",
+        "type": "object"
+       }
+      },
+      "required": [
+       "rank",
+       "fact_id",
+       "category",
+       "level",
+       "pinned",
+       "simulated",
+       "spoken",
+       "house_id",
+       "number",
+       "label_en",
+       "label_te",
+       "text_en",
+       "text_te",
+       "values"
+      ],
+      "title": "ItemOut",
+      "type": "object"
+     },
+     "SafetyOut": {
+      "additionalProperties": false,
+      "properties": {
+       "level": {
+        "enum": [
+         "OK",
+         "WATCH",
+         "ALERT",
+         "UNKNOWN"
+        ],
+        "title": "Level",
+        "type": "string"
+       },
+       "reason_codes": {
+        "items": {
+         "type": "string"
+        },
+        "title": "Reason Codes",
+        "type": "array"
+       },
+       "vet_contact_advised": {
+        "title": "Vet Contact Advised",
+        "type": "boolean"
+       }
+      },
+      "required": [
+       "level",
+       "reason_codes",
+       "vet_contact_advised"
+      ],
+      "title": "SafetyOut",
+      "type": "object"
+     }
+    },
+    "additionalProperties": false,
+    "properties": {
+     "ai": {
+      "$ref": "#/$defs/BriefingAiOut"
+     },
+     "as_of": {
+      "title": "As Of",
+      "type": "string"
+     },
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "items": {
+      "items": {
+       "$ref": "#/$defs/ItemOut"
+      },
+      "title": "Items",
+      "type": "array"
+     },
+     "level": {
+      "enum": [
+       "alert",
+       "watch",
+       "info",
+       "none"
+      ],
+      "title": "Level",
+      "type": "string"
+     },
+     "more_available": {
+      "title": "More Available",
+      "type": "boolean"
+     },
+     "safety": {
+      "$ref": "#/$defs/SafetyOut"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     },
+     "total_items": {
+      "title": "Total Items",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "as_of",
+     "level",
+     "items",
+     "total_items",
+     "more_available",
+     "ai",
+     "safety"
+    ],
+    "title": "BriefingOutput",
+    "type": "object"
+   },
+   "title": "Daily briefing"
+  },
+  {
+   "_meta": {
+    "ui": {
+     "resourceUri": "ui://clucktalk/health-check.html"
+    }
+   },
+   "annotations": {
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": false
+   },
+   "description": "Use when the farmer describes signs of illness in a house (shed, kotam): coughing, sneezing, gasping, runny nose, swelling of the head, blue or purple comb or wattles, twisted neck, paralysis or drooping wings, diarrhoea, not eating, dull birds, lameness, panting, or sudden deaths. Map what they say onto `signs` and pass their own words in `symptoms`. Starts a health check that runs in the background: the result says 'analyzing' (ask get_health_check in a few seconds) unless the signs need action at once. Triage only: it never diagnoses and never suggests a medicine, drug or dose — never put a dose in `symptoms`.",
+   "inputSchema": {
+    "properties": {
+     "birds_affected": {
+      "anyOf": [
+       {
+        "maximum": 1000000,
+        "minimum": 1,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "About how many birds show the signs, if said.",
+      "title": "Birds Affected"
+     },
+     "house": {
+      "description": "Which house. Accepts how farmers say it: 'shed 2', 'house two', 'kotam do'.",
+      "title": "House",
+      "type": "string"
+     },
+     "photo_ref": {
+      "anyOf": [
+       {
+        "enum": [
+         "placeholder_1",
+         "placeholder_2",
+         "placeholder_3"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Optional, demo only: attach one of the placeholder photos. It is recorded and shown as attached, never analyzed, and it never changes the result. Leave it out unless the farmer attached a photo.",
+      "title": "Photo Ref"
+     },
+     "signs": {
+      "description": "Signs the farmer reports, mapped onto the allowed values. Empty if none fit.",
+      "items": {
+       "enum": [
+        "coughing",
+        "sneezing",
+        "gasping",
+        "nasal_discharge",
+        "swollen_head",
+        "discoloured_comb",
+        "twisted_neck",
+        "paralysis",
+        "diarrhoea",
+        "not_eating",
+        "dull",
+        "lame",
+        "panting",
+        "sudden_deaths"
+       ],
+       "type": "string"
+      },
+      "title": "Signs",
+      "type": "array"
+     },
+     "since_days": {
+      "anyOf": [
+       {
+        "maximum": 60,
+        "minimum": 0,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "How many days ago it started, if said.",
+      "title": "Since Days"
+     },
+     "symptoms": {
+      "anyOf": [
+       {
+        "maxLength": 300,
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "The farmer's own words about what they see (optional).",
+      "title": "Symptoms"
+     }
+    },
+    "required": [
+     "house",
+     "signs"
+    ],
+    "title": "start_health_checkArguments",
+    "type": "object"
+   },
+   "name": "start_health_check",
+   "outputSchema": {
+    "$defs": {
+     "AiOut": {
+      "additionalProperties": false,
+      "properties": {
+       "engine": {
+        "title": "Engine",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       },
+       "model_id": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Model Id"
+       },
+       "note": {
+        "anyOf": [
+         {
+          "enum": [
+           "daily_limit",
+           "not_needed_red_flags",
+           "no_answer"
+          ],
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Note"
+       }
+      },
+      "required": [
+       "engine",
+       "model_id",
+       "label_en",
+       "label_te",
+       "note"
+      ],
+      "title": "AiOut",
+      "type": "object"
+     },
+     "CategoryOut": {
+      "additionalProperties": false,
+      "properties": {
+       "category": {
+        "title": "Category",
+        "type": "string"
+       },
+       "confidence": {
+        "enum": [
+         "low",
+         "medium",
+         "high"
+        ],
+        "title": "Confidence",
+        "type": "string"
+       },
+       "confidence_en": {
+        "title": "Confidence En",
+        "type": "string"
+       },
+       "confidence_te": {
+        "title": "Confidence Te",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       }
+      },
+      "required": [
+       "category",
+       "label_en",
+       "label_te",
+       "confidence",
+       "confidence_en",
+       "confidence_te"
+      ],
+      "title": "CategoryOut",
+      "type": "object"
+     },
+     "CodeLabelOut": {
+      "additionalProperties": false,
+      "properties": {
+       "code": {
+        "title": "Code",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       }
+      },
+      "required": [
+       "code",
+       "label_en",
+       "label_te"
+      ],
+      "title": "CodeLabelOut",
+      "type": "object"
+     },
+     "EvidenceOut": {
+      "additionalProperties": false,
+      "properties": {
+       "age_days": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Age Days"
+       },
+       "baseline_daily_avg": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Baseline Daily Avg"
+       },
+       "birds_affected_ignored": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Birds Affected Ignored"
+       },
+       "deaths_latest": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Deaths Latest"
+       },
+       "feed_drop_pct": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Feed Drop Pct"
+       },
+       "latest_record_day": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Latest Record Day"
+       },
+       "live_birds": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Live Birds"
+       },
+       "mortality_spike": {
+        "title": "Mortality Spike",
+        "type": "boolean"
+       },
+       "records_used": {
+        "title": "Records Used",
+        "type": "boolean"
+       }
+      },
+      "required": [
+       "latest_record_day",
+       "deaths_latest",
+       "records_used",
+       "mortality_spike",
+       "baseline_daily_avg",
+       "feed_drop_pct",
+       "live_birds",
+       "age_days",
+       "birds_affected_ignored"
+      ],
+      "title": "EvidenceOut",
+      "type": "object"
+     },
+     "PhotoOut": {
+      "additionalProperties": false,
+      "properties": {
+       "analyzed": {
+        "const": false,
+        "title": "Analyzed",
+        "type": "boolean"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       },
+       "note_en": {
+        "title": "Note En",
+        "type": "string"
+       },
+       "note_te": {
+        "title": "Note Te",
+        "type": "string"
+       },
+       "placeholder": {
+        "const": true,
+        "title": "Placeholder",
+        "type": "boolean"
+       },
+       "ref": {
+        "title": "Ref",
+        "type": "string"
+       }
+      },
+      "required": [
+       "ref",
+       "placeholder",
+       "analyzed",
+       "label_en",
+       "label_te",
+       "note_en",
+       "note_te"
+      ],
+      "title": "PhotoOut",
+      "type": "object"
+     },
+     "SourceOut": {
+      "additionalProperties": false,
+      "properties": {
+       "title": {
+        "title": "Title",
+        "type": "string"
+       },
+       "url": {
+        "title": "Url",
+        "type": "string"
+       }
+      },
+      "required": [
+       "title",
+       "url"
+      ],
+      "title": "SourceOut",
+      "type": "object"
+     }
+    },
+    "additionalProperties": false,
+    "properties": {
+     "ai": {
+      "$ref": "#/$defs/AiOut"
+     },
+     "check_id": {
+      "title": "Check Id",
+      "type": "string"
+     },
+     "checks": {
+      "items": {
+       "$ref": "#/$defs/CodeLabelOut"
+      },
+      "title": "Checks",
+      "type": "array"
+     },
+     "consistent_with": {
+      "items": {
+       "$ref": "#/$defs/CategoryOut"
+      },
+      "title": "Consistent With",
+      "type": "array"
+     },
+     "created_at": {
+      "title": "Created At",
+      "type": "string"
+     },
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "disclaimer_en": {
+      "title": "Disclaimer En",
+      "type": "string"
+     },
+     "disclaimer_te": {
+      "title": "Disclaimer Te",
+      "type": "string"
+     },
+     "duplicate": {
+      "title": "Duplicate",
+      "type": "boolean"
+     },
+     "evidence": {
+      "$ref": "#/$defs/EvidenceOut"
+     },
+     "floor_reasons": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Floor Reasons",
+      "type": "array"
+     },
+     "floor_urgency": {
+      "enum": [
+       "routine",
+       "watch",
+       "urgent",
+       "notifiable_suspect"
+      ],
+      "title": "Floor Urgency",
+      "type": "string"
+     },
+     "follow_up_in_days": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "title": "Follow Up In Days"
+     },
+     "handoff_offered": {
+      "title": "Handoff Offered",
+      "type": "boolean"
+     },
+     "house_id": {
+      "title": "House Id",
+      "type": "string"
+     },
+     "label_en": {
+      "title": "Label En",
+      "type": "string"
+     },
+     "label_te": {
+      "title": "Label Te",
+      "type": "string"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "photo": {
+      "anyOf": [
+       {
+        "$ref": "#/$defs/PhotoOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "signs": {
+      "items": {
+       "$ref": "#/$defs/CodeLabelOut"
+      },
+      "title": "Signs",
+      "type": "array"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/$defs/SourceOut"
+      },
+      "title": "Sources",
+      "type": "array"
+     },
+     "status": {
+      "enum": [
+       "analyzing",
+       "ready",
+       "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     },
+     "urgency": {
+      "anyOf": [
+       {
+        "enum": [
+         "routine",
+         "watch",
+         "urgent",
+         "notifiable_suspect"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Urgency"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "check_id",
+     "house_id",
+     "number",
+     "label_en",
+     "label_te",
+     "status",
+     "created_at",
+     "duplicate",
+     "floor_urgency",
+     "floor_reasons",
+     "urgency",
+     "signs",
+     "consistent_with",
+     "checks",
+     "evidence",
+     "ai",
+     "photo",
+     "handoff_offered",
+     "disclaimer_en",
+     "disclaimer_te",
+     "sources"
+    ],
+    "title": "HealthCheckOutput",
+    "type": "object"
+   },
+   "title": "Start a health check"
+  },
+  {
+   "_meta": {
+    "ui": {
+     "resourceUri": "ui://clucktalk/health-check.html"
+    }
+   },
+   "annotations": {
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": true
+   },
+   "description": "Use when the farmer asks whether a health check is ready or what it found. Give the house, or the check_id from start_health_check. Read-only.",
+   "inputSchema": {
+    "properties": {
+     "check_id": {
+      "anyOf": [
+       {
+        "pattern": "^chk_[0-9a-f]{16}$",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "The check_id from start_health_check.",
+      "title": "Check Id"
+     },
+     "house": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Which house. Accepts how farmers say it: 'shed 2', 'house two', 'kotam do'.",
+      "title": "House"
+     }
+    },
+    "title": "get_health_checkArguments",
+    "type": "object"
+   },
+   "name": "get_health_check",
+   "outputSchema": {
+    "$defs": {
+     "AiOut": {
+      "additionalProperties": false,
+      "properties": {
+       "engine": {
+        "title": "Engine",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       },
+       "model_id": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Model Id"
+       },
+       "note": {
+        "anyOf": [
+         {
+          "enum": [
+           "daily_limit",
+           "not_needed_red_flags",
+           "no_answer"
+          ],
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Note"
+       }
+      },
+      "required": [
+       "engine",
+       "model_id",
+       "label_en",
+       "label_te",
+       "note"
+      ],
+      "title": "AiOut",
+      "type": "object"
+     },
+     "CategoryOut": {
+      "additionalProperties": false,
+      "properties": {
+       "category": {
+        "title": "Category",
+        "type": "string"
+       },
+       "confidence": {
+        "enum": [
+         "low",
+         "medium",
+         "high"
+        ],
+        "title": "Confidence",
+        "type": "string"
+       },
+       "confidence_en": {
+        "title": "Confidence En",
+        "type": "string"
+       },
+       "confidence_te": {
+        "title": "Confidence Te",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       }
+      },
+      "required": [
+       "category",
+       "label_en",
+       "label_te",
+       "confidence",
+       "confidence_en",
+       "confidence_te"
+      ],
+      "title": "CategoryOut",
+      "type": "object"
+     },
+     "CodeLabelOut": {
+      "additionalProperties": false,
+      "properties": {
+       "code": {
+        "title": "Code",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       }
+      },
+      "required": [
+       "code",
+       "label_en",
+       "label_te"
+      ],
+      "title": "CodeLabelOut",
+      "type": "object"
+     },
+     "EvidenceOut": {
+      "additionalProperties": false,
+      "properties": {
+       "age_days": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Age Days"
+       },
+       "baseline_daily_avg": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Baseline Daily Avg"
+       },
+       "birds_affected_ignored": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Birds Affected Ignored"
+       },
+       "deaths_latest": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Deaths Latest"
+       },
+       "feed_drop_pct": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Feed Drop Pct"
+       },
+       "latest_record_day": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Latest Record Day"
+       },
+       "live_birds": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Live Birds"
+       },
+       "mortality_spike": {
+        "title": "Mortality Spike",
+        "type": "boolean"
+       },
+       "records_used": {
+        "title": "Records Used",
+        "type": "boolean"
+       }
+      },
+      "required": [
+       "latest_record_day",
+       "deaths_latest",
+       "records_used",
+       "mortality_spike",
+       "baseline_daily_avg",
+       "feed_drop_pct",
+       "live_birds",
+       "age_days",
+       "birds_affected_ignored"
+      ],
+      "title": "EvidenceOut",
+      "type": "object"
+     },
+     "PhotoOut": {
+      "additionalProperties": false,
+      "properties": {
+       "analyzed": {
+        "const": false,
+        "title": "Analyzed",
+        "type": "boolean"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       },
+       "note_en": {
+        "title": "Note En",
+        "type": "string"
+       },
+       "note_te": {
+        "title": "Note Te",
+        "type": "string"
+       },
+       "placeholder": {
+        "const": true,
+        "title": "Placeholder",
+        "type": "boolean"
+       },
+       "ref": {
+        "title": "Ref",
+        "type": "string"
+       }
+      },
+      "required": [
+       "ref",
+       "placeholder",
+       "analyzed",
+       "label_en",
+       "label_te",
+       "note_en",
+       "note_te"
+      ],
+      "title": "PhotoOut",
+      "type": "object"
+     },
+     "SourceOut": {
+      "additionalProperties": false,
+      "properties": {
+       "title": {
+        "title": "Title",
+        "type": "string"
+       },
+       "url": {
+        "title": "Url",
+        "type": "string"
+       }
+      },
+      "required": [
+       "title",
+       "url"
+      ],
+      "title": "SourceOut",
+      "type": "object"
+     }
+    },
+    "additionalProperties": false,
+    "properties": {
+     "ai": {
+      "$ref": "#/$defs/AiOut"
+     },
+     "check_id": {
+      "title": "Check Id",
+      "type": "string"
+     },
+     "checks": {
+      "items": {
+       "$ref": "#/$defs/CodeLabelOut"
+      },
+      "title": "Checks",
+      "type": "array"
+     },
+     "consistent_with": {
+      "items": {
+       "$ref": "#/$defs/CategoryOut"
+      },
+      "title": "Consistent With",
+      "type": "array"
+     },
+     "created_at": {
+      "title": "Created At",
+      "type": "string"
+     },
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "disclaimer_en": {
+      "title": "Disclaimer En",
+      "type": "string"
+     },
+     "disclaimer_te": {
+      "title": "Disclaimer Te",
+      "type": "string"
+     },
+     "duplicate": {
+      "title": "Duplicate",
+      "type": "boolean"
+     },
+     "evidence": {
+      "$ref": "#/$defs/EvidenceOut"
+     },
+     "floor_reasons": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Floor Reasons",
+      "type": "array"
+     },
+     "floor_urgency": {
+      "enum": [
+       "routine",
+       "watch",
+       "urgent",
+       "notifiable_suspect"
+      ],
+      "title": "Floor Urgency",
+      "type": "string"
+     },
+     "follow_up_in_days": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "title": "Follow Up In Days"
+     },
+     "handoff_offered": {
+      "title": "Handoff Offered",
+      "type": "boolean"
+     },
+     "house_id": {
+      "title": "House Id",
+      "type": "string"
+     },
+     "label_en": {
+      "title": "Label En",
+      "type": "string"
+     },
+     "label_te": {
+      "title": "Label Te",
+      "type": "string"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "photo": {
+      "anyOf": [
+       {
+        "$ref": "#/$defs/PhotoOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "signs": {
+      "items": {
+       "$ref": "#/$defs/CodeLabelOut"
+      },
+      "title": "Signs",
+      "type": "array"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/$defs/SourceOut"
+      },
+      "title": "Sources",
+      "type": "array"
+     },
+     "status": {
+      "enum": [
+       "analyzing",
+       "ready",
+       "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     },
+     "urgency": {
+      "anyOf": [
+       {
+        "enum": [
+         "routine",
+         "watch",
+         "urgent",
+         "notifiable_suspect"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Urgency"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "check_id",
+     "house_id",
+     "number",
+     "label_en",
+     "label_te",
+     "status",
+     "created_at",
+     "duplicate",
+     "floor_urgency",
+     "floor_reasons",
+     "urgency",
+     "signs",
+     "consistent_with",
+     "checks",
+     "evidence",
+     "ai",
+     "photo",
+     "handoff_offered",
+     "disclaimer_en",
+     "disclaimer_te",
+     "sources"
+    ],
+    "title": "HealthCheckOutput",
+    "type": "object"
+   },
+   "title": "Health check result"
+  },
+  {
+   "annotations": {
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": true
+   },
+   "description": "Use when the farmer asks about feed (dana) for a house (shed, kotam) or the farm: how much is needed in the coming days, how long the stock lasts, whether to reorder, and when the broiler feed phase changes. Give `house` for one house (omit for every house) and optionally `horizon_days`. Plans only; it never places an order. Prices are simulated. On a contract farm it names the bags to ask the supervisor for, without prices.",
+   "inputSchema": {
+    "properties": {
+     "horizon_days": {
+      "default": 7,
+      "description": "Days ahead to plan, 1 to 14. Default 7.",
+      "maximum": 14,
+      "minimum": 1,
+      "title": "Horizon Days",
+      "type": "integer"
+     },
+     "house": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Which house. Accepts how farmers say it: 'shed 2', 'house two', 'kotam do', 'second shed', or a house_id such as 'house-2'. Omit (or say 'all') for every house.",
+      "title": "House"
+     }
+    },
+    "title": "plan_feed_toolArguments",
+    "type": "object"
+   },
+   "name": "plan_feed",
+   "outputSchema": {
+    "$defs": {
+     "DayNeedOut": {
+      "additionalProperties": false,
+      "properties": {
+       "age_days": {
+        "title": "Age Days",
+        "type": "integer"
+       },
+       "birds": {
+        "title": "Birds",
+        "type": "integer"
+       },
+       "day": {
+        "title": "Day",
+        "type": "string"
+       },
+       "feed_kg": {
+        "title": "Feed Kg",
+        "type": "number"
+       }
+      },
+      "required": [
+       "day",
+       "age_days",
+       "birds",
+       "feed_kg"
+      ],
+      "title": "DayNeedOut",
+      "type": "object"
+     },
+     "HouseFeedPlanOut": {
+      "additionalProperties": false,
+      "properties": {
+       "bag_kg": {
+        "title": "Bag Kg",
+        "type": "integer"
+       },
+       "basis": {
+        "enum": [
+         "house_actual",
+         "breed_target_scaled",
+         "breed_target"
+        ],
+        "title": "Basis",
+        "type": "string"
+       },
+       "breed": {
+        "title": "Breed",
+        "type": "string"
+       },
+       "current_phase": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Current Phase"
+       },
+       "daily": {
+        "items": {
+         "$ref": "#/$defs/DayNeedOut"
+        },
+        "title": "Daily",
+        "type": "array"
+       },
+       "days_covered": {
+        "title": "Days Covered",
+        "type": "integer"
+       },
+       "days_covered_is_minimum": {
+        "title": "Days Covered Is Minimum",
+        "type": "boolean"
+       },
+       "days_since_record": {
+        "title": "Days Since Record",
+        "type": "integer"
+       },
+       "feed_price_per_kg_inr": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Feed Price Per Kg Inr"
+       },
+       "horizon_days": {
+        "title": "Horizon Days",
+        "type": "integer"
+       },
+       "house_id": {
+        "title": "House Id",
+        "type": "string"
+       },
+       "kind": {
+        "enum": [
+         "broiler",
+         "layer"
+        ],
+        "title": "Kind",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       },
+       "need_kg": {
+        "title": "Need Kg",
+        "type": "integer"
+       },
+       "number": {
+        "title": "Number",
+        "type": "integer"
+       },
+       "phase_change": {
+        "anyOf": [
+         {
+          "$ref": "#/$defs/PhaseChangeOut"
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "price_is_simulated": {
+        "title": "Price Is Simulated",
+        "type": "boolean"
+       },
+       "reorder_needed": {
+        "title": "Reorder Needed",
+        "type": "boolean"
+       },
+       "runs_out_on": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Runs Out On"
+       },
+       "stock_kg": {
+        "title": "Stock Kg",
+        "type": "integer"
+       },
+       "suggested_order_bags": {
+        "title": "Suggested Order Bags",
+        "type": "integer"
+       },
+       "suggested_order_cost_inr": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Suggested Order Cost Inr"
+       },
+       "suggested_order_kg": {
+        "title": "Suggested Order Kg",
+        "type": "integer"
+       },
+       "summary_en": {
+        "title": "Summary En",
+        "type": "string"
+       },
+       "summary_te": {
+        "title": "Summary Te",
+        "type": "string"
+       }
+      },
+      "required": [
+       "house_id",
+       "number",
+       "label_en",
+       "label_te",
+       "kind",
+       "breed",
+       "summary_en",
+       "summary_te",
+       "horizon_days",
+       "days_since_record",
+       "basis",
+       "need_kg",
+       "stock_kg",
+       "days_covered",
+       "days_covered_is_minimum",
+       "runs_out_on",
+       "reorder_needed",
+       "bag_kg",
+       "suggested_order_bags",
+       "suggested_order_kg",
+       "feed_price_per_kg_inr",
+       "suggested_order_cost_inr",
+       "price_is_simulated",
+       "current_phase",
+       "phase_change",
+       "daily"
+      ],
+      "title": "HouseFeedPlanOut",
+      "type": "object"
+     },
+     "HouseUnavailableOut": {
+      "additionalProperties": false,
+      "properties": {
+       "breed": {
+        "title": "Breed",
+        "type": "string"
+       },
+       "house_id": {
+        "title": "House Id",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       },
+       "message_en": {
+        "title": "Message En",
+        "type": "string"
+       },
+       "message_te": {
+        "title": "Message Te",
+        "type": "string"
+       },
+       "number": {
+        "title": "Number",
+        "type": "integer"
+       },
+       "values": {
+        "additionalProperties": {
+         "type": "number"
+        },
+        "title": "Values",
+        "type": "object"
+       }
+      },
+      "required": [
+       "house_id",
+       "number",
+       "label_en",
+       "label_te",
+       "breed",
+       "message_en",
+       "message_te",
+       "values"
+      ],
+      "title": "HouseUnavailableOut",
+      "type": "object"
+     },
+     "PhaseChangeOut": {
+      "additionalProperties": false,
+      "properties": {
+       "day": {
+        "title": "Day",
+        "type": "string"
+       },
+       "from_phase": {
+        "title": "From Phase",
+        "type": "string"
+       },
+       "in_days": {
+        "title": "In Days",
+        "type": "integer"
+       },
+       "to_phase": {
+        "title": "To Phase",
+        "type": "string"
+       }
+      },
+      "required": [
+       "day",
+       "in_days",
+       "from_phase",
+       "to_phase"
+      ],
+      "title": "PhaseChangeOut",
+      "type": "object"
+     }
+    },
+    "additionalProperties": false,
+    "properties": {
+     "as_of": {
+      "title": "As Of",
+      "type": "string"
+     },
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "farm_mode": {
+      "enum": [
+       "contract",
+       "independent"
+      ],
+      "title": "Farm Mode",
+      "type": "string"
+     },
+     "plans": {
+      "items": {
+       "$ref": "#/$defs/HouseFeedPlanOut"
+      },
+      "title": "Plans",
+      "type": "array"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     },
+     "unavailable": {
+      "items": {
+       "$ref": "#/$defs/HouseUnavailableOut"
+      },
+      "title": "Unavailable",
+      "type": "array"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "as_of",
+     "farm_mode",
+     "plans",
+     "unavailable"
+    ],
+    "title": "FeedPlanOutput",
+    "type": "object"
+   },
+   "title": "Feed plan"
+  },
+  {
+   "annotations": {
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": true
+   },
+   "description": "Use when the farmer asks what kind of farm this is set up as, contract (a company or integrator supplies chicks and feed) or independent (the farmer buys feed and sells birds), or why feed answers mention the supervisor or prices. Takes no input. Returns the farm's mode and what it changes.",
+   "inputSchema": {
+    "properties": {},
+    "title": "get_farm_profileArguments",
+    "type": "object"
+   },
+   "name": "get_farm_profile",
+   "outputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "has_contract_terms": {
+      "title": "Has Contract Terms",
+      "type": "boolean"
+     },
+     "mode": {
+      "enum": [
+       "contract",
+       "independent"
+      ],
+      "title": "Mode",
+      "type": "string"
+     },
+     "set_by": {
+      "enum": [
+       "demo_default",
+       "farmer"
+      ],
+      "title": "Set By",
+      "type": "string"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     },
+     "updated_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Updated At"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "mode",
+     "set_by",
+     "updated_at",
+     "has_contract_terms"
+    ],
+    "title": "FarmProfileOutput",
+    "type": "object"
+   },
+   "title": "Farm type"
+  },
+  {
+   "annotations": {
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": false
+   },
+   "description": "Use when the farmer wants to change how the farm is run. `mode`: 'contract' (a company or integrator supplies chicks, feed and medicine; also 'company farming', 'agreement farming', 'integration') or 'independent' (the farmer buys feed and sells the birds; also 'own farm', 'apna farm', 'khud ka'). Always two calls: first only `mode`; nothing changes and the result reads the change back. Ask the farmer. Then call again with the same `mode`, the returned `proposal_id` and `answer`: 'yes' only for an explicit spoken yes (haan, avunu), 'no' for no (nahi, vaddu).",
+   "inputSchema": {
+    "properties": {
+     "answer": {
+      "anyOf": [
+       {
+        "enum": [
+         "yes",
+         "no"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Only on the second call: 'yes' if the farmer said yes (haan, avunu), 'no' if they said no.",
+      "title": "Answer"
+     },
+     "mode": {
+      "description": "'contract' or 'independent'.",
+      "enum": [
+       "contract",
+       "independent"
+      ],
+      "title": "Mode",
+      "type": "string"
+     },
+     "proposal_id": {
+      "anyOf": [
+       {
+        "pattern": "^prop_[0-9a-f]{16}$",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Only on the second call: the proposal_id returned by the first call, sent with the answer.",
+      "title": "Proposal Id"
+     }
+    },
+    "required": [
+     "mode"
+    ],
+    "title": "set_farm_modeArguments",
+    "type": "object"
+   },
+   "name": "set_farm_mode",
+   "outputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "expires_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires At"
+     },
+     "expires_in_minutes": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires In Minutes"
+     },
+     "mode_now": {
+      "enum": [
+       "contract",
+       "independent"
+      ],
+      "title": "Mode Now",
+      "type": "string"
+     },
+     "mode_requested": {
+      "enum": [
+       "contract",
+       "independent"
+      ],
+      "title": "Mode Requested",
+      "type": "string"
+     },
+     "proposal_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Proposal Id"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "enum": [
+         "expired",
+         "superseded",
+         "changed",
+         "unknown",
+         "cancelled_earlier",
+         "already_done"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     },
+     "replayed": {
+      "title": "Replayed",
+      "type": "boolean"
+     },
+     "status": {
+      "enum": [
+       "needs_confirmation",
+       "changed",
+       "already_set",
+       "cancelled"
+      ],
+      "title": "Status",
+      "type": "string"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "status",
+     "mode_requested",
+     "mode_now",
+     "proposal_id",
+     "expires_at",
+     "expires_in_minutes",
+     "reason",
+     "replayed"
+    ],
+    "title": "SetFarmModeOutput",
+    "type": "object"
+   },
+   "title": "Change farm type"
+  },
+  {
+   "annotations": {
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": false
+   },
+   "description": "Use when a contract farmer wants to save or update their own growing-charge terms, so plan_sale can show how an extra day changes the growing charge. Give all four numbers from the farmer's own agreement: `base_rate_per_kg` (rupees per kg live weight at the standard FCR), `standard_fcr`, `incentive_per_kg_per_fcr_point` and `deduction_per_kg_per_fcr_point` (rupees per kg, per 0.1 FCR better/worse than standard; 0 if unknown). Never suggest numbers from any company: ask the farmer to read them from their own paperwork. Always two calls: first only the four numbers; nothing changes and the result reads them back. Then call again with the same numbers plus the returned `proposal_id` and `answer`: 'yes' for an explicit spoken yes (haan, avunu), 'no' for no (nahi, vaddu).",
+   "inputSchema": {
+    "properties": {
+     "answer": {
+      "anyOf": [
+       {
+        "enum": [
+         "yes",
+         "no"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Only on the second call: 'yes' if the farmer said yes, 'no' if no.",
+      "title": "Answer"
+     },
+     "base_rate_per_kg": {
+      "description": "Rupees per kg live weight at the standard FCR.",
+      "exclusiveMinimum": 0,
+      "title": "Base Rate Per Kg",
+      "type": "number"
+     },
+     "deduction_per_kg_per_fcr_point": {
+      "description": "Rupees per kg, per 0.1 FCR worse than standard. 0 if none.",
+      "minimum": 0,
+      "title": "Deduction Per Kg Per Fcr Point",
+      "type": "number"
+     },
+     "incentive_per_kg_per_fcr_point": {
+      "description": "Rupees per kg, per 0.1 FCR better than standard. 0 if none.",
+      "minimum": 0,
+      "title": "Incentive Per Kg Per Fcr Point",
+      "type": "number"
+     },
+     "proposal_id": {
+      "anyOf": [
+       {
+        "pattern": "^prop_[0-9a-f]{16}$",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Only on the second call: the proposal_id from the first call.",
+      "title": "Proposal Id"
+     },
+     "standard_fcr": {
+      "description": "The contract's standard (target) FCR.",
+      "exclusiveMinimum": 0,
+      "title": "Standard Fcr",
+      "type": "number"
+     }
+    },
+    "required": [
+     "base_rate_per_kg",
+     "standard_fcr",
+     "incentive_per_kg_per_fcr_point",
+     "deduction_per_kg_per_fcr_point"
+    ],
+    "title": "set_contract_termsArguments",
+    "type": "object"
+   },
+   "name": "set_contract_terms",
+   "outputSchema": {
+    "$defs": {
+     "ContractTermsOut": {
+      "additionalProperties": false,
+      "properties": {
+       "base_rate_per_kg_inr": {
+        "title": "Base Rate Per Kg Inr",
+        "type": "number"
+       },
+       "deduction_per_kg_per_fcr_point_inr": {
+        "title": "Deduction Per Kg Per Fcr Point Inr",
+        "type": "number"
+       },
+       "incentive_per_kg_per_fcr_point_inr": {
+        "title": "Incentive Per Kg Per Fcr Point Inr",
+        "type": "number"
+       },
+       "standard_fcr": {
+        "title": "Standard Fcr",
+        "type": "number"
+       },
+       "updated_at": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Updated At"
+       }
+      },
+      "required": [
+       "base_rate_per_kg_inr",
+       "standard_fcr",
+       "incentive_per_kg_per_fcr_point_inr",
+       "deduction_per_kg_per_fcr_point_inr",
+       "updated_at"
+      ],
+      "title": "ContractTermsOut",
+      "type": "object"
+     }
+    },
+    "additionalProperties": false,
+    "properties": {
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "expires_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires At"
+     },
+     "expires_in_minutes": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires In Minutes"
+     },
+     "fcr_point": {
+      "title": "Fcr Point",
+      "type": "number"
+     },
+     "proposal_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Proposal Id"
+     },
+     "proposed": {
+      "$ref": "#/$defs/ContractTermsOut"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     },
+     "replayed": {
+      "title": "Replayed",
+      "type": "boolean"
+     },
+     "status": {
+      "title": "Status",
+      "type": "string"
+     },
+     "terms": {
+      "anyOf": [
+       {
+        "$ref": "#/$defs/ContractTermsOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "status",
+     "terms",
+     "proposed",
+     "fcr_point",
+     "proposal_id",
+     "expires_at",
+     "expires_in_minutes",
+     "reason",
+     "replayed"
+    ],
+    "title": "SetContractTermsOutput",
+    "type": "object"
+   },
+   "title": "Save contract terms"
+  },
+  {
+   "annotations": {
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": true
+   },
+   "description": "Use when the farmer asks for today's record-book summary: which houses (sheds, kotams) have a record logged for today and which don't yet. Read-only; today, every house. To log a record, use log_daily_record instead.",
+   "inputSchema": {
+    "properties": {},
+    "title": "get_record_bookArguments",
+    "type": "object"
+   },
+   "name": "get_record_book",
+   "outputSchema": {
+    "$defs": {
+     "DailyRecordOut": {
+      "additionalProperties": false,
+      "properties": {
+       "avg_weight_g": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Avg Weight G"
+       },
+       "day": {
+        "title": "Day",
+        "type": "string"
+       },
+       "deaths": {
+        "title": "Deaths",
+        "type": "integer"
+       },
+       "feed_bags": {
+        "title": "Feed Bags",
+        "type": "number"
+       },
+       "feed_kg": {
+        "title": "Feed Kg",
+        "type": "number"
+       },
+       "treatments": {
+        "items": {
+         "$ref": "#/$defs/TreatmentOut"
+        },
+        "title": "Treatments",
+        "type": "array"
+       },
+       "weight_sample_birds": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Weight Sample Birds"
+       }
+      },
+      "required": [
+       "day",
+       "deaths",
+       "feed_kg",
+       "feed_bags",
+       "avg_weight_g",
+       "weight_sample_birds",
+       "treatments"
+      ],
+      "title": "DailyRecordOut",
+      "type": "object"
+     },
+     "RecordBookEntryOut": {
+      "additionalProperties": false,
+      "properties": {
+       "house_id": {
+        "title": "House Id",
+        "type": "string"
+       },
+       "label_en": {
+        "title": "Label En",
+        "type": "string"
+       },
+       "label_te": {
+        "title": "Label Te",
+        "type": "string"
+       },
+       "logged": {
+        "title": "Logged",
+        "type": "boolean"
+       },
+       "number": {
+        "title": "Number",
+        "type": "integer"
+       },
+       "record": {
+        "anyOf": [
+         {
+          "$ref": "#/$defs/DailyRecordOut"
+         },
+         {
+          "type": "null"
+         }
+        ]
+       }
+      },
+      "required": [
+       "house_id",
+       "number",
+       "label_en",
+       "label_te",
+       "logged",
+       "record"
+      ],
+      "title": "RecordBookEntryOut",
+      "type": "object"
+     },
+     "TreatmentOut": {
+      "additionalProperties": false,
+      "properties": {
+       "kind": {
+        "enum": [
+         "medicine",
+         "vaccine"
+        ],
+        "title": "Kind",
+        "type": "string"
+       },
+       "name": {
+        "title": "Name",
+        "type": "string"
+       },
+       "note": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Note"
+       }
+      },
+      "required": [
+       "kind",
+       "name",
+       "note"
+      ],
+      "title": "TreatmentOut",
+      "type": "object"
+     }
+    },
+    "additionalProperties": false,
+    "properties": {
+     "as_of": {
+      "title": "As Of",
+      "type": "string"
+     },
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "entries": {
+      "items": {
+       "$ref": "#/$defs/RecordBookEntryOut"
+      },
+      "title": "Entries",
+      "type": "array"
+     },
+     "houses_logged": {
+      "title": "Houses Logged",
+      "type": "integer"
+     },
+     "houses_total": {
+      "title": "Houses Total",
+      "type": "integer"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "as_of",
+     "houses_logged",
+     "houses_total",
+     "entries"
+    ],
+    "title": "RecordBookOutput",
+    "type": "object"
+   },
+   "title": "Today's record book"
+  },
+  {
+   "annotations": {
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": false
+   },
+   "description": "Use when the farmer reports what happened in a house today (or an earlier day): deaths (mar gaye, mare), feed given in bags of 50 kg (dana, bori), a weight sample (average weight and how many birds were weighed), or a medicine or vaccine given (dawai, teeka/tika). Give `house` and whichever of `deaths`, `feed_bags`, `avg_weight_g` + `weight_sample_birds`, or `treatments` the farmer mentioned; omit the rest — an omitted field keeps whatever is already saved for that day, so a correction ('actually it was 7 dead') only needs the one changed field, not the whole day again. `day` defaults to today; give an ISO date for an earlier, unlogged day. Never ask for or record a dose, even if the farmer gives one — name only. Always two calls: first without `proposal_id`; nothing is saved and the result reads back what will be saved. Then call again with the same arguments plus the returned `proposal_id` and `answer`: 'yes' for an explicit spoken yes (haan, avunu), 'no' for no (nahi, vaddu).",
+   "inputSchema": {
+    "$defs": {
+     "TreatmentIn": {
+      "additionalProperties": false,
+      "properties": {
+       "kind": {
+        "enum": [
+         "medicine",
+         "vaccine"
+        ],
+        "title": "Kind",
+        "type": "string"
+       },
+       "name": {
+        "maxLength": 80,
+        "minLength": 1,
+        "title": "Name",
+        "type": "string"
+       },
+       "note": {
+        "anyOf": [
+         {
+          "maxLength": 200,
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "default": null,
+        "title": "Note"
+       }
+      },
+      "required": [
+       "kind",
+       "name"
+      ],
+      "title": "TreatmentIn",
+      "type": "object"
+     }
+    },
+    "properties": {
+     "answer": {
+      "anyOf": [
+       {
+        "enum": [
+         "yes",
+         "no"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Only on the second call: 'yes' if the farmer said yes, 'no' if no.",
+      "title": "Answer"
+     },
+     "avg_weight_g": {
+      "anyOf": [
+       {
+        "exclusiveMinimum": 0,
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Average live weight in grams from a sample weighing.",
+      "title": "Avg Weight G"
+     },
+     "day": {
+      "anyOf": [
+       {
+        "format": "date",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "ISO date (YYYY-MM-DD) this record is for. Defaults to today.",
+      "title": "Day"
+     },
+     "deaths": {
+      "anyOf": [
+       {
+        "minimum": 0,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Birds that died this day. Omit if not mentioned.",
+      "title": "Deaths"
+     },
+     "feed_bags": {
+      "anyOf": [
+       {
+        "minimum": 0,
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Bags of standard 50 kg feed given this day.",
+      "title": "Feed Bags"
+     },
+     "house": {
+      "description": "Which house. Accepts how farmers say it: 'shed 2', 'house two', 'kotam do', or a house_id.",
+      "title": "House",
+      "type": "string"
+     },
+     "proposal_id": {
+      "anyOf": [
+       {
+        "pattern": "^prop_[0-9a-f]{16}$",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Only on the second call: the proposal_id from the first call.",
+      "title": "Proposal Id"
+     },
+     "treatments": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/$defs/TreatmentIn"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Medicines or vaccines given this day, by name only. Never include a dose.",
+      "title": "Treatments"
+     },
+     "weight_sample_birds": {
+      "anyOf": [
+       {
+        "exclusiveMinimum": 0,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "How many birds were weighed to get avg_weight_g.",
+      "title": "Weight Sample Birds"
+     }
+    },
+    "required": [
+     "house"
+    ],
+    "title": "log_daily_recordArguments",
+    "type": "object"
+   },
+   "name": "log_daily_record",
+   "outputSchema": {
+    "$defs": {
+     "DailyRecordOut": {
+      "additionalProperties": false,
+      "properties": {
+       "avg_weight_g": {
+        "anyOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Avg Weight G"
+       },
+       "day": {
+        "title": "Day",
+        "type": "string"
+       },
+       "deaths": {
+        "title": "Deaths",
+        "type": "integer"
+       },
+       "feed_bags": {
+        "title": "Feed Bags",
+        "type": "number"
+       },
+       "feed_kg": {
+        "title": "Feed Kg",
+        "type": "number"
+       },
+       "treatments": {
+        "items": {
+         "$ref": "#/$defs/TreatmentOut"
+        },
+        "title": "Treatments",
+        "type": "array"
+       },
+       "weight_sample_birds": {
+        "anyOf": [
+         {
+          "type": "integer"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Weight Sample Birds"
+       }
+      },
+      "required": [
+       "day",
+       "deaths",
+       "feed_kg",
+       "feed_bags",
+       "avg_weight_g",
+       "weight_sample_birds",
+       "treatments"
+      ],
+      "title": "DailyRecordOut",
+      "type": "object"
+     },
+     "TreatmentOut": {
+      "additionalProperties": false,
+      "properties": {
+       "kind": {
+        "enum": [
+         "medicine",
+         "vaccine"
+        ],
+        "title": "Kind",
+        "type": "string"
+       },
+       "name": {
+        "title": "Name",
+        "type": "string"
+       },
+       "note": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "null"
+         }
+        ],
+        "title": "Note"
+       }
+      },
+      "required": [
+       "kind",
+       "name",
+       "note"
+      ],
+      "title": "TreatmentOut",
+      "type": "object"
+     }
+    },
+    "additionalProperties": false,
+    "properties": {
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "expires_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires At"
+     },
+     "expires_in_minutes": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires In Minutes"
+     },
+     "house_id": {
+      "title": "House Id",
+      "type": "string"
+     },
+     "label_en": {
+      "title": "Label En",
+      "type": "string"
+     },
+     "label_te": {
+      "title": "Label Te",
+      "type": "string"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "proposal_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Proposal Id"
+     },
+     "proposed": {
+      "$ref": "#/$defs/DailyRecordOut"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     },
+     "record": {
+      "anyOf": [
+       {
+        "$ref": "#/$defs/DailyRecordOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "replayed": {
+      "title": "Replayed",
+      "type": "boolean"
+     },
+     "status": {
+      "enum": [
+       "needs_confirmation",
+       "changed",
+       "already_set",
+       "cancelled"
+      ],
+      "title": "Status",
+      "type": "string"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "status",
+     "house_id",
+     "number",
+     "label_en",
+     "label_te",
+     "record",
+     "proposed",
+     "proposal_id",
+     "expires_at",
+     "expires_in_minutes",
+     "reason",
+     "replayed"
+    ],
+    "title": "LogDailyRecordOutput",
+    "type": "object"
+   },
+   "title": "Log a daily record"
+  },
+  {
+   "annotations": {
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": false
+   },
+   "description": "Use when the farmer wants their vet to get a summary of a health check. Always two calls: first without `proposal_id`; nothing is sent and the result reads back the summary. Then call again with the same arguments plus the returned `proposal_id` and `answer`: 'yes' for an explicit spoken yes (haan, avunu), 'no' for no (nahi, vaddu). In this demo the message is a simulated SMS.",
+   "inputSchema": {
+    "properties": {
+     "answer": {
+      "anyOf": [
+       {
+        "enum": [
+         "yes",
+         "no"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Only on the second call: 'yes' if the farmer said yes, 'no' if no.",
+      "title": "Answer"
+     },
+     "check_id": {
+      "anyOf": [
+       {
+        "pattern": "^chk_[0-9a-f]{16}$",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "The check_id from start_health_check.",
+      "title": "Check Id"
+     },
+     "house": {
+      "description": "Which house. Accepts how farmers say it: 'shed 2', 'house two', 'kotam do'.",
+      "title": "House",
+      "type": "string"
+     },
+     "proposal_id": {
+      "anyOf": [
+       {
+        "pattern": "^prop_[0-9a-f]{16}$",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Only on the second call: the proposal_id from the first call.",
+      "title": "Proposal Id"
+     }
+    },
+    "required": [
+     "house"
+    ],
+    "title": "prepare_vet_handoffArguments",
+    "type": "object"
+   },
+   "name": "prepare_vet_handoff",
+   "outputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "channel": {
+      "const": "simulated_sms",
+      "title": "Channel",
+      "type": "string"
+     },
+     "check_id": {
+      "title": "Check Id",
+      "type": "string"
+     },
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "expires_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires At"
+     },
+     "expires_in_minutes": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires In Minutes"
+     },
+     "handoff_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Handoff Id"
+     },
+     "house_id": {
+      "title": "House Id",
+      "type": "string"
+     },
+     "label_en": {
+      "title": "Label En",
+      "type": "string"
+     },
+     "label_te": {
+      "title": "Label Te",
+      "type": "string"
+     },
+     "message_en": {
+      "title": "Message En",
+      "type": "string"
+     },
+     "message_te": {
+      "title": "Message Te",
+      "type": "string"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "proposal_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Proposal Id"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     },
+     "recipient_en": {
+      "title": "Recipient En",
+      "type": "string"
+     },
+     "recipient_te": {
+      "title": "Recipient Te",
+      "type": "string"
+     },
+     "replayed": {
+      "title": "Replayed",
+      "type": "boolean"
+     },
+     "sent_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sent At"
+     },
+     "simulated": {
+      "title": "Simulated",
+      "type": "boolean"
+     },
+     "status": {
+      "enum": [
+       "needs_confirmation",
+       "changed",
+       "already_set",
+       "cancelled"
+      ],
+      "title": "Status",
+      "type": "string"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "status",
+     "check_id",
+     "house_id",
+     "number",
+     "label_en",
+     "label_te",
+     "recipient_en",
+     "recipient_te",
+     "channel",
+     "simulated",
+     "message_en",
+     "message_te",
+     "handoff_id",
+     "sent_at",
+     "proposal_id",
+     "expires_at",
+     "expires_in_minutes",
+     "reason",
+     "replayed"
+    ],
+    "title": "VetHandoffOutput",
+    "type": "object"
+   },
+   "title": "Send a health check to the vet"
+  },
+  {
+   "annotations": {
+    "destructiveHint": false,
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": false
+   },
+   "description": "Use when the farmer says how a shed that had a health check is doing now compared with then: better (theek, behtar), the same (waisa hi, no change), worse (aur kharab), or not sure (pata nahi). Give the house (shed, house, kotam) and `outcome`: one of better, same, worse, not_sure. If the farmer describes new signs of illness (coughing, swollen head, sudden deaths) call start_health_check instead. Always two calls: first only the house and the outcome; nothing is saved and the result reads it back. Then call again with the same arguments plus the returned `proposal_id` and `answer`: 'yes' for an explicit spoken yes (haan, avunu), 'no' for no (nahi, vaddu). The answer never lowers a health check's urgency; a death spike in the record book since the check counts as worse. There is no free-text argument and no medicine or dose is ever involved.",
+   "inputSchema": {
+    "properties": {
+     "answer": {
+      "anyOf": [
+       {
+        "enum": [
+         "yes",
+         "no"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Only on the second call: 'yes' if the farmer said yes, 'no' if no.",
+      "title": "Answer"
+     },
+     "check_id": {
+      "anyOf": [
+       {
+        "pattern": "^chk_[0-9a-f]{16}$",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "The check_id from start_health_check.",
+      "title": "Check Id"
+     },
+     "house": {
+      "description": "Which house. Accepts how farmers say it: 'shed 2', 'house two', 'kotam do'.",
+      "title": "House",
+      "type": "string"
+     },
+     "outcome": {
+      "enum": [
+       "better",
+       "same",
+       "worse",
+       "not_sure"
+      ],
+      "title": "Outcome",
+      "type": "string"
+     },
+     "proposal_id": {
+      "anyOf": [
+       {
+        "pattern": "^prop_[0-9a-f]{16}$",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "default": null,
+      "description": "Only on the second call: the proposal_id from the first call.",
+      "title": "Proposal Id"
+     }
+    },
+    "required": [
+     "house",
+     "outcome"
+    ],
+    "title": "report_health_follow_upArguments",
+    "type": "object"
+   },
+   "name": "report_health_follow_up",
+   "outputSchema": {
+    "additionalProperties": false,
+    "properties": {
+     "check_id": {
+      "title": "Check Id",
+      "type": "string"
+     },
+     "demo_data": {
+      "title": "Demo Data",
+      "type": "boolean"
+     },
+     "escalated": {
+      "title": "Escalated",
+      "type": "boolean"
+     },
+     "expires_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires At"
+     },
+     "expires_in_minutes": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires In Minutes"
+     },
+     "handoff_offered": {
+      "title": "Handoff Offered",
+      "type": "boolean"
+     },
+     "house_id": {
+      "title": "House Id",
+      "type": "string"
+     },
+     "label_en": {
+      "title": "Label En",
+      "type": "string"
+     },
+     "label_te": {
+      "title": "Label Te",
+      "type": "string"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "outcome": {
+      "enum": [
+       "better",
+       "same",
+       "worse",
+       "not_sure"
+      ],
+      "title": "Outcome",
+      "type": "string"
+     },
+     "proposal_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Proposal Id"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     },
+     "reasons": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Reasons",
+      "type": "array"
+     },
+     "record_book_worse": {
+      "title": "Record Book Worse",
+      "type": "boolean"
+     },
+     "recorded_as": {
+      "anyOf": [
+       {
+        "enum": [
+         "better",
+         "same",
+         "worse",
+         "not_sure"
+        ],
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Recorded As"
+     },
+     "replayed": {
+      "title": "Replayed",
+      "type": "boolean"
+     },
+     "spike_deaths": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Spike Deaths"
+     },
+     "state": {
+      "enum": [
+       "none",
+       "scheduled",
+       "due",
+       "closed",
+       "escalated",
+       "superseded",
+       "lapsed"
+      ],
+      "title": "State",
+      "type": "string"
+     },
+     "status": {
+      "enum": [
+       "needs_confirmation",
+       "changed",
+       "cancelled"
+      ],
+      "title": "Status",
+      "type": "string"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     },
+     "urgency": {
+      "enum": [
+       "routine",
+       "watch",
+       "urgent",
+       "notifiable_suspect"
+      ],
+      "title": "Urgency",
+      "type": "string"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "demo_data",
+     "status",
+     "check_id",
+     "house_id",
+     "number",
+     "label_en",
+     "label_te",
+     "outcome",
+     "recorded_as",
+     "state",
+     "urgency",
+     "escalated",
+     "reasons",
+     "record_book_worse",
+     "spike_deaths",
+     "handoff_offered",
+     "proposal_id",
+     "expires_at",
+     "expires_in_minutes",
+     "reason",
+     "replayed"
+    ],
+    "title": "FollowUpOutput",
+    "type": "object"
+   },
+   "title": "Tell how a shed is now"
+  },
+  {
+   "annotations": {
+    "idempotentHint": true,
+    "openWorldHint": false,
+    "readOnlyHint": true
+   },
+   "description": "Use when the farmer asks what CluckTalk can do, how to use it, or says 'help'. Takes no input. Returns a short spoken introduction and example questions for the farm tools that are available right now.",
+   "inputSchema": {
+    "properties": {},
+    "title": "get_helpArguments",
+    "type": "object"
+   },
+   "name": "get_help",
+   "outputSchema": {
+    "$defs": {
+     "CapabilityOut": {
+      "additionalProperties": false,
+      "properties": {
+       "example_en": {
+        "title": "Example En",
+        "type": "string"
+       },
+       "title_en": {
+        "title": "Title En",
+        "type": "string"
+       },
+       "title_te": {
+        "title": "Title Te",
+        "type": "string"
+       },
+       "tool_name": {
+        "title": "Tool Name",
+        "type": "string"
+       }
+      },
+      "required": [
+       "tool_name",
+       "title_en",
+       "title_te",
+       "example_en"
+      ],
+      "title": "CapabilityOut",
+      "type": "object"
+     }
+    },
+    "additionalProperties": false,
+    "properties": {
+     "capabilities": {
+      "items": {
+       "$ref": "#/$defs/CapabilityOut"
+      },
+      "title": "Capabilities",
+      "type": "array"
+     },
+     "text_en": {
+      "title": "Text En",
+      "type": "string"
+     },
+     "text_te": {
+      "title": "Text Te",
+      "type": "string"
+     }
+    },
+    "required": [
+     "text_en",
+     "text_te",
+     "capabilities"
+    ],
+    "title": "GetHelpOutput",
+    "type": "object"
+   },
+   "title": "What can you do?"
+  }
+ ]
+}

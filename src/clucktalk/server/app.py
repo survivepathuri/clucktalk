@@ -18,6 +18,7 @@ from __future__ import annotations
 import hmac
 import json
 import logging
+import os
 import sqlite3
 import sys
 
@@ -46,6 +47,7 @@ from clucktalk.server.tools import (
     sale,
 )
 from clucktalk.server.tools import help as help_tool
+from clucktalk.server.weather import MockForecast, WeatherConfigError, weather_from_env
 from clucktalk.store import StoreError
 from clucktalk.store.sqlite import SqliteStore
 
@@ -320,6 +322,11 @@ def main() -> int:
         return 2
     demo_clock = DemoClock(settings.demo_days_later) if settings.demo_days_later else None
     source = DemoFarmSource(store=store, demo_clock=demo_clock)
+    try:  # the farmer's own weather rules: off unless the rules file exists (docs/DESIGN.md, Step 50W-B)
+        source.weather = weather_from_env(os.environ, source.now)
+    except WeatherConfigError as exc:
+        print(f"Weather configuration error: {exc}", file=sys.stderr)
+        return 2
     if settings.mock_bedrock:
         ai, mode = demo_ai(), "DEMO DATA (MOCK_BEDROCK=true), AI off (demo rules)"
     else:
@@ -338,6 +345,12 @@ def main() -> int:
     if demo_clock is not None:
         print(f"DEMO CLOCK: +{settings.demo_days_later} days (today and now are shifted; stored data is not changed)")
     print(f"Endpoint: http://{settings.host}:{settings.port}{MCP_PATH}")
+    weather = getattr(source, "weather", None)
+    if weather is None:
+        print("Weather reminders: off (no rules file; nothing is asked of any weather service)")
+    else:
+        kind = "SIMULATED forecast" if isinstance(weather.port, MockForecast) else "live Open-Meteo forecast (opt-in)"
+        print(f"Weather reminders: ON, {len(weather.config.rules)} rule(s) from the farmer's file, {kind}")
     print(f"Allowed browser origins: {', '.join(settings.allowed_origins)}")
     if settings.extra_origins:
         print(f"CORS enabled only for: {', '.join(settings.extra_origins)} (CLUCKTALK_ALLOWED_ORIGINS)")
