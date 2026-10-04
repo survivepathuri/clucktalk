@@ -7,6 +7,82 @@ Streamable HTTP) plus an Agent Skill, built for the Alexa+ add-on program.
 > passing check in `python tasks.py check` / `python tasks.py eval-fast`. See `docs/DESIGN.md` for the full design
 > and what is built vs planned, and `docs/EVALS.md` for the current golden-suite score.
 
+## Try it now
+
+Windows (cmd; on Linux or macOS use `python3`). Python 3.12 or 3.13, no Docker, no AWS account:
+
+```
+python tasks.py setup        :: creates .venv and installs the pinned dependencies
+python tasks.py verify       :: one table of what a judge can check, in about 30 seconds (not the full test suites)
+python tasks.py readiness    :: our own self-check of the locally checkable Alexa+ requirements (not an Amazon verdict)
+python tasks.py serve        :: the MCP server on http://127.0.0.1:8765/mcp with fictional demo data (leave it running)
+```
+
+With `serve` running, in a second window, the MCP Inspector command line (`@modelcontextprotocol/inspector` 2.8.0, which
+needs Node.js; our evidence in `docs/evidence/2026-09-27_farm_status_and_feed.md` used its installed `mcp-inspector --cli`,
+and the `npx` form below is the same package but was not run in exactly this form):
+
+```
+npx @modelcontextprotocol/inspector@2.8.0 --cli http://127.0.0.1:8765/mcp --method tools/list
+npx @modelcontextprotocol/inspector@2.8.0 --cli http://127.0.0.1:8765/mcp --method tools/call --tool-name get_farm_status --tool-arg "house=shed 2"
+```
+
+To see how a follow-up looks three days after a health check (the demo clock shifts follow-up and briefing dates only,
+see "Demo clock" below):
+
+```
+python tasks.py demo-three-days
+python tasks.py serve --demo-days-later 3
+```
+
+The local demo with the Alexa+ Simulator in a browser is `python tasks.py run` (see Quick start). Everything here runs on
+seeded, clearly fictional data in mock mode.
+
+## Known limitations
+
+- **Nothing here has run on an Alexa+ device**, through Alexa's own speech, or through Amazon's review. The Local
+  Inspector itself was not run (its guide is behind a Developer Console login, FL-024); `inspector-replay` is our replay of
+  the documented flow.
+- **Alexa composes its own speech** from a tool's result and description, so what it says can differ from our sentences.
+  The card shows our sentence.
+- **Not built:** OAuth 2.1 with PKCE, Protected Resource Metadata, a remote HTTPS URL, security and data policies. The
+  server is for local use; off localhost it needs a bearer token, which is not Amazon's account linking.
+- **Prices, sensors, the supplier, SMS and payments are simulated** and labelled Simulated. The demo farm is fictional.
+- **The Telugu wording is not yet reviewed by a native speaker** (`docs/TELUGU_REVIEW.md` lists what is pending), and no
+  Telugu voice has been tested through Alexa+.
+- **The cards were tested at sizes of 10 inches and below only**; nothing was tested at 11 inches and above.
+- **The sale-window hint** (`plan_sale`'s "best day to sell is within 3 days", simulated) shows on the daily briefing
+  only. It never raises a shed's health status or its safety level.
+- **Latency numbers are localhost, mock mode, no model call.** A network, a remote host and a real model add to them.
+- **No agronomic or veterinary review.** Thresholds and the reference curve are cited in `docs/SOURCES.md`; they were not validated with a vet or a farmer, and no tool gives a medicine or a dose.
+- **Odd behaviours of the MCP SDK and of our shed-name reader** are listed under "Known SDK behaviors" below.
+
+## What is verified, unverified and simulated
+
+Each row names the file or test that shows it, so you can check it yourself. "Verified" means that evidence exists in
+this repository, not that Alexa+ has seen it.
+
+| Claim | Status | Evidence |
+|---|---|---|
+| The server implements MCP 2025-11-25 over Streamable HTTP (and negotiates three older versions, with no floor) | VERIFIED | `tests/contract/test_protocol_conformance.py`; `python tasks.py probe-protocol-version` |
+| The documented Local Inspector flow (JSON-only `Accept`, protocolVersion 2025-06-18) works against the server | VERIFIED (our replay, not Amazon's tool) | `python tasks.py inspector-replay`; `tests/harness/test_inspector_replay.py` |
+| Every tool answers well under 500 ms at p95 on localhost, mock mode | VERIFIED (localhost only) | `python tasks.py inspector-replay`; `python tasks.py readiness` |
+| The locally checkable Alexa+ requirements we encoded are met | VERIFIED (our checklist, not an Amazon verdict) | `python tasks.py readiness`; `docs/ALEXA_READINESS.md` |
+| The briefing, the farm status and its card agree on safety, level and vet advice | VERIFIED | `tests/contract/test_safety_agreement.py`; `tests/contract/test_status_card_follows_safety.py`; `tests/unit/test_property_follow_up_sequences.py` |
+| Malformed, oversized and odd input never gives a 500, a leak or a state change | VERIFIED | `tests/contract/test_fuzz_inputs.py`; `tests/contract/test_protocol_errors.py` |
+| Spoken numbers equal card numbers (in the Simulator) | VERIFIED | `tests/crossmodal.py`; `tests/contract/test_card.py`; `docs/evidence/2026-09-27_card_and_simulator.md` |
+| `reset-demo` never destroys real data silently | VERIFIED | `tests/harness/test_reset_demo_safety.py` |
+| The golden eval suite passes in mock mode | VERIFIED (mock mode, no AWS) | `python tasks.py eval-fast`; `docs/EVALS.md` |
+| The server runs on an Alexa+ device, or passes Amazon's review | UNVERIFIED | none; see "Known limitations" |
+| The Local Inspector itself accepts the server | UNVERIFIED | none; `FRICTION_LOG.md` FL-024 |
+| Telugu wording is natural and correct | UNVERIFIED | `docs/TELUGU_REVIEW.md` (pending native review) |
+| Telugu voice works through Alexa+ | UNVERIFIED | none |
+| The cards work at 11 inches and above | UNVERIFIED | `docs/DESIGN.md` (screen size classes) |
+| Live AI (Amazon Bedrock) end to end | UNVERIFIED here | `docs/AWS_SETUP.md`; `FRICTION_LOG.md` FL-014 |
+| Account linking, Protected Resource Metadata, a remote URL | NOT BUILT | `docs/ALEXA_READINESS.md` |
+| Market prices, sensors, supplier, SMS, payments, the vet message sending | SIMULATED | `tests/contract/test_tool_descriptions_simulated.py`; `docs/DESIGN.md` section 9 |
+| The demo farm and every farmer in it | SIMULATED (fictional) | `data/seed/demo_farm.json`; `tests/unit/test_seed.py` |
+
 ## Quick start (venv only; Docker is optional and never required)
 
 Needs Python 3.12 or 3.13 (other versions from 3.11 run with a visible "untested" warning). Get it from

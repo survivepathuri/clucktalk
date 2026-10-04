@@ -10,6 +10,7 @@ Windows (cmd); on Linux/macOS use python3 instead of python:
     python tasks.py demo-three-days   Build the demo-clock state for the "three days later" recording (demo mode only)
     python tasks.py probe-protocol-version   Print which MCP protocol version a temporary server answers with
     python tasks.py inspector-replay   Replay the documented Local Inspector flow (our replay, not Amazon's tool)
+    python tasks.py verify      What a judge can check in one command: a table, fast (not the full suites)
     python tasks.py readiness [--write-doc]   Our own self-check of locally checkable Alexa+ requirements (not Amazon's)
     python tasks.py notices     Write NOTICE: the project license and every pinned dependency's declared license
     python tasks.py reset-demo --yes   Reset the local farm state (.local/): the live file is MOVED to .local/backups,
@@ -221,6 +222,12 @@ def inspector_replay() -> int:
     """OUR replay of the flow documented on Amazon's Local Inspector page (not Amazon's tool; it was not run)."""
     _require_venv()
     return subprocess.call([str(VENV_PY), "-B", str(ROOT / "scripts" / "inspector_replay.py")], cwd=ROOT)
+
+
+def verify() -> int:
+    """Everything a judge can check in one command, fast (not the full suites: `check` runs those)."""
+    _require_venv()
+    return subprocess.call([str(VENV_PY), "-B", str(ROOT / "scripts" / "verify.py")], cwd=ROOT)
 
 
 def readiness(args: list[str] | None = None) -> int:
@@ -531,6 +538,7 @@ COMMANDS = {
     "probe-protocol-version": probe_protocol_version,
     "inspector-replay": inspector_replay,
     "readiness": readiness,
+    "verify": verify,
     "reset-demo": reset_demo,
     "notices": notices,
 }
