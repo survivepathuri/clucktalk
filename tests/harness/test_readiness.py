@@ -68,12 +68,16 @@ def test_a_real_run_prints_every_requirement_the_summary_and_the_disclaimer(caps
 
 
 def test_a_draft_that_breaks_a_limit_is_reported_not_met(capsys, tmp_path, monkeypatch):
+    import json
+
+    data = json.loads((ROOT / "docs" / "addon-package" / "addon.json").read_text(encoding="utf-8"))
+    data["storeListing"]["locales"]["en-US"]["name"]["value"] = "x" * 31
     bad = tmp_path / "addon.json"
-    bad.write_text('{"name": "' + "x" * 31 + '"}', encoding="utf-8")
+    bad.write_text(json.dumps(data), encoding="utf-8")
     monkeypatch.setattr(readiness, "ADDON_DRAFT", bad)
     assert readiness.main([], rounds=1) == 0
     out = capsys.readouterr().out
-    assert "[NOT MET] The draft add-on listing" in out and "name is 31 characters" in out
+    assert "[NOT MET] The draft add-on listing" in out and "name.value is 31 characters" in out
     assert "7 of 8 locally checkable requirements met" in out
 
 

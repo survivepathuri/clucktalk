@@ -15,6 +15,7 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
@@ -29,17 +30,28 @@ NOT_AMAZON = "this is not an Amazon verdict"
 OVERLAP_LIMIT = 0.7  # our own bound on the word overlap of two tool descriptions (Jaccard); not an Amazon number
 ERROR_FIELDS = ("message_en", "message_te", "next_step_en", "next_step_te")
 
-# Limits for the draft add-on listing, as given in the Step 49 brief (the Amazon page was not re-read in this repo).
-LIMITS = {"name": 30, "short_description": 123, "full_description": 4000, "example_phrase": 200}
+# The addon.json structure and limits, from the schema reference on Amazon's Alexa+ MCP QuickStart page (last updated
+# Jul 10, 2026), as read by the project owner (the page itself was not visible to the tool that wrote this).
+LIMITS = {"name": 30, "shortDescription": 123, "fullDescription": 4000, "examplePhrase": 200, "altText": 250}
 PHRASES = (3, 4)
-ICONS = 6
-CAROUSEL = (600, 900)
+ICON_SIZES = ("72x72", "64x64", "88x88", "126x126", "180x180", "241x241")
+CAROUSEL_SIZE = "600x900"
+BANNER_SIZE = "1200x600"
+IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".webp")
 
 SRC_FUNCTIONAL = (
     "Functional Requirements (named in docs/SOURCES.md; the check follows the Step 49 brief, page not re-read)"
 )
 SRC_TOOLKIT = (
     "Alexa+ MCP Toolkit Overview (named in docs/SOURCES.md; the check follows the Step 49 brief, page not re-read)"
+)
+SRC_QUICKSTART = (
+    "Alexa+ MCP QuickStart, https://developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-quickstart.html "
+    "(last updated Jul 10, 2026; as read by the project owner)"
+)
+SRC_INSPECTOR = (
+    "Alexa+ Add-on Local Inspector, https://developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-local-inspector.html "
+    "(last updated Aug 3, 2026; as read by the project owner)"
 )
 SRC_BRIEF = "not recorded in docs/SOURCES.md; the requirement is listed in the Step 49 brief, page name to be confirmed"
 
@@ -54,53 +66,124 @@ class Requirement:
 
 
 # -- the draft add-on listing ----------------------------------------------------------------------------------------
-def validate_addon(data: dict) -> list[str]:
-    """Problems with the draft listing against the documented limits (an empty list means none)."""
-    problems: list[str] = []
+def _https(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    parsed = urlparse(value)
+    return parsed.scheme == "https" and bool(parsed.netloc)
 
-    def text(field: str, limit: int, minimum: int = 1) -> str:
-        value = data.get(field)
-        if not isinstance(value, str) or len(value.strip()) < minimum:
-            problems.append(f"{field} is missing or empty")
-            return ""
-        if len(value) > limit:
-            problems.append(f"{field} is {len(value)} characters, the limit is {limit}")
-        return value
 
-    text("name", LIMITS["name"])
-    text("short_description", LIMITS["short_description"])
-    text("full_description", LIMITS["full_description"])
-    phrases = data.get("example_phrases")
+def _image_uri(value: object) -> bool:
+    return _https(value) and urlparse(str(value)).path.lower().endswith(IMAGE_EXTENSIONS)
+
+
+def _text(problems: list[str], where: str, value: object, limit: int, required: bool = True) -> None:
+    if not isinstance(value, str) or (required and not value.strip()):
+        problems.append(f"{where} is missing or empty")
+    elif len(value) > limit:
+        problems.append(f"{where} is {len(value)} characters, the limit is {limit}")
+
+
+def _icons(problems: list[str], where: str, icons: object) -> None:
+    if not isinstance(icons, list) or sorted(i.get("size") for i in icons if isinstance(i, dict)) != sorted(ICON_SIZES):
+        problems.append(f"{where} needs exactly the six sizes {', '.join(ICON_SIZES)}")
+        return
+    for i, icon in enumerate(icons):
+        if not _image_uri(icon.get("uri")):
+            problems.append(f"{where}[{i}].uri is not an https PNG, JPG, JPEG or WEBP URL")
+
+
+def _locale(problems: list[str], code: str, loc: object) -> None:
+    at = f"storeListing.locales.{code}"
+    if not isinstance(loc, dict):
+        problems.append(f"{at} is not an object")
+        return
+    if loc.get("default") != "DEFAULT":
+        problems.append(f'{at}.default must be "DEFAULT"')
+    name = loc.get("name")
+    _text(problems, f"{at}.name.value", name.get("value") if isinstance(name, dict) else None, LIMITS["name"])
+    spoken = name.get("spokenForm") if isinstance(name, dict) else None
+    if spoken is not None and not (
+        isinstance(spoken, dict) and spoken.get("format") == "ipa" and str(spoken.get("value", "")).strip()
+    ):
+        problems.append(f'{at}.name.spokenForm needs format "ipa" and a value')
+    _text(problems, f"{at}.shortDescription", loc.get("shortDescription"), LIMITS["shortDescription"])
+    _text(problems, f"{at}.fullDescription", loc.get("fullDescription"), LIMITS["fullDescription"])
+    phrases = loc.get("examplePhrases")
     if not isinstance(phrases, list) or not PHRASES[0] <= len(phrases) <= PHRASES[1]:
-        problems.append(f"example_phrases needs {PHRASES[0]} to {PHRASES[1]} entries")
+        problems.append(f"{at}.examplePhrases needs {PHRASES[0]} to {PHRASES[1]} items")
     else:
-        for i, p in enumerate(phrases):
-            if not isinstance(p, str) or not p.strip():
-                problems.append(f"example_phrases[{i}] is empty")
-            elif len(p) > LIMITS["example_phrase"]:
-                problems.append(f"example_phrases[{i}] is {len(p)} characters, the limit is {LIMITS['example_phrase']}")
-    urls = data.get("urls")
-    if not isinstance(urls, dict) or not urls:
-        problems.append("urls is missing")
+        for i, phrase in enumerate(phrases):
+            _text(problems, f"{at}.examplePhrases[{i}]", phrase, LIMITS["examplePhrase"])
+    legal = loc.get("privacyAndCompliance")
+    for field in ("privacyPolicyUrl", "termsOfUseUrl"):
+        if not (isinstance(legal, dict) and _https(legal.get(field))):
+            problems.append(f"{at}.privacyAndCompliance.{field} is not a valid https URL")
+    media = loc.get("mediaAssets")
+    icons = media.get("icons") if isinstance(media, dict) else None
+    if not isinstance(icons, dict):
+        problems.append(f"{at}.mediaAssets.icons is missing")
     else:
-        for k, u in urls.items():
-            if not isinstance(u, str) or not u.startswith("https://"):
-                problems.append(f"urls.{k} is not an https:// URL")
-    icons = data.get("icons")
-    if not isinstance(icons, list) or len(icons) != ICONS:
-        problems.append(f"icons needs exactly {ICONS} sizes")
+        _icons(problems, f"{at}.mediaAssets.icons.light", icons.get("light"))
+        if icons.get("dark") is not None:
+            _icons(problems, f"{at}.mediaAssets.icons.dark", icons.get("dark"))
+    carousel = media.get("carouselImages") if isinstance(media, dict) else None
+    if not isinstance(carousel, list) or not carousel:
+        problems.append(f"{at}.mediaAssets.carouselImages needs at least one image")
     else:
-        sizes = [i.get("size") for i in icons if isinstance(i, dict)]
-        if len(set(sizes)) != ICONS:
-            problems.append("the icon sizes must be six different ones")
-        for i, icon in enumerate(icons):
-            if not isinstance(icon, dict) or not str(icon.get("url", "")).startswith("https://"):
-                problems.append(f"icons[{i}].url is not an https:// URL")
-    carousel = data.get("carousel_image")
-    if not isinstance(carousel, dict) or (carousel.get("width"), carousel.get("height")) != CAROUSEL:
-        problems.append(f"carousel_image must be exactly {CAROUSEL[0]}x{CAROUSEL[1]}")
-    elif not str(carousel.get("url", "")).startswith("https://"):
-        problems.append("carousel_image.url is not an https:// URL")
+        for i, image in enumerate(carousel):
+            where = f"{at}.mediaAssets.carouselImages[{i}]"
+            if not isinstance(image, dict):
+                problems.append(f"{where} is not an object")
+                continue
+            if not _image_uri(image.get("uri")):
+                problems.append(f"{where}.uri is not an https PNG, JPG, JPEG or WEBP URL")
+            _text(problems, f"{where}.altText", image.get("altText"), LIMITS["altText"])
+            if image.get("size") != CAROUSEL_SIZE:
+                problems.append(f'{where}.size must be "{CAROUSEL_SIZE}"')
+    for i, image in enumerate((media.get("bannerImages") if isinstance(media, dict) else None) or []):
+        where = f"{at}.mediaAssets.bannerImages[{i}]"
+        if not (isinstance(image, dict) and _image_uri(image.get("uri")) and image.get("size") == BANNER_SIZE):
+            problems.append(f'{where} needs an https image uri and size "{BANNER_SIZE}"')
+
+
+def validate_addon(data: dict) -> list[str]:
+    """Problems with the draft listing against the structure and limits of the addon.json schema reference on Amazon's
+    Alexa+ MCP QuickStart page (an empty list means none). Field names, counts and lengths only: not an Amazon check."""
+    problems: list[str] = []
+    if data.get("manifestVersion") != "1.0":
+        problems.append('manifestVersion must be "1.0"')
+    listing = data.get("storeListing")
+    if not isinstance(listing, dict):
+        problems.append("storeListing is missing")
+        listing = {}
+    countries = listing.get("distributionCountries")
+    if (
+        not isinstance(countries, list)
+        or not countries
+        or not all(isinstance(c, str) and re.fullmatch(r"[A-Z]{2}", c) for c in countries)
+    ):
+        problems.append("storeListing.distributionCountries needs ISO 3166-1 alpha-2 codes such as US")
+    locales = listing.get("locales")
+    if not isinstance(locales, dict) or not locales:
+        problems.append("storeListing.locales needs at least one locale")
+    else:
+        for code, loc in locales.items():
+            if not re.fullmatch(r"[a-z]{2}-[A-Z]{2}", str(code)):
+                problems.append(f"locale {code!r} is not a locale code such as en-US")
+            _locale(problems, str(code), loc)
+    integrations = data.get("integrations")
+    if not isinstance(integrations, list) or not integrations:
+        problems.append("integrations needs an MCP integration")
+    else:
+        for i, item in enumerate(integrations):
+            endpoint = (
+                ((item.get("config") or {}).get("endpoints") or {}).get("default") if isinstance(item, dict) else None
+            )
+            if not (isinstance(item, dict) and item.get("type") == "MCP"):
+                problems.append(f'integrations[{i}].type must be "MCP"')
+            if not (isinstance(endpoint, dict) and endpoint.get("type") == "HTTPS" and _https(endpoint.get("uri"))):
+                problems.append(f'integrations[{i}].config.endpoints.default needs type "HTTPS" and an https uri')
     return problems
 
 
@@ -142,7 +225,7 @@ def collect(url: str, rounds: int) -> list[Requirement]:
             MET if ok_flow else NOT_MET,
             f"statuses: initialize {first['initialize'][0]}, initialized {first['notifications/initialized'][0]}, "
             f"tools/list {first['tools/list'][0]}",
-            SRC_TOOLKIT,
+            SRC_QUICKSTART,
         )
     )
 
@@ -227,8 +310,9 @@ def collect(url: str, rounds: int) -> list[Requirement]:
             f"Round-trip latency under {replay.BUDGET_MS} ms",
             MET if p95 < replay.BUDGET_MS else NOT_MET,
             f"worst step over {rounds} rounds on this machine: p50 {p50:.1f} ms, p95 {p95:.1f} ms "
-            "(localhost, mock mode: a network, a remote host and a real model add to this)",
-            SRC_FUNCTIONAL,
+            "(server times on localhost in mock mode; Amazon's 500 ms requirement is a round trip that includes the "
+            "network, so we do not claim to meet it end to end)",
+            SRC_QUICKSTART,
         )
     )
 
@@ -240,7 +324,7 @@ def collect(url: str, rounds: int) -> list[Requirement]:
             "The two screen size classes (10 inches and below, 11 inches and above) are declared in the docs for the cards",
             MET if declared else NOT_MET,
             "declared in docs/DESIGN.md, section 14; tested sizes are all in the 10-inch-and-below class, none at 11 inches and above",
-            SRC_BRIEF,
+            SRC_INSPECTOR,
         )
     )
     try:
@@ -251,12 +335,12 @@ def collect(url: str, rounds: int) -> list[Requirement]:
     reqs.append(
         Requirement(
             "addon",
-            "The draft add-on listing is within the documented field limits (name 30, short 123, full 4000, 3 to 4 phrases of 200, "
-            "https URLs, six icon sizes, one 600x900 carousel image)",
+            "The draft add-on listing follows the documented addon.json structure and limits (name 30, short 123, full 4000, "
+            "3 to 4 phrases of 200, https URLs, six icon sizes, a 600x900 carousel image with alt text)",
             MET if not problems else NOT_MET,
-            "docs/addon-package/addon.json (a placeholder draft, not deployed)"
+            "docs/addon-package/addon.json (a placeholder draft, not deployed; structure from the QuickStart page, not an Amazon validation)"
             + (f"; problems: {'; '.join(problems)}" if problems else ""),
-            SRC_BRIEF,
+            SRC_QUICKSTART,
         )
     )
     for key, text in (
@@ -265,7 +349,8 @@ def collect(url: str, rounds: int) -> list[Requirement]:
         ("remote", "A remote HTTPS URL for the server"),
         ("policies", "Security and data policies"),
     ):
-        reqs.append(Requirement(key, text, NOT_CHECKABLE, "not built; on the roadmap, local only today", SRC_BRIEF))
+        source = SRC_QUICKSTART + ", authentication checklist" if key in ("oauth", "prm") else SRC_BRIEF
+        reqs.append(Requirement(key, text, NOT_CHECKABLE, "not built; on the roadmap, local only today", source))
     return reqs
 
 
@@ -308,10 +393,12 @@ def render_doc(reqs: list[Requirement], rounds: int) -> str:
         "- **Tool information refreshes only on deploy.** If a tool name, description or schema changes, the add-on has to "
         "be deployed again for Alexa+ to see it; nothing here tests that.",
         "- **Nothing here ran on an Alexa+ device**, through Alexa's speech composition, or through Amazon's review.",
-        "- The latency is measured on localhost with simulated data and no model call; it is not a production figure.",
-        "- The draft listing in `docs/addon-package/addon.json` uses placeholder URLs and images, and its field names are "
-        "this project's assumption, not Amazon's schema. Only its length limits and counts are checked "
-        "(`tests/harness/test_addon_draft.py`).",
+        "- **Latency:** our p50 and p95 are server times on localhost in mock mode, and Amazon's 500 ms requirement is a round "
+        "trip that includes the network, so we do not claim to meet it end to end. There is no model call and the data is simulated.",
+        "- The draft listing in `docs/addon-package/addon.json` follows the `addon.json` schema reference on the QuickStart "
+        "page (as read by the project owner) and uses placeholder URLs and images; nothing was deployed and the Alexa AI CLI "
+        "was not used (FL-024). Only its field names, counts and length limits are checked "
+        "(`tests/harness/test_addon_draft.py`), which is not an Amazon validation. See `docs/addon-package/NOTE.md`.",
         "",
     ]
     return "\n".join(out)
