@@ -10,6 +10,7 @@ Windows (cmd); on Linux/macOS use python3 instead of python:
     python tasks.py demo-three-days   Build the demo-clock state for the "three days later" recording (demo mode only)
     python tasks.py probe-protocol-version   Print which MCP protocol version a temporary server answers with
     python tasks.py inspector-replay   Replay the documented Local Inspector flow (our replay, not Amazon's tool)
+    python tasks.py readiness [--write-doc]   Our own self-check of locally checkable Alexa+ requirements (not Amazon's)
     python tasks.py notices     Write NOTICE: the project license and every pinned dependency's declared license
     python tasks.py reset-demo --yes   Reset the local farm state (.local/): the live file is MOVED to .local/backups,
                                        the demo-clock file is deleted. Without --yes it only lists what it would do
@@ -220,6 +221,15 @@ def inspector_replay() -> int:
     """OUR replay of the flow documented on Amazon's Local Inspector page (not Amazon's tool; it was not run)."""
     _require_venv()
     return subprocess.call([str(VENV_PY), "-B", str(ROOT / "scripts" / "inspector_replay.py")], cwd=ROOT)
+
+
+def readiness(args: list[str] | None = None) -> int:
+    """Our own self-check of the documented Alexa+ requirements that can be checked locally (not Amazon's tool)."""
+    if args not in (None, [], ["--write-doc"]):
+        print("readiness: the only option is --write-doc.", file=sys.stderr)
+        return 2
+    _require_venv()
+    return subprocess.call([str(VENV_PY), "-B", str(ROOT / "scripts" / "readiness.py"), *(args or [])], cwd=ROOT)
 
 
 def probe_protocol_version() -> int:
@@ -520,6 +530,7 @@ COMMANDS = {
     "demo-three-days": demo_three_days,
     "probe-protocol-version": probe_protocol_version,
     "inspector-replay": inspector_replay,
+    "readiness": readiness,
     "reset-demo": reset_demo,
     "notices": notices,
 }
@@ -543,6 +554,8 @@ def main() -> int:
     extra = sys.argv[2:]
     if sys.argv[1] == "reset-demo":
         return reset_demo(extra)
+    if sys.argv[1] == "readiness":
+        return readiness(extra)
     if sys.argv[1] == "notices":
         return notices(extra)
     if extra and not (sys.argv[1] in ("serve", "run") and _demo_days_flag(extra)):

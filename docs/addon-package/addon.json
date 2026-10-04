@@ -1,0 +1,27 @@
+{
+  "_draft_notice": "DRAFT EXAMPLE, NOT DEPLOYED AND NOT SUBMITTED. The field names below are this project's own assumption, not Amazon's addon.json schema, and every URL and image is a placeholder (example.invalid). Only the length limits and counts are checked, by tests/harness/test_addon_draft.py. Compare with the Developer Console before using any of it.",
+  "name": "CluckTalk",
+  "short_description": "A voice farm manager for broiler poultry farmers: shed status, daily briefing, feed and sale plans, health checks.",
+  "full_description": "CluckTalk is a voice farm manager for broiler poultry farmers in India, with a Telugu subtitle (kodi mitra) on its cards. It answers by voice and, on a screen, shows a bilingual Telugu and English card.\n\nWhat it does in the current build: shed status (one shed or the whole farm), a ranked daily briefing, a feed plan for the week, a sell-day plan, a voice record book, a health check that tells you how urgent signs look and what to check first, a follow-up question the day after a check, and a hand-off message to your vet.\n\nSafety: it never gives a medicine or a dose. For anything urgent or a suspected reportable disease it says to contact your vet.\n\nSimulated in the demo: market prices, sensor readings, the supplier, SMS and payments are simulated and always labelled Simulated.\n\nStatus: in development. It has been tested against a local copy of the documented flow and with its own simulator; it has not been run on an Alexa+ device.",
+  "example_phrases": [
+    "How is shed two doing?",
+    "When should I sell shed one?",
+    "What's today's briefing?",
+    "How much feed does shed two need this week?"
+  ],
+  "urls": {
+    "endpoint": "https://example.invalid/mcp",
+    "privacy_policy": "https://example.invalid/privacy",
+    "terms_of_use": "https://example.invalid/terms",
+    "support": "https://example.invalid/support"
+  },
+  "icons": [
+    {"size": "placeholder size 1 of 6", "url": "https://example.invalid/icon-1.png"},
+    {"size": "placeholder size 2 of 6", "url": "https://example.invalid/icon-2.png"},
+    {"size": "placeholder size 3 of 6", "url": "https://example.invalid/icon-3.png"},
+    {"size": "placeholder size 4 of 6", "url": "https://example.invalid/icon-4.png"},
+    {"size": "placeholder size 5 of 6", "url": "https://example.invalid/icon-5.png"},
+    {"size": "placeholder size 6 of 6", "url": "https://example.invalid/icon-6.png"}
+  ],
+  "carousel_image": {"width": 600, "height": 900, "url": "https://example.invalid/carousel-600x900.png"}
+}
