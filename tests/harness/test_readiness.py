@@ -119,7 +119,7 @@ def test_other_arguments_are_refused_and_tasks_has_the_command(monkeypatch):
 def test_a_latency_over_the_budget_is_reported_not_met(capsys, monkeypatch):
     monkeypatch.setattr(readiness.replay, "BUDGET_MS", 0.0001)
     readiness.main([], rounds=1)
-    assert "[NOT MET] Round-trip latency under" in capsys.readouterr().out
+    assert "[NOT MET] Server-side latency under" in capsys.readouterr().out
 
 
 def test_overlapping_descriptions_are_reported_not_met(capsys, monkeypatch):
@@ -133,3 +133,23 @@ def test_an_error_without_a_required_field_is_reported_not_met(capsys, monkeypat
     readiness.main([], rounds=1)
     out = capsys.readouterr().out
     assert "[NOT MET] Error responses carry a message and a next step" in out and "failed: get_farm_status" in out
+
+
+def test_the_latency_is_stated_as_a_server_time_not_amazons_round_trip():
+    sentence = (
+        "Our p50 and p95 are server times on localhost in mock mode, and Amazon's 500 ms requirement is a round trip "
+        "that includes the network, so we do not claim to meet it end to end."
+    )
+    readme = " ".join((ROOT / "README.md").read_text(encoding="utf-8").split())
+    assert readme.count(sentence) >= 2  # in the replay paragraph and in the known limitations
+    doc = " ".join((ROOT / "docs" / "ALEXA_READINESS.md").read_text(encoding="utf-8").split())
+    assert sentence.lower() in doc.lower()
+
+
+def test_the_sources_page_records_the_quickstart_and_the_local_inspector_pages():
+    sources = (ROOT / "docs" / "SOURCES.md").read_text(encoding="utf-8")
+    assert "mcp-toolkit-quickstart.html" in sources and "Jul 10, 2026" in sources
+    assert "mcp-toolkit-local-inspector.html" in sources and "Aug 3, 2026" in sources
+    assert "2025-06-18" in sources and "10 inches and below" in sources and "500 ms round-trip" in sources
+    doc = (ROOT / "docs" / "ALEXA_READINESS.md").read_text(encoding="utf-8")
+    assert "mcp-toolkit-quickstart.html" in doc and "mcp-toolkit-local-inspector.html" in doc

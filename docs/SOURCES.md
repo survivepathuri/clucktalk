@@ -72,6 +72,15 @@ Telugu strings are reviewed by a native speaker. Status is tracked **per string*
 |---|---|---|
 | 2026-09-27 | Pathuri Venkateswara Rao (native Telugu speaker) | All 82 Telugu strings in the code at that date (80 unique English + Telugu pairs), after applying the reviewer's corrections and glossary |
 
+## Alexa+ add-on pages read by the project owner (recorded 2026-10-04, Step 49b)
+These two pages were read by the project owner; the tool that wrote this repository's code could not see them. What is taken from each is as the owner relayed it, so check it against the page before relying on it.
+| Page | Last updated (as shown on the page) | What we took from it |
+|---|---|---|
+| Amazon, *Alexa+ MCP QuickStart*. https://developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-quickstart.html | Jul 10, 2026 | Streamable HTTP as the transport (it names the 2025-11-25 specification only as the version that deprecated the standalone HTTP+SSE transport; it states no minimum protocolVersion, FL-026); the authentication checklist (OAuth 2.1 with PKCE, Protected Resource Metadata: not built here); the 500 ms round-trip requirement; the `addon.json` schema reference (the structure of `docs/addon-package/addon.json`); tool information refreshes only when the add-on is deployed |
+| Amazon, *Alexa+ Add-on Local Inspector*. https://developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-local-inspector.html | Aug 3, 2026 | The documented `initialize` example (protocolVersion 2025-06-18, clientInfo name `addon-local-inspector`, used by `python tasks.py inspector-replay`); the two screen classes, 10 inches and below and 11 inches and above (`docs/DESIGN.md`, screen size classes); the names of the output files it writes (not copied into this repository: the names are not recorded here) |
+
+The Local Inspector itself was not run (its install guide needs a Developer Console login, FL-024); `inspector-replay` replays the documented flow and is not Amazon's tool.
+
 ## Device sizes and visual guidance for cards (checked 2026-09-27)
 | Used for | Source | What it supports |
 |---|---|---|

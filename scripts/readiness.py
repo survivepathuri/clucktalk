@@ -307,7 +307,7 @@ def collect(url: str, rounds: int) -> list[Requirement]:
     reqs.append(
         Requirement(
             "latency",
-            f"Round-trip latency under {replay.BUDGET_MS} ms",
+            f"Server-side latency under {replay.BUDGET_MS} ms on localhost (Amazon's requirement is a round trip including the network, so this is not that)",
             MET if p95 < replay.BUDGET_MS else NOT_MET,
             f"worst step over {rounds} rounds on this machine: p50 {p50:.1f} ms, p95 {p95:.1f} ms "
             "(server times on localhost in mock mode; Amazon's 500 ms requirement is a round trip that includes the "
