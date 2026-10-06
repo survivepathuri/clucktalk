@@ -8,12 +8,41 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import sys
+from pathlib import Path
 
 from clucktalk.config import ConfigError, load_settings
 from clucktalk.simulator.app import SimulatorSettings, build_app
 
 DEFAULT_PORT = 8766
+_TOKEN = re.compile(r"[A-Za-z0-9._~-]{24,128}")  # safe in a link's fragment, long enough not to be guessed
+_PUBLIC_ORIGIN = re.compile(r"https://[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?::[0-9]{1,5})?")
+MAX_TOKENS = 10
+
+
+def _whole(env: dict[str, str], name: str, default: int, low: int, high: int) -> int:
+    raw = env.get(name, "").strip()
+    if raw == "":
+        return default
+    if not raw.isdigit() or not low <= int(raw) <= high:
+        raise ConfigError(f"{name}={raw!r} must be a whole number from {low} to {high}.")
+    return int(raw)
+
+
+def _tokens(env: dict[str, str], pilot: bool) -> tuple[str, ...]:
+    tokens = tuple(t.strip() for t in env.get("CLUCKTALK_SIMULATOR_TOKENS", "").split(",") if t.strip())
+    if pilot and not tokens:
+        raise ConfigError(
+            "CLUCKTALK_MODE=pilot needs CLUCKTALK_SIMULATOR_TOKENS: one bearer token per farmer, comma separated, each "
+            "24 to 128 letters, digits or . _ ~ - (make one with: "
+            'python -c "import secrets; print(secrets.token_urlsafe(32))").'
+        )
+    if len(tokens) > MAX_TOKENS or len(set(tokens)) != len(tokens) or not all(_TOKEN.fullmatch(t) for t in tokens):
+        raise ConfigError(
+            "CLUCKTALK_SIMULATOR_TOKENS must be at most 10 different tokens of 24 to 128 letters, digits or . _ ~ -."
+        )
+    return tokens
 
 
 def load_simulator_settings(env: dict[str, str] | None = None) -> SimulatorSettings:
@@ -31,7 +60,27 @@ def load_simulator_settings(env: dict[str, str] | None = None) -> SimulatorSetti
     if port == server.port:
         raise ConfigError(f"The Simulator and the MCP server cannot both use port {port}.")
     mcp_url = env.get("CLUCKTALK_MCP_URL", "").strip() or f"http://127.0.0.1:{server.port}/mcp"
-    return SimulatorSettings(port=port, mcp_url=mcp_url, auth_token=server.auth_token, mode=server.mode)
+    pilot = server.mode == "pilot"
+    public = env.get("CLUCKTALK_PUBLIC_ORIGIN", "").strip()
+    if public and not _PUBLIC_ORIGIN.fullmatch(public):
+        raise ConfigError(
+            f"CLUCKTALK_PUBLIC_ORIGIN={public!r} must be an exact https origin like https://pilot.example.org."
+        )
+    state_dir = server.state_path.parent
+    disabled = env.get("CLUCKTALK_DISABLED_FILE", "").strip()
+    usage = env.get("CLUCKTALK_USAGE_PATH", "").strip()
+    return SimulatorSettings(
+        port=port,
+        mcp_url=mcp_url,
+        auth_token=server.auth_token,
+        mode=server.mode,
+        tokens=_tokens(env, pilot),
+        public_origin=public or None,
+        rate_per_minute=_whole(env, "CLUCKTALK_RATE_PER_MINUTE", 60, 1, 6000),
+        max_sessions=_whole(env, "CLUCKTALK_MAX_SESSIONS", 20, 1, 1000),
+        disabled_file=Path(disabled) if disabled else state_dir / "DISABLED",
+        usage_path=(Path(usage) if usage else state_dir / f"usage_{server.instance_name}.json") if pilot else None,
+    )
 
 
 def main() -> int:

@@ -16,11 +16,16 @@ then live mode refuses to start rather than pretending (Rule 6).
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import hmac
 import json
 import logging
+import math
+import os
 import re
 import time
-from collections.abc import AsyncIterator
+from collections import deque
+from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -50,6 +55,7 @@ from clucktalk.i18n.pilot import (
 from clucktalk.simulator.intents import Intent, match, normalise, yes_no
 from clucktalk.simulator.intents_te import chip_intent, match_te, yes_no_te
 from clucktalk.simulator.mcp_client import Exchange, McpClient, McpUnavailable
+from clucktalk.usage import UsageCounters
 
 logger = logging.getLogger("clucktalk.simulator")
 STATIC = Path(__file__).resolve().parent / "static"
@@ -75,14 +81,36 @@ class SimulatorSettings:
     auth_token: str | None
     interim_after_ms: int = 1000  # show "Still working..." when a turn takes longer than this
     mode: str = "demo"  # "pilot": the farmer's own farm, so the page must never say "Demo data" or "fictional"
+    # Hardening (Step 51 part D). Off for the demo unless a token is given; the pilot always has a token.
+    tokens: tuple[str, ...] = ()  # bearer tokens, one per farmer; every /api/ call needs one of them
+    public_origin: str | None = None  # the real https origin behind the proxy, e.g. https://pilot.example.org
+    rate_per_minute: int = 60  # requests per token per minute
+    max_sessions: int = 20  # browser sessions kept at once
+    max_body: int = 8192  # bytes in a request body
+    disabled_file: Path | None = None  # the kill switch: this file existing pauses the Simulator
+    usage_path: Path | None = None  # anonymous usage counters (pilot)
 
     @property
     def origins(self) -> set[str]:
         return {f"http://{n}:{self.port}" for n in LOOPBACK_NAMES}
 
     @property
+    def public_host(self) -> str | None:
+        return None if self.public_origin is None else self.public_origin.removeprefix("https://")
+
+    @property
+    def allowed_origins(self) -> set[str]:
+        """Every origin an API call may come from: the loopback pages, and the real https origin when there is one."""
+        return self.origins | ({self.public_origin} if self.public_origin else set())
+
+    @property
     def hosts(self) -> set[str]:
-        return {f"{n}:{self.port}" for n in LOOPBACK_NAMES}
+        public = {self.public_host} if self.public_host else set()
+        return {f"{n}:{self.port}" for n in LOOPBACK_NAMES} | public  # type: ignore[misc]
+
+    @property
+    def hardened(self) -> bool:
+        return bool(self.tokens)
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -157,7 +185,10 @@ class LocalOnly:
             if scope["path"].startswith("/api/") and scope["method"] != "GET":
                 # Only the Simulator page itself: same origin as the requested host (the card's sandbox origin
                 # never calls the API), and JSON bodies only, which a plain HTML form cannot send.
-                if headers.get("origin") != f"http://{headers.get('host')}":
+                host = headers.get("host")
+                # The real hostname is https only (the proxy ends TLS there); the loopback names are http.
+                expected = self.settings.public_origin if host == self.settings.public_host else f"http://{host}"
+                if headers.get("origin") != expected:
                     await JSONResponse({"error": "forbidden origin"}, status_code=403)(scope, receive, send)
                     return
                 if headers.get("content-type", "").split(";")[0].strip().lower() != "application/json":
@@ -185,6 +216,116 @@ def pilot_page(html: str) -> str:
         f"{PILOT_BADGE.en}</div>"
     )
     return html.replace(DEMO_BADGE_HTML, badge).replace(DEMO_FOOTER_SENTENCE, "")
+
+
+def paused(settings: SimulatorSettings) -> bool:
+    """The kill switch, read at every request: the CLUCKTALK_DISABLED variable, or the disabled file existing."""
+    if os.environ.get("CLUCKTALK_DISABLED", "").strip().lower() in ("1", "true", "yes"):
+        return True
+    return settings.disabled_file is not None and settings.disabled_file.exists()
+
+
+FAILED_AUTH_PER_MINUTE = 20  # wrong or missing tokens, all together: guessing is slow
+WINDOW_SECONDS = 60.0
+SESSION_IDLE_SECONDS = 3600.0
+
+
+class Hardening:
+    """In front of the app when a token is configured, after the host and origin checks (LocalOnly):
+
+    * the kill switch: everything but /healthz answers 503 while it is on;
+    * a request body over ``max_body`` bytes is refused with 413 (whether or not it says how big it is);
+    * every /api/ call needs ``Authorization: Bearer <token>``: compared in constant time against every configured
+      token, with no early exit, and the answer never says whether the token or the header was wrong (401);
+    * every /api/ call is counted per token (a hash, never the token): over ``rate_per_minute`` is 429 with Retry-After.
+    Nothing here logs a header, a body or a token."""
+
+    def __init__(self, app: ASGIApp, settings: SimulatorSettings, clock: Callable[[], float]) -> None:
+        self.app, self.settings, self.clock = app, settings, clock
+        self.windows: dict[str, deque[float]] = {}
+
+    def _allow(self, key: str, limit: int) -> int:
+        """0 when the call is allowed, else the seconds to wait."""
+        now = self.clock()
+        window = self.windows.setdefault(key, deque())
+        while window and now - window[0] >= WINDOW_SECONDS:
+            window.popleft()
+        if len(window) >= limit:
+            return max(1, math.ceil(WINDOW_SECONDS - (now - window[0])))
+        window.append(now)
+        return 0
+
+    def _token_ok(self, header: str) -> tuple[bool, str]:
+        presented = header[len("Bearer ") :] if header.startswith("Bearer ") else ""
+        if " " in presented:
+            presented = ""
+        ok = False
+        for token in self.settings.tokens:  # every token, always: no early exit to time
+            ok |= hmac.compare_digest(presented.encode("utf-8"), token.encode("utf-8"))
+        key = hashlib.sha256(presented.encode("utf-8")).hexdigest()[:16] if ok else "anonymous"
+        return ok, key
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http" or not self.settings.hardened:
+            await self.app(scope, receive, send)
+            return
+        path = scope["path"]
+        if path != "/healthz":
+            if paused(self.settings):
+                await JSONResponse({"error": "paused"}, status_code=503)(scope, receive, send)
+                return
+            if scope["method"] in ("POST", "PUT", "PATCH"):
+                receive = await self._bounded(scope, receive, send)
+                if receive is None:
+                    return
+            if path.startswith("/api/"):
+                headers = {k.decode("latin-1"): v.decode("latin-1") for k, v in scope["headers"]}
+                ok, key = self._token_ok(headers.get("authorization", ""))
+                wait = self._allow(key, self.settings.rate_per_minute if ok else FAILED_AUTH_PER_MINUTE)
+                if wait:
+                    await JSONResponse(
+                        {"error": "too many requests"}, status_code=429, headers={"retry-after": str(wait)}
+                    )(scope, receive, send)
+                    return
+                if not ok:
+                    await JSONResponse(
+                        {"error": "unauthorized"}, status_code=401, headers={"www-authenticate": "Bearer"}
+                    )(scope, receive, send)
+                    return
+        await self.app(scope, receive, send)
+
+    async def _bounded(self, scope: Scope, receive: Receive, send: Send) -> Receive | None:
+        """The whole body if it is small enough (handed on again), else None after answering 413."""
+        limit = self.settings.max_body
+        headers = {k.decode("latin-1"): v.decode("latin-1") for k, v in scope["headers"]}
+        declared = headers.get("content-length", "")
+        if declared.isdigit() and int(declared) > limit:
+            await JSONResponse({"error": "request too large"}, status_code=413)(scope, receive, send)
+            return None
+        chunks: list[bytes] = []
+        size = 0
+        while True:
+            message = await receive()
+            if message["type"] != "http.request":
+                break
+            chunk = message.get("body", b"")
+            size += len(chunk)
+            if size > limit:
+                await JSONResponse({"error": "request too large"}, status_code=413)(scope, receive, send)
+                return None
+            chunks.append(chunk)
+            if not message.get("more_body", False):
+                break
+        body = b"".join(chunks)
+        sent = [False]
+
+        async def replay() -> dict[str, Any]:
+            if sent[0]:
+                return {"type": "http.disconnect"}
+            sent[0] = True
+            return {"type": "http.request", "body": body, "more_body": False}
+
+        return replay
 
 
 def _revalidate(send: Send) -> Send:
@@ -222,6 +363,7 @@ class Conversation:
     """One browser session's conversation: the read-back awaiting its yes or no, and the turn counter. Never shared
     between sessions, so two phones can never answer each other's read-back (the demo has the one default session)."""
 
+    last_used: float = 0.0  # when the session was last used (for the cap and the idle clean-up)
     pending: dict[str, Any] = field(default_factory=dict)  # a server read-back: tool, arguments, proposal_id
     host_pending: dict[str, Any] = field(default_factory=dict)  # a host read-back (starting a health check)
     turns: int = 0
@@ -243,11 +385,14 @@ def _mcp_ms(exchanges: list[Exchange]) -> float:
     return round(sum(e.ms for e in exchanges), 1)
 
 
-def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> ASGIApp:
+def build_app(
+    settings: SimulatorSettings, client: McpClient | None = None, clock: Callable[[], float] = time.monotonic
+) -> ASGIApp:
     mcp = client or McpClient(settings.mcp_url, settings.auth_token)
     lock = asyncio.Lock()  # one call to the MCP server at a time (its session is shared by every browser)
     conversations: dict[str, Conversation] = {}  # per browser session: never shared between two browsers
     pilot = settings.mode == "pilot"
+    usage = UsageCounters(settings.usage_path) if settings.usage_path is not None else None  # damaged: fails loud
 
     @asynccontextmanager
     async def lifespan(_app: Starlette) -> AsyncIterator[None]:
@@ -291,6 +436,10 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
                 "cache-control": "no-store",
             },
         )
+
+    async def healthz(_request: Request) -> Response:
+        """Is it up: no data, no farm, no token. "disabled" while the kill switch is on."""
+        return JSONResponse({"status": "disabled" if paused(settings) else "ok", "mode": settings.mode})
 
     async def state(_request: Request) -> Response:
         tools = [{"name": n, "resourceUri": mcp.resource_uri(n)} for n in mcp.tools]
@@ -351,7 +500,17 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
         utterance = body.get("utterance", "")[:500]
         device = "dot" if body.get("device") == "dot" else "show"
         delay = max(0, min(delay_raw or 0, MAX_SIMULATED_DELAY_MS))
-        conv = conversations.setdefault(session or DEFAULT_SESSION, Conversation())
+        key = session or DEFAULT_SESSION
+        if key not in conversations:
+            now = clock()
+            for stale in [k for k, c in conversations.items() if now - c.last_used > SESSION_IDLE_SECONDS]:
+                del conversations[stale]
+            if len(conversations) >= settings.max_sessions:
+                return JSONResponse({"error": "too many sessions"}, status_code=503)
+        conv = conversations.setdefault(key, Conversation())
+        conv.last_used = clock()
+        if usage is not None:
+            usage.record_turn()
         # docs/DESIGN.md §5.1: a bare yes/no answers the pending read-back (same tool + proposal_id + answer).
         # Anything else moves on, so the old read-back can no longer be confirmed from here.
         if chip is None and te:
@@ -462,6 +621,12 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
                 out.update(kind="unavailable", speech=UNAVAILABLE_SPEECH, is_error=True, detail=str(err))
                 if te or chip is not None:
                     out["speech_te"] = GENERIC_TE
+        if usage is not None and answer is not None and (awaiting or host_awaiting):
+            sc_done = (out.get("result") or {}).get("structuredContent") or {}
+            saved = answer == "yes" and bool(awaiting) and awaiting.get("tool") == "log_daily_record"
+            usage.record_answer(answer, saved and sc_done.get("status") == "changed")
+        elif usage is not None and out.get("kind") == "tool" and not out.get("is_error"):
+            usage.record_result(out["intent"]["tool"], (out.get("result") or {}).get("structuredContent") or {})
         out["timing"]["backend_ms"] = round((time.perf_counter() - started) * 1000, 1)
         return JSONResponse(out)
 
@@ -489,8 +654,8 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
 
     async def desktop(_request: Request) -> Response:
         """The developer page (device mock, panel), kept for the builder; pilot mode only."""
-        if page is None:
-            return JSONResponse({"error": "pilot mode only"}, status_code=404)
+        if page is None or settings.hardened:  # the developer page cannot send a token: off when hardened
+            return JSONResponse({"error": "not available"}, status_code=404)
         return Response(page, media_type="text/html", headers={"cache-control": "no-store"})
 
     async def resource(request: Request) -> Response:
@@ -539,6 +704,7 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
             Route("/", index),
             Route("/sandbox", sandbox),
             Route("/api/state", state),
+            Route("/healthz", healthz),
             Route("/desktop", desktop),
             Route("/api/pilot/ui", pilot_ui),
             Route("/api/turn", turn, methods=["POST"]),
@@ -548,4 +714,4 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
         ],
         lifespan=lifespan,
     )
-    return LocalOnly(app, settings)
+    return LocalOnly(Hardening(app, settings, clock), settings)

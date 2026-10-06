@@ -12,6 +12,7 @@ Windows (cmd); on Linux/macOS use python3 instead of python:
     python tasks.py inspector-replay   Replay the documented Local Inspector flow (our replay, not Amazon's tool)
     python tasks.py verify      What a judge can check in one command: a table, fast (not the full suites)
     python tasks.py readiness [--write-doc]   Our own self-check of locally checkable Alexa+ requirements (not Amazon's)
+    python tasks.py pilot-stats --usage FILE   Print the pilot's anonymous usage totals (numbers only) from FILE
     python tasks.py notices     Write NOTICE: the project license and every pinned dependency's declared license
     python tasks.py reset-demo --yes   Reset the local farm state (.local/): the live file is MOVED to .local/backups,
                                        the demo-clock file is deleted. Without --yes it only lists what it would do
@@ -544,6 +545,27 @@ def notices(args: list[str] | None = None) -> int:
     return 0
 
 
+def pilot_stats(args: list[str]) -> int:
+    """Aggregate pilot numbers from the anonymous usage file: days used, records confirmed, alerts shown by level,
+    confirmations versus cancellations. Never prints a date, a word, a shed or a token (none is stored)."""
+    if len(args) != 2 or args[0] != "--usage":
+        print("usage: python tasks.py pilot-stats --usage FILE", file=sys.stderr)
+        return 2
+    sys.path.insert(0, str(ROOT / "src"))
+    from clucktalk.usage import format_stats, load_usage
+
+    path = Path(args[1])
+    if not path.exists():
+        print(f"pilot-stats: no usage file at {path}", file=sys.stderr)
+        return 1
+    try:
+        print(format_stats(load_usage(path)))
+    except ValueError as exc:
+        print(f"pilot-stats: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def _not_built_yet(command: str) -> int:
     print(
         f"'{command}' is not implemented yet: the application code does not exist.\n"
@@ -566,6 +588,7 @@ COMMANDS = {
     "verify": verify,
     "reset-demo": reset_demo,
     "notices": notices,
+    "pilot-stats": pilot_stats,
 }
 
 
@@ -591,6 +614,8 @@ def main() -> int:
         return readiness(extra)
     if sys.argv[1] == "notices":
         return notices(extra)
+    if sys.argv[1] == "pilot-stats":
+        return pilot_stats(extra)
     if extra and not (sys.argv[1] in ("serve", "run") and _demo_days_flag(extra)):
         print(__doc__)
         return 2

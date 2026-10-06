@@ -21,6 +21,25 @@ function sessionId() {
 }
 const SESSION = sessionId();
 
+// The farmer's link carries his token after a "#" (it never goes to a server or into a log). It is kept for this tab,
+// taken out of the address bar, and sent as a bearer token with every call.
+function token() {
+  try {
+    const m = /[#&]t=([A-Za-z0-9._~-]+)/.exec(location.hash);
+    if (m) {
+      sessionStorage.setItem("ct_token", m[1]);
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+    return sessionStorage.getItem("ct_token") || "";
+  } catch (e) {
+    return "";
+  }
+}
+const TOKEN = token();
+function auth(extra) {
+  return TOKEN ? { ...extra, authorization: "Bearer " + TOKEN } : { ...extra };
+}
+
 function say(text, cls) {
   if (!text) return;
   const p = document.createElement("p");
@@ -56,7 +75,7 @@ async function post(body) {
   try {
     const r = await fetch("/api/turn", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: auth({ "content-type": "application/json" }),
       body: JSON.stringify({ device: "dot", lang: "te", session: SESSION, utterance: "", ...body }),
     });
     if (!r.ok) throw new Error("HTTP " + r.status);
@@ -168,7 +187,7 @@ function askSigns(label, params) {
 
 async function start() {
   try {
-    const r = await fetch("/api/pilot/ui");
+    const r = await fetch("/api/pilot/ui", { headers: auth({}) });
     if (!r.ok) throw new Error("HTTP " + r.status);
     ui = await r.json();
   } catch (e) {

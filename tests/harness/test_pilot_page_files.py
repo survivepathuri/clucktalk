@@ -40,3 +40,13 @@ def test_the_write_buttons_are_the_read_back_buttons_and_there_is_no_other_way_t
     js = read("pilot.js")
     assert js.count('chip: "yes"') == 1 and js.count('chip: "no"') == 1
     assert "innerHTML" not in js and "eval(" not in js  # farmer and server text is only ever shown as text
+
+
+def test_the_token_comes_from_the_link_fragment_is_removed_from_the_address_and_sent_as_a_bearer_header():
+    js = read("pilot.js")
+    assert "location.hash" in js and "history.replaceState" in js
+    assert js.count('authorization: "Bearer "') == 1 and js.count("auth(") >= 3
+    assert "location.search" in js  # the fragment is dropped, the rest of the address is kept
+    assert "localStorage" not in js  # the token lives for this tab only
+    for call in re.findall(r"fetch\([^)]*\)", js):
+        assert "auth(" in js[js.index(call) : js.index(call) + 200], call

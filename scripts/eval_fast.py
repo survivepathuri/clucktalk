@@ -32,8 +32,8 @@ from clucktalk.agents import AiServices  # noqa: E402
 from clucktalk.agents.runner import ThreadRunner  # noqa: E402
 from clucktalk.config import load_settings  # noqa: E402
 from clucktalk.server.app import MCP_PATH, TARGET_PROTOCOL_VERSION, build_app, build_mcp_server  # noqa: E402
-from clucktalk.server.farm_state import DemoClock, DemoFarmSource  # noqa: E402
 from clucktalk.server.daily_deaths import RuleState, parse_rule  # noqa: E402
+from clucktalk.server.farm_state import DemoClock, DemoFarmSource  # noqa: E402
 from clucktalk.server.weather import Forecast, MockForecast, WeatherReminders, load_weather_config  # noqa: E402
 from clucktalk.simulator.intents import match as match_intent  # noqa: E402
 from clucktalk.simulator.intents import yes_no  # noqa: E402
