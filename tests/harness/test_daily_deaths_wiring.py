@@ -32,7 +32,11 @@ def _env(tmp: Path, port: int, pilot: bool, **extra: str) -> dict[str, str]:
         PYTHONUNBUFFERED="1",
     )
     if pilot:
-        env.update(CLUCKTALK_MODE="pilot", CLUCKTALK_PILOT_FARM_PATH=str(tmp / "farm.json"))
+        env.update(
+            CLUCKTALK_MODE="pilot",
+            CLUCKTALK_PILOT_FARM_PATH=str(tmp / "farm.json"),
+            CLUCKTALK_AUTH_TOKEN="mcp-secret-token-0123456789-abcdefgh",
+        )
     env.update(extra)
     return env
 

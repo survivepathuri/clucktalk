@@ -440,6 +440,9 @@ def build_app(
             },
         )
 
+    async def gone(_request: Request) -> Response:
+        return JSONResponse({"error": "not available"}, status_code=404)
+
     async def healthz(_request: Request) -> Response:
         """Is it up: no data, no farm, no token. "disabled" while the kill switch is on."""
         return JSONResponse({"status": "disabled" if paused(settings) else "ok", "mode": settings.mode})
@@ -511,8 +514,9 @@ def build_app(
             now = clock()
             for stale in [k for k, c in conversations.items() if now - c.last_used > SESSION_IDLE_SECONDS]:
                 del conversations[stale]
-            if len(conversations) >= settings.max_sessions:
-                return JSONResponse({"error": "too many sessions"}, status_code=503)
+            # Make room: the least recently used session goes. A new session is never refused.
+            while len(conversations) >= settings.max_sessions:
+                del conversations[min(conversations, key=lambda k: conversations[k].last_used)]
         conv = conversations.setdefault(key, Conversation())
         conv.last_used = clock()
         if usage is not None:
@@ -669,6 +673,8 @@ def build_app(
         return Response(page, media_type="text/html", headers={"cache-control": "no-store"})
 
     async def resource(request: Request) -> Response:
+        if pilot:  # the phone page shows no cards; nothing reads them in pilot mode
+            return JSONResponse({"error": "not available"}, status_code=404)
         uri = request.query_params.get("uri", "")
         if not uri.startswith("ui://"):
             return JSONResponse({"error": "only ui:// resources"}, status_code=400)
@@ -680,6 +686,8 @@ def build_app(
         return JSONResponse({"content": content, "exchanges": [e.as_dict() for e in log], "mcp_ms": _mcp_ms(log)})
 
     async def view_request(request: Request) -> Response:
+        if pilot:  # a card could start a health check without the host read-back; the pilot has no cards
+            return JSONResponse({"error": "not available"}, status_code=404)
         """A card's own request (tap = voice), forwarded to the MCP server like any host would."""
         body = await _json_object(request)
         if body is None or not isinstance(body.get("params") or {}, dict):
@@ -720,6 +728,7 @@ def build_app(
             Route("/api/turn", turn, methods=["POST"]),
             Route("/api/resource", resource),
             Route("/api/view-request", view_request, methods=["POST"]),
+            *([Route("/static/index.html", gone)] if pilot else []),  # the English demo page is not for a pilot host
             Mount("/static", StaticFiles(directory=STATIC), name="static"),
         ],
         lifespan=lifespan,

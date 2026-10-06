@@ -75,6 +75,7 @@ SAME = tuple(_WORDS["SAME"])
 WORSE = tuple(_WORDS["WORSE"])
 ADD = set(_WORDS["ADD"])
 REPLACE = set(_WORDS["REPLACE"])
+POLITE = set(_WORDS["POLITE"])  # a polite word may follow yes, no, add or replace
 WHAT = set(_WORDS["WHAT"])
 HEALTH_ADJ = set(_WORDS["HEALTH_ADJ"])
 WELL = set(_WORDS["WELL"])
@@ -82,6 +83,7 @@ WORD_VALUES = {**UNITS, **TEENS, **TENS}
 
 OUTCOMES = ("better", "same", "worse")
 _TELUGU_DIGITS = {0x0C66 + i: str(i) for i in range(10)}  # U+0C66 to U+0C6F
+MINUS_SIGNS = "-−–—﹣－‒‐‑"  # every dash that could be read as a minus
 _TELUGU_BLOCK = f"{chr(0x0C00)}-{chr(0x0C7F)}"  # U+0C00 to U+0C7F
 _TOKEN = re.compile(rf"\d+|[{_TELUGU_BLOCK}]+|[a-z']+")
 _NOT_KEPT = re.compile(rf"[^\w\s'{_TELUGU_BLOCK}]", re.UNICODE)
@@ -228,7 +230,7 @@ NONE = TeResult("none", rule="not understood")
 
 def yes_no_te(text: str) -> str | None:
     """'yes' or 'no' only when the whole message is one explicit answer."""
-    norm = normalise_te(text)
+    norm = _without_polite(normalise_te(text))
     if norm in YES:
         return "yes"
     if norm in NO:
@@ -236,9 +238,17 @@ def yes_no_te(text: str) -> str | None:
     return None
 
 
+def _without_polite(norm: str) -> str:
+    """A polite word at the END ("... andi", "... sir") is not part of the answer; one in front, or alone, is."""
+    words = norm.split()
+    while len(words) > 1 and words[-1] in POLITE:
+        words.pop()
+    return " ".join(words)
+
+
 def choice_te(text: str) -> str | None:
     """ "add" or "replace" only when the whole message is that one word (the answer to the add-or-replace question)."""
-    norm = normalise_te(text)
+    norm = _without_polite(normalise_te(text))
     if norm in ADD:
         return "add"
     if norm in REPLACE:
@@ -262,6 +272,8 @@ def _match(text: str) -> TeResult:  # noqa: C901 - one flat list of rules, in or
     answer = yes_no_te(text)
     if answer is not None:
         return TeResult(answer, rule=f"answer: {answer}")
+    if any(ch in MINUS_SIGNS for ch in text):  # a stray minus sign: the number could be negative, so never guessed
+        return NONE
     tokens = tokens_of(text)
     if not tokens:
         return NONE
@@ -278,7 +290,14 @@ def _match(text: str) -> TeResult:  # noqa: C901 - one flat list of rules, in or
     rest = [t for i, t in enumerate(tokens) if i not in used]
     has_death = _has(tokens, DEATH_STEMS)
     if has_death:
-        zero = _has(tokens, NEGATIVE_DEATHS) or (any(t in NEGATION_WORDS for t in tokens) and _has(tokens, DEATH_STEMS))
+        # "No deaths" only when said as such: one word for it, or the negation right after a death word. A negation
+        # anywhere else ("some died, no illness") belongs to something else and is asked again, never read as zero.
+        zero = _has(tokens, NEGATIVE_DEATHS) or any(
+            t.startswith(DEATH_STEMS) and i + 1 < len(tokens) and tokens[i + 1] in NEGATION_WORDS
+            for i, t in enumerate(tokens)
+        )
+        if not zero and any(t in NEGATION_WORDS for t in tokens):
+            return NONE
         runs = _number_runs(rest)
         if zero and not runs:
             count: int | None = 0

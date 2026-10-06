@@ -6,17 +6,32 @@ const $ = (id) => document.getElementById(id);
 let ui = null;
 let busy = false;
 
+// One stable id per device (not per tab), so a restart of the browser finds the same conversation. It is only a random
+// label for the server's per-session memory: it holds no data and is not the token. Without localStorage (a private
+// window) it falls back to this tab, and without any storage to a fresh id.
+const ID_FORM = /^[A-Za-z0-9_-]{16,64}$/;
+function newId() {
+  const bytes = new Uint8Array(18);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => "abcdefghijklmnopqrstuvwxyz0123456789"[b % 36]).join("");
+}
 function sessionId() {
   try {
-    let id = sessionStorage.getItem("ct_session");
-    if (id && /^[A-Za-z0-9_-]{16,64}$/.test(id)) return id;
-    const bytes = new Uint8Array(18);
-    crypto.getRandomValues(bytes);
-    id = Array.from(bytes, (b) => "abcdefghijklmnopqrstuvwxyz0123456789"[b % 36]).join("");
-    sessionStorage.setItem("ct_session", id);
+    let id = localStorage.getItem("ct_device");
+    if (id && ID_FORM.test(id)) return id;
+    id = newId();
+    localStorage.setItem("ct_device", id);
     return id;
   } catch (e) {
-    return "tab" + Math.random().toString(36).slice(2).padEnd(16, "0");
+    try {
+      let id = sessionStorage.getItem("ct_session");
+      if (id && ID_FORM.test(id)) return id;
+      id = newId();
+      sessionStorage.setItem("ct_session", id);
+      return id;
+    } catch (e2) {
+      return "tab" + Math.random().toString(36).slice(2).padEnd(16, "0");
+    }
   }
 }
 const SESSION = sessionId();

@@ -20,6 +20,7 @@ def pilot_env(tmp_path: Path, **extra: str) -> dict[str, str]:
         "CLUCKTALK_PILOT_FARM_PATH": str(tmp_path / "farm.json"),
         "CLUCKTALK_STATE_PATH": str(tmp_path / "state" / "pilot_state.sqlite3"),
         "CLUCKTALK_SIMULATOR_TOKENS": GOOD,
+        "CLUCKTALK_AUTH_TOKEN": "mcp-secret-token-0123456789-abcdefgh",
     }
     env.update(extra)
     return env
@@ -103,3 +104,8 @@ def test_limits_must_be_sensible_whole_numbers(tmp_path, name, bad):
 def test_limits_can_be_set(tmp_path):
     s = load_simulator_settings(pilot_env(tmp_path, CLUCKTALK_RATE_PER_MINUTE="30", CLUCKTALK_MAX_SESSIONS="5"))
     assert (s.rate_per_minute, s.max_sessions) == (30, 5)
+
+
+def test_the_farmers_token_must_not_also_be_the_mcp_token(tmp_path):
+    with pytest.raises(ConfigError, match="different"):
+        load_simulator_settings(pilot_env(tmp_path, CLUCKTALK_AUTH_TOKEN=GOOD))

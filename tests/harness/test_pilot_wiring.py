@@ -29,6 +29,7 @@ def _env(tmp: Path, port: int, **extra: str) -> dict[str, str]:
         MOCK_BEDROCK="true",
         CLUCKTALK_PORT=str(port),
         CLUCKTALK_MODE="pilot",
+        CLUCKTALK_AUTH_TOKEN="mcp-secret-token-0123456789-abcdefgh",
         CLUCKTALK_PILOT_FARM_PATH=str(tmp / "farm.json"),
         CLUCKTALK_STATE_PATH=str(tmp / "state" / "pilot_state.sqlite3"),
         PYTHONPATH=str(ROOT / "src"),

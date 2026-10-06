@@ -47,7 +47,7 @@ def test_the_token_comes_from_the_link_fragment_is_removed_from_the_address_and_
     assert "location.hash" in js and "history.replaceState" in js
     assert js.count('authorization: "Bearer "') == 1 and js.count("auth(") >= 3
     assert "location.search" in js  # the fragment is dropped, the rest of the address is kept
-    assert "localStorage" not in js  # the token lives for this tab only
+    assert "ct_token" not in "".join(re.findall(r"localStorage[^;]*;", js))  # the token lives for this tab only
     for call in re.findall(r"fetch\([^)]*\)", js):
         assert "auth(" in js[js.index(call) : js.index(call) + 200], call
 
@@ -57,3 +57,12 @@ def test_the_add_and_replace_buttons_send_their_own_chips_and_the_plain_yes_is_h
     assert 'post({ chip: "add" })' in js and 'post({ chip: "replace" })' in js
     assert 'id="add"' in html and 'id="replace"' in html
     assert '$("yes").hidden = !!choice;' in js and "structuredContent.choice" in js
+
+
+def test_a_stable_device_id_in_local_storage_is_the_session_and_the_token_is_not_stored_there():
+    js = read("pilot.js")
+    assert 'localStorage.getItem("ct_device")' in js and 'localStorage.setItem("ct_device"' in js
+    assert 'sessionStorage.getItem("ct_session")' in js  # the fallback without local storage
+    assert "const SESSION = sessionId();" in js
+    assert 'localStorage.setItem("ct_token"' not in js and 'localStorage.getItem("ct_token")' not in js
+    assert 'sessionStorage.setItem("ct_token"' in js

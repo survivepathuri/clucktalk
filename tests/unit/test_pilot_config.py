@@ -18,6 +18,7 @@ def pilot_env(tmp_path: Path, **extra: str) -> dict[str, str]:
         "CLUCKTALK_MODE": "pilot",
         "CLUCKTALK_PILOT_FARM_PATH": str(tmp_path / "farm.json"),
         "CLUCKTALK_STATE_PATH": str(tmp_path / "pilot_state.sqlite3"),
+        "CLUCKTALK_AUTH_TOKEN": "mcp-secret-token-0123456789-abcdefgh",
     }
     env.update(extra)
     return env
@@ -104,3 +105,28 @@ def test_demo_refuses_a_pilot_state_file_and_a_pilot_farm_file(tmp_path):
 def test_instance_name_is_a_short_lowercase_word(tmp_path, name):
     with pytest.raises(ConfigError, match="CLUCKTALK_INSTANCE_NAME"):
         load_settings(pilot_env(tmp_path, CLUCKTALK_INSTANCE_NAME=name))
+
+
+# -- Step 52 part B: the MCP server never runs without a strong token in pilot mode ----------------------------------
+@pytest.mark.parametrize(
+    "value", ["", "   ", "short", "has space in it 0123456789abcdef", "bad/char/0123456789abcdef0123", "a" * 200]
+)
+def test_the_pilot_refuses_to_start_without_a_strong_mcp_token(tmp_path, value):
+    with pytest.raises(ConfigError, match="CLUCKTALK_AUTH_TOKEN"):
+        load_settings(pilot_env(tmp_path, CLUCKTALK_AUTH_TOKEN=value))
+
+
+def test_the_pilot_refuses_a_missing_mcp_token(tmp_path):
+    env = pilot_env(tmp_path)
+    del env["CLUCKTALK_AUTH_TOKEN"]
+    with pytest.raises(ConfigError, match="CLUCKTALK_AUTH_TOKEN"):
+        load_settings(env)
+
+
+def test_a_strong_mcp_token_is_accepted_and_kept(tmp_path):
+    s = load_settings(pilot_env(tmp_path, CLUCKTALK_AUTH_TOKEN="Zz9._~-" * 5))
+    assert s.auth_token == "Zz9._~-" * 5
+
+
+def test_the_demo_still_starts_without_an_mcp_token():
+    assert load_settings({"MOCK_BEDROCK": "true"}).auth_token is None

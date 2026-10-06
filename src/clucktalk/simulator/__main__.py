@@ -12,11 +12,10 @@ import re
 import sys
 from pathlib import Path
 
-from clucktalk.config import ConfigError, load_settings
+from clucktalk.config import TOKEN_PATTERN, ConfigError, load_settings
 from clucktalk.simulator.app import SimulatorSettings, build_app
 
 DEFAULT_PORT = 8766
-_TOKEN = re.compile(r"[A-Za-z0-9._~-]{24,128}")  # safe in a link's fragment, long enough not to be guessed
 _PUBLIC_ORIGIN = re.compile(r"https://[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?::[0-9]{1,5})?")
 MAX_TOKENS = 10
 
@@ -38,7 +37,11 @@ def _tokens(env: dict[str, str], pilot: bool) -> tuple[str, ...]:
             "24 to 128 letters, digits or . _ ~ - (make one with: "
             'python -c "import secrets; print(secrets.token_urlsafe(32))").'
         )
-    if len(tokens) > MAX_TOKENS or len(set(tokens)) != len(tokens) or not all(_TOKEN.fullmatch(t) for t in tokens):
+    if (
+        len(tokens) > MAX_TOKENS
+        or len(set(tokens)) != len(tokens)
+        or not all(TOKEN_PATTERN.fullmatch(t) for t in tokens)
+    ):
         raise ConfigError(
             "CLUCKTALK_SIMULATOR_TOKENS must be at most 10 different tokens of 24 to 128 letters, digits or . _ ~ -."
         )
@@ -61,6 +64,11 @@ def load_simulator_settings(env: dict[str, str] | None = None) -> SimulatorSetti
         raise ConfigError(f"The Simulator and the MCP server cannot both use port {port}.")
     mcp_url = env.get("CLUCKTALK_MCP_URL", "").strip() or f"http://127.0.0.1:{server.port}/mcp"
     pilot = server.mode == "pilot"
+    tokens = _tokens(env, pilot)
+    if server.auth_token is not None and server.auth_token in tokens:
+        raise ConfigError(
+            "CLUCKTALK_AUTH_TOKEN (the MCP server's) must be different from every CLUCKTALK_SIMULATOR_TOKENS token."
+        )
     public = env.get("CLUCKTALK_PUBLIC_ORIGIN", "").strip()
     if public and not _PUBLIC_ORIGIN.fullmatch(public):
         raise ConfigError(
@@ -74,7 +82,7 @@ def load_simulator_settings(env: dict[str, str] | None = None) -> SimulatorSetti
         mcp_url=mcp_url,
         auth_token=server.auth_token,
         mode=server.mode,
-        tokens=_tokens(env, pilot),
+        tokens=tokens,
         public_origin=public or None,
         rate_per_minute=_whole(env, "CLUCKTALK_RATE_PER_MINUTE", 60, 1, 6000),
         max_sessions=_whole(env, "CLUCKTALK_MAX_SESSIONS", 20, 1, 1000),

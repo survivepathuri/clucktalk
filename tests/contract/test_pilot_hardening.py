@@ -271,14 +271,53 @@ def test_wrong_tokens_are_limited_too_so_guessing_is_slow(tmp_path):
 
 
 # -- sessions --------------------------------------------------------------------------------------------------------
-def test_the_number_of_sessions_is_capped_and_idle_ones_are_dropped(tmp_path):
+def _ids(n):
+    return [f"session-{chr(97 + i) * 16}" for i in range(n)]
+
+
+def test_more_new_sessions_than_the_cap_never_lock_the_farmer_out(tmp_path):
+    # Step 52 part B: the cap used to answer 503 for up to an hour; now the least recently used session makes room.
     for r in start(tmp_path, max_sessions=3, rate_per_minute=1000):
-        ids = [f"session-{c}{c}{c}{c}{c}{c}{c}{c}{c}{c}{c}{c}{c}{c}{c}{c}" for c in "abcd"]
-        codes = [r.turn(session=i, utterance="సహాయం").status_code for i in ids]
-        assert codes == [200, 200, 200, 503]
-        assert r.turn(session=ids[0], utterance="సహాయం").status_code == 200  # an existing session is never refused
-        r.clock.t += 3601  # every session has been idle for more than an hour
-        assert r.turn(session=ids[3], utterance="సహాయం").status_code == 200
+        for i in _ids(12):  # twelve browser restarts in a row, each one a new session
+            assert r.turn(session=i, utterance="సహాయం").status_code == 200
+        assert r.turn(session=_ids(12)[-1], utterance="సహాయం").status_code == 200
+
+
+def test_the_session_in_use_is_kept_and_the_least_recently_used_one_is_dropped(tmp_path):
+    for r in start(tmp_path, max_sessions=3, rate_per_minute=1000):
+        a, b, c, d = _ids(4)
+        r.turn(session=a, utterance="షెడ్ 1 లో 3 కోళ్లు చనిపోయాయి")  # a read-back waits in session a
+        r.turn(session=b, utterance="సహాయం")
+        r.turn(session=c, utterance="సహాయం")
+        r.clock.t += 1
+        r.turn(session=b, utterance="సహాయం")  # b and c used after a: a is now the least recently used
+        r.turn(session=c, utterance="సహాయం")
+        assert r.turn(session=d, utterance="సహాయం").status_code == 200  # makes room by dropping a
+        gone = r.turn(session=a, utterance="అవును").json()  # a's waiting read-back went with it: nothing to confirm
+        assert gone["kind"] == "fallback" and r.source.store.records(r.source.farm_id, "house-1") == ()
+
+
+def test_a_session_that_keeps_being_used_is_never_the_one_dropped(tmp_path):
+    for r in start(tmp_path, max_sessions=2, rate_per_minute=1000):
+        keep, *others = _ids(8)
+        r.turn(session=keep, utterance="షెడ్ 1 లో 3 కోళ్లు చనిపోయాయి")
+        for other in others:
+            r.clock.t += 1
+            assert r.turn(session=other, utterance="సహాయం").status_code == 200
+            r.clock.t += 1
+            assert r.turn(session=keep, utterance="సహాయం").status_code == 200
+        r.turn(session=keep, utterance="షెడ్ 1 లో 3 కోళ్లు చనిపోయాయి")  # still its own session: it can finish a read-back
+        assert r.turn(session=keep, utterance="అవును").json()["kind"] == "tool"
+        assert [x.deaths for x in r.source.store.records(r.source.farm_id, "house-1")] == [3]
+
+
+def test_idle_sessions_are_still_dropped_after_an_hour(tmp_path):
+    for r in start(tmp_path, max_sessions=50, rate_per_minute=1000):
+        ids = _ids(3)
+        for i in ids:
+            r.turn(session=i, utterance="సహాయం")
+        r.clock.t += 3601
+        assert r.turn(session=_ids(4)[3], utterance="సహాయం").status_code == 200
 
 
 # -- kill switch -----------------------------------------------------------------------------------------------------

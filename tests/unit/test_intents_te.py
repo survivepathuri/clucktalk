@@ -232,3 +232,65 @@ def test_add_and_replace_are_only_whole_message_answers():
         assert choice_te(word) == "replace"
     for text in ("", "అవును", "కలపండి షెడ్ 1", "షెడ్ 1 మార్చండి", "add", "replace"):
         assert choice_te(text) is None
+
+
+# -- Step 52 part B: polite words, zero deaths only when stated, no minus signs -------------------------------------
+@pytest.mark.parametrize(
+    "text",
+    ["అవును అండి", "అవును సార్", "సరే అండి", "అవును అమ్మా", "అవును అన్నా", "అవును అండి సార్", "అవును అండి!", "అవునండి సార్"],
+)
+def test_a_polite_word_after_yes_is_still_a_yes(text):
+    assert yes_no_te(text) == "yes"
+
+
+@pytest.mark.parametrize("text", ["వద్దు అండి", "వద్దు సార్", "కాదు అమ్మా", "రద్దు అన్నా", "వద్దండి సార్"])
+def test_a_polite_word_after_no_is_still_a_no(text):
+    assert yes_no_te(text) == "no"
+
+
+@pytest.mark.parametrize("text", ["అండి", "సార్", "అమ్మా అన్నా", "అవును అండి షెడ్ 2 ఎలా ఉంది", "సార్ అవును", "అండి అవును"])
+def test_a_polite_word_alone_or_in_front_or_with_more_words_is_not_an_answer(text):
+    assert yes_no_te(text) is None
+
+
+def test_polite_words_follow_add_and_replace_too():
+    from clucktalk.simulator.intents_te import choice_te
+
+    assert choice_te("కలపండి అండి") == "add" and choice_te("మార్చండి సార్") == "replace"
+    assert choice_te("అండి కలపండి") is None
+
+
+def test_zero_deaths_only_when_the_negation_comes_right_after_the_death_word():
+    assert intent_of("షెడ్ 1 లో మరణాలు లేవు")[1] == {"house": "shed 1", "deaths": 0}
+    assert intent_of("షెడ్ 3 లో ఏవీ చనిపోలేదు")[1] == {"house": "shed 3", "deaths": 0}
+    assert intent_of("షెడ్ 2 లో కోళ్లు చనిపోవడం లేదు")[1] == {"house": "shed 2", "deaths": 0}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "షెడ్ 1 లో కోళ్లు చనిపోయాయి అనారోగ్యం లేదు",  # some died; "no illness" is about something else
+        "షెడ్ 1 లో లేవు మరణాలు",  # the negation is before the death word
+        "షెడ్ 1 లో కోళ్లు చనిపోయాయి మేత లేదు",
+        "షెడ్ 1 లో ఏమీ తినలేదు కోళ్లు చనిపోయాయి",
+        "షెడ్ 1 లో 3 మరణాలు లేవు",  # a number and a negation contradict each other
+    ],
+)
+def test_a_negation_that_does_not_belong_to_the_death_word_is_asked_again_never_zero(text):
+    assert match_te(text).kind == "none"
+
+
+@pytest.mark.parametrize("sign", ["-", "−", "–", "—", "﹣", "－", "‒", "‐"])
+def test_any_stray_minus_sign_makes_the_input_not_understood(sign):
+    for text in (
+        f"షెడ్ 1 లో {sign}3 కోళ్లు చనిపోయాయి",
+        f"షెడ్ 1 లో 3{sign} కోళ్లు చనిపోయాయి",
+        f"షెడ్ {sign}1 ఎలా ఉంది",
+        f"షెడ్ 1 {sign} 3 చనిపోయాయి",
+    ):
+        assert match_te(text).kind == "none", text
+    assert yes_no_te(f"అవును {sign}") == "yes"  # a yes or no is judged on its own (it carries no number)
+
+
+def test_a_normal_hyphen_free_message_still_works():
+    assert intent_of("షెడ్ 1 లో 3 కోళ్లు చనిపోయాయి")[1] == {"house": "shed 1", "deaths": 3}

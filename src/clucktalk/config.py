@@ -32,6 +32,8 @@ AI_HARD_DAILY_CAP = 100
 _TRUE = {"true", "1", "yes"}
 _FALSE = {"false", "0", "no"}
 _LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
+# A bearer token (the farmer's or the MCP server's): long enough not to be guessed, safe in a link fragment.
+TOKEN_PATTERN = re.compile(r"[A-Za-z0-9._~-]{24,128}")
 _ORIGIN_RE = re.compile(r"https?://(?:[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?|\[[0-9A-Fa-f:]+\])(?::[0-9]{1,5})?")
 
 
@@ -204,6 +206,14 @@ def _mode_settings(env: Mapping[str, str], mock_bedrock: bool) -> tuple[str, str
     if name not in state.name.lower():
         raise ConfigError(
             f"CLUCKTALK_STATE_PATH={raw_state!r}: the state file name must contain the instance name {name!r}."
+        )
+    token = env.get("CLUCKTALK_AUTH_TOKEN", "").strip()
+    if not TOKEN_PATTERN.fullmatch(token):
+        raise ConfigError(
+            "CLUCKTALK_MODE=pilot needs CLUCKTALK_AUTH_TOKEN, a strong token for the MCP server (24 to 128 letters, "
+            "digits or . _ ~ -): without it any process on this machine, the demo instance included, could read and "
+            "change the farmer's records. Make one with: "
+            'python -c "import secrets; print(secrets.token_urlsafe(32))".'
         )
     return mode, name, farm, state
 
