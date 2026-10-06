@@ -25,6 +25,7 @@ from clucktalk.domain.triage import Urgency
 from clucktalk.i18n import (
     DAILY_DEATHS_LINE,
     DAILY_DEATHS_UNREADABLE,
+    PILOT_OK_SENTENCE,
     WEATHER_ABOVE,
     WEATHER_BELOW,
     WEATHER_HIGHEST,
@@ -178,9 +179,15 @@ HOUSE_PARAM = Field(
 )
 
 
-def _level_sentence(h: HouseStatusOut) -> Text:
+def _level_sentence(h: HouseStatusOut, quiet_ok: bool = False) -> Text:
+    """``quiet_ok`` (the pilot farm): a shed with no alert is not "doing well", only "no alert from my checks"."""
+    ok = (
+        Text(PILOT_OK_SENTENCE.en.format(label=h.label_en), PILOT_OK_SENTENCE.te.format(label=h.label_te))
+        if quiet_ok
+        else Text(f"{h.label_en} is doing well.", f"{h.label_te} బాగుంది.")
+    )
     return {
-        "ok": Text(f"{h.label_en} is doing well.", f"{h.label_te} బాగుంది."),
+        "ok": ok,
         "watch": Text(f"{h.label_en} needs a closer look.", f"{h.label_te} ని కొంచెం గమనించాలి."),
         "alert": Text(f"{h.label_en} needs attention now.", f"{h.label_te} కి వెంటనే శ్రద్ధ అవసరం."),
     }[h.level]
@@ -315,7 +322,9 @@ def _feed_stock_finding(days: int, stock_kg: float) -> FindingOut:
     return FindingOut(code="feed_stock_low", level="watch", text_en=en, text_te=te, values={"days_covered": days})
 
 
-def _house_out(farm: Farm, house: House, as_of, floor: LevelName = "ok", deaths_rule=None) -> HouseStatusOut:
+def _house_out(
+    farm: Farm, house: House, as_of, floor: LevelName = "ok", deaths_rule=None, quiet_ok: bool = False
+) -> HouseStatusOut:
     """``floor``: the level the shed's open health check or follow-up asks for; the shed is never shown lower."""
     st = house_status(house, as_of, deaths_rule)
     is_today = st.latest_record_day == as_of
@@ -370,7 +379,7 @@ def _house_out(farm: Farm, house: House, as_of, floor: LevelName = "ok", deaths_
         feed_days_covered_is_minimum=is_min,
         findings=findings,
     )
-    head = _level_sentence(out)
+    head = _level_sentence(out, quiet_ok)
     if house.kind is HouseKind.BROILER:
         detail_en = f"Day {out.age_days}, {num(out.live_birds)} birds"
         detail_te = f"{out.age_days}వ రోజు, {num(out.live_birds)} కోళ్లు"
@@ -534,6 +543,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
     farm, as_of = source.snapshot()
     order = {"alert": 0, "watch": 1, "ok": 2}
     deaths_rule, _ = deaths_rule_state(source)
+    quiet = not source.demo_data  # the pilot farm (Step 52): no "doing well"
     house_ref = whole_farm_or(house_ref)
     follow_up_lines: dict[str, Text] = {}
     vet_houses: set[str] = set()
@@ -543,7 +553,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
         scope = [house]
         health = shed_health(source, farm.farm_id, house, as_of)
         # A DomainError propagates here: the one shed asked about failed.
-        out = _house_out(farm, house, as_of, _health_floor(health), deaths_rule)
+        out = _house_out(farm, house, as_of, _health_floor(health), deaths_rule, quiet)
         houses, unavailable = [out], []
         spoken = out.findings[:MAX_SPOKEN_FINDINGS]
         parts = [Text(out.summary_en, out.summary_te)] + [Text(f.text_en, f.text_te) for f in spoken]
@@ -557,7 +567,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
         for house in sorted(farm.houses, key=lambda h: h.number):
             try:
                 health = shed_health(source, farm.farm_id, house, as_of)
-                out = _house_out(farm, house, as_of, _health_floor(health), deaths_rule)
+                out = _house_out(farm, house, as_of, _health_floor(health), deaths_rule, quiet)
                 line = _attach_health(house, as_of, health, out)
                 if line is not None:
                     follow_up_lines[house.house_id] = line
@@ -582,7 +592,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
         items: list[Text] = []
         spoken = []
         for h in houses:
-            head = _level_sentence(h)
+            head = _level_sentence(h, quiet)
             line = follow_up_lines.get(h.house_id)  # the one spoken health sentence this shed has, if any
             tail = Text(f" {line.en}", f" {line.te}") if line is not None else Text("", "")
             if not h.findings:

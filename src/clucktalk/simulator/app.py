@@ -54,7 +54,7 @@ from clucktalk.i18n.pilot import (
 )
 from clucktalk.server.farm_state import today_ist
 from clucktalk.simulator.intents import Intent, match, normalise, yes_no
-from clucktalk.simulator.intents_te import chip_intent, match_te, yes_no_te
+from clucktalk.simulator.intents_te import chip_intent, choice_te, match_te, yes_no_te
 from clucktalk.simulator.mcp_client import Exchange, McpClient, McpUnavailable
 from clucktalk.usage import UsageCounters
 
@@ -491,10 +491,13 @@ def build_app(
         te = lang == "te"
         intent: Intent | None = None
         answer: str | None = None
+        choice: str | None = None
         routed = None
         if chip is not None:  # a tapped chip: validated here, never through a text matcher
             if chip in ("yes", "no"):
                 answer = chip
+            elif chip in ("add", "replace"):  # the answer to the add-or-replace question (a tap is the whole answer)
+                answer, choice = "yes", chip
             else:
                 try:
                     intent = chip_intent(chip, params)
@@ -517,7 +520,8 @@ def build_app(
         # docs/DESIGN.md §5.1: a bare yes/no answers the pending read-back (same tool + proposal_id + answer).
         # Anything else moves on, so the old read-back can no longer be confirmed from here.
         if chip is None and te:
-            answer = yes_no_te(utterance)
+            choice = choice_te(utterance)
+            answer = "yes" if choice is not None else yes_no_te(utterance)
             routed = None if answer is not None else match_te(utterance)
         elif chip is None:
             answer = yes_no(utterance)
@@ -532,8 +536,10 @@ def build_app(
             intent = routed.intent
         if answer is not None and awaiting:
             args = {**awaiting["arguments"], "proposal_id": awaiting["proposal_id"], "answer": answer}
+            if choice is not None and awaiting["tool"] == "log_daily_record":
+                args["deaths_choice"] = choice  # the farmer's explicit add or replace
             intent = Intent(awaiting["tool"], args, f"answer '{answer}' to the pending read-back")
-        elif answer == "yes" and host_awaiting:
+        elif answer == "yes" and host_awaiting and choice is None:
             intent = Intent(host_awaiting["tool"], host_awaiting["arguments"], "answer 'yes' to the host read-back")
         if photo_ref and intent is not None and intent.tool == "start_health_check":
             # The farmer attached a (placeholder) photo to this turn; only a new health check takes it.
@@ -576,7 +582,7 @@ def build_app(
                 kind="choose", speech="", speech_te="", choose={"chip": routed.chip.value, "params": routed.params}
             )
         elif intent is None:
-            if answer is not None and host_awaiting:
+            if answer is not None and host_awaiting and choice is None:
                 out.update(kind="fallback", speech=HOST_NOT_STARTED.en, speech_te=HOST_NOT_STARTED.te)
             elif te or chip is not None:
                 said = NOTHING_PENDING if answer is not None else NOT_UNDERSTOOD
@@ -624,10 +630,11 @@ def build_app(
                 out.update(kind="unavailable", speech=UNAVAILABLE_SPEECH, is_error=True, detail=str(err))
                 if te or chip is not None:
                     out["speech_te"] = GENERIC_TE
-        if usage is not None and answer is not None and (awaiting or host_awaiting):
+        if usage is not None and answer is not None and (awaiting or (host_awaiting and choice is None)):
             sc_done = (out.get("result") or {}).get("structuredContent") or {}
             saved = answer == "yes" and bool(awaiting) and awaiting.get("tool") == "log_daily_record"
-            usage.record_answer(answer, saved and sc_done.get("status") == "changed")
+            if sc_done.get("status") != "needs_confirmation":  # a yes that only asked again is not a confirmation
+                usage.record_answer(answer, saved and sc_done.get("status") == "changed")
         elif usage is not None and out.get("kind") == "tool" and not out.get("is_error"):
             usage.record_result(out["intent"]["tool"], (out.get("result") or {}).get("structuredContent") or {})
         out["timing"]["backend_ms"] = round((time.perf_counter() - started) * 1000, 1)

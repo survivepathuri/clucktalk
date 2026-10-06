@@ -92,9 +92,15 @@ function showReadBack(out) {
   const waiting = !!(out && out.awaiting_answer);
   $("readback").hidden = !waiting;
   showChips(!waiting);
+  // The add-or-replace question: a plain yes is not offered, only add, replace or no.
+  const choice = waiting && out.result && out.result.structuredContent && out.result.structuredContent.choice;
+  document.querySelector(".pair").classList.toggle("three", !!choice);
+  $("yes").hidden = !!choice;
+  $("add").hidden = !choice;
+  $("replace").hidden = !choice;
   if (waiting) {
     $("readback-text").textContent = out.speech_te || out.speech;
-    $("yes").focus();
+    (choice ? $("add") : $("yes")).focus();
   }
 }
 
@@ -197,10 +203,14 @@ async function start() {
   $("notice").textContent = ui.strings.notice.te;
   $("yes").textContent = ui.strings.yes.te;
   $("no").textContent = ui.strings.no.te;
+  $("add").textContent = ui.strings.add.te;
+  $("replace").textContent = ui.strings.replace.te;
   $("readback-head").textContent = ui.strings.readback.te;
   Object.entries(ui.chips).forEach(([key, t]) => $("chips").appendChild(button(t.te, () => choose(key, {}))));
   $("yes").addEventListener("click", () => post({ chip: "yes" }));
   $("no").addEventListener("click", () => post({ chip: "no" }));
+  $("add").addEventListener("click", () => post({ chip: "add" }));
+  $("replace").addEventListener("click", () => post({ chip: "replace" }));
   $("ask").addEventListener("submit", (ev) => {
     ev.preventDefault();
     const text = $("text").value.trim();

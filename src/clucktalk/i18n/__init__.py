@@ -45,6 +45,18 @@ HELP_NOTHING_YET = Text(
 # awaiting native review (pending in docs/TELUGU_REVIEW.md).
 PILOT_BADGE = Text(en="Pilot (real farm, prototype)", te="పైలట్ (నిజమైన ఫారం, ప్రోటోటైప్)")
 
+# Step 52 part A. A second log of deaths on a day that already has deaths: the farmer is asked, never assumed. The
+# Telugu is a DRAFT awaiting native review (pending in docs/TELUGU_REVIEW.md).
+CHOICE_QUESTION = Text(
+    en="{label}: {existing} died {when} so far. Add {new} to make {total}, or replace {existing} with {new}?",
+    te="{label}కి {when} ఇప్పటికే {existing} కోళ్లు చనిపోయాయి. {new} కలిపి {total} చేయాలా, లేక {existing}ని {new}తో మార్చాలా?",
+)
+# A shed with no alert, on the pilot farm: it does not say "doing well", because the checks it can make are few.
+PILOT_OK_SENTENCE = Text(
+    en="{label} has no alert from the checks I can make.",
+    te="{label}కి నేను చేయగల పరీక్షలలో ఎలాంటి హెచ్చరిక లేదు.",
+)
+
 # The farmer's own daily deaths rule (Step 51 part B). The Telugu is a DRAFT awaiting native review (pending in
 # docs/TELUGU_REVIEW.md). {when} is "today" or "in the latest count"; his note is shown with the existing
 # "Your note: ..." string below (WEATHER_NOTE), exactly as he wrote it.

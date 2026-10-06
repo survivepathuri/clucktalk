@@ -108,6 +108,15 @@ these places. Then tell him it is done.
   veterinary service; that an alert is a prompt to look, not a diagnosis; that the weight and total-mortality targets are
   general curves that may not fit his birds; and that his keyboard's voice typing sends his voice to its own speech service.
 
+## When the morning count belongs to a day
+
+The farmer counts the deaths of the last 24 hours once each morning; CluckTalk files that count under **today's date
+(Asia/Kolkata)**. Tell him this once. A second number for the same house on the same day is most likely a correction, so the
+page asks him: **add** (the new number is added to the existing one and the total is shown), **replace** (the new number
+replaces the existing one, and the old value that goes is shown) or **no**. A plain yes does not answer it. A total above the
+birds in the house is refused. The first log of a day, and a log for another day, are not asked about. This changes no alert
+rule.
+
 ## Pilot settings and the alerts that can be wrong
 
 - No bird weights are logged (the tool refuses, with the "no verified growth standard" message), so the weight and feed

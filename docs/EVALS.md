@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-10-06T23:01:19+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
+Run 2026-10-06T23:49:13+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -78,5 +78,9 @@ Run 2026-10-06T23:01:19+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | weather-an-unavailable-forecast-says-so-and-changes-nothing-else | PASS | — |
 | deaths-rule-raises-a-clean-shed-to-watch-with-his-line-and-his-note-last | PASS | — |
 | deaths-rule-never-lowers-an-alert-and-his-note-follows-the-vet-line | PASS | — |
+| pilot-the-first-log-of-the-day-asks-yes-or-no-and-no-question | PASS | — |
+| pilot-a-second-log-asks-add-or-replace-and-a-plain-yes-does-not-answer-it | PASS | — |
+| pilot-replace-sets-the-new-number-and-the-question-named-the-old-one | PASS | — |
+| pilot-a-shed-with-no-alert-says-so-and-never-doing-well | PASS | — |
 
-**Score: 74/74**
+**Score: 78/78**

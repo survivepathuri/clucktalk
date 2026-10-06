@@ -5001,6 +5001,327 @@
           ]
         }
       ]
+    },
+    {
+      "id": "pilot-the-first-log-of-the-day-asks-yes-or-no-and-no-question",
+      "description": "Pilot farm: the first log of deaths for a house today is read back exactly as before (say yes to save, or no): no add-or-replace question.",
+      "fresh_state": true,
+      "pilot": true,
+      "steps": [
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 3
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "text_en",
+              "op": "eq",
+              "value": "For House 1, today: 3 died. Say yes to save, or no to keep it as it is."
+            }
+          ],
+          "save": {
+            "pid": "proposal_id"
+          }
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 3,
+            "proposal_id": "$pid",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pilot-a-second-log-asks-add-or-replace-and-a-plain-yes-does-not-answer-it",
+      "description": "Pilot farm: a second log of deaths today shows the existing and the new number and asks add or replace. A plain yes changes nothing and the question stays; only add (with the total) or replace answers it. The record changes only after that.",
+      "fresh_state": true,
+      "pilot": true,
+      "steps": [
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 3
+          },
+          "save": {
+            "pid": "proposal_id"
+          },
+          "checks": []
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 3,
+            "proposal_id": "$pid",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 2
+          },
+          "save": {
+            "pid": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "choice.existing_deaths",
+              "op": "eq",
+              "value": 3
+            },
+            {
+              "field": "choice.new_deaths",
+              "op": "eq",
+              "value": 2
+            },
+            {
+              "field": "choice.total_if_added",
+              "op": "eq",
+              "value": 5
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "3 died today so far. Add 2 to make 5, or replace 3 with 2?"
+            },
+            {
+              "field": "text_te",
+              "op": "contains",
+              "value": "5 చేయాలా"
+            },
+            {
+              "field": "text_te",
+              "op": "contains",
+              "value": "3ని 2తో మార్చాలా"
+            }
+          ]
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 2,
+            "proposal_id": "$pid",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            },
+            {
+              "field": "choice.total_if_added",
+              "op": "eq",
+              "value": 5
+            }
+          ]
+        },
+        {
+          "tool": "get_record_book",
+          "args": {},
+          "checks": [
+            {
+              "field": "entries.0.record.deaths",
+              "op": "eq",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 2,
+            "proposal_id": "$pid",
+            "answer": "yes",
+            "deaths_choice": "add"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "tool": "get_record_book",
+          "args": {},
+          "checks": [
+            {
+              "field": "entries.0.record.deaths",
+              "op": "eq",
+              "value": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pilot-replace-sets-the-new-number-and-the-question-named-the-old-one",
+      "description": "Pilot farm: replace puts the new number in place of the old one; the question had said which old value goes.",
+      "fresh_state": true,
+      "pilot": true,
+      "steps": [
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 3
+          },
+          "save": {
+            "pid": "proposal_id"
+          },
+          "checks": []
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 3,
+            "proposal_id": "$pid",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 2
+          },
+          "save": {
+            "pid": "proposal_id"
+          },
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "replace 3 with 2"
+            }
+          ]
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 2,
+            "proposal_id": "$pid",
+            "answer": "yes",
+            "deaths_choice": "replace"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "tool": "get_record_book",
+          "args": {},
+          "checks": [
+            {
+              "field": "entries.0.record.deaths",
+              "op": "eq",
+              "value": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pilot-a-shed-with-no-alert-says-so-and-never-doing-well",
+      "description": "Pilot farm: a shed with no alert is described as having no alert from the checks the assistant can make, never as doing well. The demo wording is unchanged.",
+      "fresh_state": true,
+      "pilot": true,
+      "steps": [
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 1
+          },
+          "save": {
+            "pid": "proposal_id"
+          },
+          "checks": []
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 1,
+            "proposal_id": "$pid",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed 1"
+          },
+          "checks": [
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "House 1 has no alert from the checks I can make."
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "doing well"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

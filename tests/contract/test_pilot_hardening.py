@@ -392,3 +392,15 @@ def test_a_confirmed_health_check_is_a_confirmation_but_not_a_record(rig):
     rig.turn(chip="yes")
     data = json.loads(rig.settings.usage_path.read_text(encoding="utf-8"))
     assert data["confirmations"] == 1 and data["records_confirmed"] == 0
+
+
+def test_a_yes_that_only_asks_the_add_or_replace_question_again_is_not_counted_as_a_confirmation(rig):
+    rig.turn(utterance="షెడ్ 1 లో 3 కోళ్లు చనిపోయాయి")
+    rig.turn(chip="yes")
+    rig.turn(utterance="షెడ్ 1 లో 2 కోళ్లు చనిపోయాయి")
+    rig.turn(chip="yes")  # not an answer to the question: nothing was confirmed
+    data = json.loads(rig.settings.usage_path.read_text(encoding="utf-8"))
+    assert data["confirmations"] == 1 and data["records_confirmed"] == 1
+    rig.turn(chip="add")
+    data = json.loads(rig.settings.usage_path.read_text(encoding="utf-8"))
+    assert data["confirmations"] == 2 and data["records_confirmed"] == 2

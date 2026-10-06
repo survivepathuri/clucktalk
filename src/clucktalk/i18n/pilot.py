@@ -29,6 +29,9 @@ HEALTH_READBACK = Text(
     te="{shed} కి ఈ లక్షణాలతో ఆరోగ్య పరీక్ష మొదలుపెట్టమంటారా: {signs}?",
 )
 
+BUTTON_ADD = Text(en="Add", te="కలపండి")
+BUTTON_REPLACE = Text(en="Replace", te="మార్చండి")
+
 CHIP_DEATHS = Text(en="Log deaths", te="మరణాలు నమోదు")
 CHIP_NO_DEATHS = Text(en="No deaths today", te="ఈరోజు మరణాలు లేవు")
 CHIP_STATUS = Text(en="How is the farm?", te="ఫారం ఎలా ఉంది?")
@@ -62,6 +65,8 @@ PILOT_UI = {
     "no": NO_BUTTON,
     "readback": READBACK_HEAD,
     "not_started": HOST_NOT_STARTED,
+    "add": BUTTON_ADD,
+    "replace": BUTTON_REPLACE,
     "error": GENERIC_ERROR,
     "error_next": GENERIC_NEXT_STEP,
 }

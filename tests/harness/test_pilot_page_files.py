@@ -50,3 +50,10 @@ def test_the_token_comes_from_the_link_fragment_is_removed_from_the_address_and_
     assert "localStorage" not in js  # the token lives for this tab only
     for call in re.findall(r"fetch\([^)]*\)", js):
         assert "auth(" in js[js.index(call) : js.index(call) + 200], call
+
+
+def test_the_add_and_replace_buttons_send_their_own_chips_and_the_plain_yes_is_hidden_for_the_question():
+    js, html = read("pilot.js"), read("pilot.html")
+    assert 'post({ chip: "add" })' in js and 'post({ chip: "replace" })' in js
+    assert 'id="add"' in html and 'id="replace"' in html
+    assert '$("yes").hidden = !!choice;' in js and "structuredContent.choice" in js

@@ -27,10 +27,18 @@ from clucktalk.domain.errors import (
 from clucktalk.domain.feed import BAG_KG
 from clucktalk.domain.houses import resolve_house
 from clucktalk.domain.models import DailyRecord, Treatment, TreatmentKind
-from clucktalk.domain.proposals import PROPOSAL_TTL, Answer, Proposal, ProposalId, Reason
+from clucktalk.domain.proposals import (
+    PROPOSAL_TTL,
+    Answer,
+    Proposal,
+    ProposalId,
+    ProposalStatus,
+    Reason,
+    canonical,
+)
 from clucktalk.domain.records import merge_daily_record, validate_record_day
-from clucktalk.i18n import Text
-from clucktalk.server.confirm import ConfirmFlow
+from clucktalk.i18n import CHOICE_QUESTION, Text
+from clucktalk.server.confirm import ConfirmFlow, ConfirmResult
 from clucktalk.server.errors import domain_error_result
 from clucktalk.server.farm_state import DemoFarmSource
 from clucktalk.server.render import num, plural, weekday_en, weekday_te
@@ -116,6 +124,19 @@ class LogDailyRecordOutput(BaseModel):
     expires_in_minutes: int | None
     reason: str | None
     replayed: bool
+    choice: ChoiceOut | None = None  # set (and shown) only for the add-or-replace question
+
+
+DeathsChoice = Literal["add", "replace"]
+
+
+class ChoiceOut(BaseModel):
+    """Present only when the house already has deaths for that day and the farmer must choose add or replace."""
+
+    model_config = ConfigDict(extra="forbid")
+    existing_deaths: int
+    new_deaths: int
+    total_if_added: int
 
 
 class RecordBookEntryOut(BaseModel):
@@ -156,7 +177,9 @@ DESCRIPTION = (
     "unlogged day. Never ask for or record a dose, even if the farmer gives one — name only. Always two calls: "
     "first without `proposal_id`; nothing is saved and the result reads back what will be saved. Then call again "
     "with the same arguments plus the returned `proposal_id` and `answer`: 'yes' for an explicit spoken yes "
-    "(haan, avunu), 'no' for no (nahi, vaddu)."
+    "(haan, avunu), 'no' for no (nahi, vaddu). If the first result has `choice`, the house already has deaths "
+    "for that day: read the question back and answer with 'yes' plus `deaths_choice` 'add' or 'replace' (never a "
+    "plain yes)."
 )
 HOUSE_PARAM = Field(
     description="Which house. Accepts how farmers say it: 'shed 2', 'house two', 'kotam do', or a house_id."
@@ -171,6 +194,14 @@ TREATMENTS_PARAM = Field(
 )
 PROPOSAL_PARAM = Field(default=None, description="Only on the second call: the proposal_id from the first call.")
 ANSWER_PARAM = Field(default=None, description="Only on the second call: 'yes' if the farmer said yes, 'no' if no.")
+DEATHS_CHOICE_PARAM = Field(
+    default=None,
+    description=(
+        "Only on the second call, and only when the first result has `choice` (the house already has deaths for that "
+        "day): 'add' to add the new number to the existing one, 'replace' to replace the existing number. A plain "
+        "'yes' is not an answer to that question."
+    ),
+)
 
 
 def _out(rec: DailyRecord) -> DailyRecordOut:
@@ -271,6 +302,15 @@ def build_record_book(source: DemoFarmSource) -> RecordBookOutput:
     )
 
 
+def _wire(out: LogDailyRecordOutput) -> dict[str, Any]:
+    """The structured answer; ``choice`` is left out entirely when there is no question, so every other answer is
+    byte-identical to what it always was."""
+    data = out.model_dump(mode="json")
+    if out.choice is None:
+        del data["choice"]
+    return data
+
+
 def build_log_record(
     source: DemoFarmSource,
     flow: ConfirmFlow,
@@ -283,6 +323,7 @@ def build_log_record(
     treatments_in: list[TreatmentIn] | None,
     proposal_id: str | None,
     answer: Answer | None,
+    deaths_choice: DeathsChoice | None = None,
 ) -> LogDailyRecordOutput:
     if avg_weight_g is not None and not source.weights_allowed:
         raise WeightNotLoggedInPilot()  # pilot mode: nothing is proposed or stored (Step 51)
@@ -338,6 +379,19 @@ def build_log_record(
         else [{"kind": t.kind.value, "name": t.name, "note": t.note} for t in treatments_tuple],
     }
 
+    # Step 52 part A (pilot): deaths logged for a day that already has deaths are never silently added or replaced.
+    asks = (
+        bool(getattr(source, "asks_deaths_choice", False))
+        and deaths is not None
+        and existing is not None
+        and existing.deaths > 0
+    )
+    total_if_added = (existing.deaths + deaths) if asks and existing is not None and deaths is not None else 0
+    mode = deaths_choice if asks and answer == "yes" else None
+
+    def room_for(d: date) -> int:
+        return house.birds_placed - sum(r.deaths for r in house.records if r.day != d)
+
     def apply(proposal: Proposal, _now: datetime) -> dict[str, Any]:
         a = proposal.arguments
         d = date.fromisoformat(a["day"])
@@ -346,21 +400,48 @@ def build_log_record(
             if a["treatments"] is None
             else tuple(Treatment(TreatmentKind(t["kind"]), t["name"], t["note"]) for t in a["treatments"])
         )
+        current = on_file(d)
+        new_deaths = a["deaths"]
+        if asks and new_deaths is not None and current is not None and current.deaths > 0:
+            if mode is None:  # the gate below never lets this happen; a refusal here keeps it that way
+                raise RuntimeError("add or replace was not chosen")
+            if mode == "add":
+                new_deaths = current.deaths + new_deaths
+                if new_deaths > room_for(d):
+                    raise DeathsExceedLiveBirds(house.label_en, house.label_te, new_deaths, room_for(d))
         rec = merge_daily_record(
-            on_file(d), d, a["deaths"], a["feed_kg"], a["avg_weight_g"], a["weight_sample_birds"], pt,
+            current, d, new_deaths, a["feed_kg"], a["avg_weight_g"], a["weight_sample_birds"], pt,
             house.label_en, house.label_te,
         )  # fmt: skip
         source.store.put_record(farm_id, house.house_id, rec)
         return {"day": rec.day.isoformat()}
 
     def in_place() -> bool:
+        if asks:  # the same number again is still a question: add and replace would differ
+            return False
         merged = merge_daily_record(
             existing, record_day, deaths, feed_kg, avg_weight_g, weight_sample_birds, treatments_tuple,
             house.label_en, house.label_te,
         )  # fmt: skip
         return merged == existing
 
-    result = flow.run(farm_id, TOOL, args, proposal_id, answer, apply, in_place=in_place)
+    result: ConfirmResult | None = None
+    if asks and answer == "yes" and mode is None and proposal_id is not None:
+        # A plain yes is not an answer to the add-or-replace question: nothing changes, the same question stays open.
+        waiting = source.store.get_proposal(proposal_id)
+        if (
+            waiting is not None
+            and waiting.status is ProposalStatus.PENDING
+            and waiting.farm_id == farm_id
+            and waiting.tool == TOOL
+            and flow.now() < waiting.expires_at
+            and canonical(waiting.arguments) == canonical(args)
+        ):
+            result = ConfirmResult("needs_confirmation", waiting)
+    if mode == "add" and total_if_added > room_for(record_day):
+        raise DeathsExceedLiveBirds(house.label_en, house.label_te, total_if_added, room_for(record_day))
+    if result is None:
+        result = flow.run(farm_id, TOOL, args, proposal_id, answer, apply, in_place=in_place)
     saved = stored_for(record_day)
     proposed = merge_daily_record(
         existing, record_day, deaths, feed_kg, avg_weight_g, weight_sample_birds, treatments_tuple,
@@ -404,6 +485,18 @@ def build_log_record(
             f"For {house.label_en}, {when.en}: {given.en}. Say yes to save, or no to keep it as it is.",
             f"{house.label_te}కి, {when.te}: {given.te}. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి.",
         )
+        if asks and existing is not None and deaths is not None:
+            numbers = {"existing": num(existing.deaths), "new": num(deaths), "total": num(total_if_added)}
+            question = Text(
+                CHOICE_QUESTION.en.format(label=house.label_en, when=when.en, **numbers),
+                CHOICE_QUESTION.te.format(label=house.label_te, when=when.te, **numbers),
+            )
+            others = _given_summary(None, feed_bags, avg_weight_g, weight_sample_birds, treatments_in)
+            tail = Text(f"{others.en}.", f"{others.te}.") if others.en else Text("", "")
+            note, ask = Text("", ""), _join(question, tail)
+            fields["choice"] = ChoiceOut(
+                existing_deaths=existing.deaths, new_deaths=deaths, total_if_added=total_if_added
+            )
         text = _join(*reason, note, ask)
         fields.update(
             proposal_id=p.proposal_id,
@@ -463,17 +556,16 @@ def register(server: MCPServer, registry: CapabilityRegistry, source: DemoFarmSo
         treatments: Annotated[list[TreatmentIn] | None, TREATMENTS_PARAM] = None,
         proposal_id: Annotated[ProposalId | None, PROPOSAL_PARAM] = None,
         answer: Annotated[Answer | None, ANSWER_PARAM] = None,
+        deaths_choice: Annotated[DeathsChoice | None, DEATHS_CHOICE_PARAM] = None,
     ) -> Annotated[CallToolResult, LogDailyRecordOutput]:
         try:
             out = build_log_record(
                 source, flow, house, day, deaths, feed_bags, avg_weight_g, weight_sample_birds, treatments,
-                proposal_id, answer,
+                proposal_id, answer, deaths_choice,
             )  # fmt: skip
         except DomainError as err:
             return domain_error_result(err)
-        return CallToolResult(
-            content=[TextContent(type="text", text=out.text_en)], structured_content=out.model_dump(mode="json")
-        )
+        return CallToolResult(content=[TextContent(type="text", text=out.text_en)], structured_content=_wire(out))
 
     registry.add(
         Capability(

@@ -31,9 +31,10 @@ import uvicorn  # noqa: E402
 from clucktalk.agents import AiServices  # noqa: E402
 from clucktalk.agents.runner import ThreadRunner  # noqa: E402
 from clucktalk.config import load_settings  # noqa: E402
+from clucktalk.pilot import load_pilot_farm_file  # noqa: E402
 from clucktalk.server.app import MCP_PATH, TARGET_PROTOCOL_VERSION, build_app, build_mcp_server  # noqa: E402
 from clucktalk.server.daily_deaths import RuleState, parse_rule  # noqa: E402
-from clucktalk.server.farm_state import DemoClock, DemoFarmSource  # noqa: E402
+from clucktalk.server.farm_state import DemoClock, DemoFarmSource, PilotFarmSource  # noqa: E402
 from clucktalk.server.weather import Forecast, MockForecast, WeatherReminders, load_weather_config  # noqa: E402
 from clucktalk.simulator.intents import match as match_intent  # noqa: E402
 from clucktalk.simulator.intents import yes_no  # noqa: E402
@@ -89,14 +90,23 @@ class _FixedRule:
         return self.state
 
 
-def _serve(port: int, fixture: str | None = None, weather: str | None = None, deaths_rule: str | None = None):
+def _serve(
+    port: int,
+    fixture: str | None = None,
+    weather: str | None = None,
+    deaths_rule: str | None = None,
+    pilot: bool = False,
+):
     """A fresh mock-mode server (its own in-memory state). ``fixture`` swaps the demo rules for a test model.
     Returns ``(stop, clock)``: the demo clock (off, 0 days) that a case step may move with ``demo_days_later``. That
     hook lives only in this runner, in process: no MCP tool and no argument can reach it (docs/DESIGN.md section 18)."""
     settings = load_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_PORT": str(port)})
     clock = DemoClock(0)
     ai = AiServices(model=FIXTURES[fixture](), budget=None, runner=ThreadRunner()) if fixture is not None else None
-    source = DemoFarmSource(demo_clock=clock)
+    if pilot:  # a case's ``pilot`` option: the pilot farm (docs/pilot_farm.example.json), no synthetic history
+        source = PilotFarmSource(load_pilot_farm_file(ROOT / "docs" / "pilot_farm.example.json"))
+    else:
+        source = DemoFarmSource(demo_clock=clock)
     source.weather = _weather(weather)
     source.deaths_rule = None if deaths_rule is None else _FixedRule(deaths_rule)
     server = build_mcp_server(source, ai)
@@ -267,19 +277,20 @@ def main() -> int:
 
     # One fresh server per model fixture (None = the demo rules), so fixture cases never share state. A case marked
     # ``fresh_state`` gets a server of its own: its answer must not depend on what earlier cases changed.
-    def group(case: dict[str, Any]) -> tuple[str | None, str | None, str | None, str | None]:
+    def group(case: dict[str, Any]) -> tuple[str | None, str | None, str | None, str | None, bool]:
         weather = json.dumps(case["weather"], sort_keys=True) if "weather" in case else None  # its own server
         deaths = json.dumps(case["deaths_rule"], sort_keys=True) if "deaths_rule" in case else None
-        return case.get("model_fixture"), case["id"] if case.get("fresh_state") else None, weather, deaths
+        pilot = bool(case.get("pilot", False))
+        return case.get("model_fixture"), case["id"] if case.get("fresh_state") else None, weather, deaths, pilot
 
-    for fixture, only, weather, deaths in dict.fromkeys(group(c) for c in cases):
+    for fixture, only, weather, deaths, pilot in dict.fromkeys(group(c) for c in cases):
         port = _free_port()
-        stop, clock = _serve(port, fixture, weather, deaths)
+        stop, clock = _serve(port, fixture, weather, deaths, pilot)
         try:
             with httpx2.Client(timeout=10) as client:
                 url = f"http://127.0.0.1:{port}{MCP_PATH}"
                 headers = _session(client, url)
-                for case in (c for c in cases if group(c) == (fixture, only, weather, deaths)):
+                for case in (c for c in cases if group(c) == (fixture, only, weather, deaths, pilot)):
                     results[case["id"]] = _check_case(client, url, headers, case, clock)
         finally:
             stop()

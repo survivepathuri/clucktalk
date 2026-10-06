@@ -73,6 +73,8 @@ FARM_WORDS = tuple(_WORDS["FARM_WORDS"])
 BETTER = tuple(_WORDS["BETTER"])
 SAME = tuple(_WORDS["SAME"])
 WORSE = tuple(_WORDS["WORSE"])
+ADD = set(_WORDS["ADD"])
+REPLACE = set(_WORDS["REPLACE"])
 WHAT = set(_WORDS["WHAT"])
 HEALTH_ADJ = set(_WORDS["HEALTH_ADJ"])
 WELL = set(_WORDS["WELL"])
@@ -231,6 +233,16 @@ def yes_no_te(text: str) -> str | None:
         return "yes"
     if norm in NO:
         return "no"
+    return None
+
+
+def choice_te(text: str) -> str | None:
+    """ "add" or "replace" only when the whole message is that one word (the answer to the add-or-replace question)."""
+    norm = normalise_te(text)
+    if norm in ADD:
+        return "add"
+    if norm in REPLACE:
+        return "replace"
     return None
 
 

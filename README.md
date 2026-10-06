@@ -229,6 +229,20 @@ service. If you ever use CluckTalk commercially, that needs Open-Meteo's paid pl
 ahead? What time of day? Is 20 to 30 degrees inside the shed or outside? Is it a daily average or at all times? Does it change
 with the age of the birds?
 
+## Pilot (stage 1: a prototype for one farmer)
+
+A separate mode (`CLUCKTALK_MODE=pilot`) lets one real farmer try CluckTalk on his phone in Telugu: his own houses from a
+farm file, no demo data, no bird weights, a Telugu page that reads every change back and waits for a tap. It is a
+prototype, **not Alexa+ and not a veterinary service**, and it has not yet been run on a server (see
+`docs/PILOT_RUNBOOK.md`).
+
+**When the count belongs to a day.** The farmer counts the deaths of the last 24 hours once each morning, and that count is
+the deaths of *today* (the Asia/Kolkata date). So a second number for the same house on the same day is most likely a
+correction, not new deaths. CluckTalk never assumes: if the house already has deaths for that day it shows the old and the
+new number and asks "add" (the new number is added, the total is shown) or "replace" (the new number replaces the old one,
+which is named); a plain yes does not answer it, and nothing is saved until he taps one of them. The first log of a day
+works as it always did. No alert rule is changed by this.
+
 ## Demo clock (for recordings only)
 
 `python tasks.py serve --demo-days-later 3` (or `run`) makes "today" three days later, so a recording can show how a

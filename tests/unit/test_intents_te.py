@@ -221,3 +221,14 @@ def test_a_shed_with_a_stray_number_is_not_turned_into_a_status_question():
     assert match_te("షెడ్ 1 లో రెండు వేల రెండు వందల గ్రాములు").kind == "none"
     assert intent_of("షెడ్ 2") == ("get_farm_status", {"house": "shed 2"})  # a bare shed is still "how is it"
     assert intent_of("షెడ్ 2 ఎలా ఉంది 5") == ("get_farm_status", {"house": "shed 2"})  # an actual question stays one
+
+
+def test_add_and_replace_are_only_whole_message_answers():
+    from clucktalk.simulator.intents_te import choice_te
+
+    for word in ("కలపండి", "కలుపు", "కలపండి!"):
+        assert choice_te(word) == "add"
+    for word in ("మార్చండి", "మార్చు", "మార్చండి."):
+        assert choice_te(word) == "replace"
+    for text in ("", "అవును", "కలపండి షెడ్ 1", "షెడ్ 1 మార్చండి", "add", "replace"):
+        assert choice_te(text) is None
