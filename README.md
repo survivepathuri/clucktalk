@@ -59,6 +59,7 @@ seeded, clearly fictional data in mock mode.
   may be listed there as not installed.
 - **Latency:** Our p50 and p95 are server times on localhost in mock mode, and Amazon's 500 ms requirement is a round trip that includes the network, so we do not claim to meet it end to end. There is no model call and the data is simulated; a remote host and a real model add to the times.
 - **No agronomic or veterinary review.** Thresholds and the reference curve are cited in `docs/SOURCES.md`; they were not validated with a vet or a farmer, and no tool gives a medicine or a dose.
+- **The pilot is planned to run on the builder's own PC, published through a free Tailscale Funnel; availability depends on that PC and its internet.** It has not been started yet, and nothing about uptime, speed or reliability has been measured (`docs/PILOT_RUNBOOK_WINDOWS.md`).
 - **Odd behaviours of the MCP SDK and of our shed-name reader** are listed under "Known SDK behaviors" below.
 
 ## What is verified, unverified and simulated
@@ -80,6 +81,8 @@ this repository, not that Alexa+ has seen it.
 | Weather reminders come only from the farmer's own rules file, never change a level, the safety field or the vet advice, and leave every answer byte-identical when the file is absent | VERIFIED | `tests/unit/test_property_weather_isolation.py`; `tests/contract/test_weather_display.py` |
 | The weather lines in the demo (the forecast and the example rules) | SIMULATED | `tests/unit/test_weather_server.py`; `docs/weather_rules.example.json` |
 | Weather from the live Open-Meteo service | UNVERIFIED (tested only with a fake transport, not run against the real service) | `tests/unit/test_weather_server.py`; `docs/SOURCES.md` |
+| The Windows launcher files (`deploy/windows/`) list exactly the settings the code reads in pilot mode, hold no secret or hostname, and contain the refusals for a weak token and for data inside the repository | VERIFIED (text checks and the code's own settings loaders; the scripts were not run with a real pilot) | `tests/harness/test_windows_launcher.py` |
+| The pilot runs on the builder's own PC through a Tailscale Funnel, and the farmer can use it | UNVERIFIED (never started; no tunnel, no phone; availability depends on that PC and its internet) | none; `docs/PILOT_RUNBOOK_WINDOWS.md` |
 | The server runs on an Alexa+ device, or passes Amazon's review | UNVERIFIED | none; see "Known limitations" |
 | The Local Inspector itself accepts the server | UNVERIFIED | none; `FRICTION_LOG.md` FL-024 |
 | Telugu wording is natural and correct | UNVERIFIED | `docs/TELUGU_REVIEW.md` (pending native review) |
@@ -234,7 +237,7 @@ with the age of the birds?
 A separate mode (`CLUCKTALK_MODE=pilot`) lets one real farmer try CluckTalk on his phone in Telugu: his own houses from a
 farm file, no demo data, no bird weights, a Telugu page that reads every change back and waits for a tap. It is a
 prototype, **not Alexa+ and not a veterinary service**, and it has not yet been run on a server (see
-`docs/PILOT_RUNBOOK.md`).
+`docs/PILOT_RUNBOOK.md`). The plan for running it on the builder's own Windows PC is `docs/PILOT_RUNBOOK_WINDOWS.md`.
 
 **When the count belongs to a day.** The farmer counts the deaths of the last 24 hours once each morning, and that count is
 the deaths of *today* (the Asia/Kolkata date). So a second number for the same house on the same day is most likely a
