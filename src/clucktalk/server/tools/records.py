@@ -351,7 +351,7 @@ def build_log_record(
         # correction can push the house's total over birds_placed just as easily as a same-day one, and that
         # would only surface later as a crash when the overlay rebuilds the House (Rule 11 review 2026-09-29).
         other_days_deaths = sum(r.deaths for r in house.records if r.day != record_day)
-        max_possible = house.birds_placed - other_days_deaths
+        max_possible = house.birds_placed - house.deaths_before - other_days_deaths
         if deaths > max_possible:
             raise DeathsExceedLiveBirds(house.label_en, house.label_te, deaths, max_possible)
     for t in treatments_in or ():
@@ -390,7 +390,7 @@ def build_log_record(
     mode = deaths_choice if asks and answer == "yes" else None
 
     def room_for(d: date) -> int:
-        return house.birds_placed - sum(r.deaths for r in house.records if r.day != d)
+        return house.birds_placed - house.deaths_before - sum(r.deaths for r in house.records if r.day != d)
 
     def apply(proposal: Proposal, _now: datetime) -> dict[str, Any]:
         a = proposal.arguments

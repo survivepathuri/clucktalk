@@ -32,7 +32,16 @@ _FARM_FIELDS = {
     "supplier_lead_days",
     "houses",
 }
-_HOUSE_FIELDS = {"number", "birds_placed", "placed_on", "kind", "breed", "age_at_placement_days", "feed_stock_kg"}
+_HOUSE_FIELDS = {
+    "number",
+    "birds_placed",
+    "placed_on",
+    "kind",
+    "breed",
+    "age_at_placement_days",
+    "feed_stock_kg",
+    "deaths_before_pilot",
+}
 
 
 class PilotFarmError(ValueError):
@@ -48,6 +57,9 @@ class PilotHouseSpec:
     breed: str
     age_at_placement_days: int
     feed_stock_kg: float
+    deaths_before_pilot: int = (
+        0  # birds that died before the pilot started (asked of the farmer, entered by the operator)
+    )
 
 
 @dataclass(frozen=True)
@@ -108,7 +120,12 @@ def _house(spec: Any, index: int) -> PilotHouseSpec:
     stock = spec.get("feed_stock_kg", 0)
     if isinstance(stock, bool) or not isinstance(stock, (int, float)) or stock < 0:
         raise PilotFarmError(f"{where}.feed_stock_kg must be a number from 0")
-    return PilotHouseSpec(number, birds, placed_on, kind, breed.strip(), age0, float(stock))
+    gone = spec.get("deaths_before_pilot", 0)
+    if not _is_int(gone) or not 0 <= gone <= birds:
+        raise PilotFarmError(
+            f"{where}.deaths_before_pilot must be a whole number from 0 up to the birds placed ({birds})"
+        )
+    return PilotHouseSpec(number, birds, placed_on, kind, breed.strip(), age0, float(stock), gone)
 
 
 def parse_pilot_farm(data: Any, name: str = "the pilot farm file") -> PilotFarmConfig:
@@ -168,6 +185,7 @@ def build_pilot_farm(config: PilotFarmConfig, as_of: date) -> Farm:
                     age_at_placement_days=spec.age_at_placement_days,
                     feed_stock_kg=spec.feed_stock_kg,
                     records=(),
+                    deaths_before=spec.deaths_before_pilot,
                 )
             )
         except ValueError as exc:

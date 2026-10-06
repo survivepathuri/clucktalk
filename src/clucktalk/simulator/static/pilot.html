@@ -12,8 +12,15 @@
   <span class="badge" id="badge" role="note" title="@BADGE_TE@">@BADGE_EN@</span>
 </header>
 <p class="notice" id="notice"></p>
+<p class="bubble warn fatal" id="fatal" lang="te" hidden>@OPEN_LINK_TE@<br><small>@OPEN_LINK_EN@</small></p>
 
-<main>
+<section class="card" id="notice-screen" hidden>
+  <h2 id="notice-title"></h2>
+  <ul id="notice-list"></ul>
+  <button type="button" class="big yes" id="ack"></button>
+</section>
+
+<main id="app" hidden>
   <div class="log" id="log" aria-live="polite"></div>
 
   <section class="card" id="readback" hidden aria-live="assertive">

@@ -5,6 +5,8 @@ page's own words. ``PILOT_UI`` is what the page loads, so the page holds no word
 
 from __future__ import annotations
 
+import hashlib
+
 from clucktalk.i18n import GENERIC_ERROR, GENERIC_NEXT_STEP, PILOT_BADGE, Text
 
 PILOT_NOTICE = Text(
@@ -28,6 +30,50 @@ HEALTH_READBACK = Text(
     en="Start a health check for {shed} with these signs: {signs}?",
     te="{shed} కి ఈ లక్షణాలతో ఆరోగ్య పరీక్ష మొదలుపెట్టమంటారా: {signs}?",
 )
+
+# Step 52 part C: the one-screen notice shown on first open. The Telugu is taken from the drafts written for the
+# farmer's notice (private, untracked); all of it is a DRAFT awaiting native review (pending in docs/TELUGU_REVIEW.md).
+NOTICE_TITLE = Text(en="Before you start", te="మొదలుపెట్టే ముందు")
+NOTICE_ACK = Text(en="I understand", te="అర్థమైంది")
+NOTICE_TEST = Text(en="This is a test. It is not a veterinary service.", te="ఇది ఒక పరీక్ష మాత్రమే. ఇది పశువైద్య సేవ కాదు.")
+NOTICE_VET = Text(
+    en="For a sick bird, call your vet.",
+    te="కోడి అనారోగ్యంగా ఉంటే మీ డాక్టర్‌కి ఫోన్ చేయండి.",
+)
+NOTICE_ALERT = Text(
+    en="An alert is a reminder to go and look at the birds. It is not a diagnosis.",
+    te="హెచ్చరిక అంటే కోళ్లను వెళ్లి చూడమని గుర్తు చేయడం మాత్రమే. అది రోగ నిర్ధారణ కాదు.",
+)
+NOTICE_TARGETS = Text(
+    en="The weight and total-deaths targets are general numbers. They may not fit your birds.",
+    te="బరువు, మొత్తం మరణాల లక్ష్యాలు సాధారణ సంఖ్యలు. అవి మీ కోళ్లకు సరిపోకపోవచ్చు.",
+)
+NOTICE_STORED = Text(
+    en=(
+        "We keep your houses, the deaths and feed you log, and your yes and no answers with their dates. "
+        "We do not keep your voice, your name or where you live. I (the builder) can read all of it on my server. "
+        "Nobody else can unless I give them access."
+    ),
+    te=(
+        "మేము మీ షెడ్లు, మీరు నమోదు చేసే మరణాలు, మేత వివరాలు, మరియు మీ అవును/వద్దు సమాధానాలను తేదీలతో ఉంచుతాము. "
+        "మీ గొంతు, మీ పేరు, మీరు ఉండే చోటు మేము ఉంచము. ఇవన్నీ నేను (తయారుచేసినవాడిని) నా సర్వర్‌లో చూడగలను. "
+        "నేను అనుమతి ఇస్తే తప్ప ఇంకెవరూ చూడలేరు."
+    ),
+)
+NOTICE_DELETE = Text(
+    en="You can ask me at any time to delete it. I will delete everything and tell you when it is done.",
+    te="మీరు ఎప్పుడైనా తొలగించమని అడగవచ్చు. అంతా తొలగించి, పూర్తయినప్పుడు మీకు చెబుతాను.",
+)
+OPEN_LINK = Text(en="Open your original link.", te="మీ అసలు లింక్‌ను తెరవండి.")
+# The seven things he is told once, on one screen, before anything works (the voice-typing line is PILOT_NOTICE above).
+NOTICE_ITEMS = (NOTICE_TEST, NOTICE_VET, NOTICE_ALERT, NOTICE_TARGETS, PILOT_NOTICE, NOTICE_STORED, NOTICE_DELETE)
+
+
+def notice_version() -> str:
+    """Changes whenever the wording of the notice does, so he is asked to acknowledge the new wording."""
+    text = "".join(f"{t.en}{t.te}" for t in NOTICE_ITEMS)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
+
 
 BUTTON_ADD = Text(en="Add", te="కలపండి")
 BUTTON_REPLACE = Text(en="Replace", te="మార్చండి")
@@ -65,6 +111,8 @@ PILOT_UI = {
     "no": NO_BUTTON,
     "readback": READBACK_HEAD,
     "not_started": HOST_NOT_STARTED,
+    "notice_title": NOTICE_TITLE,
+    "ack": NOTICE_ACK,
     "add": BUTTON_ADD,
     "replace": BUTTON_REPLACE,
     "error": GENERIC_ERROR,

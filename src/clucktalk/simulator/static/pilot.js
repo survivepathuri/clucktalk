@@ -5,6 +5,7 @@
 const $ = (id) => document.getElementById(id);
 let ui = null;
 let busy = false;
+let acked = false; // nothing runs until the one-screen notice has been acknowledged
 
 // One stable id per device (not per tab), so a restart of the browser finds the same conversation. It is only a random
 // label for the server's per-session memory: it holds no data and is not the token. Without localStorage (a private
@@ -84,7 +85,7 @@ function button(label, onClick, cls) {
 }
 
 async function post(body) {
-  if (busy) return;
+  if (busy || !acked) return;
   setBusy(true);
   clearPicker();
   try {
@@ -93,6 +94,7 @@ async function post(body) {
       headers: auth({ "content-type": "application/json" }),
       body: JSON.stringify({ device: "dot", lang: "te", session: SESSION, utterance: "", ...body }),
     });
+    if (r.status === 401) return showFatal();
     if (!r.ok) throw new Error("HTTP " + r.status);
     render(await r.json());
   } catch (e) {
@@ -139,6 +141,7 @@ function pickHouse(cb) {
 function title(text) { $("picker-title").textContent = text; }
 
 function choose(chip, params) {
+  if (!acked) return;
   const label = ui.chips[chip] ? ui.chips[chip].te : "";
   title(label);
   if (chip === "status" || chip === "briefing" || chip === "help" || chip === "sale") {
@@ -206,9 +209,48 @@ function askSigns(label, params) {
   $("picker").hidden = false;
 }
 
+// No token (or a wrong one): the only thing to do is open the original link again.
+function showFatal() {
+  $("fatal").hidden = false;
+  $("app").hidden = true;
+  $("notice-screen").hidden = true;
+}
+
+function isAcked() {
+  try {
+    return localStorage.getItem("ct_ack") === ui.notice_version;
+  } catch (e) {
+    return false; // no storage: ask every time rather than assume
+  }
+}
+
+function enterApp() {
+  acked = true;
+  $("notice-screen").hidden = true;
+  $("app").hidden = false;
+}
+
+function showNotice() {
+  $("notice-title").textContent = ui.strings.notice_title.te;
+  $("notice-list").replaceChildren(...ui.notice_items.map((t) => {
+    const li = document.createElement("li");
+    li.textContent = t.te;
+    li.lang = "te";
+    return li;
+  }));
+  $("ack").textContent = ui.strings.ack.te;
+  $("ack").addEventListener("click", () => {
+    try { localStorage.setItem("ct_ack", ui.notice_version); } catch (e) { /* asked again next time */ }
+    enterApp();
+  });
+  $("notice-screen").hidden = false;
+  $("app").hidden = true;
+}
+
 async function start() {
   try {
     const r = await fetch("/api/pilot/ui", { headers: auth({}) });
+    if (r.status === 401) return showFatal();
     if (!r.ok) throw new Error("HTTP " + r.status);
     ui = await r.json();
   } catch (e) {
@@ -229,10 +271,11 @@ async function start() {
   $("ask").addEventListener("submit", (ev) => {
     ev.preventDefault();
     const text = $("text").value.trim();
-    if (!text) return;
+    if (!text || !acked) return;
     say(text, "you");
     $("text").value = "";
     post({ utterance: text });
   });
+  if (isAcked()) enterApp(); else showNotice();
 }
 start();

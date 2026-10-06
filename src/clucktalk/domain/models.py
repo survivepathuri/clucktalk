@@ -75,6 +75,7 @@ class House:
     age_at_placement_days: int  # 0 for day-old broiler chicks; pullet age for layers
     feed_stock_kg: float
     records: tuple[DailyRecord, ...]  # sorted by day, one per day at most
+    deaths_before: int = 0  # birds already gone before any record here (a house that was running when the pilot began)
 
     def __post_init__(self) -> None:
         if self.birds_placed <= 0:
@@ -86,7 +87,9 @@ class House:
             raise ValueError(f"{self.house_id}: records must be sorted by day with no duplicates")
         if days and days[0] < self.placed_on:
             raise ValueError(f"{self.house_id}: a record predates placement")
-        if sum(r.deaths for r in self.records) > self.birds_placed:
+        if not 0 <= self.deaths_before <= self.birds_placed:
+            raise ValueError(f"{self.house_id}: deaths_before must be from 0 to birds_placed")
+        if self.deaths_before + sum(r.deaths for r in self.records) > self.birds_placed:
             raise ValueError(f"{self.house_id}: more deaths recorded than birds placed")
 
     @property
@@ -104,7 +107,7 @@ class House:
         return self.age_at_placement_days + (as_of - self.placed_on).days
 
     def live_birds(self, as_of: date) -> int:
-        return self.birds_placed - sum(r.deaths for r in self.records_until(as_of))
+        return self.birds_placed - self.deaths_before - sum(r.deaths for r in self.records_until(as_of))
 
 
 @dataclass(frozen=True)

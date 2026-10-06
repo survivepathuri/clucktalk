@@ -4,7 +4,7 @@
   "simulated_live_bird_price_per_kg_inr": "90",
   "supplier_lead_days": 2,
   "houses": [
-    {"number": 1, "birds_placed": 3000, "placed_on": "2026-09-01"},
-    {"number": 2, "birds_placed": 2500, "placed_on": "2026-09-10"}
+    {"number": 1, "birds_placed": 3000, "placed_on": "2026-09-01", "deaths_before_pilot": 0},
+    {"number": 2, "birds_placed": 2500, "placed_on": "2026-09-10", "deaths_before_pilot": 25}
   ]
 }

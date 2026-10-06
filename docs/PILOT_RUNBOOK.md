@@ -49,6 +49,10 @@ explicit paths); (3) different OS users and folders (the `.service` templates); 
    file keeps that wording with the number. Put his number for the daily deaths rule in
    `/var/lib/clucktalk-pilot/daily_deaths_rule.json` (shape: `docs/daily_deaths_rule.example.json`, with `"is_example": false`).
    His "2 per 1000" was relayed, **not confirmed in writing**: confirm it with him.
+   **Ask him, for each house, how many birds died before the pilot started** (since the chicks were placed) and enter that
+   number as `deaths_before_pilot` for the house (a whole number from 0 up to the birds placed; the example file shows it).
+   CluckTalk only sees the deaths logged from now on; without this number the live birds, the room for new deaths and the
+   total-mortality percentage would all be too optimistic. A number above the birds placed stops the start with a message.
 4. Make two tokens (`python -c "import secrets; print(secrets.token_urlsafe(32))"`, once for the farmer, once for
    the Simulator to the MCP server) and put them with the other settings in `/etc/clucktalk/pilot.env` (`deploy/env.example` has
    the names). Do the same for `demo.env`.
@@ -103,6 +107,11 @@ these places. Then tell him it is done.
   confirmed, watch and alert answers shown, read-backs confirmed and cancelled. Numbers only: safe to publish.
 - **Who can read it**: you (the builder) with your server access, and AWS as the host of the machine and the backups. Nobody
   else, unless you give access. The demo's user cannot read the pilot's files.
+- **First open: one notice screen with seven items** (a test and not a veterinary service; for a sick bird call his vet; an alert
+  is a reminder to look and not a diagnosis; the targets are general numbers that may not fit his birds; his keyboard's voice typing goes to
+  its own speech service; what is stored and that you can read it; he can ask for deletion at any time). He taps one big button; nothing
+  else on the page works until he has, and the page remembers it on that device (it asks again if the wording changes or the browser keeps
+  nothing). Check it reads naturally to him before he starts: the Telugu is a draft pending a native speaker's review.
 - **What the farmer must be told, in Telugu, before he starts** (draft in `private/PILOT_TELUGU_DRAFTS.md`, to be reviewed by a
   native speaker): what is stored; that you can read it; that he can ask for deletion; that this is a test and not a
   veterinary service; that an alert is a prompt to look, not a diagnosis; that the weight and total-mortality targets are

@@ -19,7 +19,12 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import probe_protocol_version as probe  # noqa: E402
 
-HEADERS = {"content-type": "application/json", "accept": "application/json, text/event-stream"}
+MCP_TOKEN = "mcp-secret-token-0123456789-abcdefgh"  # the pilot's MCP server needs it (Step 52)
+HEADERS = {
+    "content-type": "application/json",
+    "accept": "application/json, text/event-stream",
+    "authorization": f"Bearer {MCP_TOKEN}",
+}
 EXAMPLE = ROOT / "docs" / "pilot_farm.example.json"
 
 
@@ -29,7 +34,7 @@ def _env(tmp: Path, port: int, **extra: str) -> dict[str, str]:
         MOCK_BEDROCK="true",
         CLUCKTALK_PORT=str(port),
         CLUCKTALK_MODE="pilot",
-        CLUCKTALK_AUTH_TOKEN="mcp-secret-token-0123456789-abcdefgh",
+        CLUCKTALK_AUTH_TOKEN=MCP_TOKEN,
         CLUCKTALK_PILOT_FARM_PATH=str(tmp / "farm.json"),
         CLUCKTALK_STATE_PATH=str(tmp / "state" / "pilot_state.sqlite3"),
         PYTHONPATH=str(ROOT / "src"),
@@ -168,3 +173,14 @@ def test_a_pilot_never_reads_the_demo_default_weather_file():
     finally:
         if not existed:
             default.unlink()
+
+
+def test_a_deaths_before_pilot_above_the_birds_placed_stops_the_start_with_exit_two():
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d)
+        data = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+        data["houses"][0]["deaths_before_pilot"] = data["houses"][0]["birds_placed"] + 1
+        _farm(tmp, data)
+        done = _run_to_exit(_env(tmp, probe._free_port()))
+        assert done.returncode == 2 and "deaths_before_pilot" in done.stderr
+        assert "Endpoint:" not in done.stdout  # it never got as far as serving anything

@@ -48,9 +48,12 @@ from clucktalk.i18n.pilot import (
     HOST_NOT_STARTED,
     NOT_UNDERSTOOD,
     NOTHING_PENDING,
+    NOTICE_ITEMS,
+    OPEN_LINK,
     OUTCOMES,
     PILOT_UI,
     SHED_LABEL,
+    notice_version,
 )
 from clucktalk.server.farm_state import today_ist
 from clucktalk.simulator.intents import Intent, match, normalise, yes_no
@@ -179,6 +182,8 @@ class LocalOnly:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] == "http":
+            if self.settings.mode == "pilot":
+                send = _secure(send)  # the pilot sends its own security headers on every answer, errors included
             headers = {k.decode("latin-1"): v.decode("latin-1") for k, v in scope["headers"]}
             if headers.get("host") not in self.settings.hosts:
                 await JSONResponse({"error": "unknown host"}, status_code=421)(scope, receive, send)
@@ -329,6 +334,25 @@ class Hardening:
         return replay
 
 
+# What the farmer's browser is told for every pilot answer: nothing but this origin may be loaded or connected to, no
+# other page may frame it, and no address (token-free or not) is passed on in a Referer header.
+SECURITY_HEADERS = (
+    (b"content-security-policy", b"default-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"),
+    (b"referrer-policy", b"no-referrer"),
+    (b"x-content-type-options", b"nosniff"),
+)
+
+
+def _secure(send: Send) -> Send:
+    async def wrapped(message: dict[str, Any]) -> None:
+        if message["type"] == "http.response.start":
+            have = {k.lower() for k, _ in message.get("headers", [])}
+            message["headers"] = [*message.get("headers", []), *(h for h in SECURITY_HEADERS if h[0] not in have)]
+        await send(message)
+
+    return wrapped
+
+
 def _revalidate(send: Send) -> Send:
     async def wrapped(message: dict[str, Any]) -> None:
         if message["type"] == "http.response.start":
@@ -416,6 +440,8 @@ def build_app(
         .replace("@BADGE_EN@", PILOT_BADGE.en)
         .replace("@BADGE_TE@", PILOT_BADGE.te)
         .replace("@APP_NAME_TE@", APP_NAME_TE)
+        .replace("@OPEN_LINK_TE@", OPEN_LINK.te)
+        .replace("@OPEN_LINK_EN@", OPEN_LINK.en)
         if pilot
         else None
     )
@@ -661,6 +687,8 @@ def build_app(
                 "strings": {k: {"en": t.en, "te": t.te} for k, t in PILOT_UI.items()},
                 "chips": {k: {"en": t.en, "te": t.te} for k, t in CHIPS.items()},
                 "outcomes": {k: {"en": t.en, "te": t.te} for k, t in OUTCOMES.items()},
+                "notice_items": [{"en": t.en, "te": t.te} for t in NOTICE_ITEMS],
+                "notice_version": notice_version(),
                 "signs": [{"code": s.value, "label_te": SIGN_TEXT[s].te} for s in Sign],
                 "houses": houses,
             }
