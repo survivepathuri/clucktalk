@@ -521,3 +521,31 @@ has no Telugu, so this is the Simulator's own phone page; output is Telugu text 
   counters (`clucktalk.usage`; `python tasks.py pilot-stats --usage FILE`).
 - **Not done / not verified**: no cloud account was touched; the page was not run in a real phone browser; speech accuracy in a
   shed is untested; the Telugu is a draft pending native review (every line is pending in `docs/TELUGU_REVIEW.md`).
+
+### 19.1 Review fixes (Step 52, after an independent review of 0bd9905)
+
+- **Same-day deaths are never silently added or replaced.** The farmer counts once each morning and the count belongs to
+  *today's* date (Asia/Kolkata), so a second number for a house that already has deaths for that day is most likely a
+  correction. On the pilot farm the read-back shows the old and the new number and asks add (the total is shown) or replace
+  (the old value that goes is shown); `log_daily_record` has a new optional `deaths_choice` ("add" or "replace") and the
+  answer carries `choice` (existing, new, total if added) only for that question. A plain yes does not answer it (the same
+  question stays open); a total above the birds is refused by the existing check. The first log of a day, other days, and the
+  demo are unchanged. A shed with no alert is described as "no alert from the checks I can make", never "doing well".
+- **Pilot access**: the MCP server refuses to start in pilot mode without a strong token (and the farmer's token must differ);
+  a new session makes room by dropping the least recently used one (never a 503) and the page keeps one device id in
+  `localStorage`; the card routes and the English demo page are not served on a pilot host; every pilot answer carries a
+  Content-Security-Policy (`default-src 'self'; frame-ancestors 'none'`), `Referrer-Policy: no-referrer` and `nosniff`; `/healthz`
+  says only ok (200) or not ok (503); an unreachable MCP server is not described with its address to the client.
+- **Telugu matcher**: a polite word after yes, no, add or replace is accepted; "no deaths" only when the negation follows the
+  death word and there is no number, otherwise it is asked again; any minus sign makes the input not understood.
+- **First open**: one screen with seven items (test and not a veterinary service; for a sick bird call his vet; an alert is a
+  reminder, not a diagnosis; the targets are general numbers; voice typing goes to the keyboard's speech service; what is stored and who
+  can read it; deletion at any time), acknowledged with one big button before anything works, remembered per device and asked
+  again when the wording changes. A page without a token shows "Open your original link". The page's logic is tested in Node
+  against a hand-made DOM (`tests/harness/pilot_page_checks.js`); it is not a browser test.
+- **Data**: `deaths_before_pilot` per house (0 up to the birds placed) is used for live birds, the room for new deaths and
+  cumulative mortality; an impossible value stops the start.
+- **Operations**: the backup script writes a stamp only after an integrity-checked copy, `pilot-stats --backups DIR` shows the
+  age and warns after 26 hours; the runbook creates the backup folder, moves stale journal files aside on restore, lists every copy to
+  delete, and spells out token rotation; the units add ProtectProc, ProcSubset, PrivateUsers, RestrictSUIDSGID, LockPersonality and
+  more. `MemoryDenyWriteExecute` and `SystemCallFilter` were skipped on purpose (they can stop a Python service starting).

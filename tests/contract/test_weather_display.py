@@ -117,20 +117,44 @@ def test_a_config_with_no_rules_shows_nothing_and_fetches_nothing(rig):
     assert Counting.calls == 0
 
 
-def test_tools_list_is_unchanged_except_one_optional_output_property_on_the_status(rig):
+CHOICE_SENTENCE = (
+    " If the first result has `choice`, the house already has deaths for that day: read the question back and answer "
+    "with 'yes' plus `deaths_choice` 'add' or 'replace' (never a plain yes)."
+)
+
+
+def test_tools_list_is_unchanged_except_the_optional_additions(rig):
+    """Changed deliberately twice, and nothing else: the status gained one optional output property (weather, Step
+    50W-B); log_daily_record gained one optional input (`deaths_choice`), one optional output (`choice`) and one
+    description sentence (Step 52, the add-or-replace question). Every other tool, field, name and schema is exactly
+    the baseline."""
     now = {t["name"]: t for t in rig.live.call(rig.sid, "tools/list")["result"]["tools"]}
     before = {t["name"]: t for t in BASELINE["tools/list"]}
     assert sorted(now) == sorted(before) and len(now) == 14
     for name, tool in now.items():
         for field in tool:
-            if field == "outputSchema" and name == "get_farm_status":
+            if (name, field) in {
+                ("get_farm_status", "outputSchema"),
+                ("log_daily_record", "description"),
+                ("log_daily_record", "inputSchema"),
+                ("log_daily_record", "outputSchema"),
+            }:
                 continue
-            assert tool[field] == before[name][field], (name, field)  # names, descriptions, input schemas, annotations
+            assert tool[field] == before[name][field], (name, field)  # names, descriptions, schemas, annotations
     out_now, out_before = now["get_farm_status"]["outputSchema"], before["get_farm_status"]["outputSchema"]
     added = set(out_now["properties"]) - set(out_before["properties"])
     assert added == {"weather_reminders"}
     assert out_now.get("required") == out_before.get("required")  # optional: absent when the feature is off
     assert {k: v for k, v in out_now["properties"].items() if k != "weather_reminders"} == out_before["properties"]
+
+    log_now, log_before = now["log_daily_record"], before["log_daily_record"]
+    assert log_now["description"] == log_before["description"] + CHOICE_SENTENCE
+    for part, extra in (("inputSchema", "deaths_choice"), ("outputSchema", "choice")):
+        a, b = log_now[part], log_before[part]
+        assert set(a["properties"]) - set(b["properties"]) == {extra}
+        assert {k: v for k, v in a["properties"].items() if k != extra} == b["properties"]
+        assert a.get("required") == b.get("required")  # optional: absent unless asked
+        assert {k: v for k, v in a.get("$defs", {}).items() if k != "ChoiceOut"} == b.get("$defs", {})
 
 
 # -- feature on: the line --------------------------------------------------------------------------------------------
