@@ -1,0 +1,42 @@
+# Caddy in front of the two CluckTalk instances. TEMPLATE: copy to /etc/caddy/Caddyfile and replace the two names.
+# Caddy gets and renews the HTTPS certificates by itself. Only ports 80 and 443 are open to the internet; the
+# Simulators listen on 127.0.0.1 only (see the two .service files), so nothing else is reachable from outside.
+#
+#   PILOT_HOST   the pilot's real hostname, for example pilot.example.org   (also CLUCKTALK_PUBLIC_ORIGIN in pilot.env)
+#   DEMO_HOST    the judges' demo hostname, for example demo.example.org
+#
+# Rate and size limits live in the app (CLUCKTALK_RATE_PER_MINUTE, an 8 KB body cap), not here, so they hold
+# whatever sits in front of it.
+
+{
+	# No admin endpoint on the network, and no server banner.
+	admin off
+}
+
+PILOT_HOST {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+	# Never log the request line's query, headers or bodies: the access log is switched off for the pilot. The app
+	# keeps its own anonymous counters instead (docs/PILOT_RUNBOOK.md, "What is stored").
+	reverse_proxy 127.0.0.1:8766 {
+		header_up Host {host}
+	}
+}
+
+DEMO_HOST {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+	reverse_proxy 127.0.0.1:8776 {
+		header_up Host {host}
+	}
+}

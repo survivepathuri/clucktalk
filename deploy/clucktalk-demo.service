@@ -1,0 +1,34 @@
+# systemd unit for the DEMO instance (synthetic data, for the judges). TEMPLATE: copy to /etc/systemd/system/.
+# A different user, a different state folder, a different environment file and different ports from the pilot, so the two
+# can never read or write each other's data. The demo has the fictional farm and no farmer's data anywhere.
+#
+#   sudo useradd --system --home /var/lib/clucktalk-demo --shell /usr/sbin/nologin clucktalk-demo
+#   sudo install -d -o clucktalk-demo -g clucktalk-demo -m 700 /var/lib/clucktalk-demo
+#   (put demo.env in /etc/clucktalk, mode 640, root:clucktalk-demo)
+
+[Unit]
+Description=CluckTalk demo (synthetic data; for judges)
+After=network.target
+
+[Service]
+User=clucktalk-demo
+Group=clucktalk-demo
+WorkingDirectory=/opt/clucktalk
+EnvironmentFile=/etc/clucktalk/demo.env
+ExecStart=/opt/clucktalk/.venv/bin/python scripts/run_instance.py
+Restart=on-failure
+RestartSec=5
+ProtectSystem=strict
+ReadWritePaths=/var/lib/clucktalk-demo
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

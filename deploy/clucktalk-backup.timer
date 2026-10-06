@@ -1,0 +1,13 @@
+# Runs the pilot backup once a day, at 02:30 server time (the farmer is asleep). TEMPLATE: copy to /etc/systemd/system/,
+# then: sudo systemctl enable --now clucktalk-backup.timer
+
+[Unit]
+Description=CluckTalk pilot: daily backup
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

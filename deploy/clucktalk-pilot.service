@@ -1,0 +1,35 @@
+# systemd unit for the PILOT instance (the farmer's own farm). TEMPLATE: copy to /etc/systemd/system/ and adjust paths.
+# Runs as its own user, with its own state folder, and reads its own environment file. The demo instance runs as a
+# different user and cannot read any of this (see clucktalk-demo.service and docs/PILOT_RUNBOOK.md).
+#
+#   sudo useradd --system --home /var/lib/clucktalk-pilot --shell /usr/sbin/nologin clucktalk-pilot
+#   sudo install -d -o clucktalk-pilot -g clucktalk-pilot -m 700 /var/lib/clucktalk-pilot
+#   sudo install -d -m 750 -g clucktalk-pilot /etc/clucktalk       (then put pilot.env there, mode 640, root:clucktalk-pilot)
+
+[Unit]
+Description=CluckTalk pilot (the farmer's own farm; prototype)
+After=network.target
+
+[Service]
+User=clucktalk-pilot
+Group=clucktalk-pilot
+WorkingDirectory=/opt/clucktalk
+EnvironmentFile=/etc/clucktalk/pilot.env
+ExecStart=/opt/clucktalk/.venv/bin/python scripts/run_instance.py
+Restart=on-failure
+RestartSec=5
+# The pilot can write only its own state folder; everything else is read-only or hidden.
+ProtectSystem=strict
+ReadWritePaths=/var/lib/clucktalk-pilot
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

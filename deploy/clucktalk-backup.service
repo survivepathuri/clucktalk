@@ -1,0 +1,17 @@
+# One backup of the PILOT's state (run by clucktalk-backup.timer). TEMPLATE: copy to /etc/systemd/system/.
+# Runs as the pilot's own user (it can read only its own state), writes to /var/backups/clucktalk-pilot, then runs the
+# restore test on the newest backup, so a backup that cannot be restored shows up as a failed unit the same day.
+# Copying the backup folder to a private bucket is a separate step (docs/PILOT_RUNBOOK.md).
+
+[Unit]
+Description=CluckTalk pilot: daily state backup and restore test
+
+[Service]
+Type=oneshot
+User=clucktalk-pilot
+Group=clucktalk-pilot
+WorkingDirectory=/opt/clucktalk
+UMask=0077
+ReadWritePaths=/var/backups/clucktalk-pilot
+ExecStart=/opt/clucktalk/.venv/bin/python deploy/backup_sqlite.py --state /var/lib/clucktalk-pilot/state/pilot_state.sqlite3 --dest /var/backups/clucktalk-pilot --also /var/lib/clucktalk-pilot/state/usage_pilot.json --keep 14
+ExecStart=/opt/clucktalk/.venv/bin/python deploy/restore_test.py --dest /var/backups/clucktalk-pilot --live /var/lib/clucktalk-pilot/state/pilot_state.sqlite3
