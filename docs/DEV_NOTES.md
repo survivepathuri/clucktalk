@@ -23,12 +23,12 @@ Tool / service: Claude Code (Bash tool, Git Bash on Windows 11) while editing so
 Tag: [Dev]
 Task attempted: Add regular expressions that use word boundaries (`\b`) to `src/clucktalk/simulator/intents.py` by running a `python - <<'EOF'` script that wrote the file.
 Steps taken: Wrote the pattern with a doubled backslash inside a non-raw Python string in the quoted heredoc, ran it, then ran ruff. Recurrence in build session 4: two more Python heredocs, and one quoted heredoc whose text held an apostrophe.
-Expected vs actual: Expected `\b` (backslash, b) in the file. Actual: the file held the invisible backspace character (0x08) ten times; the patterns looked right in the editor and in terminal output, and only ruff's line-length complaint and a failing intent test showed something was off. A second fix attempt written the same way produced the same ten characters. Recurrence: a `\r\n` pair became real line breaks and broke the script's syntax, and the apostrophe case failed with `unexpected EOF while looking for matching`.
+Expected vs actual: Expected `\b` (backslash, b) in the file. Actual: the file held the invisible backspace character (0x08) ten times; the patterns looked right in the editor and in terminal output, and only ruff's line-length complaint and a failing intent test showed something was off. A second fix attempt written the same way produced the same ten characters. Recurrence: a `\r\n` pair became real line breaks and broke the script's syntax, and the apostrophe case failed with `unexpected EOF while looking for matching`. Recurrence in Step 53 (2026-10-07): a long quoted heredoc holding PowerShell scripts failed with the same `unexpected EOF` (nothing was written), and a Python script typed in a heredoc with a Windows path in a normal string failed with a `unicodeescape` SyntaxError; the Write tool was used instead.
 Severity: Medium
 Impact: The corruption is silent: the file held invisible backspace characters and only a linter message and a failing test showed it. No wrong code was committed.
 Workaround: Do not type backslashes in shell commands that write code. Use the Write or Edit tools for any text with backslashes, or build the character in code (`chr(92) + "b"`). Check with `grep -P "\x08"` afterwards.
 Actionable suggestion: Owner: Anthropic Claude Code team (Bash tool). Pass the command text to the shell unchanged, or document how the Bash tool treats backslashes in quoted heredocs.
-Time cost: About 15 minutes the first time and about 10 minutes on the recurrence.
+Time cost: About 15 minutes the first time and about 10 minutes on the recurrence, plus about 5 minutes in Step 53.
 Reproduce: documentation-based, no command (detect the result afterwards with `grep -P "\x08" <file>`, from the Workaround).
 Evidence: none beyond the entry.
 

@@ -549,3 +549,24 @@ has no Telugu, so this is the Simulator's own phone page; output is Telugu text 
   age and warns after 26 hours; the runbook creates the backup folder, moves stale journal files aside on restore, lists every copy to
   delete, and spells out token rotation; the units add ProtectProc, ProcSubset, PrivateUsers, RestrictSUIDSGID, LockPersonality and
   more. `MemoryDenyWriteExecute` and `SystemCallFilter` were skipped on purpose (they can stop a Python service starting).
+
+### 19.2 The Windows pilot launcher (Step 53; scripts and documents only, no change under `src/`)
+
+- **Where it runs**: the builder's own Windows 11 PC, published through a free Tailscale Funnel to ONE local port, the
+  Simulator's page (`CLUCKTALK_SIMULATOR_PORT`, 8766, bound to 127.0.0.1). The MCP server (8765) stays on loopback and is not
+  forwarded; the launcher refuses a `CLUCKTALK_HOST` setting. The existing allow-list already takes the public host from
+  `CLUCKTALK_PUBLIC_ORIGIN` (the Host and the https Origin), so no code change was needed. **Not verified**: that Funnel passes
+  the original Host header through unchanged (the first-run check in the runbook shows it: a 421 would mean it does not).
+- **Files** (`deploy/windows/`): `env.windows.example` (placeholders; the real `C:\clucktalk-pilot\env\pilot.env` is outside the
+  repository), `new-token.ps1` (32 random bytes per token from the OS generator, the file limited to the current user, the
+  farmer link printed to the screen only), `start-pilot.ps1` (the refusals: a missing or placeholder variable, a weak or repeated
+  token, a state, farm or other data path inside the repository or the demo's, a set `CLUCKTALK_HOST`; hidden window, logs
+  without tokens or words), `stop-pilot.ps1`, `kill-switch.ps1` (the DISABLED file the code checks), `backup-pilot.ps1` (reuses
+  `deploy/backup_sqlite.py`: SQLite's online backup API, integrity check, 14 kept, the stamp, then the restore test; an optional
+  copy of the newest backup to a second folder), `restore-pilot.ps1` (stale `-journal`/`-wal`/`-shm` moved aside, nothing
+  deleted), `status-pilot.ps1`, one one-line `start-pilot.cmd`. Plain ASCII, LF only.
+- **Tested**: `tests/harness/test_windows_launcher.py` (the example lists exactly the variables the code reads in pilot mode and
+  is accepted by the code's own loaders once filled; no token-like string or hostname in a script; the refusals are present; the
+  documented paths are outside the repository) and `tests/harness/test_windows_runbook.py`. Text checks only: the scripts were
+  tried by hand in a temporary folder (tokens, two refusals, backup, restore, kill switch), never with a real pilot, a tunnel or
+  a phone. The claims table says so.
