@@ -23,6 +23,8 @@ from clucktalk.domain.profile import FarmMode
 from clucktalk.domain.status import Finding, Level, house_status
 from clucktalk.domain.triage import Urgency
 from clucktalk.i18n import (
+    DAILY_DEATHS_LINE,
+    DAILY_DEATHS_UNREADABLE,
     WEATHER_ABOVE,
     WEATHER_BELOW,
     WEATHER_HIGHEST,
@@ -244,6 +246,17 @@ def _finding(f: Finding, breed: str, is_today: bool) -> FindingOut:
                 f"{when.te} గుడ్ల ఉత్పత్తి {num(pct)}%, {LAYING_AVG_DAYS} రోజుల సగటు {num(avg)}% కంటే "
                 f"{num(drop)} పాయింట్లు తక్కువ."
             )
+        case "daily_deaths_rule":
+            deaths, rate, limit = int(v["deaths"]), float(v["per_1000"]), float(v["limit_per_1000"])
+            vals = {
+                "deaths": deaths,
+                "live_at_start": int(v["live_at_start"]),
+                "per_1000": rate,
+                "limit_per_1000": limit,
+            }
+            when = _when(is_today)
+            en = DAILY_DEATHS_LINE.en.format(deaths=num(deaths), when=when.en, rate=num(rate), limit=num(limit))
+            te = DAILY_DEATHS_LINE.te.format(deaths=num(deaths), when=when.te, rate=num(rate), limit=num(limit))
         case "past_growth_table":
             md = int(v["max_day"])
             vals = {"max_day": md}
@@ -302,9 +315,9 @@ def _feed_stock_finding(days: int, stock_kg: float) -> FindingOut:
     return FindingOut(code="feed_stock_low", level="watch", text_en=en, text_te=te, values={"days_covered": days})
 
 
-def _house_out(farm: Farm, house: House, as_of, floor: LevelName = "ok") -> HouseStatusOut:
+def _house_out(farm: Farm, house: House, as_of, floor: LevelName = "ok", deaths_rule=None) -> HouseStatusOut:
     """``floor``: the level the shed's open health check or follow-up asks for; the shed is never shown lower."""
-    st = house_status(house, as_of)
+    st = house_status(house, as_of, deaths_rule)
     is_today = st.latest_record_day == as_of
     findings = [_finding(f, st.breed, is_today) for f in st.findings]
 
@@ -437,6 +450,30 @@ def _needs_vet_line(health: ShedHealth) -> bool:
     return fact is not None and warns_vet(next(u for u in Urgency if u.code == fact.values["urgency"]))
 
 
+def deaths_rule_state(source: DemoFarmSource):
+    """The farmer's daily deaths rule as it stands now: (rule or None, unreadable). Off (None, False) without a file."""
+    service = getattr(source, "deaths_rule", None)
+    if service is None:
+        return None, False
+    state = service.current()
+    return state.rule, state.unreadable
+
+
+def deaths_rule_parts(source: DemoFarmSource, fired: bool) -> list[Text]:
+    """After all health and safety text (and before the weather lines): his note once, if the rule fired in what was
+    read out, exactly as he wrote it; or the one line saying his rule could not be read. Feeds no level or field."""
+    rule, unreadable = deaths_rule_state(source)
+    if unreadable:
+        return [DAILY_DEATHS_UNREADABLE]
+    if rule is None or not fired or rule.note is None or not rule.note.strip():
+        return []
+    en, te = WEATHER_NOTE.en.format(note=rule.note), WEATHER_NOTE.te.format(note=rule.note)
+    if rule.is_example:
+        demo = BRIEFING_LABELS["demo_badge"]  # the existing "Demo data" label
+        en, te = f"{demo.en}. {en}", f"{demo.te}. {te}"
+    return [Text(en, te)]
+
+
 def weather_parts(source: DemoFarmSource) -> tuple[list[Text], list[WeatherReminderOut] | None]:
     """The weather lines for the end of a spoken answer, and the status's structured list. ``([], None)`` unless the
     farmer has a rules file with at least one rule (the feature is then off: nothing is built, asked for or shown)."""
@@ -496,6 +533,7 @@ def weather_parts(source: DemoFarmSource) -> tuple[list[Text], list[WeatherRemin
 def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOutput:
     farm, as_of = source.snapshot()
     order = {"alert": 0, "watch": 1, "ok": 2}
+    deaths_rule, _ = deaths_rule_state(source)
     house_ref = whole_farm_or(house_ref)
     follow_up_lines: dict[str, Text] = {}
     vet_houses: set[str] = set()
@@ -505,7 +543,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
         scope = [house]
         health = shed_health(source, farm.farm_id, house, as_of)
         # A DomainError propagates here: the one shed asked about failed.
-        out = _house_out(farm, house, as_of, _health_floor(health))
+        out = _house_out(farm, house, as_of, _health_floor(health), deaths_rule)
         houses, unavailable = [out], []
         spoken = out.findings[:MAX_SPOKEN_FINDINGS]
         parts = [Text(out.summary_en, out.summary_te)] + [Text(f.text_en, f.text_te) for f in spoken]
@@ -519,7 +557,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
         for house in sorted(farm.houses, key=lambda h: h.number):
             try:
                 health = shed_health(source, farm.farm_id, house, as_of)
-                out = _house_out(farm, house, as_of, _health_floor(health))
+                out = _house_out(farm, house, as_of, _health_floor(health), deaths_rule)
                 line = _attach_health(house, as_of, health, out)
                 if line is not None:
                     follow_up_lines[house.house_id] = line
@@ -563,6 +601,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
             )
         vet_houses &= {h.house_id for h in houses[:MAX_SPOKEN_HOUSES]}  # only the sheds actually read out
     parts += _closing(spoken, source.profile().mode is FarmMode.CONTRACT, bool(vet_houses))
+    parts += deaths_rule_parts(source, any(f.code == "daily_deaths_rule" for f in spoken))
     weather_texts, weather_items = weather_parts(source)  # after everything else; it feeds nothing above or below
     parts += weather_texts
     level = min((h.level for h in houses), key=lambda lv: order[lv], default="unknown")

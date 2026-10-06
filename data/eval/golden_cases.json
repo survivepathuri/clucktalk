@@ -4894,6 +4894,113 @@
           ]
         }
       ]
+    },
+    {
+      "id": "deaths-rule-raises-a-clean-shed-to-watch-with-his-line-and-his-note-last",
+      "description": "The farmer's own daily deaths rule (0.5 per 1000 birds here) is crossed by shed 1's 4 deaths today on about 4,866 birds, a shed the existing rules call fine. The shed becomes WATCH, the status says why in one plain line, his note is the last words, the safety field says WATCH with the rule's own code, and no vet advice appears that was not already there.",
+      "fresh_state": true,
+      "deaths_rule": {
+        "per_1000_live": 0.5,
+        "note": "kotam note",
+        "is_example": false
+      },
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed 1"
+          },
+          "checks": [
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "watch"
+            },
+            {
+              "field": "houses.0.findings.0.code",
+              "op": "eq",
+              "value": "daily_deaths_rule"
+            },
+            {
+              "field": "houses.0.findings.0.level",
+              "op": "eq",
+              "value": "watch"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "birds died today, that is 0.82 for every 1000 birds, more than your own limit of 0.5."
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "Your note: kotam note."
+            },
+            {
+              "field": "safety.level",
+              "op": "eq",
+              "value": "WATCH"
+            },
+            {
+              "field": "safety.reason_codes",
+              "op": "eq",
+              "value": [
+                "daily_deaths_rule"
+              ]
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deaths-rule-never-lowers-an-alert-and-his-note-follows-the-vet-line",
+      "description": "On shed 2, where the existing rules already say ALERT (a death spike), his rule adds its line but the level stays ALERT, the vet step is the same as without the rule, and his note comes after it.",
+      "fresh_state": true,
+      "deaths_rule": {
+        "per_1000_live": 1,
+        "note": "kotam note",
+        "is_example": false
+      },
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed 2"
+          },
+          "checks": [
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "houses.0.findings.0.code",
+              "op": "eq",
+              "value": "mortality_spike"
+            },
+            {
+              "field": "safety.level",
+              "op": "eq",
+              "value": "ALERT"
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "Please check the birds today and call your vet if deaths continue. Your note: kotam note."
+            }
+          ]
+        }
+      ]
     }
   ]
 }

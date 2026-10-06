@@ -33,6 +33,7 @@ from clucktalk.agents.runner import ThreadRunner  # noqa: E402
 from clucktalk.config import load_settings  # noqa: E402
 from clucktalk.server.app import MCP_PATH, TARGET_PROTOCOL_VERSION, build_app, build_mcp_server  # noqa: E402
 from clucktalk.server.farm_state import DemoClock, DemoFarmSource  # noqa: E402
+from clucktalk.server.daily_deaths import RuleState, parse_rule  # noqa: E402
 from clucktalk.server.weather import Forecast, MockForecast, WeatherReminders, load_weather_config  # noqa: E402
 from clucktalk.simulator.intents import match as match_intent  # noqa: E402
 from clucktalk.simulator.intents import yes_no  # noqa: E402
@@ -77,7 +78,18 @@ def _weather(spec: str | None):
     return WeatherReminders(config, port, lambda: WEATHER_NOW)
 
 
-def _serve(port: int, fixture: str | None = None, weather: str | None = None):
+class _FixedRule:
+    """A case's ``deaths_rule`` option: the farmer's daily deaths rule (the same shape as daily_deaths_rule.json,
+    validated by the same parser), read from the case instead of a file."""
+
+    def __init__(self, spec: str) -> None:
+        self.state = RuleState(parse_rule(json.loads(spec)), False)
+
+    def current(self) -> RuleState:
+        return self.state
+
+
+def _serve(port: int, fixture: str | None = None, weather: str | None = None, deaths_rule: str | None = None):
     """A fresh mock-mode server (its own in-memory state). ``fixture`` swaps the demo rules for a test model.
     Returns ``(stop, clock)``: the demo clock (off, 0 days) that a case step may move with ``demo_days_later``. That
     hook lives only in this runner, in process: no MCP tool and no argument can reach it (docs/DESIGN.md section 18)."""
@@ -86,6 +98,7 @@ def _serve(port: int, fixture: str | None = None, weather: str | None = None):
     ai = AiServices(model=FIXTURES[fixture](), budget=None, runner=ThreadRunner()) if fixture is not None else None
     source = DemoFarmSource(demo_clock=clock)
     source.weather = _weather(weather)
+    source.deaths_rule = None if deaths_rule is None else _FixedRule(deaths_rule)
     server = build_mcp_server(source, ai)
     app = build_app(settings, server)
     uv = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
@@ -254,18 +267,19 @@ def main() -> int:
 
     # One fresh server per model fixture (None = the demo rules), so fixture cases never share state. A case marked
     # ``fresh_state`` gets a server of its own: its answer must not depend on what earlier cases changed.
-    def group(case: dict[str, Any]) -> tuple[str | None, str | None, str | None]:
+    def group(case: dict[str, Any]) -> tuple[str | None, str | None, str | None, str | None]:
         weather = json.dumps(case["weather"], sort_keys=True) if "weather" in case else None  # its own server
-        return case.get("model_fixture"), case["id"] if case.get("fresh_state") else None, weather
+        deaths = json.dumps(case["deaths_rule"], sort_keys=True) if "deaths_rule" in case else None
+        return case.get("model_fixture"), case["id"] if case.get("fresh_state") else None, weather, deaths
 
-    for fixture, only, weather in dict.fromkeys(group(c) for c in cases):
+    for fixture, only, weather, deaths in dict.fromkeys(group(c) for c in cases):
         port = _free_port()
-        stop, clock = _serve(port, fixture, weather)
+        stop, clock = _serve(port, fixture, weather, deaths)
         try:
             with httpx2.Client(timeout=10) as client:
                 url = f"http://127.0.0.1:{port}{MCP_PATH}"
                 headers = _session(client, url)
-                for case in (c for c in cases if group(c) == (fixture, only, weather)):
+                for case in (c for c in cases if group(c) == (fixture, only, weather, deaths)):
                     results[case["id"]] = _check_case(client, url, headers, case, clock)
         finally:
             stop()

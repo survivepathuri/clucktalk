@@ -33,6 +33,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from clucktalk.agents import AiServices, demo_ai, live_ai
 from clucktalk.config import APP_NAME, ConfigError, Settings, load_settings
 from clucktalk.pilot import PilotFarmError, load_pilot_farm_file
+from clucktalk.server.daily_deaths import DeathsRuleError, deaths_rule_from_env
 from clucktalk.server.errors import SafeToolErrors
 from clucktalk.server.farm_state import DemoClock, DemoFarmSource, PilotFarmSource
 from clucktalk.server.tools import (
@@ -339,6 +340,13 @@ def main() -> int:
     except WeatherConfigError as exc:
         print(f"Weather configuration error: {exc}", file=sys.stderr)
         return 2
+    try:  # the farmer's own daily deaths rule: off unless the rule file exists (Step 51 part B)
+        # A pilot reads a rule file only from an explicit path, never the demo's default location.
+        if settings.mode != "pilot" or os.environ.get("CLUCKTALK_DAILY_DEATHS_RULE_PATH", "").strip():
+            source.deaths_rule = deaths_rule_from_env(os.environ)
+    except DeathsRuleError as exc:
+        print(f"Daily deaths rule error: {exc}", file=sys.stderr)
+        return 2
     if settings.mode == "pilot":
         ai, mode = demo_ai(), "PILOT (real farm, prototype), no demo data, AI off (rule-based test model)"
     elif settings.mock_bedrock:
@@ -365,6 +373,10 @@ def main() -> int:
     else:
         kind = "SIMULATED forecast" if isinstance(weather.port, MockForecast) else "live Open-Meteo forecast (opt-in)"
         print(f"Weather reminders: ON, {len(weather.config.rules)} rule(s) from the farmer's file, {kind}")
+    if getattr(source, "deaths_rule", None) is None:
+        print("Daily deaths rule: off (no rule file; no level is changed)")
+    else:
+        print("Daily deaths rule: ON (the farmer's own number; it can only raise a shed to WATCH)")
     print(f"Allowed browser origins: {', '.join(settings.allowed_origins)}")
     if settings.extra_origins:
         print(f"CORS enabled only for: {', '.join(settings.extra_origins)} (CLUCKTALK_ALLOWED_ORIGINS)")

@@ -113,7 +113,11 @@ def facts_for(source: Any, farm: Farm, as_of: date, houses: Sequence[House] | No
         handed_off |= health.handed_off
         if any(r.day == as_of for r in store.records(chosen.farm_id, house.house_id)):
             logged.add(house.house_id)
-    return collect_facts(chosen, as_of, checks, frozenset(logged), recent, frozenset(handed_off), follow_ups)
+    state = getattr(source, "deaths_rule", None)  # the farmer's own daily deaths rule: can only add a WATCH fact
+    rule = None if state is None else state.current().rule
+    return collect_facts(
+        chosen, as_of, checks, frozenset(logged), recent, frozenset(handed_off), follow_ups, deaths_rule=rule
+    )
 
 
 def _reason_codes(items: Sequence[Any]) -> list[str]:

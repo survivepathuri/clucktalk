@@ -37,6 +37,7 @@ from clucktalk.server.tools.farm_status import (
     SAFETY_STEP,
     _feed_stock_finding,
     _finding,
+    deaths_rule_parts,
     recent_spike_text,
     weather_parts,
 )
@@ -306,6 +307,9 @@ def build_briefing(source: DemoFarmSource, ranker: BriefingRanker, more: bool = 
         if more_available:
             parts.append(MORE_OFFER)
     parts += _closing(page)
+    parts += deaths_rule_parts(
+        source, any(i.category == "daily_deaths_rule" for i in page)
+    )  # his note, after all safety text
     parts += weather_parts(source)[0]  # the farmer's own weather lines, last; they feed no level, item or safety field
     level: Literal["alert", "watch", "info", "none"] = (
         "none" if not ordered else _LEVEL_NAME[max((f.level for f in ordered), default=Level.OK)]

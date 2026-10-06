@@ -83,6 +83,7 @@ def overlay_records(farm: Farm, store: Store, *, add_missing: bool = False) -> F
 
 class DemoFarmSource:
     demo_data = True
+    deaths_rule = None  # the farmer's own daily deaths rule file (clucktalk.server.daily_deaths); off unless set
     overlay_adds_days = False  # the seed has a record for every day; a pilot farm has none, so its logs are added
     weights_allowed = True  # the demo farm's breed has a curve; a pilot's birds do not (PilotFarmSource)
 

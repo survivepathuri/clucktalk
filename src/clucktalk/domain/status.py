@@ -12,6 +12,8 @@ from datetime import date, timedelta
 from enum import IntEnum
 
 from clucktalk.domain import thresholds as t
+from clucktalk.domain.daily_deaths import DailyDeathsRule
+from clucktalk.domain.daily_deaths import evaluate as evaluate_deaths_rule
 from clucktalk.domain.errors import InsufficientData, NoReferenceCurve
 from clucktalk.domain.models import DailyRecord, House, HouseKind
 from clucktalk.domain.reference import curve_for
@@ -198,7 +200,9 @@ def _layer_production(house: House, records: tuple[DailyRecord, ...], latest: Da
     return round(today_pct, 1), round(avg, 1), findings
 
 
-def house_status(house: House, as_of: date) -> HouseStatus:
+def house_status(house: House, as_of: date, deaths_rule: DailyDeathsRule | None = None) -> HouseStatus:
+    """``deaths_rule``: the farmer's own daily deaths rule, if he has one. It can only ADD a WATCH finding, so the
+    house's level is max(what the rules above say, WATCH); no other finding, number or level reads it."""
     records = house.records_until(as_of)
     if not records:
         raise InsufficientData(f"the status of {house.label_en}", f"{house.label_te} స్థితి")
@@ -216,6 +220,21 @@ def house_status(house: House, as_of: date) -> HouseStatus:
             Finding("records_stale", Level.WATCH, {"days_since_record": stale_days, "latest": latest.day.isoformat()})
         )
     findings += _mortality_findings(house, records, latest)
+    if deaths_rule is not None:
+        hit = evaluate_deaths_rule(deaths_rule, latest.deaths, _live_at_start_of(house, latest.day))
+        if hit is not None:
+            findings.append(
+                Finding(
+                    "daily_deaths_rule",
+                    Level.WATCH,
+                    {
+                        "deaths": hit.deaths,
+                        "live_at_start": hit.live_at_start,
+                        "per_1000": hit.per_1000,
+                        "limit_per_1000": hit.limit_per_1000,
+                    },
+                )
+            )
 
     # A broiler breed without a cited curve still gets deaths, feed and weights; only target comparisons
     # are skipped, and the finding says so (never another breed's curve, Rule 6).

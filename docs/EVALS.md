@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-10-04T13:55:28+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
+Run 2026-10-06T18:55:13+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -76,5 +76,7 @@ Run 2026-10-04T13:55:28+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | weather-no-rule-in-the-file-shows-nothing-and-asks-for-nothing | PASS | — |
 | weather-feature-off-the-answers-carry-nothing-weather-related | PASS | — |
 | weather-an-unavailable-forecast-says-so-and-changes-nothing-else | PASS | — |
+| deaths-rule-raises-a-clean-shed-to-watch-with-his-line-and-his-note-last | PASS | — |
+| deaths-rule-never-lowers-an-alert-and-his-note-follows-the-vet-line | PASS | — |
 
-**Score: 72/72**
+**Score: 74/74**

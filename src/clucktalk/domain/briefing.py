@@ -18,6 +18,7 @@ from datetime import date
 from enum import StrEnum
 from typing import Any
 
+from clucktalk.domain.daily_deaths import DailyDeathsRule
 from clucktalk.domain.errors import DomainError
 from clucktalk.domain.feed import plan_feed
 from clucktalk.domain.follow_up import FollowUp, FollowUpState
@@ -46,6 +47,7 @@ class Category(StrEnum):
     OPEN_HEALTH_CHECK = "open_health_check"
     FOLLOW_UP = "follow_up"
     CUM_MORTALITY_HIGH = "cum_mortality_high"
+    DAILY_DEATHS_RULE = "daily_deaths_rule"  # the farmer's own limit (Step 51); it can only raise to WATCH
     WEIGHT_BELOW_TARGET = "weight_below_target"
     FCR_ABOVE_TARGET = "fcr_above_target"
     LAYING_DROP = "laying_drop"
@@ -64,6 +66,7 @@ CATEGORY_ORDER = tuple(Category)
 STATUS_CATEGORIES = {
     Category.MORTALITY_SPIKE,
     Category.CUM_MORTALITY_HIGH,
+    Category.DAILY_DEATHS_RULE,
     Category.WEIGHT_BELOW_TARGET,
     Category.FCR_ABOVE_TARGET,
     Category.LAYING_DROP,
@@ -82,6 +85,7 @@ HEALTH_CATEGORIES = frozenset(
         Category.OPEN_HEALTH_CHECK,
         Category.FOLLOW_UP,
         Category.CUM_MORTALITY_HIGH,
+        Category.DAILY_DEATHS_RULE,
     }
 )
 
@@ -266,9 +270,10 @@ def _house_facts(
     recent: Sequence[HealthCheck],
     handed_off: Collection[str],
     follow_up: FollowUp | None = None,
+    deaths_rule: DailyDeathsRule | None = None,
 ) -> list[Fact]:
     try:
-        st = house_status(house, as_of)
+        st = house_status(house, as_of, deaths_rule)
     except DomainError as err:  # said, never hidden (Rule 6): the farmer hears this house was not checked
         return [
             Fact(
@@ -368,6 +373,7 @@ def collect_facts(
     recent_checks: Mapping[str, Sequence[HealthCheck]] | None = None,
     handed_off: Collection[str] = frozenset(),
     follow_ups: Mapping[str, FollowUp] | None = None,
+    deaths_rule: DailyDeathsRule | None = None,
 ) -> tuple[Fact, ...]:
     """Every fact worth mentioning today, in rules order. ``checks``: each house's latest health check, if any;
     ``recent_checks``: each house's checks from the last NOTIFIABLE_DAYS days; ``handed_off``: ids of checks whose vet
@@ -386,6 +392,7 @@ def collect_facts(
             recent_checks.get(house.house_id, ()),
             handed_off,
             follow_ups.get(house.house_id),
+            deaths_rule,
         )
     missing = [h.number for h in sorted(farm.houses, key=lambda h: h.number) if h.house_id not in logged_today]
     if missing:

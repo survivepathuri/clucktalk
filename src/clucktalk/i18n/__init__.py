@@ -45,6 +45,18 @@ HELP_NOTHING_YET = Text(
 # awaiting native review (pending in docs/TELUGU_REVIEW.md).
 PILOT_BADGE = Text(en="Pilot (real farm, prototype)", te="పైలట్ (నిజమైన ఫారం, ప్రోటోటైప్)")
 
+# The farmer's own daily deaths rule (Step 51 part B). The Telugu is a DRAFT awaiting native review (pending in
+# docs/TELUGU_REVIEW.md). {when} is "today" or "in the latest count"; his note is shown with the existing
+# "Your note: ..." string below (WEATHER_NOTE), exactly as he wrote it.
+DAILY_DEATHS_LINE = Text(
+    en="{deaths} birds died {when}, that is {rate} for every 1000 birds, more than your own limit of {limit}.",
+    te="{when} {deaths} కోళ్లు చనిపోయాయి, అంటే ప్రతి 1000 కోళ్లకు {rate}, మీరు పెట్టిన హద్దు {limit} కంటే ఎక్కువ.",
+)
+DAILY_DEATHS_UNREADABLE = Text(
+    en="I couldn't read your own daily deaths rule, so it was not used.",
+    te="మీరు పెట్టిన రోజువారీ మరణాల నియమం చదవలేకపోయాను, కాబట్టి దాన్ని ఉపయోగించలేదు.",
+)
+
 # Weather reminders (Step 50W-B). Forecast lines for the farmer's own outdoor-temperature rules. The Telugu below is a
 # DRAFT awaiting native review (it is pending in docs/TELUGU_REVIEW.md). {source}: "Open-Meteo", or the existing
 # "Simulated" label; {time}: when the forecast was fetched; the farmer's own note is inserted exactly as he wrote it.

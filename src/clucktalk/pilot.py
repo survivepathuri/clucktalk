@@ -21,7 +21,7 @@ PILOT_FARM_ID = "farm-pilot"
 PILOT_FARM_NAME = "Pilot farm"
 # A pilot house has no breed unless the file says so. With no breed there is no growth curve, so no target comparison
 # of weight, feed or sale weight is ever made for it (domain/reference.py: never another breed's curve).
-PILOT_DEFAULT_BREED = "your birds"
+PILOT_DEFAULT_BREED = "flock"  # reads naturally in "no verified flock growth standard"
 MAX_HOUSES = 20
 MAX_LABEL = 200
 
