@@ -30,6 +30,22 @@ ProtectControlGroups=true
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 CapabilityBoundingSet=
 UMask=0077
+# More hardening that works for a Python service (Step 52). Two settings are deliberately NOT used: MemoryDenyWriteExecute
+# (Python libraries that use libffi or a JIT need memory that is both writable and executable, so it can stop the
+# service starting) and SystemCallFilter (a filter too tight kills Python with a bare SIGSYS). Each can be tried later with a
+# test run, never blind.
+ProtectProc=invisible
+ProcSubset=pid
+PrivateUsers=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+RestrictNamespaces=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+RemoveIPC=true
 
 [Install]
 WantedBy=multi-user.target

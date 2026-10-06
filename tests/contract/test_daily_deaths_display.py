@@ -205,11 +205,14 @@ def test_a_real_rule_file_object_works_end_to_end(tmp_path):
     assert codes(on) == ["daily_deaths_rule"] and on["text_en"].endswith(f"Your note: {NOTE}.")
 
 
-def test_an_example_rule_says_demo_data_before_the_note():
-    source = make_source()
+def test_an_example_rule_says_demo_data_before_the_note_in_the_demo():
+    # Step 52: on the pilot farm the example rule no longer says "Demo data." (test_pilot_small_fixes.py).
+    from clucktalk.server.farm_state import DemoFarmSource
+
+    source = DemoFarmSource(clock=lambda: date(2026, 9, 29))
     source.deaths_rule = Fixed(DailyDeathsRule(Decimal("2"), NOTE, True))
-    on, _, _ = asked(source)
-    assert on["text_en"].endswith(f"Demo data. Your note: {NOTE}.")
+    on = build_status(source, "shed 2").model_dump(mode="json")
+    assert f"Demo data. Your note: {NOTE}." in on["text_en"]
 
 
 @pytest.mark.parametrize("deaths", [0, 1, 4, 5])  # 5 / 2976 * 1000 = 1.68; 6 would be 2.02

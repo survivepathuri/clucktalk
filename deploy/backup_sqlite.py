@@ -55,7 +55,21 @@ def backup(state: Path, dest: Path, keep: int, also: list[Path], now: datetime |
             shutil.copyfile(extra, copied)
             os.chmod(copied, 0o600)
     prune(dest, state.stem, state.suffix, keep)
+    write_stamp(dest, target, now or datetime.now(UTC))
     return target
+
+
+STAMP_NAME = "LAST_GOOD_BACKUP"
+
+
+def write_stamp(dest: Path, backup_file: Path, when: datetime) -> None:
+    """Two lines, written only after a backup passed its integrity check: when it was made (UTC) and its name. A
+    failed backup never reaches here, so ``python tasks.py pilot-stats --usage F --backups DIR`` can tell a late backup
+    from a good one. Written atomically."""
+    tmp = dest / (STAMP_NAME + ".tmp")
+    tmp.write_text(f"{when.astimezone(UTC).isoformat()}\n{backup_file.name}\n", encoding="utf-8", newline="\n")
+    os.chmod(tmp, 0o600)
+    os.replace(tmp, dest / STAMP_NAME)
 
 
 def prune(dest: Path, stem: str, suffix: str, keep: int) -> None:

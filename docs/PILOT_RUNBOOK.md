@@ -42,7 +42,9 @@ explicit paths); (3) different OS users and folders (the `.service` templates); 
 
 ## Deploy (first time)
 
-1. As root, make the users and folders (the commands are in the comments at the top of each `.service` file).
+1. As root, make the users and folders (the commands are in the comments at the top of each `.service` file), **and the backup
+   folder, owned by the pilot user and private to it, before the first backup runs**:
+   `install -d -o clucktalk-pilot -g clucktalk-pilot -m 700 /var/backups/clucktalk-pilot` (without it the first night's backup fails).
 2. `git clone` the repository to `/opt/clucktalk`, then `cd /opt/clucktalk && python3.13 -m venv .venv && .venv/bin/pip install -r requirements.txt`.
 3. Put the farmer's real houses in `/var/lib/clucktalk-pilot/pilot_farm.json` (shape: `docs/pilot_farm.example.json`; the real
    file is never committed). His feed price is the builder's blend of his three feeds (49, 55 and 24 rupees per kg); the
@@ -80,8 +82,12 @@ Run `python tasks.py check` on your own machine first. Restarting changes no dat
 - **Do the restore test by hand once before the farmer starts**:
   `sudo -u clucktalk-pilot /opt/clucktalk/.venv/bin/python deploy/restore_test.py --dest /var/backups/clucktalk-pilot --live /var/lib/clucktalk-pilot/state/pilot_state.sqlite3`
   It prints `restore test: PASS`, the table names and row counts (never a row).
+- **How old is the last good backup?** `python tasks.py pilot-stats --usage /var/lib/clucktalk-pilot/state/usage_pilot.json --backups /var/backups/clucktalk-pilot`
+  prints "Last good backup: N hours ago" (from the stamp the backup script writes only after a copy passed its integrity
+  check) and a WARNING when it is more than 26 hours old, missing or unreadable. Look at it every few days; nothing else tells you.
 - To restore for real: stop the pilot, move the damaged file aside (do not delete it), copy the chosen backup to
-  `pilot_state.sqlite3`, start the pilot, and run the health check.
+  `pilot_state.sqlite3`, start the pilot, and run the health check. **Also move aside any `pilot_state.sqlite3-journal`,
+  `-wal` or `-shm` file lying beside the replaced database** (they belong to the old file and can undo or corrupt the restored one).
 
 ## Kill switch
 
@@ -92,10 +98,38 @@ Run `python tasks.py check` on your own machine first. Restarting changes no dat
 
 ## Delete on request
 
-If the farmer asks: `systemctl stop clucktalk-pilot`; copy nothing; delete `pilot_state.sqlite3`, `usage_pilot.json`,
-`pilot_farm.json`, `daily_deaths_rule.json` and every file in `/var/backups/clucktalk-pilot` and in the private bucket
-(including old versions, if versioning is on); remove his token; write down the date you did it. His records exist only in
-these places. Then tell him it is done.
+If the farmer asks: `systemctl stop clucktalk-pilot`; copy nothing; then delete **every copy**, and write down the date:
+
+- the state file `pilot_state.sqlite3` and any `-journal`, `-wal` or `-shm` file beside it, and the state folder's
+  `state/backups` folder if `reset-demo` or anything else ever moved a file there;
+- `usage_pilot.json`, `pilot_farm.json` and `daily_deaths_rule.json` (and `weather_rules.json` if used);
+- every file in `/var/backups/clucktalk-pilot`, and in the private bucket **including old versions** if versioning is on;
+- the journald logs of the pilot units (`journalctl --vacuum-time=1s` after stopping it, or rotate them out): they hold no
+  words he typed, but they hold dates and startup lines;
+- copies you made yourself (a laptop, a download, a screenshot) and his token (remove it from `CLUCKTALK_SIMULATOR_TOKENS`).
+
+His records exist only in these places. Then tell him it is done.
+
+## Rotating a token
+
+Use this when a link was shared by mistake, a phone was lost, or on a schedule. Revocation is a restart; to give him no gap, use
+two tokens that overlap:
+
+1. Make a new token (`python -c "import secrets; print(secrets.token_urlsafe(32))"`).
+2. Add the new token after the old one in `CLUCKTALK_SIMULATOR_TOKENS` (two tokens, comma separated) and restart the pilot. Both work now.
+3. Send him the new link, `https://PILOT_HOST/#t=<new token>`, and ask him to open it once on his phone (the page keeps it for that tab).
+4. When he has, remove the old token from the list and restart again. The old link stops working at once: that is the revoking.
+5. If the old link leaked, do steps 2 to 4 with no waiting (he opens the new link, then you remove the old token).
+   The MCP server's own token (`CLUCKTALK_AUTH_TOKEN`) is a different value and is rotated the same way, in one restart.
+
+## Service hardening
+
+The two instance units run as their own users with a read-only system, private temporary files, no new privileges, a hidden
+`/proc`, a private user namespace, no kernel access and a native-only system call architecture. Two settings were **skipped on
+purpose**: `MemoryDenyWriteExecute` (Python libraries that use libffi or a JIT need memory that is writable and executable, so
+it can stop the service starting) and `SystemCallFilter` (a filter that is too tight kills Python without a message). Neither was
+tested on a real server, so neither is claimed. `PrivateUsers` needs user namespaces: if the host forbids them the unit will not
+start, and the line can be removed with a note in the friction log.
 
 ## What is stored, and who can read it
 
@@ -109,7 +143,7 @@ these places. Then tell him it is done.
   else, unless you give access. The demo's user cannot read the pilot's files.
 - **First open: one notice screen with seven items** (a test and not a veterinary service; for a sick bird call his vet; an alert
   is a reminder to look and not a diagnosis; the targets are general numbers that may not fit his birds; his keyboard's voice typing goes to
-  its own speech service; what is stored and that you can read it; he can ask for deletion at any time). He taps one big button; nothing
+  its own speech service; what is stored and that you can read it; he can ask for deletion at any time). He acknowledges it with one big button; nothing
   else on the page works until he has, and the page remembers it on that device (it asks again if the wording changes or the browser keeps
   nothing). Check it reads naturally to him before he starts: the Telugu is a draft pending a native speaker's review.
 - **What the farmer must be told, in Telugu, before he starts** (draft in `private/PILOT_TELUGU_DRAFTS.md`, to be reviewed by a

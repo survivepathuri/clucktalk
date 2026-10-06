@@ -59,6 +59,9 @@ def test_a_decimal_number_is_read_without_float_noise(tmp_path):
         {"per_1000_live": "2"},
         {"per_1000_live": True},
         {"per_1000_live": -1},
+        {"per_1000_live": 0},  # Step 52: zero would flag every single death
+        {"per_1000_live": 0.0},
+        {"per_1000_live": -0.0},
         {"per_1000_live": 1001},
         {"per_1000_live": 2, "note": 5},
         {"per_1000_live": 2, "note": "x" * 201},

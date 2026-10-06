@@ -477,7 +477,7 @@ def deaths_rule_parts(source: DemoFarmSource, fired: bool) -> list[Text]:
     if rule is None or not fired or rule.note is None or not rule.note.strip():
         return []
     en, te = WEATHER_NOTE.en.format(note=rule.note), WEATHER_NOTE.te.format(note=rule.note)
-    if rule.is_example:
+    if rule.is_example and source.demo_data:  # on the pilot farm nothing is "demo data", whatever file he copied
         demo = BRIEFING_LABELS["demo_badge"]  # the existing "Demo data" label
         en, te = f"{demo.en}. {en}", f"{demo.te}. {te}"
     return [Text(en, te)]

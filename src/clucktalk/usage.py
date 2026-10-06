@@ -13,7 +13,7 @@ import json
 import os
 import threading
 from collections.abc import Callable
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -100,6 +100,33 @@ class UsageCounters:
             with self._lock:
                 self._data["alerts_shown"][level] += 1
                 self._save()
+
+
+LATE_AFTER_HOURS = 26  # a daily backup that is more than two hours late is a warning
+
+
+def backup_report(stamp_text: str | None, now: datetime) -> list[str]:
+    """The age of the last good backup, from the stamp the backup script writes (its first line is a UTC time), as the
+    lines pilot-stats prints. A missing, damaged or future stamp is a warning and never a good age. ``now`` is given
+    (this module never reads the clock)."""
+    if stamp_text is None or not stamp_text.strip():
+        return ["WARNING: no backup stamp found (has the backup ever run?)"]
+    try:
+        made = datetime.fromisoformat(stamp_text.strip().splitlines()[0])
+    except ValueError:
+        return ["WARNING: the backup stamp is unreadable"]
+    if made.tzinfo is None:
+        return ["WARNING: the backup stamp has no time zone, so its age cannot be told"]
+    hours = (now - made).total_seconds() / 3600
+    if hours < 0:
+        return ["WARNING: the last good backup is dated in the future (check the server clock)"]
+    line = f"Last good backup: {hours:.1f} hours ago"
+    if hours > LATE_AFTER_HOURS:
+        return [
+            line,
+            f"WARNING: the last good backup is more than {LATE_AFTER_HOURS} hours old. Check clucktalk-backup.",
+        ]
+    return [line]
 
 
 def format_stats(data: dict[str, Any]) -> str:

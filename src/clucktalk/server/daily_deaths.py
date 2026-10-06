@@ -52,8 +52,8 @@ def parse_rule(data: Any, name: str = "the daily deaths rule file") -> DailyDeat
     value = data.get("per_1000_live")
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
         raise DeathsRuleError("per_1000_live must be a finite number")
-    if not 0 <= value <= MAX_PER_1000:
-        raise DeathsRuleError(f"per_1000_live must be from 0 to {MAX_PER_1000}")
+    if not 0 < value <= MAX_PER_1000:
+        raise DeathsRuleError(f"per_1000_live must be greater than 0 and at most {MAX_PER_1000}")
     note = data.get("note")
     if note is not None and (not isinstance(note, str) or len(note) > MAX_NOTE):
         raise DeathsRuleError(f"note must be text of at most {MAX_NOTE} characters (the farmer's own words)")

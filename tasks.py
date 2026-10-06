@@ -12,7 +12,8 @@ Windows (cmd); on Linux/macOS use python3 instead of python:
     python tasks.py inspector-replay   Replay the documented Local Inspector flow (our replay, not Amazon's tool)
     python tasks.py verify      What a judge can check in one command: a table, fast (not the full suites)
     python tasks.py readiness [--write-doc]   Our own self-check of locally checkable Alexa+ requirements (not Amazon's)
-    python tasks.py pilot-stats --usage FILE   Print the pilot's anonymous usage totals (numbers only) from FILE
+    python tasks.py pilot-stats --usage FILE [--backups DIR]   Anonymous usage totals (numbers only) from FILE; with
+                                       --backups also the age of the last good backup (a warning after 26 hours)
     python tasks.py notices     Write NOTICE: the project license and every pinned dependency's declared license
     python tasks.py reset-demo --yes   Reset the local farm state (.local/): the live file is MOVED to .local/backups,
                                        the demo-clock file is deleted. Without --yes it only lists what it would do
@@ -548,13 +549,22 @@ def notices(args: list[str] | None = None) -> int:
 def pilot_stats(args: list[str]) -> int:
     """Aggregate pilot numbers from the anonymous usage file: days used, records confirmed, alerts shown by level,
     confirmations versus cancellations. Never prints a date, a word, a shed or a token (none is stored)."""
-    if len(args) != 2 or args[0] != "--usage":
-        print("usage: python tasks.py pilot-stats --usage FILE", file=sys.stderr)
+    wanted: dict[str, str] = {}
+    i = 0
+    while i < len(args):
+        if args[i] in ("--usage", "--backups") and args[i] not in wanted and i + 1 < len(args):
+            wanted[args[i]] = args[i + 1]
+            i += 2
+        else:
+            wanted = {}
+            break
+    if "--usage" not in wanted:
+        print("usage: python tasks.py pilot-stats --usage FILE [--backups DIR]", file=sys.stderr)
         return 2
     sys.path.insert(0, str(ROOT / "src"))
-    from clucktalk.usage import format_stats, load_usage
+    from clucktalk.usage import backup_report, format_stats, load_usage
 
-    path = Path(args[1])
+    path = Path(wanted["--usage"])
     if not path.exists():
         print(f"pilot-stats: no usage file at {path}", file=sys.stderr)
         return 1
@@ -563,6 +573,15 @@ def pilot_stats(args: list[str]) -> int:
     except ValueError as exc:
         print(f"pilot-stats: {exc}", file=sys.stderr)
         return 1
+    if "--backups" in wanted:
+        stamp = Path(wanted["--backups"]) / "LAST_GOOD_BACKUP"
+        try:
+            text = stamp.read_text(encoding="utf-8") if stamp.is_file() else None
+        except OSError:
+            text = "unreadable"
+        from datetime import UTC, datetime
+
+        print("\n".join(backup_report(text, datetime.now(UTC))))
     return 0
 
 

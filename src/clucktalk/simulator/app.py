@@ -406,6 +406,12 @@ def _spoken_te(result: dict[str, Any]) -> str:
 GENERIC_TE = f"{GENERIC_ERROR.te} {GENERIC_NEXT_STEP.te}"
 
 
+def _detail(pilot: bool, short: str, full: str) -> str:
+    """The reason shown to the client: the full text for the developer panel of the demo, a short sentence on a pilot
+    host (the full text names the internal address of the MCP server; it is in the server's log instead)."""
+    return short if pilot else full
+
+
 def _mcp_ms(exchanges: list[Exchange]) -> float:
     return round(sum(e.ms for e in exchanges), 1)
 
@@ -470,7 +476,10 @@ def build_app(
         return JSONResponse({"error": "not available"}, status_code=404)
 
     async def healthz(_request: Request) -> Response:
-        """Is it up: no data, no farm, no token. "disabled" while the kill switch is on."""
+        """Is it up? No data, no farm, no token. A pilot host says only "ok" (200) or "not ok" (503)."""
+        if pilot:
+            ok = not paused(settings)
+            return JSONResponse({"status": "ok" if ok else "not ok"}, status_code=200 if ok else 503)
         return JSONResponse({"status": "disabled" if paused(settings) else "ok", "mode": settings.mode})
 
     async def state(_request: Request) -> Response:
@@ -634,7 +643,11 @@ def build_app(
                         kind="protocol_error",
                         speech=PROTOCOL_ERROR_SPEECH,
                         is_error=True,
-                        detail=f"JSON-RPC error {err.get('code')}: {err.get('message')}",
+                        detail=_detail(
+                            pilot,
+                            "the service refused the request",
+                            f"JSON-RPC error {err.get('code')}: {err.get('message')}",
+                        ),
                     )
                     if te or chip is not None:
                         out["speech_te"] = GENERIC_TE
@@ -657,7 +670,12 @@ def build_app(
                         out["card"] = {"uri": uri, "tool": mcp.tools[intent.tool]}
             except McpUnavailable as err:
                 logger.warning("turn failed: %s", err)
-                out.update(kind="unavailable", speech=UNAVAILABLE_SPEECH, is_error=True, detail=str(err))
+                out.update(
+                    kind="unavailable",
+                    speech=UNAVAILABLE_SPEECH,
+                    is_error=True,
+                    detail=_detail(pilot, "the service did not answer", str(err)),
+                )
                 if te or chip is not None:
                     out["speech_te"] = GENERIC_TE
         if usage is not None and answer is not None and (awaiting or (host_awaiting and choice is None)):

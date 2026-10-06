@@ -151,7 +151,7 @@ def test_the_page_its_files_and_the_health_check_are_public_and_carry_no_data(ri
     assert httpx2.get(rig.base + "/", timeout=10).status_code == 200
     assert httpx2.get(rig.base + "/static/pilot.js", timeout=10).status_code == 200
     health = httpx2.get(rig.base + "/healthz", timeout=10)
-    assert health.status_code == 200 and health.json() == {"status": "ok", "mode": "pilot"}
+    assert health.status_code == 200 and health.json() == {"status": "ok"}  # Step 52: no mode on a pilot host
 
 
 def test_the_token_is_compared_in_constant_time_against_every_configured_token(tmp_path, monkeypatch):
@@ -331,7 +331,7 @@ def test_the_kill_switch_file_pauses_everything_but_the_health_check_and_resumes
         httpx2.get(rig.base + "/api/state", headers={"authorization": f"Bearer {TOKEN}"}, timeout=10).status_code == 503
     )
     health = httpx2.get(rig.base + "/healthz", timeout=10)
-    assert health.status_code == 200 and health.json() == {"status": "disabled", "mode": "pilot"}
+    assert health.status_code == 503 and health.json() == {"status": "not ok"}  # Step 52: no reason either
     flag.unlink()
     assert rig.turn(utterance="సహాయం").status_code == 200
 

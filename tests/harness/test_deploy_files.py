@@ -149,6 +149,7 @@ def test_old_backups_are_pruned_and_the_files_saved_with_them(state, tmp_path):
         backup_sqlite.backup(state, dest, keep=2, also=[usage], now=at(s))
     kept = sorted(p.name for p in dest.iterdir())
     assert kept == [
+        "LAST_GOOD_BACKUP",  # Step 52: the stamp of the last good backup lives in the folder too
         "pilot_state_20261009-023004.sqlite3",
         "pilot_state_20261009-023005.sqlite3",
         "usage_pilot_20261009-023004.json",
