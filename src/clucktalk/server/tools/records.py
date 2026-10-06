@@ -17,7 +17,13 @@ from mcp.server.mcpserver import MCPServer
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field
 
-from clucktalk.domain.errors import DeathsExceedLiveBirds, DomainError, DoseNotAllowed, NothingToRecord
+from clucktalk.domain.errors import (
+    DeathsExceedLiveBirds,
+    DomainError,
+    DoseNotAllowed,
+    NothingToRecord,
+    WeightNotLoggedInPilot,
+)
 from clucktalk.domain.feed import BAG_KG
 from clucktalk.domain.houses import resolve_house
 from clucktalk.domain.models import DailyRecord, Treatment, TreatmentKind
@@ -278,6 +284,8 @@ def build_log_record(
     proposal_id: str | None,
     answer: Answer | None,
 ) -> LogDailyRecordOutput:
+    if avg_weight_g is not None and not source.weights_allowed:
+        raise WeightNotLoggedInPilot()  # pilot mode: nothing is proposed or stored (Step 51)
     farm, as_of = source.snapshot()
     farm_id = farm.farm_id
     house = resolve_house(farm, house_ref)

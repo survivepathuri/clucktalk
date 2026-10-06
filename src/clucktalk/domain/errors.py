@@ -66,6 +66,19 @@ class NoReferenceCurve(DomainError):
         self.breed = breed
 
 
+class WeightNotLoggedInPilot(DomainError):
+    """Pilot mode: the weight target is a breed curve that does not describe the farmer's birds, so no weight is
+    logged or compared. The wording is the existing "no verified growth standard" message, said about "your birds"."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "I don't have a verified growth standard for your birds yet, so I can't compare weight or feed to target.",
+            "Ask me how the shed is doing instead.",
+            "మీ కోళ్లకు ధృవీకరించిన పెరుగుదల ప్రమాణం నా దగ్గర ఇంకా లేదు, కాబట్టి బరువు లేదా ఫీడ్‌ను లక్ష్యంతో పోల్చలేను.",
+            "బదులుగా షెడ్ ఎలా ఉందో అడగండి.",
+        )
+
+
 class InsufficientData(DomainError):
     def __init__(self, what: str, what_te: str) -> None:
         super().__init__(

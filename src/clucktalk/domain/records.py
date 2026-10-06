@@ -19,20 +19,23 @@ def validate_record_day(house: House, day: date, as_of: date) -> None:
         raise RecordDayOutOfRange(house.label_en, house.label_te, day, as_of)
 
 
-def overlay_house_records(house: House, overrides: dict[date, DailyRecord]) -> House:
+def overlay_house_records(house: House, overrides: dict[date, DailyRecord], *, add_missing: bool = False) -> House:
     """Farmer-logged records (the voice record book) replace the seed's synthetic ones for the same day.
 
     The demo seed is generated fresh relative to "today" (CLAUDE.md, docs/DESIGN.md §10), so a house's whole
     placed_on..as_of window slides forward as real days pass. A logged day that has fallen outside that
     window is left out here rather than raising: `House` would otherwise reject it as predating placement,
     and a farmer's real record must never crash the farm status a session later. This is a known limitation
-    of the sliding-seed design, not a bug in the record itself (docs/DESIGN.md §13.2)."""
+    of the sliding-seed design, not a bug in the record itself (docs/DESIGN.md §13.2).
+
+    ``add_missing`` (pilot mode, which has no seed records at all): a logged day the house does not have yet is ADDED
+    (a day before placement is still left out). Without it every logged record of a pilot house would be dropped."""
     if not overrides:
         return house
     by_day = {r.day: r for r in house.records}
     changed = False
     for day, rec in overrides.items():
-        if day in by_day:  # within the house's current placed_on..as_of window
+        if day in by_day or (add_missing and day >= house.placed_on):  # else: outside the seed's current window
             by_day[day] = rec
             changed = True
     return replace(house, records=tuple(by_day[d] for d in sorted(by_day))) if changed else house

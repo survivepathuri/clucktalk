@@ -35,6 +35,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 from clucktalk.config import APP_NAME
 from clucktalk.domain.photos import PHOTO_REFS
+from clucktalk.i18n import PILOT_BADGE
 from clucktalk.simulator.intents import Intent, match, normalise, yes_no
 from clucktalk.simulator.mcp_client import Exchange, McpClient, McpUnavailable
 
@@ -59,6 +60,7 @@ class SimulatorSettings:
     mcp_url: str
     auth_token: str | None
     interim_after_ms: int = 1000  # show "Still working..." when a turn takes longer than this
+    mode: str = "demo"  # "pilot": the farmer's own farm, so the page must never say "Demo data" or "fictional"
 
     @property
     def origins(self) -> set[str]:
@@ -152,6 +154,25 @@ class LocalOnly:
         await self.app(scope, receive, send)
 
 
+DEMO_BADGE_HTML = (
+    '<div class="mode" id="mode" role="note" title="MOCK_BEDROCK=true: fictional seeded farm, rule-based host">'
+    "Demo data · mock host</div>"
+)
+DEMO_FOOTER_SENTENCE = " The farm is fictional demo data."
+
+
+def pilot_page(html: str) -> str:
+    """The Simulator page for a pilot: the pilot badge instead of "Demo data · mock host", and no sentence saying the
+    farm is fictional. If the page no longer has the exact demo wording this raises, so a stale badge can never ship."""
+    if DEMO_BADGE_HTML not in html or DEMO_FOOTER_SENTENCE not in html:
+        raise RuntimeError("index.html no longer has the demo badge or footer wording the pilot page replaces")
+    badge = (
+        '<div class="mode" id="mode" role="note" title="Pilot: the farmer&#39;s own farm, no demo data">'
+        f"{PILOT_BADGE.en}</div>"
+    )
+    return html.replace(DEMO_BADGE_HTML, badge).replace(DEMO_FOOTER_SENTENCE, "")
+
+
 def _revalidate(send: Send) -> Send:
     async def wrapped(message: dict[str, Any]) -> None:
         if message["type"] == "http.response.start":
@@ -203,7 +224,11 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
         yield
         await mcp.aclose()
 
+    page = pilot_page((STATIC / "index.html").read_text(encoding="utf-8")) if settings.mode == "pilot" else None
+
     async def index(_request: Request) -> Response:
+        if page is not None:
+            return Response(page, media_type="text/html", headers={"cache-control": "no-store"})
         return FileResponse(STATIC / "index.html", headers={"cache-control": "no-store"})
 
     async def sandbox(request: Request) -> Response:
@@ -226,7 +251,7 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
         return JSONResponse(
             {
                 "app_name": APP_NAME,
-                "mode": "demo",
+                "mode": settings.mode,
                 "mcp_url": settings.mcp_url,
                 "connected": bool(mcp.tools),
                 "server_info": mcp.server_info,

@@ -31,7 +31,7 @@ def load_simulator_settings(env: dict[str, str] | None = None) -> SimulatorSetti
     if port == server.port:
         raise ConfigError(f"The Simulator and the MCP server cannot both use port {port}.")
     mcp_url = env.get("CLUCKTALK_MCP_URL", "").strip() or f"http://127.0.0.1:{server.port}/mcp"
-    return SimulatorSettings(port=port, mcp_url=mcp_url, auth_token=server.auth_token)
+    return SimulatorSettings(port=port, mcp_url=mcp_url, auth_token=server.auth_token, mode=server.mode)
 
 
 def main() -> int:
@@ -44,7 +44,8 @@ def main() -> int:
 
     import uvicorn
 
-    print(f"Simulator | mode: DEMO DATA (MOCK_BEDROCK=true) | MCP server: {settings.mcp_url}")
+    label = "PILOT (real farm, prototype)" if settings.mode == "pilot" else "DEMO DATA (MOCK_BEDROCK=true)"
+    print(f"Simulator | mode: {label} | MCP server: {settings.mcp_url}")
     print(f"Open: http://127.0.0.1:{settings.port}/")
     uvicorn.run(build_app(settings), host="127.0.0.1", port=settings.port, log_level="warning")
     return 0

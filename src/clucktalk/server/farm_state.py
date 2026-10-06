@@ -14,6 +14,7 @@ from datetime import date, datetime, timedelta, timezone
 from clucktalk.domain.models import Farm
 from clucktalk.domain.profile import FarmProfile, demo_default_profile
 from clucktalk.domain.records import overlay_house_records
+from clucktalk.pilot import PilotFarmConfig, build_pilot_farm
 from clucktalk.seed import build_demo_farm
 from clucktalk.store import Store
 from clucktalk.store.sqlite import SqliteStore
@@ -66,13 +67,15 @@ class DemoClock:
         return self.now().date()
 
 
-def overlay_records(farm: Farm, store: Store) -> Farm:
+def overlay_records(farm: Farm, store: Store, *, add_missing: bool = False) -> Farm:
     """The voice record book (``log_daily_record``) is now the farm's primary data source: whatever the
     farmer has logged for a house replaces the seed's synthetic guess for that same day. Applied fresh on
     every snapshot (cheap: a couple of indexed reads), never cached, so a record logged a moment ago shows up
     in the very next tool call (docs/DESIGN.md §13.2)."""
     houses = tuple(
-        overlay_house_records(house, {r.day: r for r in store.records(farm.farm_id, house.house_id)})
+        overlay_house_records(
+            house, {r.day: r for r in store.records(farm.farm_id, house.house_id)}, add_missing=add_missing
+        )
         for house in farm.houses
     )
     return replace(farm, houses=houses)
@@ -80,6 +83,8 @@ def overlay_records(farm: Farm, store: Store) -> Farm:
 
 class DemoFarmSource:
     demo_data = True
+    overlay_adds_days = False  # the seed has a record for every day; a pilot farm has none, so its logs are added
+    weights_allowed = True  # the demo farm's breed has a curve; a pilot's birds do not (PilotFarmSource)
 
     def __init__(
         self,
@@ -105,8 +110,11 @@ class DemoFarmSource:
         is never served stale."""
         as_of = self._clock()
         if self._cached is None or self._cached[0] != as_of:
-            self._cached = (as_of, build_demo_farm(as_of))
-        return overlay_records(self._cached[1], self.store), as_of
+            self._cached = (as_of, self._build_farm(as_of))
+        return overlay_records(self._cached[1], self.store, add_missing=self.overlay_adds_days), as_of
+
+    def _build_farm(self, as_of: date) -> Farm:
+        return build_demo_farm(as_of)
 
     @property
     def demo_clock_days(self) -> int:
@@ -120,3 +128,21 @@ class DemoFarmSource:
     def profile(self) -> FarmProfile:
         """The farmer's saved profile, or the demo farm's starting profile (independent) if never changed."""
         return self.store.get_profile(self.farm_id) or demo_default_profile(self.farm_id)
+
+
+class PilotFarmSource(DemoFarmSource):
+    """Pilot mode (Step 51): the farmer's real houses from his farm file, with NO synthetic history. Everything a tool
+    says about a record is one he logged himself. Not demo data (``demo_data`` is False, so no answer or card says
+    "Demo data"); simulated items (market rate, supplier) are still labeled Simulated by the tools that show them.
+    Bird weights are not logged in the pilot: the weight target is a breed curve that does not describe his birds."""
+
+    demo_data = False
+    overlay_adds_days = True
+    weights_allowed = False
+
+    def __init__(self, config: PilotFarmConfig, **kwargs) -> None:
+        self.config = config  # set before super().__init__, which builds the first snapshot
+        super().__init__(**kwargs)
+
+    def _build_farm(self, as_of: date) -> Farm:
+        return build_pilot_farm(self.config, as_of)

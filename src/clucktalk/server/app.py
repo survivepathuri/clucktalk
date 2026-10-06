@@ -32,8 +32,9 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from clucktalk.agents import AiServices, demo_ai, live_ai
 from clucktalk.config import APP_NAME, ConfigError, Settings, load_settings
+from clucktalk.pilot import PilotFarmError, load_pilot_farm_file
 from clucktalk.server.errors import SafeToolErrors
-from clucktalk.server.farm_state import DemoClock, DemoFarmSource
+from clucktalk.server.farm_state import DemoClock, DemoFarmSource, PilotFarmSource
 from clucktalk.server.tools import (
     CapabilityRegistry,
     briefing,
@@ -321,13 +322,26 @@ def main() -> int:
         print(f"State store error ({settings.active_state_path}): {exc}", file=sys.stderr)
         return 2
     demo_clock = DemoClock(settings.demo_days_later) if settings.demo_days_later else None
-    source = DemoFarmSource(store=store, demo_clock=demo_clock)
+    if settings.mode == "pilot":  # the farmer's own farm file; a bad file stops the start (Rule 6)
+        try:
+            if settings.pilot_farm_path is None:  # config refuses this first; kept so it can never be skipped
+                raise PilotFarmError("CLUCKTALK_PILOT_FARM_PATH is not set")
+            source = PilotFarmSource(load_pilot_farm_file(settings.pilot_farm_path), store=store)
+        except PilotFarmError as exc:
+            print(f"Pilot farm file error: {exc}", file=sys.stderr)
+            return 2
+    else:
+        source = DemoFarmSource(store=store, demo_clock=demo_clock)
     try:  # the farmer's own weather rules: off unless the rules file exists (docs/DESIGN.md, Step 50W-B)
-        source.weather = weather_from_env(os.environ, source.now)
+        # A pilot reads a weather file only from an explicit path, never the demo's default location.
+        if settings.mode != "pilot" or os.environ.get("CLUCKTALK_WEATHER_RULES_PATH", "").strip():
+            source.weather = weather_from_env(os.environ, source.now)
     except WeatherConfigError as exc:
         print(f"Weather configuration error: {exc}", file=sys.stderr)
         return 2
-    if settings.mock_bedrock:
+    if settings.mode == "pilot":
+        ai, mode = demo_ai(), "PILOT (real farm, prototype), no demo data, AI off (rule-based test model)"
+    elif settings.mock_bedrock:
         ai, mode = demo_ai(), "DEMO DATA (MOCK_BEDROCK=true), AI off (demo rules)"
     else:
         # Live AI on the synthetic demo farm: only on an explicit MOCK_BEDROCK=false + model + Region.
@@ -354,10 +368,13 @@ def main() -> int:
     print(f"Allowed browser origins: {', '.join(settings.allowed_origins)}")
     if settings.extra_origins:
         print(f"CORS enabled only for: {', '.join(settings.extra_origins)} (CLUCKTALK_ALLOWED_ORIGINS)")
-    print(
-        f"Farm state: {settings.active_state_path} "
-        "(python tasks.py reset-demo --yes starts a fresh demo story; the live file is moved to backups)"
-    )
+    if settings.mode == "pilot":
+        print(f"Farm state: {settings.active_state_path} (the pilot's own file; never the demo's)")
+    else:
+        print(
+            f"Farm state: {settings.active_state_path} "
+            "(python tasks.py reset-demo --yes starts a fresh demo story; the live file is moved to backups)"
+        )
     if demo_clock is not None:
         print("The live farm state file is not opened while the demo clock is on (a separate demo-clock file is used).")
     uvicorn.run(build_app(settings, server), host=settings.host, port=settings.port, log_level="info")

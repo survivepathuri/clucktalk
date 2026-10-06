@@ -54,6 +54,11 @@ class Settings:
     # Extra browser origins from CLUCKTALK_ALLOWED_ORIGINS (an explicit list, never "*"). Only these get CORS headers.
     extra_origins: tuple[str, ...] = ()
     demo_days_later: int = 0  # CLUCKTALK_DEMO_DAYS_LATER: the demo clock (0 = off); demo mode only
+    # CLUCKTALK_MODE: "demo" (the fictional farm, the default) or "pilot" (the farmer's own farm file, his own state
+    # file, no synthetic history). A pilot instance and a demo instance never share a state file (Step 51).
+    mode: str = "demo"
+    instance_name: str = "demo"  # CLUCKTALK_INSTANCE_NAME; a pilot's state file name must contain it
+    pilot_farm_path: Path | None = None  # CLUCKTALK_PILOT_FARM_PATH: pilot mode only
 
     @property
     def is_local(self) -> bool:
@@ -121,6 +126,7 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     mock_bedrock = _parse_bool(env, "MOCK_BEDROCK", default=False)
     demo_days_later = _demo_days_later(env.get("CLUCKTALK_DEMO_DAYS_LATER", "").strip(), mock_bedrock)
     port = _parse_port(env, "CLUCKTALK_PORT", 8765)
+    mode, instance_name, pilot_farm_path, state_path = _mode_settings(env, mock_bedrock)
     return Settings(
         mock_bedrock=mock_bedrock,
         host=host,
@@ -128,13 +134,78 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         allowed_origins=(f"http://127.0.0.1:{port}", f"http://localhost:{port}", *extra_origins),
         auth_token=auth_token,
         aws_region=env.get("AWS_REGION", "").strip() or None,
-        state_path=_state_path(env.get("CLUCKTALK_STATE_PATH", "").strip()),
+        state_path=state_path,
         mock_bedrock_given=env.get("MOCK_BEDROCK", "").strip() != "",
         bedrock_model_id=env.get("BEDROCK_MODEL_ID", "").strip() or None,
         ai_max_calls_per_day=_ai_cap(env.get("CLUCKTALK_AI_MAX_CALLS_PER_DAY", "").strip()),
         extra_origins=extra_origins,
         demo_days_later=demo_days_later,
+        mode=mode,
+        instance_name=instance_name,
+        pilot_farm_path=pilot_farm_path,
     )
+
+
+_INSTANCE_NAME = re.compile(r"[a-z0-9][a-z0-9-]{0,23}")
+
+
+def _same_folder(a: Path, b: Path) -> bool:
+    return a.resolve().parent == b.resolve().parent
+
+
+def _mode_settings(env: Mapping[str, str], mock_bedrock: bool) -> tuple[str, str, Path | None, Path]:
+    """CLUCKTALK_MODE, the instance name, the pilot farm file and the state file, checked together (Step 51 part A).
+    The demo (default) is unchanged except that it refuses anything that looks like a pilot's file. A pilot refuses to
+    start unless it has its own farm file and its own state file, named after the instance and outside the demo's
+    folder, so the two can never read or write the same data."""
+    mode = env.get("CLUCKTALK_MODE", "").strip() or "demo"
+    if mode not in ("demo", "pilot"):
+        raise ConfigError(f"CLUCKTALK_MODE={mode!r} must be demo or pilot.")
+    name = env.get("CLUCKTALK_INSTANCE_NAME", "").strip() or mode
+    if not _INSTANCE_NAME.fullmatch(name):
+        raise ConfigError(
+            f"CLUCKTALK_INSTANCE_NAME={name!r} must be 1 to 24 characters: lowercase letters, digits and hyphens."
+        )
+    raw_state = env.get("CLUCKTALK_STATE_PATH", "").strip()
+    raw_farm = env.get("CLUCKTALK_PILOT_FARM_PATH", "").strip()
+    if mode == "demo":
+        if raw_farm:
+            raise ConfigError("CLUCKTALK_PILOT_FARM_PATH is only for CLUCKTALK_MODE=pilot; the demo uses its own seed.")
+        state = _state_path(raw_state)
+        if "pilot" in state.name.lower():
+            raise ConfigError(
+                f"CLUCKTALK_STATE_PATH={raw_state!r} looks like a pilot state file, and this is the demo instance. "
+                "A pilot and a demo never share a state file."
+            )
+        return mode, name, None, state
+    if mock_bedrock is not True or env.get("MOCK_BEDROCK", "").strip() == "":
+        raise ConfigError(
+            "CLUCKTALK_MODE=pilot needs MOCK_BEDROCK=true: live AI for the pilot is not built yet "
+            "(the pilot health check runs the rule-based test model, labeled as such)."
+        )
+    if env.get("CLUCKTALK_DEMO_DAYS_LATER", "").strip():
+        raise ConfigError("CLUCKTALK_DEMO_DAYS_LATER is refused in pilot mode: it changes what 'today' means.")
+    if not raw_farm:
+        raise ConfigError(
+            "CLUCKTALK_MODE=pilot needs CLUCKTALK_PILOT_FARM_PATH (the farmer's farm file, a .json file)."
+        )
+    farm = Path(raw_farm)
+    farm = farm if farm.is_absolute() else REPO_ROOT / farm
+    if farm.suffix.lower() != ".json":
+        raise ConfigError(f"CLUCKTALK_PILOT_FARM_PATH={raw_farm!r} must name a .json file.")
+    if not raw_state:
+        raise ConfigError("CLUCKTALK_MODE=pilot needs CLUCKTALK_STATE_PATH (the pilot's own .sqlite3 file).")
+    state = _state_path(raw_state)
+    if state.resolve() == DEFAULT_STATE_PATH.resolve() or _same_folder(state, DEFAULT_STATE_PATH):
+        raise ConfigError(
+            f"CLUCKTALK_STATE_PATH={raw_state!r} is the demo's state file or lies next to it. "
+            "Put the pilot's state file in its own folder."
+        )
+    if name not in state.name.lower():
+        raise ConfigError(
+            f"CLUCKTALK_STATE_PATH={raw_state!r}: the state file name must contain the instance name {name!r}."
+        )
+    return mode, name, farm, state
 
 
 def _demo_days_later(raw: str, mock_bedrock: bool) -> int:

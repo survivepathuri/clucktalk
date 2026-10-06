@@ -41,6 +41,10 @@ HELP_NOTHING_YET = Text(
     te="నా ఫారం సేవలు ఇంకా సిద్ధమవుతున్నాయి, కాబట్టి ప్రస్తుతం నేను ఏమి చేస్తానో మాత్రమే చెప్పగలను.",
 )
 
+# Pilot mode (Step 51). The badge the pilot page shows in place of "Demo data · mock host". The Telugu is a DRAFT
+# awaiting native review (pending in docs/TELUGU_REVIEW.md).
+PILOT_BADGE = Text(en="Pilot (real farm, prototype)", te="పైలట్ (నిజమైన ఫారం, ప్రోటోటైప్)")
+
 # Weather reminders (Step 50W-B). Forecast lines for the farmer's own outdoor-temperature rules. The Telugu below is a
 # DRAFT awaiting native review (it is pending in docs/TELUGU_REVIEW.md). {source}: "Open-Meteo", or the existing
 # "Simulated" label; {time}: when the forecast was fetched; the farmer's own note is inserted exactly as he wrote it.
