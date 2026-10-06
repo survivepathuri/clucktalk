@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="te">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CluckTalk</title>
+<link rel="stylesheet" href="/static/pilot.css">
+</head>
+<body>
+<header class="top">
+  <strong class="name">CluckTalk · @APP_NAME_TE@</strong>
+  <span class="badge" id="badge" role="note" title="@BADGE_TE@">@BADGE_EN@</span>
+</header>
+<p class="notice" id="notice"></p>
+
+<main>
+  <div class="log" id="log" aria-live="polite"></div>
+
+  <section class="card" id="readback" hidden aria-live="assertive">
+    <h2 id="readback-head"></h2>
+    <p id="readback-text" lang="te"></p>
+    <div class="pair">
+      <button type="button" class="big yes" id="yes"></button>
+      <button type="button" class="big no" id="no"></button>
+    </div>
+  </section>
+
+  <section class="card" id="picker" hidden>
+    <h2 id="picker-title"></h2>
+    <div class="grid" id="picker-body"></div>
+  </section>
+
+  <div class="chips" id="chips"></div>
+
+  <form class="ask" id="ask" autocomplete="off">
+    <input id="text" name="text" type="text" lang="te" inputmode="text" enterkeyhint="send" aria-labelledby="notice">
+    <button type="submit" class="send" aria-label="&#10148;">&#10148;</button>
+  </form>
+</main>
+<script src="/static/pilot.js"></script>
+</body>
+</html>

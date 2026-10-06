@@ -1,0 +1,42 @@
+"""The pilot page files (Step 51 part C): the page holds no wording of its own (every word comes from the server's i18n,
+so every Telugu line is pending review in docs/TELUGU_REVIEW.md), says nothing about demo data, and chips never send a
+sentence."""
+
+from __future__ import annotations
+
+import re
+from pathlib import Path
+
+STATIC = Path(__file__).resolve().parents[2] / "src" / "clucktalk" / "simulator" / "static"
+TELUGU = re.compile("[ఀ-౿]")
+
+
+def read(name: str) -> str:
+    return (STATIC / name).read_text(encoding="utf-8")
+
+
+def test_the_page_files_hold_no_telugu_of_their_own():
+    for name in ("pilot.html", "pilot.js", "pilot.css"):
+        assert not TELUGU.search(read(name)), f"{name} has Telugu text that is not in the reviewed i18n"
+
+
+def test_the_page_never_says_demo_or_fictional_and_loads_only_its_own_files():
+    html = read("pilot.html")
+    for name in ("pilot.html", "pilot.js"):
+        text = read(name).lower()
+        assert "demo data" not in text and "mock host" not in text and "fictional" not in text
+    assert re.findall(r'(?:src|href)="([^"]+)"', html) == ["/static/pilot.css", "/static/pilot.js"]
+    assert "http://" not in html and "https://" not in html and "<iframe" not in html
+
+
+def test_a_chip_sends_an_id_and_numbers_not_a_sentence():
+    js = read("pilot.js")
+    assert "post({ chip, params })" in js and 'post({ chip: "yes" })' in js and 'post({ chip: "no" })' in js
+    # the only call that sends typed text is the form submit
+    assert len(re.findall(r"post\(\{ utterance", js)) == 1
+
+
+def test_the_write_buttons_are_the_read_back_buttons_and_there_is_no_other_way_to_confirm():
+    js = read("pilot.js")
+    assert js.count('chip: "yes"') == 1 and js.count('chip: "no"') == 1
+    assert "innerHTML" not in js and "eval(" not in js  # farmer and server text is only ever shown as text

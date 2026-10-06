@@ -234,7 +234,7 @@ class Intent:
 
 def normalise(utterance: str) -> str:
     text = utterance.lower().replace("cluck talk", "clucktalk").replace("click talk", "clucktalk")
-    text = re.sub(r"[^\w\s']", " ", text)
+    text = re.sub(r"[^\w\s'\u0c00-\u0c7f]", " ", text)  # Telugu vowel signs are kept (they used to be stripped)
     text = " ".join(MISHEARD.get(w, w) for w in text.split())
     return WAKE.sub("", text).strip()
 

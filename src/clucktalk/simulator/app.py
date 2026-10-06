@@ -22,7 +22,7 @@ import re
 import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -33,10 +33,22 @@ from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from clucktalk.config import APP_NAME
+from clucktalk.config import APP_NAME, APP_NAME_TE
 from clucktalk.domain.photos import PHOTO_REFS
-from clucktalk.i18n import PILOT_BADGE
+from clucktalk.domain.triage import SIGN_TEXT, Sign
+from clucktalk.i18n import GENERIC_ERROR, GENERIC_NEXT_STEP, PILOT_BADGE
+from clucktalk.i18n.pilot import (
+    CHIPS,
+    HEALTH_READBACK,
+    HOST_NOT_STARTED,
+    NOT_UNDERSTOOD,
+    NOTHING_PENDING,
+    OUTCOMES,
+    PILOT_UI,
+    SHED_LABEL,
+)
 from clucktalk.simulator.intents import Intent, match, normalise, yes_no
+from clucktalk.simulator.intents_te import chip_intent, match_te, yes_no_te
 from clucktalk.simulator.mcp_client import Exchange, McpClient, McpUnavailable
 
 logger = logging.getLogger("clucktalk.simulator")
@@ -51,6 +63,8 @@ FALLBACK_SPEECH = (
 UNAVAILABLE_SPEECH = f"Sorry, {APP_NAME} isn't responding right now. Please try again in a moment."
 NOTHING_TO_ANSWER_SPEECH = "There's nothing waiting for a yes or no right now. What would you like to do?"
 PROTOCOL_ERROR_SPEECH = f"Sorry, {APP_NAME} couldn't do that just now. Please try again in a moment."
+SESSION_RE = re.compile(r"^[A-Za-z0-9_-]{16,64}$")  # the page makes one random token per browser tab
+DEFAULT_SESSION = "default"  # the demo is one device: one conversation
 VIEW_METHODS = {"tools/call", "resources/read"}  # what a card may ask the host to forward (spec: standard messages)
 
 
@@ -203,15 +217,37 @@ def _is_int_or_none(v: Any) -> bool:
     return v is None or (isinstance(v, int) and not isinstance(v, bool))
 
 
+@dataclass
+class Conversation:
+    """One browser session's conversation: the read-back awaiting its yes or no, and the turn counter. Never shared
+    between sessions, so two phones can never answer each other's read-back (the demo has the one default session)."""
+
+    pending: dict[str, Any] = field(default_factory=dict)  # a server read-back: tool, arguments, proposal_id
+    host_pending: dict[str, Any] = field(default_factory=dict)  # a host read-back (starting a health check)
+    turns: int = 0
+
+
+def _spoken_te(result: dict[str, Any]) -> str:
+    """The Telugu of a tool result: its text_te, or the Telugu of its error message and next step."""
+    sc = result.get("structuredContent") or {}
+    if sc.get("text_te"):
+        return str(sc["text_te"])
+    meta = (result.get("_meta") or {}).get("clucktalk/error") or {}
+    return " ".join(x for x in (meta.get("message_te"), meta.get("next_step_te")) if x).strip()
+
+
+GENERIC_TE = f"{GENERIC_ERROR.te} {GENERIC_NEXT_STEP.te}"
+
+
 def _mcp_ms(exchanges: list[Exchange]) -> float:
     return round(sum(e.ms for e in exchanges), 1)
 
 
 def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> ASGIApp:
     mcp = client or McpClient(settings.mcp_url, settings.auth_token)
-    lock = asyncio.Lock()  # one conversation at a time, like one device
-    pending: dict[str, Any] = {}  # the one read-back awaiting the farmer's yes/no: tool, arguments, proposal_id
-    turns = [0]  # turn counter: a read-back only becomes pending if no newer turn started meanwhile
+    lock = asyncio.Lock()  # one call to the MCP server at a time (its session is shared by every browser)
+    conversations: dict[str, Conversation] = {}  # per browser session: never shared between two browsers
+    pilot = settings.mode == "pilot"
 
     @asynccontextmanager
     async def lifespan(_app: Starlette) -> AsyncIterator[None]:
@@ -226,9 +262,19 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
 
     page = pilot_page((STATIC / "index.html").read_text(encoding="utf-8")) if settings.mode == "pilot" else None
 
+    pilot_home = (
+        (STATIC / "pilot.html")
+        .read_text(encoding="utf-8")
+        .replace("@BADGE_EN@", PILOT_BADGE.en)
+        .replace("@BADGE_TE@", PILOT_BADGE.te)
+        .replace("@APP_NAME_TE@", APP_NAME_TE)
+        if pilot
+        else None
+    )
+
     async def index(_request: Request) -> Response:
-        if page is not None:
-            return Response(page, media_type="text/html", headers={"cache-control": "no-store"})
+        if pilot_home is not None:  # the farmer's phone page; the developer page is at /desktop
+            return Response(pilot_home, media_type="text/html", headers={"cache-control": "no-store"})
         return FileResponse(STATIC / "index.html", headers={"cache-control": "no-store"})
 
     async def sandbox(request: Request) -> Response:
@@ -275,19 +321,58 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
                 {"error": "expected {utterance: string, device?, simulate_delay_ms?: int, photo_ref?: string}"},
                 status_code=400,
             )
+        lang, chip, params, session = body.get("lang"), body.get("chip"), body.get("params", {}), body.get("session")
+        if (
+            lang not in (None, "en", "te")
+            or (chip is not None and not isinstance(chip, str))
+            or not isinstance(params, dict)
+            or (session is not None and not (isinstance(session, str) and SESSION_RE.match(session)))
+        ):
+            return JSONResponse(
+                {"error": "expected lang: en or te, chip?: string, params?: object, session?: 16-64 letters or digits"},
+                status_code=400,
+            )
+        if not pilot and (lang == "te" or chip is not None):
+            return JSONResponse({"error": "Telugu input and chips are only in pilot mode"}, status_code=400)
+        if pilot and session is None:
+            return JSONResponse({"error": "a session is required"}, status_code=400)
+        te = lang == "te"
+        intent: Intent | None = None
+        answer: str | None = None
+        routed = None
+        if chip is not None:  # a tapped chip: validated here, never through a text matcher
+            if chip in ("yes", "no"):
+                answer = chip
+            else:
+                try:
+                    intent = chip_intent(chip, params)
+                except ValueError as err:
+                    return JSONResponse({"error": f"bad chip: {err}"}, status_code=400)
         utterance = body.get("utterance", "")[:500]
         device = "dot" if body.get("device") == "dot" else "show"
         delay = max(0, min(delay_raw or 0, MAX_SIMULATED_DELAY_MS))
+        conv = conversations.setdefault(session or DEFAULT_SESSION, Conversation())
         # docs/DESIGN.md §5.1: a bare yes/no answers the pending read-back (same tool + proposal_id + answer).
         # Anything else moves on, so the old read-back can no longer be confirmed from here.
-        answer, awaiting = yes_no(utterance), dict(pending)
-        pending.clear()
-        turns[0] += 1
-        this_turn = turns[0]
-        intent = match(utterance) if answer is None else None
+        if chip is None and te:
+            answer = yes_no_te(utterance)
+            routed = None if answer is not None else match_te(utterance)
+        elif chip is None:
+            answer = yes_no(utterance)
+        awaiting, host_awaiting = dict(conv.pending), dict(conv.host_pending)
+        conv.pending.clear()
+        conv.host_pending.clear()
+        conv.turns += 1
+        this_turn = conv.turns
+        if chip is None and not te and answer is None:
+            intent = match(utterance)
+        if routed is not None and routed.kind == "intent":
+            intent = routed.intent
         if answer is not None and awaiting:
             args = {**awaiting["arguments"], "proposal_id": awaiting["proposal_id"], "answer": answer}
             intent = Intent(awaiting["tool"], args, f"answer '{answer}' to the pending read-back")
+        elif answer == "yes" and host_awaiting:
+            intent = Intent(host_awaiting["tool"], host_awaiting["arguments"], "answer 'yes' to the host read-back")
         if photo_ref and intent is not None and intent.tool == "start_health_check":
             # The farmer attached a (placeholder) photo to this turn; only a new health check takes it.
             intent = Intent(
@@ -306,8 +391,36 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
             "is_error": False,
             "timing": {"simulated_delay_ms": delay},
         }
-        if intent is None:
-            out.update(kind="fallback", speech=NOTHING_TO_ANSWER_SPEECH if answer is not None else FALLBACK_SPEECH)
+        host_read_back = (
+            intent is not None
+            and intent.tool == "start_health_check"
+            and (te or chip is not None)
+            and not (answer == "yes" and host_awaiting)
+        )
+        if host_read_back and intent is not None:
+            number = intent.arguments["house"].split()[-1]
+            signs = ", ".join(SIGN_TEXT[Sign(s)].te for s in intent.arguments["signs"])
+            conv.host_pending.update(tool=intent.tool, arguments=intent.arguments)
+            out.update(
+                kind="host_readback",
+                speech=HEALTH_READBACK.en.format(
+                    shed=SHED_LABEL.en.format(number=number), signs=", ".join(intent.arguments["signs"])
+                ),
+                speech_te=HEALTH_READBACK.te.format(shed=SHED_LABEL.te.format(number=number), signs=signs),
+                awaiting_answer=True,
+            )
+        elif routed is not None and routed.kind == "choose" and routed.chip is not None:
+            out.update(
+                kind="choose", speech="", speech_te="", choose={"chip": routed.chip.value, "params": routed.params}
+            )
+        elif intent is None:
+            if answer is not None and host_awaiting:
+                out.update(kind="fallback", speech=HOST_NOT_STARTED.en, speech_te=HOST_NOT_STARTED.te)
+            elif te or chip is not None:
+                said = NOTHING_PENDING if answer is not None else NOT_UNDERSTOOD
+                out.update(kind="fallback", speech=said.en, speech_te=said.te)
+            else:
+                out.update(kind="fallback", speech=NOTHING_TO_ANSWER_SPEECH if answer is not None else FALLBACK_SPEECH)
         else:
             if delay:
                 await asyncio.sleep(delay / 1000)  # visible test control: labeled in the developer panel
@@ -325,26 +438,60 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
                         is_error=True,
                         detail=f"JSON-RPC error {err.get('code')}: {err.get('message')}",
                     )
+                    if te or chip is not None:
+                        out["speech_te"] = GENERIC_TE
                 else:
                     result = response["result"]
                     uri = mcp.resource_uri(intent.tool)
                     out.update(kind="tool", result=result, speech=_spoken(result), is_error=bool(result.get("isError")))
+                    if te or chip is not None:
+                        out["speech_te"] = _spoken_te(result)
                     sc = result.get("structuredContent") or {}
                     if (
                         sc.get("status") == "needs_confirmation"
                         and isinstance(sc.get("proposal_id"), str)
-                        and this_turn == turns[0]  # the farmer has not moved on while this call ran
+                        and this_turn == conv.turns  # the farmer has not moved on while this call ran
                     ):
                         change = {k: v for k, v in intent.arguments.items() if k not in ("proposal_id", "answer")}
-                        pending.update(tool=intent.tool, arguments=change, proposal_id=sc["proposal_id"])
+                        conv.pending.update(tool=intent.tool, arguments=change, proposal_id=sc["proposal_id"])
                         out["awaiting_answer"] = True
                     if device == "show" and uri:
                         out["card"] = {"uri": uri, "tool": mcp.tools[intent.tool]}
             except McpUnavailable as err:
                 logger.warning("turn failed: %s", err)
                 out.update(kind="unavailable", speech=UNAVAILABLE_SPEECH, is_error=True, detail=str(err))
+                if te or chip is not None:
+                    out["speech_te"] = GENERIC_TE
         out["timing"]["backend_ms"] = round((time.perf_counter() - started) * 1000, 1)
         return JSONResponse(out)
+
+    async def pilot_ui(_request: Request) -> Response:
+        """The pilot page's words, chips, signs and the farmer's sheds (from the tools, never invented here)."""
+        if not pilot:
+            return JSONResponse({"error": "pilot mode only"}, status_code=404)
+        houses: list[dict[str, Any]] = []
+        try:
+            async with lock:
+                log = await mcp.request("tools/call", {"name": "get_record_book", "arguments": {}})
+            sc = ((log[-1].response or {}).get("result") or {}).get("structuredContent") or {}
+            houses = [{"number": e["number"], "label_te": e["label_te"]} for e in sc.get("entries", [])]
+        except McpUnavailable as err:
+            logger.warning("pilot page could not list the sheds: %s", err)
+        return JSONResponse(
+            {
+                "strings": {k: {"en": t.en, "te": t.te} for k, t in PILOT_UI.items()},
+                "chips": {k: {"en": t.en, "te": t.te} for k, t in CHIPS.items()},
+                "outcomes": {k: {"en": t.en, "te": t.te} for k, t in OUTCOMES.items()},
+                "signs": [{"code": s.value, "label_te": SIGN_TEXT[s].te} for s in Sign],
+                "houses": houses,
+            }
+        )
+
+    async def desktop(_request: Request) -> Response:
+        """The developer page (device mock, panel), kept for the builder; pilot mode only."""
+        if page is None:
+            return JSONResponse({"error": "pilot mode only"}, status_code=404)
+        return Response(page, media_type="text/html", headers={"cache-control": "no-store"})
 
     async def resource(request: Request) -> Response:
         uri = request.query_params.get("uri", "")
@@ -392,6 +539,8 @@ def build_app(settings: SimulatorSettings, client: McpClient | None = None) -> A
             Route("/", index),
             Route("/sandbox", sandbox),
             Route("/api/state", state),
+            Route("/desktop", desktop),
+            Route("/api/pilot/ui", pilot_ui),
             Route("/api/turn", turn, methods=["POST"]),
             Route("/api/resource", resource),
             Route("/api/view-request", view_request, methods=["POST"]),
