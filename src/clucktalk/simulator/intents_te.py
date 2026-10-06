@@ -308,8 +308,11 @@ def _match(text: str) -> TeResult:  # noqa: C901 - one flat list of rules, in or
                 args["live_price_per_kg"] = float(price)
         return TeResult("intent", Intent("plan_sale", args, "sale (Telugu)"), rule="sale")
     if house is not None or _has(tokens, STATUS_STEMS) or _has(tokens, FARM_WORDS):
-        if house is None and not (_has(tokens, STATUS_STEMS) or _has(tokens, FARM_WORDS)):
+        asks = _has(tokens, STATUS_STEMS) or _has(tokens, FARM_WORDS)
+        if house is None and not asks:
             return NONE
+        if house is not None and not asks and _number_runs(rest):
+            return NONE  # a shed and a stray number (a weight, a count of something): never read as "how is it"
         args = {} if house is None else {"house": _house_arg(house)}
         return TeResult("intent", Intent("get_farm_status", args, "status (Telugu)"), rule="status")
     return NONE

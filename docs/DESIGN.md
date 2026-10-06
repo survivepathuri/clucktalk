@@ -488,3 +488,36 @@ Telugu templates), every citation, and a deterministic **safety floor** the mode
     Telugu strings are pending native review. The Simulator's rule-based intents are the only tested way of mapping
     spoken phrases (including Hinglish such as "theek hai" or "pata nahi") onto the four values; how the real Alexa+
     assistant maps them is **not verified**.
+
+## 19. Pilot (stage 1, built 2026-10-06; not yet run on a server)
+
+One live link that a farmer uses himself for a few days, in Telugu on his phone, and the same build later shown to
+judges as a separate instance. Runbook and templates: `docs/PILOT_RUNBOOK.md` and `deploy/`. **Not Alexa+**: Alexa+ India
+has no Telugu, so this is the Simulator's own phone page; output is Telugu text (no Telugu audio exists), no cards.
+
+- **Mode** (`CLUCKTALK_MODE=pilot`, `clucktalk.config`): the farmer's own farm file instead of the demo seed
+  (`clucktalk.pilot`: house number, birds placed, placement date; unknown fields such as names or places are refused),
+  **no synthetic history at all** (`PilotFarmSource`; logged records are added, `overlay_adds_days`), `demo_data` false so no
+  answer says "Demo data", badge "Pilot (real farm, prototype)". The demo is unchanged. The two instances can never share a
+  state file: a pilot needs its own `.sqlite3` whose name contains the instance name and which is outside the demo's
+  folder; a demo refuses a state file with "pilot" in its name; a pilot reads weather and rule files only from explicit paths.
+- **No bird weights in the pilot** (the weight target is a breed curve that does not describe his birds): `log_daily_record`
+  refuses a weight with the existing "no verified growth standard" wording (said about "your birds"), nothing is proposed or
+  stored. His houses have no breed, so feed and sale plans say there is no growth standard for them.
+- **His own daily deaths rule** (`daily_deaths_rule.json`, `clucktalk.domain.daily_deaths`): deaths that day divided by the
+  live birds at the start of the day, times 1000, **strictly greater** than his number (exact decimal arithmetic) adds a WATCH
+  fact. It can only raise a shed to WATCH (`max(existing, WATCH)`); it never lowers a level or removes vet advice (a property
+  test); his note comes last, after all health and safety text. No file: byte-identical output. The file is re-read when it
+  changes; if it becomes unreadable the answer says so. His value (2 per 1000) was relayed, not confirmed in writing.
+- **Telugu input** (`simulator/intents_te.py`, vocabulary in `telugu_words.json`): typed Telugu (his keyboard's voice typing
+  speaks; no browser speech change), NFC, Telugu digits and number words (0 to 20, tens, 100, 1000, compounds), 8 actions;
+  a number it cannot read is never guessed; a health check is chips only. The English normaliser no longer shreds Telugu.
+- **Every write is read back first**: the server's proposal flow, or the host's own read-back for starting a health check;
+  a tap on the big yes or no button, or a typed yes, answers it; a stray yes with nothing waiting does nothing. One
+  conversation per browser session (the old global pending state is gone); chips send an id and numbers, never a sentence.
+- **Hardening** (`simulator/app.py`, `Hardening`): a bearer token on every API call (constant-time compare against every
+  configured token), exact hostname and https origin, an 8 KB body cap, a per-token rate limit (wrong tokens limited too), a
+  session cap, a kill switch file or variable checked at each request, `/healthz`, logs without words, and anonymous
+  counters (`clucktalk.usage`; `python tasks.py pilot-stats --usage FILE`).
+- **Not done / not verified**: no cloud account was touched; the page was not run in a real phone browser; speech accuracy in a
+  shed is untested; the Telugu is a draft pending native review (every line is pending in `docs/TELUGU_REVIEW.md`).

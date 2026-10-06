@@ -381,7 +381,7 @@ def main() -> int:
     if settings.extra_origins:
         print(f"CORS enabled only for: {', '.join(settings.extra_origins)} (CLUCKTALK_ALLOWED_ORIGINS)")
     if settings.mode == "pilot":
-        print(f"Farm state: {settings.active_state_path} (the pilot's own file; never the demo's)")
+        print(f"Pilot state file: {settings.active_state_path} (the pilot's own file; never the demo's)")
     else:
         print(
             f"Farm state: {settings.active_state_path} "

@@ -213,3 +213,11 @@ def test_chips_build_the_same_intents_without_any_text():
 def test_a_chip_with_anything_unexpected_is_refused(chip, params):
     with pytest.raises(ValueError):
         chip_intent(chip, params)
+
+
+def test_a_shed_with_a_stray_number_is_not_turned_into_a_status_question():
+    # A weight report such as "shed 1, 2200 grams" must not become a status answer: it is not understood.
+    assert match_te("షెడ్ 1 లో 2200 గ్రాములు").kind == "none"
+    assert match_te("షెడ్ 1 లో రెండు వేల రెండు వందల గ్రాములు").kind == "none"
+    assert intent_of("షెడ్ 2") == ("get_farm_status", {"house": "shed 2"})  # a bare shed is still "how is it"
+    assert intent_of("షెడ్ 2 ఎలా ఉంది 5") == ("get_farm_status", {"house": "shed 2"})  # an actual question stays one

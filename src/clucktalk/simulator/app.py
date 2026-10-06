@@ -52,6 +52,7 @@ from clucktalk.i18n.pilot import (
     PILOT_UI,
     SHED_LABEL,
 )
+from clucktalk.server.farm_state import today_ist
 from clucktalk.simulator.intents import Intent, match, normalise, yes_no
 from clucktalk.simulator.intents_te import chip_intent, match_te, yes_no_te
 from clucktalk.simulator.mcp_client import Exchange, McpClient, McpUnavailable
@@ -392,7 +393,9 @@ def build_app(
     lock = asyncio.Lock()  # one call to the MCP server at a time (its session is shared by every browser)
     conversations: dict[str, Conversation] = {}  # per browser session: never shared between two browsers
     pilot = settings.mode == "pilot"
-    usage = UsageCounters(settings.usage_path) if settings.usage_path is not None else None  # damaged: fails loud
+    usage = (
+        UsageCounters(settings.usage_path, today_ist) if settings.usage_path is not None else None
+    )  # damaged: fails loud
 
     @asynccontextmanager
     async def lifespan(_app: Starlette) -> AsyncIterator[None]:

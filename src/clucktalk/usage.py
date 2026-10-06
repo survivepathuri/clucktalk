@@ -13,18 +13,12 @@ import json
 import os
 import threading
 from collections.abc import Callable
-from datetime import date, datetime, timedelta, timezone
+from datetime import date
 from pathlib import Path
 from typing import Any
 
-# Standard library only, so `python tasks.py pilot-stats` runs without the virtual environment.
-_IST = timezone(timedelta(hours=5, minutes=30), "IST")
-
-
-def today_ist() -> date:
-    return datetime.now(_IST).date()
-
-
+# Standard library only, so `python tasks.py pilot-stats` runs without the virtual environment. The clock is handed in
+# (the Simulator gives it the one place that reads real time, clucktalk.server.farm_state), never read here.
 KEYS = {"days_used", "records_confirmed", "alerts_shown", "confirmations", "cancellations"}
 STATUS_TOOLS = ("get_farm_status", "get_daily_briefing")
 
@@ -64,7 +58,7 @@ def load_usage(path: Path) -> dict[str, Any]:
 
 
 class UsageCounters:
-    def __init__(self, path: Path, today: Callable[[], date] = today_ist) -> None:
+    def __init__(self, path: Path, today: Callable[[], date]) -> None:
         self.path = path
         self._today = today
         self._lock = threading.Lock()
