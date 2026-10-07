@@ -204,6 +204,8 @@ def serve() -> int:
     """MCP server only."""
     _require_venv()
     env = _demo_env("serve")
+    if (busy := _check_ports("serve", env, simulator=False)) is not None:
+        return busy
     try:
         return subprocess.call([str(VENV_PY), "-m", "clucktalk.server"], cwd=ROOT, env=env)
     except KeyboardInterrupt:
@@ -264,10 +266,53 @@ def _wait_for_port(port: int, proc: subprocess.Popen, seconds: float = 20) -> bo
     return False
 
 
+def _port_in_use(port: int) -> bool:
+    """True when 127.0.0.1:port cannot be bound. SO_REUSEADDR is set only off Windows, where it stops a
+    TIME_WAIT leftover from counting as busy; on Windows it would let the probe take a port that is in use."""
+    with socket.socket() as s:
+        if os.name != "nt":
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            s.bind(("127.0.0.1", port))
+        except OSError:
+            return True
+    return False
+
+
+def _busy_port_message(command: str, port: int, variable: str, what: str) -> str | None:
+    """One line for a busy port, or None when it is free. An invalid value is left for the server to report."""
+    if _port_in_use(port):
+        other = port + 10
+        return (
+            f"{command}: port {port} ({what}) is already in use. Choose another port, then run again: "
+            f"cmd: set {variable}={other} | PowerShell: $env:{variable}={other} | bash/zsh: export {variable}={other}"
+        )
+    return None
+
+
+def _check_ports(command: str, env: dict[str, str], simulator: bool) -> int | None:
+    """Exit code 1 (nothing started) when a port this command needs is busy, else None."""
+    wanted = [("CLUCKTALK_PORT", 8765, "the MCP server")]
+    if simulator:
+        wanted.append(("CLUCKTALK_SIMULATOR_PORT", 8766, "the Simulator"))
+    for variable, default, what in wanted:
+        try:
+            port = int(env.get(variable) or default)
+        except ValueError:
+            continue
+        message = _busy_port_message(command, port, variable, what)
+        if message:
+            print(message, file=sys.stderr)
+            return 1
+    return None
+
+
 def run() -> int:
     """Local demo: MCP server + Simulator, demo data. Set CLUCKTALK_NO_BROWSER=1 to skip opening the browser."""
     _require_venv()
     env = _demo_env("run")
+    if (busy := _check_ports("run", env, simulator=True)) is not None:
+        return busy
     mcp_port = int(env.get("CLUCKTALK_PORT") or 8765)
     sim_port = int(env.get("CLUCKTALK_SIMULATOR_PORT") or 8766)
     procs: list[subprocess.Popen] = []
