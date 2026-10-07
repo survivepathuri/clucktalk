@@ -110,6 +110,7 @@ def _render(check_summary: list[str]) -> str:
         check_summary=check_summary,
         mutations=json.loads(results.MUTATIONS.read_text(encoding="utf-8")),
         reviews=json.loads(results.REVIEWS.read_text(encoding="utf-8")),
+        history=[("2026-09-27", 9), ("2026-09-28", 2)],
     )
 
 
@@ -177,3 +178,17 @@ def test_the_matrix_has_a_row_for_each_of_the_ten_rules_and_marks_what_may_not_f
     assert rows == [str(n) for n in range(1, 11)]
     assert "No agronomic or veterinary review" in MATRIX and "General guidance may not fit a given farm" in MATRIX
     assert "**No.**" in MATRIX  # at least one threshold marked as not fitting every farm
+
+
+def test_the_build_history_is_a_table_of_commits_per_day_with_the_first_and_latest_date():
+    text = results.history_text([("2026-09-27", 9), ("2026-09-28", 2)])
+    assert "first commit is dated 2026-09-27 and the latest 2026-09-28; 11 commits on 2 days" in text
+    assert "| 2026-09-27 | 9 |" in text
+    assert "not recorded" in results.history_text([])
+    assert "## 8. Build history" in _render([])
+
+
+def test_the_history_comes_from_git_and_is_sorted_oldest_first():
+    days = results.git_history()
+    assert days and days == sorted(days)
+    assert days[0][0] == "2026-09-27" and all(n > 0 for _d, n in days)

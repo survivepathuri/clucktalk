@@ -45,6 +45,15 @@ def git_state() -> tuple[str, str]:
     return head.stdout.strip() or NOT_RECORDED, "clean" if not status.stdout.strip() else "modified (uncommitted files)"
 
 
+def git_history() -> list[tuple[str, int]]:
+    """(date, commits that day) from ``git log``, oldest day first. Empty when git cannot say."""
+    done = subprocess.run(["git", "log", "--format=%ad", "--date=short"], cwd=ROOT, capture_output=True, text=True)
+    days: dict[str, int] = {}
+    for line in done.stdout.split():
+        days[line] = days.get(line, 0) + 1
+    return sorted(days.items())
+
+
 def collected(output: str) -> int | None:
     m = re.search(r"(\d+) tests? collected", output)
     return int(m.group(1)) if m else None
@@ -94,6 +103,20 @@ def parse_check_log(text: str) -> list[str]:
     return out
 
 
+def history_text(history: list[tuple[str, int]]) -> str:
+    if not history:
+        return f"Git history: {NOT_RECORDED} (git did not answer)."
+    total = sum(n for _d, n in history)
+    lines = [
+        f"The first commit is dated {history[0][0]} and the latest {history[-1][0]}; {total} commits on {len(history)} days.",
+        "",
+        "| Date | Commits |",
+        "|---|---|",
+    ]
+    lines += [f"| {d} | {n} |" for d, n in history]
+    return "\n".join(lines)
+
+
 def mutation_table(data: dict) -> str:
     rows = data["rows"]
     caught = sum(r["caught"] for r in rows)
@@ -128,6 +151,7 @@ def render(
     check_summary: list[str],
     mutations: dict,
     reviews: dict,
+    history: list[tuple[str, int]],
 ) -> str:
     steps, rounds = replay
     total_tests = sum(v for v in counts.values() if v)
@@ -223,7 +247,11 @@ def render(
         f"{len(reviews['rounds'])} rounds are recorded. Severity words are the reviewers'. A review finds what it was "
         "pointed at; it is not a proof that nothing else is wrong. More on the process: `docs/INDEPENDENT_REVIEW.md`.",
         "",
-        "## 8. What this file does not show",
+        "## 8. Build history (from `git log`)",
+        "",
+        history_text(history),
+        "",
+        "## 9. What this file does not show",
         "",
         "- Pilot numbers do not exist yet: [PILOT NUMBERS: to be filled on <date> from python tasks.py pilot-stats].",
         "- No live AWS or model result: the evals and the latency run in mock mode.",
@@ -272,6 +300,7 @@ def main(argv: list[str] | None = None) -> int:
         check_summary=check_summary,
         mutations=json.loads(MUTATIONS.read_text(encoding="utf-8")),
         reviews=json.loads(REVIEWS.read_text(encoding="utf-8")),
+        history=git_history(),
     )
     OUT.write_bytes(text.replace("\r\n", "\n").encode("utf-8"))
     print(f"results: wrote {OUT.relative_to(ROOT).as_posix()} ({len(text.splitlines())} lines) at commit {commit}.")
