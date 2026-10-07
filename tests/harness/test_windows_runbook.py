@@ -8,7 +8,6 @@ from pathlib import Path, PureWindowsPath
 ROOT = Path(__file__).resolve().parents[2]
 RUNBOOK = (ROOT / "docs" / "PILOT_RUNBOOK_WINDOWS.md").read_text(encoding="utf-8")
 README = (ROOT / "README.md").read_text(encoding="utf-8")
-FUNNEL_HOST = "dataanalyst.tail011920.ts.net"
 
 
 def test_the_runbook_names_the_one_forwarded_port_and_the_tailscale_commands_for_the_builder():
@@ -47,9 +46,9 @@ def test_the_runbook_has_the_power_cut_backup_usb_and_delete_steps_with_the_exac
     assert "anyone with access to this pc" in who and "the builder" in who
 
 
-def test_the_runbook_makes_no_claim_about_uptime_and_only_the_documented_funnel_host_appears():
-    for host in re.findall(r"[a-z0-9.-]+\.ts\.net", RUNBOOK + README):
-        assert host == FUNNEL_HOST, host
+def test_the_runbook_makes_no_claim_about_uptime_and_names_no_real_funnel_host():
+    assert (".ts" + ".net") not in RUNBOOK + README  # the real Funnel host lives only in the private env file
+    assert "<your-funnel-host>" in RUNBOOK
     assert "Nothing here promises or measures uptime" in RUNBOOK
     assert not re.search(r"\b\d+(\.\d+)?\s*%\s*(uptime|available)", RUNBOOK + README, re.I)
 

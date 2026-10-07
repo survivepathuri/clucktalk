@@ -17,7 +17,8 @@ from clucktalk.simulator.__main__ import load_simulator_settings
 
 ROOT = Path(__file__).resolve().parents[2]
 WIN = ROOT / "deploy" / "windows"
-FUNNEL_HOST = "dataanalyst.tail011920.ts.net"
+TUNNEL_TLD = ".ts" + ".net"  # built in pieces: no tunnel host name of any kind is written in a tracked file
+FUNNEL_HOST = "funnel-test.example" + TUNNEL_TLD
 
 # The variables the code reads in pilot mode (Step 53 part A), and where they belong in the example.
 REQUIRED = {
@@ -143,16 +144,32 @@ def test_the_token_detector_finds_a_real_looking_token():
 def test_no_script_holds_a_hostname_or_a_web_address_other_than_loopback():
     for path in scripts():
         body = path.read_text(encoding="utf-8")
-        assert ".ts.net" not in body, f"{path.name} names a tunnel host"
+        assert TUNNEL_TLD not in body, f"{path.name} names a tunnel host"
         for url in re.findall(r"https?://[^\s'\"<>\[$]+", body):
             assert url.startswith("http://127.0.0.1:"), f"{path.name} holds the address {url}"
         assert not re.search(r"\b[a-z0-9-]+\.(?:com|org|net|io|in|dev)\b", body), f"{path.name} names a hostname"
 
 
-def test_the_funnel_host_appears_only_in_docs_and_nothing_under_the_windows_folder():
+def test_no_tracked_file_names_a_tunnel_host_or_the_real_one():
+    import subprocess
+
+    names = subprocess.run(
+        ["git", "ls-files", "--full-name"], cwd=ROOT, capture_output=True, text=True, check=True
+    ).stdout.splitlines()
+    real = ("data" + "analyst", "tail" + "011920")
+    for name in filter(None, names):
+        path = ROOT / name
+        if path.suffix in {".png", ".jpg", ".gif", ".ttf", ".otf", ".woff2", ".sqlite3"} or not path.is_file():
+            continue
+        body = path.read_text(encoding="utf-8", errors="ignore")
+        assert TUNNEL_TLD not in body, f"{name} names a tunnel host"
+        assert not any(r in body for r in real), f"{name} names the real Funnel host"
+
+
+def test_the_windows_folder_names_no_funnel_host():
     for path in WIN.iterdir():
         assert FUNNEL_HOST not in path.read_text(encoding="utf-8"), path.name
-        assert ".ts.net" not in path.read_text(encoding="utf-8"), path.name
+        assert TUNNEL_TLD not in path.read_text(encoding="utf-8"), path.name
 
 
 # -- start-pilot.ps1 -----------------------------------------------------------------------------------------------

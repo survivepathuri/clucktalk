@@ -1,7 +1,7 @@
 # Pilot runbook: the builder's own Windows PC (stage 1)
 
 This is the plan for running the farmer pilot on **the builder's own Windows 11 PC**, published to the farmer's phone through
-a free Tailscale Funnel at `https://dataanalyst.tail011920.ts.net`. There is no cloud server. The Linux version of this plan
+a free Tailscale Funnel at `https://<your-funnel-host>` (your real Funnel host name is written only in your private `pilot.env`, never in the repository). There is no cloud server. The Linux version of this plan
 is `docs/PILOT_RUNBOOK.md` (what the pilot is, what is stored, the alerts that can be wrong, rotating a token); read its
 sections "What it is, and is not", "Pilot settings and the alerts that can be wrong" and "What is stored, and who can read it"
 too, because they apply here unchanged.
@@ -20,7 +20,7 @@ farmer's phone --https--> Tailscale Funnel --> 127.0.0.1:8766 (the page, "Simula
 
 - **Forward the tunnel to port 8766 only.** That is the page and its API (`CLUCKTALK_SIMULATOR_PORT`). The MCP server on port
   8765 listens on `127.0.0.1` and is never forwarded; `start-pilot.ps1` refuses to start if `CLUCKTALK_HOST` is set.
-- The page opens at the root path `/`. The farmer's link is `https://dataanalyst.tail011920.ts.net/#t=<farmer token>`.
+- The page opens at the root path `/`. The farmer's link is `https://<your-funnel-host>/#t=<farmer token>`.
   The token sits after the `#`, so the browser does not send it in the address, and the page removes it from the address
   bar after reading it.
 - Every page and API call needs the token (the API answers 401 without it). The page also needs the right Host
@@ -65,7 +65,7 @@ deploy\windows\new-token.ps1
 
 - It copies `deploy\windows\env.windows.example` to `pilot.env` (if there is none), makes two random tokens (32 random bytes
   each, from Windows' cryptographic generator) and writes them into the file, then limits the file to your Windows account.
-- Open `C:\clucktalk-pilot\env\pilot.env` and set `CLUCKTALK_PUBLIC_ORIGIN=https://dataanalyst.tail011920.ts.net`. Then run
+- Open `C:\clucktalk-pilot\env\pilot.env` and set `CLUCKTALK_PUBLIC_ORIGIN=https://<your-funnel-host>`. Then run
   `deploy\windows\new-token.ps1 -ShowLink`. It prints the **farmer link** once on the screen. It is never saved anywhere
   else; copy it into the message to the farmer yourself and do not keep it in a chat history you do not control.
 - The tokens are never printed by any other script and never appear in the logs. To make a new farmer token (a lost phone,
@@ -116,7 +116,7 @@ tailscale funnel --bg 8766
 tailscale funnel status
 ```
 
-`--bg` keeps the Funnel running in the background; `status` should show `https://dataanalyst.tail011920.ts.net` forwarding to
+`--bg` keeps the Funnel running in the background; `status` should show `https://<your-funnel-host>` forwarding to
 `127.0.0.1:8766`. **Check that it points to 8766 and to nothing else.**
 
 To turn the Funnel **off** (the farmer's link stops answering at once):
@@ -128,7 +128,7 @@ tailscale funnel --https=443 off
 (`tailscale funnel reset` clears the whole serve and funnel configuration.) Also pause the pilot itself if you want the data
 untouched: section 9.
 
-**Not verified:** that Funnel passes the original Host header (`dataanalyst.tail011920.ts.net`) through to the page. The page
+**Not verified:** that Funnel passes the original Host header (`<your-funnel-host>`) through to the page. The page
 accepts only that host and the loopback names. If the first-run check below shows `{"error":"unknown host"}` (421), stop
 and tell the maintainers: it means Funnel changes the Host and the page needs a change.
 
@@ -142,7 +142,7 @@ Use mobile data (not the PC's Wi-Fi) so the request really goes through the publ
    Then log one and tap yes if you want to see it saved, and **delete the test data afterwards**: stop the pilot, move the state
    file aside (not the backup), and start again (a new empty state file is made).
 4. **Without the token, the page must answer 401.** In a private tab on the phone open
-   `https://dataanalyst.tail011920.ts.net/api/state`. It must show `{"error":"unauthorized"}`. Any answer with data is a failure:
+   `https://<your-funnel-host>/api/state`. It must show `{"error":"unauthorized"}`. Any answer with data is a failure:
    stop the Funnel (`tailscale funnel --https=443 off`) and the pilot.
 5. On the PC, `deploy\windows\kill-switch.ps1 -Action pause`, reload the page (it must show it is paused), then
    `-Action resume`.
