@@ -66,11 +66,11 @@ Nothing below is used in code yet. When it is, the exact passage and the file th
 Sources disagree on water withholding (about 1 h to 3 h) and the drinking window (1–2 h to 2–3 h). CluckTalk will present these as ranges with sources and defer to the vaccine label and the farmer's vet or company.
 
 ## Telugu wording review
-Telugu strings are reviewed by a native speaker. Status is tracked **per string** in `data/i18n/telugu_approvals.json` and shown in `docs/TELUGU_REVIEW.md` (pending strings first). An approval covers one exact English + Telugu pair; any new or changed string, in either language, is pending until reviewed again. Word choices follow the glossary in `docs/DESIGN.md` §8.1.
+The builder, a native Telugu speaker, reviewed the Telugu strings that existed on 2026-09-27; nobody else has reviewed any Telugu string (no independent review). Status is tracked **per string** in `data/i18n/telugu_approvals.json` and shown in `docs/TELUGU_REVIEW.md` (pending strings first). An approval covers one exact English + Telugu pair; any new or changed string, in either language, is pending until reviewed again. Word choices follow the glossary in `docs/DESIGN.md` §8.1.
 
 | Date | Reviewer | Scope |
 |---|---|---|
-| 2026-09-27 | Pathuri Venkateswara Rao (native Telugu speaker) | All 82 Telugu strings in the code at that date (80 unique English + Telugu pairs), after applying the reviewer's corrections and glossary |
+| 2026-09-27 | The builder (a native Telugu speaker) | All 82 Telugu strings in the code at that date (80 unique English + Telugu pairs), after applying the reviewer's corrections and glossary |
 
 ## Alexa+ add-on pages read by the project owner (recorded 2026-10-04, Step 49b)
 These two pages were read by the project owner; the tool that wrote this repository's code could not see them. What is taken from each is as the owner relayed it, so check it against the page before relying on it.
