@@ -1,0 +1,15 @@
+{
+  "source": "Summarized by hand from the builder's progress log (kept outside this repository) on 2026-10-07. Each round was run by a fresh agent that read the code cold against docs/DESIGN.md (sections 5, 6, 7 and 12). Severity labels are the reviewer's. A count is given only where the log records one; the findings themselves are not reproduced here.",
+  "rounds": [
+    {"scope": "get_farm_status and plan_feed (domain layer and the two tools)", "found": "2 High, 6 Medium, several Low, 3 suspicions", "fixed": "all fixed with regression tests; a second pass resolved 11 of 13, then the 2 partial and 3 new Low were fixed too; one limit documented (top-level scoping of the status text)"},
+    {"scope": "MCP App card and the Simulator (2026-09-27)", "found": "2 Medium, 9 Low, 1 risk", "fixed": "all fixed or documented; mutation check of the fixes 8 of 8"},
+    {"scope": "farm profile, the confirmation pattern and the write path (2026-09-28)", "found": "3 Medium, 5 Low, 1 minor", "fixed": "all fixed with regression tests except two: a Simulator overlapping-turn race (fixed, reasoned only, not reproduced by a test) and a static help example on a contract farm (documented)"},
+    {"scope": "voice record book, three steps (2026-09-29)", "found": "1 Critical, 4 Medium or Medium-High, 1 Low-Medium", "fixed": "all fixed; the Critical one (a backdated correction could push the total deaths over the birds placed while saying it was saved) has a regression test"},
+    {"scope": "plan_sale and set_contract_terms (2026-09-29)", "found": "1 High, 1 Info", "fixed": "the High (contract mode leaked market-price rupee numbers into structured content) fixed with a regression test; the Info item documented as intended"},
+    {"scope": "health triage and the vet handoff, first round (2026-09-29)", "found": "1 High, 3 Medium, 5 Low", "fixed": "all fixed with regression tests"},
+    {"scope": "health triage 1A and 1B, second round (2026-09-30)", "found": "1 High, 2 Medium, 7 Low", "fixed": "the High, both Medium and 3 Low fixed test-first; 4 Low deliberately not fixed, by the builder's decision"},
+    {"scope": "daily briefing (2026-09-30)", "found": "2 High, 4 Medium, and Low items (the log names H1, H2, M1 to M4, L1 to L4)", "fixed": "H1, H2, M1, M2, M3 and L1 fixed; M4 only if its reproduction test failed; L2 to L4 deliberately not fixed"},
+    {"scope": "flock follow-up agent, safety review (reported 2026-10-01)", "found": "findings named B1, H1 to H4, M3, M5, M6, M8, L2 to L4 in the log; the full list is not copied here", "fixed": "B1, H1, H3, H4, H2, M5, M8, L2 and the first stage of M6 fixed (Steps 47A to 47C); M3 documented only; L3 and L4 cut by decision; the second stage of M6 became the structured safety field"},
+    {"scope": "pilot mode, commit 0bd9905 (2026-10-06 to 2026-10-07)", "found": "the log does not record a count; the fixes fall into four groups: same-day deaths added or replaced silently, pilot access, the Telugu matcher and first-open notice, and operations files", "fixed": "fixed in Step 52 (four commits); the Telugu wording remains draft, and nothing was run on a server, a phone or a real browser"}
+  ]
+}

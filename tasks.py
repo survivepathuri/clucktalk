@@ -15,6 +15,9 @@ Windows (cmd); on Linux/macOS use python3 instead of python:
     python tasks.py pilot-stats --usage FILE [--backups DIR]   Anonymous usage totals (numbers only) from FILE; with
                                        --backups also the age of the last good backup (a warning after 26 hours)
     python tasks.py notices     Write NOTICE: the project license and every pinned dependency's declared license
+    python tasks.py results [--check-log FILE]   Write docs/RESULTS.md from this machine's own runs and data files
+    python tasks.py proof       Save the text output of verify, readiness, probe-protocol-version and inspector-replay
+                                       under docs/proof/ (date, commit and command on top of each file)
     python tasks.py reset-demo --yes   Reset the local farm state (.local/): the live file is MOVED to .local/backups,
                                        the demo-clock file is deleted. Without --yes it only lists what it would do
 
@@ -585,6 +588,18 @@ def pilot_stats(args: list[str]) -> int:
     return 0
 
 
+def results(args: list[str]) -> int:
+    """Write docs/RESULTS.md from this machine's own runs and the data files in data/results/ (scripts/results.py)."""
+    _require_venv()
+    return subprocess.call([str(VENV_PY), "-B", str(ROOT / "scripts" / "results.py"), *args], cwd=ROOT)
+
+
+def proof() -> int:
+    """Save the text output of four self-check commands under docs/proof/ (scripts/proof.py)."""
+    _require_venv()
+    return subprocess.call([str(VENV_PY), "-B", str(ROOT / "scripts" / "proof.py")], cwd=ROOT)
+
+
 def _not_built_yet(command: str) -> int:
     print(
         f"'{command}' is not implemented yet: the application code does not exist.\n"
@@ -608,6 +623,8 @@ COMMANDS = {
     "reset-demo": reset_demo,
     "notices": notices,
     "pilot-stats": pilot_stats,
+    "results": results,
+    "proof": proof,
 }
 
 
@@ -635,6 +652,8 @@ def main() -> int:
         return notices(extra)
     if sys.argv[1] == "pilot-stats":
         return pilot_stats(extra)
+    if sys.argv[1] == "results":
+        return results(extra)
     if extra and not (sys.argv[1] in ("serve", "run") and _demo_days_flag(extra)):
         print(__doc__)
         return 2
