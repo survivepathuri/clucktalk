@@ -171,15 +171,16 @@ def test_fl_027_follows_fl_026_in_the_amazon_group(name):
     order = [fl for _, fl in re.findall(r"(?m)^## Entry (\d+) \((FL-\d{3})\)", text)]
     assert order[order.index("FL-026") + 1] == "FL-027" and order.index("FL-027") == 10
     entry = text.split("(FL-027)")[1].split("\n## Entry ")[0]
-    assert "Origin:** Amazon" in entry and "Severity:** Medium" in entry and "30 April 2026" in entry
+    assert "Origin:** Amazon" in entry and "Severity:** Low" in entry and "30 April 2026" in entry
+    assert "sign-in" not in entry.lower() and "authenticator" not in entry.lower()  # our own mistake, not AWS friction
 
 
 def test_fl_027_is_builder_reported_with_its_date_and_an_unrecorded_url():
     body = next(b for _, fl, b in LIVE if fl == "FL-027")
     fields = _fields(body)
-    assert fields["Date"] == "2026-10-07" and fields["Tag"] == "[AWS console/account] [AWS App Runner docs]"
-    assert fields["Severity"] == "Medium" and "builder-reported" in body.lower()
-    assert fields["Time cost"].startswith("[BUILDER TO CONFIRM:")  # the hours are asked, never guessed
+    assert fields["Date"] == "2026-10-07" and fields["Tag"] == "[AWS App Runner docs]"
+    assert fields["Severity"] == "Low" and "builder-reported" in body.lower() and fields["Time cost"] == "not recorded"
+    assert "sign-in" not in body.lower() and "authenticator" not in body.lower()  # the sign-in mix-up was ours
     assert "Verified on: 2026-10-07" in body and "Doc URL: not recorded" in body
     assert "ECS Express Mode" in fields["Expected vs actual"]
     header = (ROOT / "FRICTION_LOG.md").read_text(encoding="utf-8").split("## Entry template")[0]

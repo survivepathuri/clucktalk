@@ -36,7 +36,7 @@ One page from `FRICTION_LOG.md`: the five priority entries, then two runner-ups.
 - **What it cost us:** a strict-CSP probe had to be built and run in Chrome to learn the fall-through; the cards inline the font, fall back to system fonts and send a warning. Time: not recorded.
 - **What we ask:** `font-src 'self' data:` in the spec's default CSP or a fonts field, and an answer from the Alexa+ team on whether its renderer applies the default CSP literally (FR-003).
 
-### FL-027: Console sign-in failed with rejected authenticator codes across several project accounts; App Runner takes no new customers
-- **Who is affected:** builders who created more than one AWS account during a project, and anyone choosing App Runner after 30 April 2026 (builder-reported).
-- **What it cost us:** AWS access was unavailable on 7 October 2026, the recovery is not done, and the farmer pilot is hosted on the builder's own PC instead. Hours: [BUILDER TO CONFIRM: How many hours did the AWS console sign-in problem on 7 October cost?]
-- **What we ask:** on a rejected code, show which account the sign-in is for and the name of its MFA device, and keep the App Runner change and the ECS Express Mode link on its getting-started pages. No feature request is filed for it yet.
+### FL-027: AWS App Runner no longer accepts new customers; the documentation recommends ECS Express Mode
+- **Who is affected:** builders choosing App Runner as new customers after 30 April 2026 (builder-reported, from the AWS documentation page "AWS App Runner availability change").
+- **What it cost us:** not recorded; the page was read while choosing hosting, and App Runner was not used.
+- **What we ask:** keep the 30 April 2026 change and the ECS Express Mode link at the top of every App Runner getting-started page. No feature request is filed for it yet.

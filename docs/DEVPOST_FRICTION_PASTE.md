@@ -263,31 +263,31 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 **Why this matters to Alexa+ developers:** The docs give a builder no protocolVersion to implement or to refuse, and the Local Inspector example uses a different one than the hackathon track asks for, so a builder cannot tell which one to follow.
 
 
-## Entry 11 (FL-027): AWS console sign-in failed with rejected authenticator codes across several project accounts, and App Runner no longer takes new customers
+## Entry 11 (FL-027): AWS App Runner no longer accepts new customers (since 30 April 2026); the documentation recommends ECS Express Mode
 
-**Origin:** Amazon · **Tag:** [AWS console/account] [AWS App Runner docs] · **Severity:** Medium · **Date:** 2026-10-07
+**Origin:** Amazon · **Tag:** [AWS App Runner docs] · **Severity:** Low · **Date:** 2026-10-07
 
-**Impact:** AWS access was unavailable on 7 October 2026 and the recovery was postponed (not done). The farmer pilot is hosted on the builder's own PC through a free Tailscale Funnel instead (builder-reported).
+**Impact:** App Runner was not an option for this project.
 
-**Tool / service:** AWS Management Console sign-in with multi-factor authentication (authenticator app one-time codes); AWS documentation page "AWS App Runner availability change". Builder-reported; no command output exists in the repository.
+**Tool / service:** AWS App Runner; the AWS documentation page "AWS App Runner availability change". Builder-reported; no command output exists in the repository.
 
-**Task attempted:** Sign in to the AWS console to continue the AWS work, and choose a hosting service for the farmer pilot.
+**Task attempted:** Choose a hosting service for the farmer pilot.
 
-**Steps taken:** (1) Entered the authenticator app's one-time codes at the console sign-in. (2) While choosing hosting, read the AWS documentation page "AWS App Runner availability change".
+**Steps taken:** Read the AWS documentation page "AWS App Runner availability change" while comparing hosting options.
 
-**Expected vs actual:** (1) Expected the one-time code to sign the builder in. Actual: the codes were rejected. Several AWS accounts had been created during the project, so it was unclear which account held the credits and which authenticator entry belonged to it. (2) Expected App Runner to be available to a new customer. Actual: the page states that App Runner stopped accepting new customers on 30 April 2026 and recommends ECS Express Mode.
+**Expected vs actual:** Expected App Runner to be available to a new customer. Actual: the page states that App Runner stopped accepting new customers on 30 April 2026 and recommends ECS Express Mode.
 
-**Workaround:** Postponed the account recovery; hosted the pilot on the builder's own PC through a free Tailscale Funnel; the demo needs no AWS (mock mode).
+**Workaround:** App Runner was not used. The farmer pilot is hosted on the builder's own PC through a free Tailscale Funnel (builder-reported).
 
-**Actionable suggestion:** Owners: the AWS sign-in and account recovery team; the AWS App Runner documentation team. When a one-time code is rejected, show which account the sign-in is for (its alias or the last digits of its id) and the name of the MFA device registered on it, so a builder with several accounts can tell which authenticator entry to use; and show on the Billing credits page which account a promotional credit was applied to. Question to the App Runner documentation team: is the 30 April 2026 change shown at the top of every App Runner getting-started page, with the link to ECS Express Mode?
+**Actionable suggestion:** Owner: the AWS App Runner documentation team. Question: is the 30 April 2026 change shown at the top of every App Runner getting-started page, with the link to ECS Express Mode?
 
-**Time cost:** [BUILDER TO CONFIRM: How many hours did the AWS console sign-in problem on 7 October cost?]
+**Time cost:** not recorded
 
-**Reproduce:** documentation-based, no command (the sign-in failure is specific to the builder's accounts).
+**Reproduce:** documentation-based, no command.
 
 **Evidence in the repo:** none (builder-reported, 7 October 2026). Doc URL: not recorded.
 
-**Why this matters to Alexa+ developers:** For us it moved the farmer pilot off AWS onto the builder's own PC; an Alexa+ add-on needs a reachable HTTPS endpoint (`docs/PRODUCTION_PATH.md`, item 3), and the documented AWS option we first looked at, App Runner, no longer takes new customers.
+**Why this matters to Alexa+ developers:** An Alexa+ add-on needs a reachable HTTPS endpoint (`docs/PRODUCTION_PATH.md`, item 3), and App Runner, one of the AWS hosting options a builder may look at first, no longer takes new customers.
 
 
 ## Entry 12 (FL-007): MCP Apps default CSP has no `font-src`, so even an inlined (data:) font is blocked; the reference host allows it; the spec does not say whether a CSP-blocked `@font-face` source falls through

@@ -74,7 +74,16 @@ def test_every_placeholder_is_in_the_numbered_questions_list_once_and_in_order()
     assert [q for _, q in listed] == asked
     in_blocks = PLACEHOLDER.findall(DEVPOST.split("## QUESTIONS FOR THE BUILDER")[0])
     assert set(in_blocks) == set(asked), set(asked) ^ set(in_blocks)
-    assert "hours" in " ".join(asked)  # the time lost on 7 October is asked, never guessed
+    assert "hours" in asked  # the time lost on 7 October is asked, never guessed
+    sentence = (
+        "we lost [BUILDER TO CONFIRM: hours] hours signing in on 7 October because we had created several accounts "
+        "ourselves; that was our mistake, not AWS's"
+    )
+    assert sentence in FEEDBACK and sentence[1:] in DEVPOST
+    gone = ("authenticator", "codes were rejected", "sign-in failed", "aws access was unavailable", "recovery")
+    for text in (FEEDBACK, DEVPOST, SUMMARY):  # the sign-in mix-up was ours; it is not described as AWS friction
+        assert not [g for g in gone if g in text.lower()]
+        assert text.lower().count("signing in on 7 october") <= 1
 
 
 def test_each_paste_block_is_under_110_words():

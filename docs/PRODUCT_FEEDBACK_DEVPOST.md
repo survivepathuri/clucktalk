@@ -4,7 +4,7 @@ One plain-text block per tool for the Devpost product-feedback fields, each unde
 
 ## 1. AWS services: what was live and what was mocked
 
-Live: Amazon Bedrock Runtime converse with Amazon Nova 2 Lite in us-east-1, a handful of one-off calls from the AWS CLI and boto3 (a hello call, then two forced-tool-choice spike calls). Also used: Service Quotas, AWS Support cases (FL-014) and an IAM Identity Center role for the CLI. Mocked: every AI answer in the demo, evals and tests (MOCK_BEDROCK=true, a "Demo data" badge); the server's live-AI path was not verified end to end. Nothing was deployed to AWS: no Lambda, no Polly, no Knowledge Base, never OpenSearch Serverless. Read or attempted, not used (builder-reported): Lightsail and App Runner docs, console sign-in, the credit request.
+Live: Amazon Bedrock Runtime converse with Amazon Nova 2 Lite in us-east-1, a handful of one-off calls from the AWS CLI and boto3 (a hello call, then two forced-tool-choice spike calls). Also used: Service Quotas, AWS Support cases (FL-014) and an IAM Identity Center role for the CLI. Mocked: every AI answer in the demo, evals and tests (MOCK_BEDROCK=true, a "Demo data" badge); the server's live-AI path was not verified end to end. Nothing was deployed to AWS: no Lambda, no Polly, no Knowledge Base, never OpenSearch Serverless. Read or attempted, not used (builder-reported): Lightsail and App Runner docs, the credit request.
 
 ## 2. Amazon Bedrock and Amazon Nova 2 Lite
 
@@ -14,9 +14,9 @@ Used for: our agents' optional live AI mode; in practice a hello call and a two-
 
 Used for: key-free sign-in, account and quota checks and the hello call (CLI 2.37.4); the spike and live path (boto3 1.43.103). Worked well: no access keys; get-account-plan-state showed the plan the console did not. Needs work: an emoji in a reply crashed the CLI's Windows output and left a truncated file (FL-019); get-credits says "IAM user access not activated" to an Identity Center role (FL-015); the recommended setup silently upgrades a Free-plan account (FL-012). [BUILDER TO CONFIRM: How did installing the AWS CLI and signing in with IAM Identity Center feel?] Again: [BUILDER TO CONFIRM: Use the AWS CLI and boto3 again? Yes or no, and why?]
 
-## 4. AWS Lightsail, AWS App Runner, Free Tier credits, console and account
+## 4. AWS Lightsail, AWS App Runner and the Free Tier credits
 
-Read or attempted, not used (builder-reported, 7 October). Console: authenticator codes rejected; with several accounts, unclear which held the credits; recovery postponed (FL-027). App Runner: no new customers since 30 April 2026; ECS Express Mode recommended (FL-027). Lightsail: in Mumbai (half the data transfer); trials replaced by Free Tier credits. Credit form submitted 7 October, pending. Time lost: [BUILDER TO CONFIRM: How many hours did the AWS console sign-in problem on 7 October cost?] [BUILDER TO CONFIRM: How did choosing AWS hosting and requesting the credits feel?] Again: [BUILDER TO CONFIRM: Try AWS hosting (Lightsail or ECS Express Mode) again once access is back? Yes or no, and why?]
+Read or attempted, not used (builder-reported, 7 October). App Runner: no new customers since 30 April 2026; ECS Express Mode recommended (FL-027). Lightsail: in Mumbai (half the data transfer); trials replaced by Free Tier credits. Credit form submitted 7 October, pending. We lost [BUILDER TO CONFIRM: hours] hours signing in on 7 October because we had created several accounts ourselves; that was our mistake, not AWS's. [BUILDER TO CONFIRM: How did choosing AWS hosting and requesting the credits feel?] Again: [BUILDER TO CONFIRM: Try AWS hosting (Lightsail or ECS Express Mode) again? Yes or no, and why?]
 
 ## 5. Alexa+ MCP documentation (QuickStart, Local Inspector)
 
@@ -52,7 +52,7 @@ Used for: property and fuzz tests (dev only). Worked well: the fuzz round found 
 
 ## 13. Tailscale Funnel
 
-Used for: publishing the farmer pilot page from the builder's own PC, because AWS access was unavailable (builder-reported); the MCP port stays on the loopback. Worked well: it worked on the first try after HTTPS certificates and Funnel were enabled in the admin console (builder-reported). Needs work: what the relay can see was not examined; availability depends on that PC and its internet. Again: [BUILDER TO CONFIRM: Use Tailscale Funnel again for a pilot like this? Yes or no, and why?]
+Used for: publishing the farmer pilot page from the builder's own PC (builder-reported); the MCP port stays on the loopback. Worked well: it worked on the first try after HTTPS certificates and Funnel were enabled in the admin console (builder-reported). Needs work: what the relay can see was not examined; availability depends on that PC and its internet. Again: [BUILDER TO CONFIRM: Use Tailscale Funnel again for a pilot like this? Yes or no, and why?]
 
 ## 14. GitHub Actions
 
@@ -64,15 +64,15 @@ Used for: the ASGI app, tool models, argument validation, the HTTP client, the f
 
 ## QUESTIONS FOR THE BUILDER
 
-Every placeholder above and in `docs/PRODUCT_FEEDBACK.md`, in order, so they can be answered in one message.
+Every placeholder above and in `docs/PRODUCT_FEEDBACK.md`, in order, so they can be answered in one message. Item 5 ("hours") fills in the hours sentence in block 4.
 
 1. How did onboarding to Bedrock and Nova 2 Lite feel?
 2. Build with Bedrock and Nova 2 Lite again? Yes or no, and why?
 3. How did installing the AWS CLI and signing in with IAM Identity Center feel?
 4. Use the AWS CLI and boto3 again? Yes or no, and why?
-5. How many hours did the AWS console sign-in problem on 7 October cost?
+5. hours
 6. How did choosing AWS hosting and requesting the credits feel?
-7. Try AWS hosting (Lightsail or ECS Express Mode) again once access is back? Yes or no, and why?
+7. Try AWS hosting (Lightsail or ECS Express Mode) again? Yes or no, and why?
 8. How did getting started from the Alexa+ MCP QuickStart feel?
 9. Build an Alexa+ add-on again? Yes or no, and why?
 10. Build a simulated Alexa+ client again before having device access? Yes or no, and why?

@@ -103,13 +103,13 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Reproduce:** Documentation-based, no command (our own server: probe-protocol-version, inspector-replay).
 
 
-## Entry 11 (FL-027): AWS console sign-in failed; App Runner takes no new customers
-**Tag:** [AWS console/account] [AWS App Runner docs] · **Origin:** Amazon · **Severity:** Medium
-**Task:** Sign in to the console; choose pilot hosting (builder-reported, 7 October 2026).
-**Steps:** Entered authenticator codes; read the App Runner availability page.
-**Expected vs actual:** Codes rejected; with several accounts, unclear which held the credits or matched the authenticator. App Runner stopped taking new customers on 30 April 2026 (ECS Express Mode recommended).
-**Workaround:** Recovery postponed; pilot on the builder's PC via a free Tailscale Funnel.
-**Suggestion:** Sign-in team: on a rejected code, name the account and its MFA device. App Runner docs: show the change on getting-started pages.
+## Entry 11 (FL-027): App Runner takes no new customers since 30 April 2026
+**Tag:** [AWS App Runner docs] · **Origin:** Amazon · **Severity:** Low
+**Task:** Choose hosting for the farmer pilot (builder-reported, 7 October 2026).
+**Steps:** Read the "AWS App Runner availability change" page.
+**Expected vs actual:** Expected App Runner to be open to a new customer. The page says it stopped accepting new customers on 30 April 2026 and recommends ECS Express Mode.
+**Workaround:** App Runner not used; the pilot is hosted on the builder's PC through a free Tailscale Funnel.
+**Suggestion:** App Runner docs team: is the change shown on every getting-started page, with the ECS Express Mode link?
 **Reproduce:** Documentation-based, no command.
 
 

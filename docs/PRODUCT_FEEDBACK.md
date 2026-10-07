@@ -19,7 +19,7 @@ This matches `submission.md` ("How we built it") and `docs/AWS_SETUP.md` section
 
 - **Live:** Amazon Bedrock Runtime `converse` with Amazon Nova 2 Lite (`us.amazon.nova-2-lite-v1:0`) in us-east-1, a handful of one-off calls from the AWS CLI and boto3: a hello call (run twice, because the AWS CLI truncated the first capture, FL-019), then two forced-tool-choice spike calls on text and a tiny synthetic image (the second one misread a colour, FL-020). Their cost in `docs/AWS_SETUP.md` is under two tenths of a cent at third-party prices that were not confirmed on AWS's own price page. Also used: AWS Service Quotas and AWS Support cases, because the new account's Bedrock inference quotas were all 0 (FL-014), and an IAM Identity Center role for the CLI (FL-015).
 - **Mocked:** every AI answer in the demo, in the golden evals and in the tests (`MOCK_BEDROCK=true`, shown by a "Demo data" badge). The server's live-AI path (the triage and briefing agents on a live model) was **not** verified end to end. Nothing was deployed to AWS; no Lambda, no Polly, no Knowledge Base. OpenSearch Serverless is never used, and a script checks that (`scripts/check_no_aoss.py`).
-- **Read or attempted, not used (builder-reported, 7 October 2026):** AWS Lightsail and AWS App Runner documentation were read while choosing hosting; the AWS console sign-in failed; the hackathon's AWS credit request was submitted and is pending. None of these runs any part of CluckTalk. The farmer pilot is hosted on the builder's own PC through a free Tailscale Funnel instead.
+- **Read or attempted, not used (builder-reported, 7 October 2026):** AWS Lightsail and AWS App Runner documentation were read while choosing hosting; the hackathon's AWS credit request was submitted and is pending. None of these runs any part of CluckTalk. The farmer pilot is hosted on the builder's own PC through a free Tailscale Funnel instead.
 
 ---
 
@@ -50,20 +50,19 @@ This matches `submission.md` ("How we built it") and `docs/AWS_SETUP.md` section
 4. **Onboarding:** recorded: the CLI installs for the current user without admin rights from `AWSCLIV2-User.msi`, and at the end of `aws configure sso` CLI 2.37.4 also asked whether to configure AWS skills and the AWS MCP server for coding agents (answered no) (`docs/AWS_SETUP.md` section 4). Verdict: [BUILDER TO CONFIRM: How did installing the AWS CLI and signing in with IAM Identity Center feel?]
 5. **Build again:** [BUILDER TO CONFIRM: Use the AWS CLI and boto3 again? Yes or no, and why?]
 
-## 3. AWS Lightsail, AWS App Runner, the AWS Free Tier credits, and the AWS console and account experience
+## 3. AWS Lightsail, AWS App Runner and the AWS Free Tier credits
 
 These were **read or attempted, not used in production**. Nothing in CluckTalk runs on Lightsail or App Runner.
 
-1. **Used for:** choosing where to host the farmer pilot, and getting back into the AWS account (builder-reported, 7 October 2026). Earlier, the Billing console was used to check the account plan and credits (FL-013).
+1. **Used for:** choosing where to host the farmer pilot (builder-reported, 7 October 2026). Earlier, the Billing console was used to check the account plan and credits (FL-013).
 2. **What worked well:** builder-reported: the AWS Lightsail documentation says that Lightsail is available in the Mumbai Region and that its short free trials were replaced by the AWS Free Tier credits. Recorded: the Billing console showed the account's credits ($120 active, FL-013).
 3. **What needs work:**
-   - **Console sign-in (builder-reported, FL-027):** on 7 October the authenticator one-time codes were rejected at sign-in. Several AWS accounts had been created during the project, so it was unclear which account held the credits and which authenticator entry belonged to it. The recovery was postponed and is not done.
    - **App Runner (builder-reported, FL-027):** the AWS documentation page "AWS App Runner availability change" states that App Runner stopped accepting new customers on 30 April 2026 and recommends ECS Express Mode. The page's URL was not recorded.
    - **Lightsail (builder-reported):** the documentation says the Mumbai plans include half the data transfer.
    - **Credits (builder-reported):** the hackathon's $150 AWS credit request is a Google Form on the Devpost Resources page; it was submitted on 7 October 2026 and the answer is pending. Recorded earlier: no AWS page states whether promotional credits cover Marketplace-billed Bedrock models (FL-013).
    - **Account plan (recorded):** on the AWS India account the Billing console showed no Free or Paid plan, although the Billing docs say the console home shows it (FL-013, FR-007).
-4. **Onboarding:** time lost to the sign-in problem: [BUILDER TO CONFIRM: How many hours did the AWS console sign-in problem on 7 October cost?] Verdict: [BUILDER TO CONFIRM: How did choosing AWS hosting and requesting the credits feel?]
-5. **Build again:** [BUILDER TO CONFIRM: Try AWS hosting (Lightsail or ECS Express Mode) again once access is back? Yes or no, and why?]
+4. **Onboarding:** we lost [BUILDER TO CONFIRM: hours] hours signing in on 7 October because we had created several accounts ourselves; that was our mistake, not AWS's. Verdict: [BUILDER TO CONFIRM: How did choosing AWS hosting and requesting the credits feel?]
+5. **Build again:** [BUILDER TO CONFIRM: Try AWS hosting (Lightsail or ECS Express Mode) again? Yes or no, and why?]
 
 ## 4. Alexa+ MCP documentation (QuickStart, Local Inspector and related pages)
 
@@ -136,7 +135,7 @@ These were **read or attempted, not used in production**. Nothing in CluckTalk r
 5. **Build again:** [BUILDER TO CONFIRM: Use Hypothesis again? Yes or no, and why?]
 
 ### Tailscale Funnel (the free hosting tunnel for the farmer pilot)
-1. **Used for:** publishing the pilot page from the builder's own Windows PC, because AWS access was unavailable (builder-reported, 7 October 2026; `docs/PILOT_RUNBOOK_WINDOWS.md`). Only the page port is forwarded; the MCP port stays on the loopback (`docs/ARCHITECTURE.md`).
+1. **Used for:** publishing the pilot page from the builder's own Windows PC (builder-reported, 7 October 2026; `docs/PILOT_RUNBOOK_WINDOWS.md`). Only the page port is forwarded; the MCP port stays on the loopback (`docs/ARCHITECTURE.md`).
 2. **What worked well:** builder-reported: it worked on the first try after HTTPS certificates and Funnel were enabled in the Tailscale admin console.
 3. **What needs work:** recorded: what Tailscale's relay can see was not examined here (`SECURITY.md`), and availability depends on the PC and its internet (`docs/ARCHITECTURE.md`). The runbook's Tailscale commands are from memory of its documentation (`docs/PILOT_RUNBOOK_WINDOWS.md`).
 4. **Onboarding:** builder-reported: first try, after the two admin-console settings above.
