@@ -28,7 +28,7 @@ Severity: Medium
 Impact: The corruption is silent: the file held invisible backspace characters and only a linter message and a failing test showed it. No wrong code was committed.
 Workaround: Do not type backslashes in shell commands that write code. Use the Write or Edit tools for any text with backslashes, or build the character in code (`chr(92) + "b"`). Check with `grep -P "\x08"` afterwards.
 Actionable suggestion: Owner: Anthropic Claude Code team (Bash tool). Pass the command text to the shell unchanged, or document how the Bash tool treats backslashes in quoted heredocs.
-Time cost: About 15 minutes the first time and about 10 minutes on the recurrence, plus about 5 minutes in Step 53.
+Time cost: About 15 minutes the first time and about 10 minutes on the recurrence, plus about 5 minutes in Step 53 and about 10 minutes in Step 54 (four Python heredocs: a newline escape inside a string became a real line break, and a word-boundary escape in a test file became a backspace character; each was found by ruff or a syntax error and rewritten with the Edit tool).
 Reproduce: documentation-based, no command (detect the result afterwards with `grep -P "\x08" <file>`, from the Workaround).
 Evidence: none beyond the entry.
 
