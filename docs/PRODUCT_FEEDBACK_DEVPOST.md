@@ -1,95 +1,43 @@
 # Product feedback: paste-ready copy
 
-One plain-text block per tool for the Devpost product-feedback fields, each under 110 words. The heading line is not part of the block. The sources and the long version are in `docs/PRODUCT_FEEDBACK.md`; FL numbers are in `FRICTION_LOG.md`, FR numbers in `FEATURE_REQUESTS.md`. Placeholders that start with "BUILDER TO CONFIRM" stay until the builder answers them; all of them are listed at the end.
+Ten plain-text blocks for the Devpost product-feedback fields, one per tool, each under 110 words, in the builder's own words. The heading line is not part of the block. The long version with the sources is `docs/PRODUCT_FEEDBACK.md`; FL numbers are in `FRICTION_LOG.md` (or `docs/DEV_NOTES.md` for our own tooling), FR numbers in `FEATURE_REQUESTS.md`. Every FL and FR number and every count below was checked against those files and the tests on 7 October 2026. Where a sentence is marked builder-reported, the source is the builder's own report and not a file in this repository.
 
-## 1. AWS services: what was live and what was mocked
+## 1. Amazon Bedrock and the Nova 2 Lite model
 
-Live: Amazon Bedrock Runtime converse with Amazon Nova 2 Lite in us-east-1, a handful of one-off calls from the AWS CLI and boto3 (a hello call, then two forced-tool-choice spike calls). Also used: Service Quotas, AWS Support cases (FL-014) and an IAM Identity Center role for the CLI. Mocked: every AI answer in the demo, evals and tests (MOCK_BEDROCK=true, a "Demo data" badge); the server's live-AI path was not verified end to end. Nothing was deployed to AWS: no Lambda, no Polly, no Knowledge Base, never OpenSearch Serverless. Read or attempted, not used (builder-reported): Lightsail and App Runner docs, the credit request.
+Amazon Bedrock and the Nova 2 Lite model. Used for: the optional AI triage step (free-text signs to an urgency that our code can only raise, never lower). A handful of real calls so far; mock mode is the default. Worked well: once access worked, the call was simple. Needs work: models showed AVAILABLE with every quota at zero, a hidden verification refused the first call, Claude models were gated (FL-014); a billing error did not name the setting (FL-015). Onboarding: 1 day from first attempt to first successful call (28 to 29 September), after quota requests. Build again: yes, if quotas and access were visible up front.
 
-## 2. Amazon Bedrock and Amazon Nova 2 Lite
+## 2. AWS CLI and boto3 on Windows
 
-Used for: our agents' optional live AI mode; in practice a hello call and a two-call spike. Worked well: latencyMs 450; forced toolChoice worked with text and an image. Needs work: models showed AVAILABLE with every quota at 0, Support gave no numbers, and an undocumented verification gate refused the first call (FL-014); Anthropic models stayed blocked by their Marketplace agreement; Nova read blue as white once (FL-020). Onboarding: first reply 29 Sep. [BUILDER TO CONFIRM: How did onboarding to Bedrock and Nova 2 Lite feel?] Again: [BUILDER TO CONFIRM: Build with Bedrock and Nova 2 Lite again? Yes or no, and why?]
+AWS CLI and boto3 on Windows. Used for: model-access checks and the few Nova calls. Worked well: the Converse toolChoice and image formats could be read in the installed botocore service model before any paid call. Needs work: the AWS CLI crashed on Windows while writing a reply that contained an emoji to a file, and left a truncated file (FL-019). Onboarding: the CLI installs without admin rights, and sign-in used IAM Identity Center, so no access keys. Build again: yes.
 
-## 3. AWS CLI v2 and boto3 on Windows
+## 3. AWS console, accounts, credits and hosting options
 
-Used for: key-free sign-in, account and quota checks and the hello call (CLI 2.37.4); the spike and live path (boto3 1.43.103). Worked well: no access keys; get-account-plan-state showed the plan the console did not. Needs work: an emoji in a reply crashed the CLI's Windows output and left a truncated file (FL-019); get-credits says "IAM user access not activated" to an Identity Center role (FL-015); the recommended setup silently upgrades a Free-plan account (FL-012). [BUILDER TO CONFIRM: How did installing the AWS CLI and signing in with IAM Identity Center feel?] Again: [BUILDER TO CONFIRM: Use the AWS CLI and boto3 again? Yes or no, and why?]
+AWS console, accounts, credits and hosting options. Used for: model access, billing and credits; we also read the Lightsail and App Runner documentation when choosing hosting (builder-reported). Worked well: the Lightsail pages are clear about plans, the Mumbai Region and the Free Tier replacing old trials (builder-reported). Needs work: the account plan was not visible on an India account (FL-013, FR-007); App Runner, often suggested for simple hosting, stopped accepting new customers on 30 April 2026 (FL-027). Onboarding: on 7 October we lost about 1 hour signing in because we had created several accounts ourselves; that was our mistake, not AWS's. Build again: yes, with one account.
 
-## 4. AWS Lightsail, AWS App Runner and the Free Tier credits
+## 4. Alexa+ MCP documentation (QuickStart and Local Inspector)
 
-Read or attempted, not used (builder-reported, 7 October). App Runner: no new customers since 30 April 2026; ECS Express Mode recommended (FL-027). Lightsail: in Mumbai (half the data transfer); trials replaced by Free Tier credits. Credit form submitted 7 October, pending. We lost [BUILDER TO CONFIRM: hours] hours signing in on 7 October because we had created several accounts ourselves; that was our mistake, not AWS's. [BUILDER TO CONFIRM: How did choosing AWS hosting and requesting the credits feel?] Again: [BUILDER TO CONFIRM: Try AWS hosting (Lightsail or ECS Express Mode) again? Yes or no, and why?]
+Alexa+ MCP documentation (QuickStart and Local Inspector). Used for: building an MCP server and a simulated Alexa+ experience; we read the QuickStart (10 Jul) and Local Inspector (3 Aug) pages. Worked well: the addon.json schema, the authentication checklist and the 500 ms target are clear. Needs work: no minimum protocolVersion is stated while the Inspector example sends 2025-06-18 (FL-026); we could not confirm a self-serve way to run the Inspector or Alexa AI validation (FL-024, FR-004); distributionCountries shows only US (FR-008). Onboarding: the pages read quickly; testing against Alexa+ itself was not possible. Build again: yes.
 
-## 5. Alexa+ MCP documentation (QuickStart, Local Inspector)
+## 5. MCP Python SDK
 
-Used for: building to Amazon's guidance; the Local Inspector and Builder Tools were not used. Worked well: the QuickStart gave the transport, auth checklist, latency target and addon.json schema. Needs work: no self-serve Local Inspector or Alexa AI CLI for participants (an account provided to an Alexa Solutions Architect, macOS or Ubuntu only, a login-gated guide; FL-024); no protocolVersion stated; the Inspector example sends 2025-06-18 (FL-026); no card size, CSP or fonts (FL-009); nothing on proactive notifications or household identity (FL-017). [BUILDER TO CONFIRM: How did getting started from the Alexa+ MCP QuickStart feel?] Again: [BUILDER TO CONFIRM: Build an Alexa+ add-on again? Yes or no, and why?]
+MCP Python SDK. Used for: the server, 14 tools, Streamable HTTP and sessions. Worked well: our 29 protocol tests pass, and older protocol versions are answered with the requested version. Needs work: a duplicate JSON-RPC id can leave one request unanswered for 40+ seconds (FL-011); SDK error text echoed input until we wrapped it (FL-002, and F1 and F2 in SECURITY.md); tool errors need special handling because outputSchema validation and isError interact (FL-004). Onboarding: straightforward from the documentation and examples. Build again: yes.
 
-## 6. The simulated Alexa+ path (our Simulator)
+## 6. MCP Apps (ext-apps) and the basic host
 
-Used for: playing the Alexa+ client role with Echo Show and Echo Dot modes, cards and a panel showing the exact MCP wire; it is our code, not Amazon's. Worked well: it speaks the tool's own text, so card and spoken numbers match (tested), and the golden evals run against a real MCP server over HTTP. Needs work: that match holds only in the Simulator, because Alexa+ composes its own speech; the intent layer is rules, not Alexa+'s tool choice. Onboarding: not applicable (python tasks.py run). Again: [BUILDER TO CONFIRM: Build a simulated Alexa+ client again before having device access? Yes or no, and why?]
+MCP Apps (ext-apps) and the basic host. Used for: four HTML cards shown by the host (status, health check, sale plan, briefing). Worked well: the ui:// resource and _meta.ui.resourceUri model is clear. Needs work: the default CSP has no font-src, which blocks even an inlined Telugu font (FL-007); Alexa+ documents no card container size (FL-009); the Python SDK dropped extensions on 2025-11-25 (FL-008); the basic-host build needed bun and its install script (FL-021). Onboarding: the examples helped; Windows setup took extra steps, about 20 minutes (FL-021). Build again: yes.
 
-## 7. MCP Python SDK (mcp 2.2.0)
+## 7. Claude Code and the Claude models
 
-Used for: the Streamable HTTP server, tools, middleware and card resources. Worked well: Apps support is in-core; 2025-11-25 and three older versions negotiate. Needs work: middleware results leak resultType (FL-001); default errors name the tool and fields, with no hook (FL-002); the localhost Origin allow-list accepts every port (FL-003); extensions dropped on 2025-11-25 (FL-008); a duplicate in-flight id leaves a request silently unanswered for 40 seconds or more (FL-011). [BUILDER TO CONFIRM: How did going from zero to a first tool call with the MCP Python SDK feel?] Again: [BUILDER TO CONFIRM: Build with the MCP Python SDK again? Yes or no, and why?]
+Claude Code and the Claude models. Used for: building the whole project tests-first, with mutation checks and independent reviews by separate sessions. Worked well: the reviews found real bugs in pilot-mode code, fixed with regression tests (same-day deaths silently replaced, an optional MCP token, a session limit that is now least-recently-used eviction); many small local commits kept the work recoverable. Needs work: the shell tool changed backslash sequences in written files (FL-022); Windows line endings made a card bundle differ from the CI build (FL-025). Onboarding: fast to start; it needed strict rules and tests to stay safe. Build again: yes, with those rules, tests and an independent review.
 
-## 8. MCP Apps spec and the ext-apps basic-host
+## 8. Agent Skills format
 
-Used for: four cards written against the postMessage protocol without the JS SDK, and the reference basic-host to test them. Worked well: no SDK or Node build for cards. Needs work: the spec example sends clientInfo where the schema requires appInfo (FL-006); the default CSP blocks even an inlined data: font while the reference host allows it, and fall-through is undocumented (FL-007); the basic-host needs an undocumented root build and bun (FL-021, about 20 minutes). [BUILDER TO CONFIRM: How did building MCP Apps cards and running the reference host feel?] Again: [BUILDER TO CONFIRM: Build MCP Apps cards again? Yes or no, and why?]
+Agent Skills format. Used for: packaging our tool-routing and safety rules as a skill (skills/clucktalk). Worked well: the folder format is simple. Needs work: we never loaded the skill in any agent; Claude Code's install path was not tested as a separate step, and the Kiro, Cursor and Copilot paths are marked unverified in the README. Onboarding: short. Build again: yes.
 
-## 9. MCP Inspector 2.8.0 CLI
+## 9. Tailscale Funnel (free hosting tunnel for the pilot)
 
-Used for: capturing evidence of tool calls and error results, as a stand-in for the Alexa+ Local Inspector we could not run. Worked well: tools/list and tools/call captured our evidence; successful calls exit 0. Needs work: on Windows the CLI crashes with a libuv assertion after an error result, so the exit code is unusable (FL-005); it validates an error's structuredContent against the success schema, unlike the Python SDK client (FL-004). [BUILDER TO CONFIRM: How did getting the MCP Inspector CLI running feel?] Again: [BUILDER TO CONFIRM: Use the MCP Inspector CLI again? Yes or no, and why?]
+Tailscale Funnel (free hosting tunnel for the pilot). Used for: a free HTTPS link from the builder's PC to one farmer's phone (builder-reported). Worked well: it worked on the first try after enabling HTTPS certificates and Funnel in the admin console (builder-reported). Needs work: we did not examine what the relay can see, and the PC's uptime is the real limit. Onboarding: short. Build again: yes for pilots.
 
-## 10. Claude Code and the Claude models
+## 10. GitHub Actions (private repository)
 
-Used for: writing and checking the code, and ten independent review rounds by fresh agents that read the code cold; the model version per session is not recorded. Worked well: the reviews found real defects, including a Critical record-book bug (total deaths could exceed birds placed while saying "saved") and a High triage bug, each fixed with a regression test. Needs work: the shell tool turned a backslash sequence into an invisible backspace character in a written file, and it recurred (FL-022). [BUILDER TO CONFIRM: How did starting this project with Claude Code feel?] Again: [BUILDER TO CONFIRM: Build with Claude Code again? Yes or no, and why?]
-
-## 11. The Agent Skills format
-
-Used for: skills/clucktalk, a SKILL.md plus three reference files that teach a coding agent to operate the 14 tools. Worked well: one folder matches the layout that Kiro's and Cursor's docs describe; tests keep it in step with the server. Needs work: every agent uses a different install folder, the Copilot path was seen only on a third-party page, and the skill was never loaded in any agent. [BUILDER TO CONFIRM: How did writing the Agent Skill feel?] Again: [BUILDER TO CONFIRM: Write an Agent Skill again? Yes or no, and why?]
-
-## 12. Hypothesis
-
-Used for: property and fuzz tests (dev only). Worked well: the fuzz round found protocol errors that echoed input back (F1, F2), and fuzz tests pin an SDK behaviour (F3) and our shed-name reader (F4). Needs work: nothing recorded. [BUILDER TO CONFIRM: How did adding Hypothesis tests feel?] Again: [BUILDER TO CONFIRM: Use Hypothesis again? Yes or no, and why?]
-
-## 13. Tailscale Funnel
-
-Used for: publishing the farmer pilot page from the builder's own PC (builder-reported); the MCP port stays on the loopback. Worked well: it worked on the first try after HTTPS certificates and Funnel were enabled in the admin console (builder-reported). Needs work: what the relay can see was not examined; availability depends on that PC and its internet. Again: [BUILDER TO CONFIRM: Use Tailscale Funnel again for a pilot like this? Yes or no, and why?]
-
-## 14. GitHub Actions
-
-Used for: lint, tests and scans on ubuntu and windows with Python 3.12 and 3.13. Worked well: CI caught two failures the local Windows run did not (FL-023, FL-025). Needs work: the macOS job is manual-only because it uses about 50 quota minutes per run; the repository is private until it is made public. [BUILDER TO CONFIRM: How did setting up GitHub Actions for this repository feel?] Again: [BUILDER TO CONFIRM: Use GitHub Actions again? Yes or no, and why?]
-
-## 15. Other libraries (Starlette, uvicorn, pydantic, jsonschema, httpx2, SQLite, Noto Sans Telugu, ruff, pytest)
-
-Used for: the ASGI app, tool models, argument validation, the HTTP client, the farm state, Telugu on the cards, and lint and tests. Worked well and needs work: nothing recorded, apart from the inlined Telugu font under a strict CSP (FL-007). [BUILDER TO CONFIRM: Anything to add about onboarding for the other libraries, or nothing to add?] Again: [BUILDER TO CONFIRM: Use the other libraries again? Yes or no, and why?]
-
-## QUESTIONS FOR THE BUILDER
-
-Every placeholder above and in `docs/PRODUCT_FEEDBACK.md`, in order, so they can be answered in one message. Item 5 ("hours") fills in the hours sentence in block 4.
-
-1. How did onboarding to Bedrock and Nova 2 Lite feel?
-2. Build with Bedrock and Nova 2 Lite again? Yes or no, and why?
-3. How did installing the AWS CLI and signing in with IAM Identity Center feel?
-4. Use the AWS CLI and boto3 again? Yes or no, and why?
-5. hours
-6. How did choosing AWS hosting and requesting the credits feel?
-7. Try AWS hosting (Lightsail or ECS Express Mode) again? Yes or no, and why?
-8. How did getting started from the Alexa+ MCP QuickStart feel?
-9. Build an Alexa+ add-on again? Yes or no, and why?
-10. Build a simulated Alexa+ client again before having device access? Yes or no, and why?
-11. How did going from zero to a first tool call with the MCP Python SDK feel?
-12. Build with the MCP Python SDK again? Yes or no, and why?
-13. How did building MCP Apps cards and running the reference host feel?
-14. Build MCP Apps cards again? Yes or no, and why?
-15. How did getting the MCP Inspector CLI running feel?
-16. Use the MCP Inspector CLI again? Yes or no, and why?
-17. How did starting this project with Claude Code feel?
-18. Build with Claude Code again? Yes or no, and why?
-19. How did writing the Agent Skill feel?
-20. Write an Agent Skill again? Yes or no, and why?
-21. How did adding Hypothesis tests feel?
-22. Use Hypothesis again? Yes or no, and why?
-23. Use Tailscale Funnel again for a pilot like this? Yes or no, and why?
-24. How did setting up GitHub Actions for this repository feel?
-25. Use GitHub Actions again? Yes or no, and why?
-26. Anything to add about onboarding for the other libraries, or nothing to add?
-27. Use the other libraries again? Yes or no, and why?
+GitHub Actions (private repository). Used for: CI on Windows and Linux. Worked well: it caught two problems the local Windows run missed (FL-023, FL-025). Needs work: the free minutes of a private repository ran out (builder-reported), so from 7 October every commit used [skip ci] and was not CI-checked. Onboarding: easy. Build again: yes, with a public repository.
