@@ -9,23 +9,53 @@ Streamable HTTP) plus an Agent Skill, built for the Alexa+ add-on program.
 
 ## Try it now
 
-Windows (cmd; on Linux or macOS use `python3`). Python 3.12 or 3.13, no Docker, no AWS account:
+**Python 3.12 or 3.13 is required** (3.11 runs with an "untested" warning; older versions stop). Check with `python --version` on Windows and `python3 --version` on macOS and Linux. No Docker, no AWS account, and no virtual-environment activation: `tasks.py` creates and uses its own `.venv`. Install lines for Python are in `docs/JUDGES.md` and under "Quick start" below.
+
+Windows cmd:
 
 ```
-python tasks.py setup        :: creates .venv and installs the pinned dependencies
-python tasks.py verify       :: one table of what a judge can check, in about 30 seconds (not the full test suites)
-python tasks.py readiness    :: our own self-check of the locally checkable Alexa+ requirements (not an Amazon verdict)
-python tasks.py serve        :: the MCP server on http://127.0.0.1:8765/mcp with fictional demo data (leave it running)
+python tasks.py setup
+python tasks.py verify
+python tasks.py readiness
+python tasks.py serve
 ```
 
-With `serve` running, in a second window, the MCP Inspector command line (`@modelcontextprotocol/inspector` 2.8.0, which
-needs Node.js; our evidence in `docs/evidence/2026-09-27_farm_status_and_feed.md` used its installed `mcp-inspector --cli`,
-and the `npx` form below is the same package but was not run in exactly this form):
+Windows PowerShell:
+
+```
+python tasks.py setup
+python tasks.py verify
+python tasks.py readiness
+python tasks.py serve
+```
+
+macOS or Linux (bash or zsh):
+
+```
+python3 tasks.py setup
+python3 tasks.py verify
+python3 tasks.py readiness
+python3 tasks.py serve
+```
+
+What each one does: `setup` creates `.venv` and installs the pinned dependencies. `verify` prints one table of what a judge can check in about 30 seconds (not the full test suites); it starts its own temporary server, so it needs neither Node.js nor a running server. `readiness` is our own self-check of the locally checkable Alexa+ requirements (not an Amazon verdict). `serve` starts the MCP server on http://127.0.0.1:8765/mcp with fictional demo data; leave it running. If port 8765 is busy, `serve` says so and starts nothing; see "Ports and browser" in `docs/JUDGES.md`.
+
+With `serve` running, in a second window, the MCP Inspector command line needs Node.js (`@modelcontextprotocol/inspector` 2.8.0; our evidence in `docs/evidence/2026-09-27_farm_status_and_feed.md` used its installed `mcp-inspector --cli`, and the `npx` form below is the same package but was not run in exactly this form). Without Node.js, `python tasks.py inspector-replay` (`python3` on macOS and Linux) replays Amazon's documented Local Inspector flow against a temporary copy of the server and needs neither Node.js nor `serve`.
 
 ```
 npx @modelcontextprotocol/inspector@2.8.0 --cli http://127.0.0.1:8765/mcp --method tools/list
 npx @modelcontextprotocol/inspector@2.8.0 --cli http://127.0.0.1:8765/mcp --method tools/call --tool-name get_farm_status --tool-arg "house=shed 2"
 ```
+
+To see skipped tests (for example when Node.js is missing) run `pytest -rs`: `.venv\Scripts\python -m pytest -rs tests\harness` on Windows, `.venv/bin/python -m pytest -rs tests/harness` on macOS and Linux.
+
+Tested on:
+
+| Platform | Status |
+|---|---|
+| Windows 11 | local runs, Python 3.13.15 (the harness tests also ran on 3.14.5), `docs/VERSIONS.md` |
+| Linux (ubuntu, CI) | last recorded green run: commit `023a90d`, 2026-10-04, Python 3.12 and 3.13; later commits: not recorded (pushed with `[skip ci]`, or not checked) |
+| macOS | not yet run; a manual CI job exists (`workflow_dispatch`, `include_macos`), and its result will be recorded here |
 
 To see how a follow-up looks three days after a health check (the demo clock shifts follow-up and briefing dates only,
 see "Demo clock" below):
@@ -106,27 +136,49 @@ this repository, not that Alexa+ has seen it.
 Needs Python 3.12 or 3.13 (other versions from 3.11 run with a visible "untested" warning). Get it from
 python.org, `brew install python@3.13` (macOS), `pyenv install 3.13`, or the deadsnakes PPA (Ubuntu).
 
-Windows (cmd):
+Windows cmd:
 
 ```
 git clone <this repo>
 cd CluckTalk
-python tasks.py setup    :: creates .venv and installs pinned dependencies
-python tasks.py run      :: starts the MCP server + the Alexa+ Simulator, opens http://127.0.0.1:8766/
+python tasks.py setup
+python tasks.py run
 ```
 
-Linux / macOS:
+Windows PowerShell:
 
 ```
 git clone <this repo>
 cd CluckTalk
-python3 tasks.py setup   # creates .venv and installs pinned dependencies
-python3 tasks.py run     # starts the MCP server + the Alexa+ Simulator, opens http://127.0.0.1:8766/
-python3 tasks.py check   # optional: lint + tests + AOSS check + secret scan
+python tasks.py setup
+python tasks.py run
 ```
 
-Set `CLUCKTALK_NO_BROWSER=1` to stop `run` from opening a browser. Node.js is optional: one card test
-(`test_card_num_matches_the_server_formatter`) is skipped, with a reason, when `node` is not installed. The secret scan
+macOS or Linux (bash or zsh):
+
+```
+git clone <this repo>
+cd CluckTalk
+python3 tasks.py setup
+python3 tasks.py run
+# optional: lint + tests + AOSS check + secret scan
+python3 tasks.py check
+```
+
+`setup` creates `.venv` and installs the pinned dependencies. `run` starts the MCP server and the Alexa+ Simulator and opens http://127.0.0.1:8766/ in your browser; if no browser opens, open the URL printed after "ready". If port 8765 or 8766 is busy, `run` prints one line naming the port and starts nothing.
+
+Ports and browser, one line per shell (cmd stays set for that window only; PowerShell and export for that session):
+
+```
+set CLUCKTALK_PORT=8775
+$env:CLUCKTALK_PORT = "8775"
+export CLUCKTALK_PORT=8775
+```
+
+The same syntax sets `CLUCKTALK_SIMULATOR_PORT` (the Simulator, default 8766) and `CLUCKTALK_NO_BROWSER=1` (do not open a browser). The first line is for cmd, the second for PowerShell, the third for bash and zsh.
+
+Node.js is optional: the card tests that need a JavaScript engine and the pilot page tests are skipped, with a reason, when
+`node` is not installed (`pytest -rs` lists them; the page logic is then not exercised). `verify` does not need Node.js. The secret scan
 in `check` needs a git checkout; on a ZIP download it prints "SKIPPED" and the rest of `check` still runs.
 
 Try asking (typed or, if your browser supports it, spoken): *"How is shed two doing?"*, *"When should I sell shed
