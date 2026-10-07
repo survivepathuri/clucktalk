@@ -48,8 +48,8 @@ seeded, clearly fictional data in mock mode.
 - **Not built:** OAuth 2.1 with PKCE, Protected Resource Metadata, a remote HTTPS URL, security and data policies. The
   server is for local use; off localhost it needs a bearer token, which is not Amazon's account linking.
 - **Prices, sensors, the supplier, SMS and payments are simulated** and labelled Simulated. The demo farm is fictional.
-- **The Telugu wording is not yet reviewed by a native speaker** (`docs/TELUGU_REVIEW.md` lists what is pending), and no
-  Telugu voice has been tested through Alexa+.
+- **Telugu:** 86 of 433 strings reviewed by the builder, a native Telugu speaker; 347 pending (including the pilot page); no independent review. `docs/TELUGU_REVIEW.md` lists each string. No Telugu voice has been tested through Alexa+.
+- **In demo mode a shed with no alert is still described as doing well; pilot mode says: no alert from the checks I can make.**
 - **The cards were tested at sizes of 10 inches and below only**; nothing was tested at 11 inches and above.
 - **The sale-window hint** (`plan_sale`'s "best day to sell is within 3 days", simulated) shows on the daily briefing
   only. It never raises a shed's health status or its safety level.
@@ -57,9 +57,9 @@ seeded, clearly fictional data in mock mode.
   metadata. It is checked against the installed packages on every operating system the CI runs on (ubuntu and
   windows), by a test: a missing or changed package fails it, and only a package its platform marker excludes (pywin32 on Linux)
   may be listed there as not installed.
-- **Latency:** Our p50 and p95 are server times on localhost in mock mode, and Amazon's 500 ms requirement is a round trip that includes the network, so we do not claim to meet it end to end. There is no model call and the data is simulated; a remote host and a real model add to the times.
+- **Latency is not measured end to end.**[^latency]
 - **No agronomic or veterinary review.** Thresholds and the reference curve are cited in `docs/SOURCES.md`; they were not validated with a vet or a farmer, and no tool gives a medicine or a dose.
-- **The pilot is planned to run on the builder's own PC, published through a free Tailscale Funnel; availability depends on that PC and its internet.** It has not been started yet, and nothing about uptime, speed or reliability has been measured (`docs/PILOT_RUNBOOK_WINDOWS.md`).
+- **The pilot is hosted on the builder's own PC, published through a free Tailscale Funnel; availability depends on that PC and its internet.** A pilot link was shared with one farmer on 7 October 2026; usage numbers are pending, and nothing about uptime, speed or reliability has been measured (`docs/PILOT_RUNBOOK_WINDOWS.md`).
 - **Odd behaviours of the MCP SDK and of our shed-name reader** are listed under "Known SDK behaviors" below.
 
 ## What is verified, unverified and simulated
@@ -71,8 +71,8 @@ this repository, not that Alexa+ has seen it.
 |---|---|---|
 | The server implements MCP 2025-11-25 over Streamable HTTP (and negotiates three older versions, with no floor) | VERIFIED | `tests/contract/test_protocol_conformance.py`; the probe table in `python tasks.py verify` |
 | The documented Local Inspector flow (JSON-only `Accept`, protocolVersion 2025-06-18) works against the server | VERIFIED (our replay, not Amazon's tool) | `python tasks.py inspector-replay`; `tests/harness/test_inspector_replay.py` |
-| Every tool's server time is well under 500 ms at p95 on localhost, mock mode (not Amazon's round trip, which includes the network) | VERIFIED (localhost server time only) | `python tasks.py inspector-replay`; `python tasks.py readiness` |
-| The locally checkable Alexa+ requirements we encoded are met | VERIFIED (our checklist, not an Amazon verdict) | `python tasks.py readiness`; `docs/ALEXA_READINESS.md` |
+| Every tool's server time is well under 500 ms at p95 on localhost, mock mode[^latency] | VERIFIED (localhost server time only) | `python tasks.py inspector-replay`; `python tasks.py readiness` |
+| The locally checkable Alexa+ requirements we encoded are met (runtime checks against the server and document-structure checks, counted apart) | VERIFIED (our checklist, not an Amazon verdict) | `python tasks.py readiness`; `docs/ALEXA_READINESS.md` |
 | The briefing, the farm status and its card agree on safety, level and vet advice | VERIFIED | `tests/contract/test_safety_agreement.py`; `tests/contract/test_status_card_follows_safety.py`; `tests/unit/test_property_follow_up_sequences.py` |
 | Malformed, oversized and odd input never gives a 500, a leak or a state change | VERIFIED | `tests/contract/test_fuzz_inputs.py`; `tests/contract/test_protocol_errors.py` |
 | Spoken numbers equal card numbers (in the Simulator) | VERIFIED | `tests/crossmodal.py`; `tests/contract/test_card.py`; `docs/evidence/2026-09-27_card_and_simulator.md` |
@@ -81,19 +81,19 @@ this repository, not that Alexa+ has seen it.
 | Weather reminders come only from the farmer's own rules file, never change a level, the safety field or the vet advice, and leave every answer byte-identical when the file is absent | VERIFIED | `tests/unit/test_property_weather_isolation.py`; `tests/contract/test_weather_display.py` |
 | The weather lines in the demo (the forecast and the example rules) | SIMULATED | `tests/unit/test_weather_server.py`; `docs/weather_rules.example.json` |
 | Weather from the live Open-Meteo service | UNVERIFIED (tested only with a fake transport, not run against the real service) | `tests/unit/test_weather_server.py`; `docs/SOURCES.md` |
-| The Windows launcher files (`deploy/windows/`) list exactly the settings the code reads in pilot mode, hold no secret or hostname, and contain the refusals for a weak token and for data inside the repository | VERIFIED (text checks and the code's own settings loaders; the scripts were not run with a real pilot) | `tests/harness/test_windows_launcher.py` |
+| The Windows launcher files (`deploy/windows/`) list exactly the settings the code reads in pilot mode, hold no secret or hostname, and contain the refusals for a weak token and for data inside the repository | VERIFIED (text checks and the code's own settings loaders only; how the scripts behave on the pilot PC is not recorded in this repository) | `tests/harness/test_windows_launcher.py` |
 | Each safety rule has a row with its source, code location, tests and a before and after example, and the files, functions and golden cases it names exist | VERIFIED (a test checks the references; the thresholds themselves were not validated by a vet or a farmer) | `docs/SAFETY_MATRIX.md`; `tests/harness/test_results_and_proof.py` |
 | The results page (test counts, golden evals, protocol conformance, latency, readiness, build history) is generated from this machine's own runs | VERIFIED (local, mock mode, not an Amazon verdict) | `docs/RESULTS.md`; `python tasks.py results` |
 | The saved outputs of the self-check commands carry their command, date and commit | VERIFIED (text files only) | `docs/proof/verify.txt`; `python tasks.py proof`; `tests/harness/test_proof_files.py` |
 | The mutation counts and the independent-review rounds | UNVERIFIED (copied from the builder's own log; the mutation scripts are not in the repository, and the reviewers were AI agents, not a human audit) | `data/results/mutation_results.json`; `data/results/review_rounds.json`; `docs/INDEPENDENT_REVIEW.md` |
 | The architecture diagrams and the judges' guide name exactly the tools the server lists | VERIFIED (a test compares the names; the diagrams are not rendered by a test) | `docs/ARCHITECTURE.md`; `docs/JUDGES.md`; `tests/harness/test_submission_docs.py` |
-| The pilot page's access controls (a token on every call, exact host and origin, size and rate limits, a kill switch) work as the tests describe | VERIFIED (tests only; never run on a server or a phone) | `SECURITY.md`; `tests/contract/test_pilot_hardening.py` |
+| The pilot page's access controls (a token on every call, exact host and origin, size and rate limits, a kill switch) work as the tests describe | VERIFIED (tests only; not checked on the shared pilot or on a phone) | `SECURITY.md`; `tests/contract/test_pilot_hardening.py` |
 | A human security audit, a privacy and data-law review, OAuth 2.1, remote hosting | NOT BUILT (every item is listed as not done) | `docs/PRODUCTION_PATH.md` |
 | The submission text is complete | UNVERIFIED (the demo video and the two mini-challenge URLs are pending; pilot numbers do not exist yet) | `submission.md` |
-| The pilot runs on the builder's own PC through a Tailscale Funnel, and the farmer can use it | UNVERIFIED (never started; no tunnel, no phone; availability depends on that PC and its internet) | none; `docs/PILOT_RUNBOOK_WINDOWS.md` |
+| The pilot runs on the builder's own PC through a Tailscale Funnel, and the farmer can use it | UNVERIFIED (a pilot link was shared with one farmer on 7 October 2026; usage numbers are pending; availability depends on that PC and its internet) | none; `docs/PILOT_RUNBOOK_WINDOWS.md` |
 | The server runs on an Alexa+ device, or passes Amazon's review | UNVERIFIED | none; see "Known limitations" |
 | The Local Inspector itself accepts the server | UNVERIFIED | none; `FRICTION_LOG.md` FL-024 |
-| Telugu wording is natural and correct | UNVERIFIED | `docs/TELUGU_REVIEW.md` (pending native review) |
+| Telugu wording is natural and correct | UNVERIFIED (86 of 433 strings reviewed by the builder, a native Telugu speaker; 347 pending (including the pilot page); no independent review.) | `docs/TELUGU_REVIEW.md` |
 | Telugu voice works through Alexa+ | UNVERIFIED | none |
 | The cards work at 11 inches and above | UNVERIFIED | `docs/DESIGN.md` (screen size classes) |
 | Live AI (Amazon Bedrock) end to end | UNVERIFIED here | `docs/AWS_SETUP.md`; `FRICTION_LOG.md` FL-014 |
@@ -169,7 +169,9 @@ still shows the tool's own sentence. We cannot script Alexa's wording, and no Al
 
 The server implements MCP 2025-11-25 over Streamable HTTP; for compatibility the SDK also negotiates 2025-06-18, 2025-03-26 and 2024-11-05, and we do not enforce a minimum version. Known limits: it accepts a missing or different `MCP-Protocol-Version` header on an established session, a POST without an `Accept` header returns 406 (the SDK builds a transport for it and discards it at once; no session is left open, tested), and two simultaneous requests with the same JSON-RPC id in one session leave one unanswered. Sessions that clients never end stay open until the SDK's 30-minute idle timeout, at most 10,000 at once. To see what it answers for each version, run `python tasks.py probe-protocol-version` (temporary state file, no AWS; it reports what it saw and judges nothing).
 
-`python tasks.py inspector-replay` replays the flow documented on Amazon's Local Inspector page against a temporary copy of the server (a temporary state file, mock mode, no AWS): `initialize` with protocolVersion 2025-06-18 and clientInfo `addon-local-inspector` using `Accept: application/json` only, the initialized notification, `tools/list`, `resources/read` for every `ui://` card and a `tools/call` for every tool. It prints a step table and the p50 and p95 per step over 20 rounds. **It is our replay of the documented flow, not Amazon's tool, and the Local Inspector itself was not run** (its guide is behind a Developer Console login, FL-024). On this machine the server answers the JSON-only request correctly at every step. Our p50 and p95 are server times on localhost in mock mode, and Amazon's 500 ms requirement is a round trip that includes the network, so we do not claim to meet it end to end.
+`python tasks.py inspector-replay` replays the flow documented on Amazon's Local Inspector page against a temporary copy of the server (a temporary state file, mock mode, no AWS): `initialize` with protocolVersion 2025-06-18 and clientInfo `addon-local-inspector` using `Accept: application/json` only, the initialized notification, `tools/list`, `resources/read` for every `ui://` card and a `tools/call` for every tool. It prints a step table and the p50 and p95 per step over 20 rounds. **It is our replay of the documented flow, not Amazon's tool, and the Local Inspector itself was not run** (its guide is behind a Developer Console login, FL-024). On this machine the server answers the JSON-only request correctly at every step. What the p50 and p95 mean: see the latency note.[^latency]
+
+[^latency]: **Latency note.** Our p50 and p95 are server times on localhost in mock mode, and Amazon's 500 ms requirement is a round trip that includes the network, so we do not claim to meet it end to end. There is no model call and the data is simulated; a remote host and a real model add to the times.
 
 **The `safety` field.** `get_daily_briefing` and `get_farm_status` also return a structured `safety` object (`level`
 OK / WATCH / ALERT / UNKNOWN, `reason_codes`, `vet_contact_advised`) that equals the card's level. The briefing and the farm status read it
@@ -198,7 +200,8 @@ Things the MCP Python SDK (`mcp` 2.2.0) or our shed-name reader does that you mi
 **What it is.** If you write your own outdoor-temperature rules in a small file, the daily briefing and the farm status
 add one reminder line per rule that an hourly outdoor forecast matches. A rule says: "when the lowest or the highest
 forecast temperature over the next N hours is below (or above) the number you set, show your own note". The number, the
-hours ahead and the note are yours, and the note is shown exactly as you wrote it. The repository ships only
+hours ahead and the note are the farmer's, written into the file by the builder from what the farmer said; entering them
+in the app is a roadmap item. The note is shown exactly as it is written. The repository ships only
 `docs/weather_rules.example.json` with two example rules (below 20 and above 30, with placeholder notes): they are
 examples, never defaults, and never used unless you point at the file. The example settings (the lowest or the highest value
 over 12 hours) are example settings until the farmer answers the questions below. The reported rule (cover the curtains
@@ -242,16 +245,17 @@ with the age of the birds?
 
 ## Pilot (stage 1: a prototype for one farmer)
 
-A separate mode (`CLUCKTALK_MODE=pilot`) lets one real farmer try CluckTalk on his phone in Telugu: his own houses from a
-farm file, no demo data, no bird weights, a Telugu page that reads every change back and waits for a tap. It is a
-prototype, **not Alexa+ and not a veterinary service**, and it has not yet been run on a server (see
-`docs/PILOT_RUNBOOK.md`). The plan for running it on the builder's own Windows PC is `docs/PILOT_RUNBOOK_WINDOWS.md`.
+A separate mode (`CLUCKTALK_MODE=pilot`) lets one real farmer try CluckTalk on their phone in Telugu: their own houses
+from a farm file, no demo data, no bird weights, a Telugu page that reads every change back and waits for a tap. It is a
+prototype, **not Alexa+ and not a veterinary service** (see `docs/PILOT_RUNBOOK.md`). It is hosted on the builder's own
+Windows PC through a free tunnel (`docs/PILOT_RUNBOOK_WINDOWS.md`). A pilot link was shared with one farmer on 7 October
+2026; usage numbers are pending.
 
 **When the count belongs to a day.** The farmer counts the deaths of the last 24 hours once each morning, and that count is
 the deaths of *today* (the Asia/Kolkata date). So a second number for the same house on the same day is most likely a
 correction, not new deaths. CluckTalk never assumes: if the house already has deaths for that day it shows the old and the
 new number and asks "add" (the new number is added, the total is shown) or "replace" (the new number replaces the old one,
-which is named); a plain yes does not answer it, and nothing is saved until he taps one of them. The first log of a day
+which is named); a plain yes does not answer it, and nothing is saved until the farmer taps one of them. The first log of a day
 works as it always did. No alert rule is changed by this.
 
 ## Demo clock (for recordings only)
@@ -311,7 +315,7 @@ folder of the same name):
 
 | Agent | Project folder | What we checked |
 |---|---|---|
-| Claude Code | `.claude/skills/clucktalk/` | Unverified: not checked against the official docs in this change, and never loaded in Claude Code here |
+| Claude Code | `.claude/skills/clucktalk/` | Install path not tested as a separate step (the project itself was built with Claude Code) |
 | Kiro | `.kiro/skills/clucktalk/` | Matches Kiro's skills documentation as returned by a web search on 2026-10-01; never loaded in Kiro |
 | Cursor | `.cursor/skills/clucktalk/` (also `.agents/skills/`; Cursor also reads `.claude/skills/`) | Matches Cursor's skills documentation as returned by a web search on 2026-10-01; never loaded in Cursor. A plain top-level `skills/` folder is unverified: we found no Cursor documentation for it |
 | GitHub Copilot (VS Code) | `.github/skills/clucktalk/` | Unverified: seen only on a third-party page, not on GitHub's own documentation; never loaded in Copilot |
@@ -337,7 +341,7 @@ is unverified for all four.
 - `docs/AWS_SETUP.md` — live-mode AWS setup (not needed for the demo).
 - `skills/clucktalk/` — the Agent Skill for operating CluckTalk (see above).
 - `FRICTION_LOG.md` / `FEATURE_REQUESTS.md` — developer friction with the platforms used, recorded as it happens.
-- `docs/TELUGU_REVIEW.md` — every Telugu string with its English pair and native-speaker review status.
+- `docs/TELUGU_REVIEW.md` — every Telugu string with its English pair and its review status.
 
 ## License
 

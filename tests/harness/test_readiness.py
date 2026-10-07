@@ -153,7 +153,10 @@ def test_the_latency_is_stated_as_a_server_time_not_amazons_round_trip():
         "that includes the network, so we do not claim to meet it end to end."
     )
     readme = " ".join((ROOT / "README.md").read_text(encoding="utf-8").split())
-    assert readme.count(sentence) >= 2  # in the replay paragraph and in the known limitations
+    # Step 55: said once, as the README's latency footnote, and the limitation, the claims row and the replay paragraph
+    # all point to it.
+    assert readme.count(sentence) == 1 and f"[^latency]: **Latency note.** {sentence}" in readme
+    assert readme.count("[^latency]") == 4 and "500 ms at p95 on localhost, mock mode[^latency]" in readme
     doc = " ".join((ROOT / "docs" / "ALEXA_READINESS.md").read_text(encoding="utf-8").split())
     assert sentence.lower() in doc.lower()
 

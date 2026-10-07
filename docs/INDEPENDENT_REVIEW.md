@@ -28,8 +28,8 @@ After each main feature, a fresh agent with no memory of building it read the co
 
 ## What stayed open after the reviews
 
-- **Telugu wording** is draft until a native speaker approves it (`docs/TELUGU_REVIEW.md`).
-- **Nothing has run on a server, a phone or a real browser for the pilot.** The page's logic is tested in Node against a hand-made DOM (`tests/harness/pilot_page_checks.js`), which is not a browser test.
+- **Telugu:** 86 of 433 strings reviewed by the builder, a native Telugu speaker; 347 pending (including the pilot page); no independent review. (`docs/TELUGU_REVIEW.md`)
+- **At the time of the review, nothing had run on a server, a phone or a real browser for the pilot**, and this repository records no browser test since. The page's logic is tested in Node against a hand-made DOM (`tests/harness/pilot_page_checks.js`), which is not a browser test.
 - **Two hardening options** (`MemoryDenyWriteExecute` and `SystemCallFilter` in the Linux service units) were skipped on purpose, because they can stop a Python service starting. They are untested.
 - **No human security audit** and no veterinary review exist. See `SECURITY.md` and `docs/PRODUCTION_PATH.md`.
 

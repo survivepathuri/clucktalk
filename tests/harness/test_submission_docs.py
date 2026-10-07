@@ -67,7 +67,7 @@ def test_the_architecture_has_exactly_two_mermaid_diagrams_and_a_table_under_eac
     for section in sections:
         assert "### What is real and what is simulated" in section.split("```", 1)[1]
     assert "SIMULATED" in blocks[0] and "Funnel" in blocks[1]
-    assert "never forwarded" in blocks[1] and "not started" in text.lower()
+    assert "never forwarded" in blocks[1] and "usage numbers are pending" in text
 
 
 def test_every_path_the_documents_name_exists():
@@ -108,7 +108,50 @@ def test_the_pilot_placeholder_is_used_exactly_and_no_pilot_number_is_invented()
     assert PLACEHOLDER in DOCS["submission.md"] and PLACEHOLDER in DOCS["docs/RESULTS.md"]
     pilot = DOCS["submission.md"].split("## The farmer pilot")[1].split("## Challenges")[0]
     assert not re.search(r"\b\d+ (days|records|alerts|farmers)\b", pilot), pilot
-    assert "has **not been started**" in pilot
+    assert (
+        f"A pilot link was shared with one farmer on 7 October 2026; usage numbers are pending {PLACEHOLDER}." in pilot
+    )
+    assert "Nothing about uptime, speed or reliability has been measured." in pilot
+    assert not re.search(r"\b(uses it|used it daily|every day|reliabl[ey] (ran|runs))\b", pilot), pilot
+
+
+TELUGU_DOCS = ("submission.md", "README.md", "docs/JUDGES.md", "docs/RESULTS.md")
+
+
+def test_one_telugu_sentence_with_generated_numbers_in_every_judge_facing_document():
+    import results  # scripts/results.py; the numbers come from docs/TELUGU_REVIEW.md
+
+    sentence = results.telugu_sentence((ROOT / "docs" / "TELUGU_REVIEW.md").read_text(encoding="utf-8"))
+    assert "not recorded" not in sentence
+    for name in TELUGU_DOCS:
+        text = " ".join((ROOT / name).read_text(encoding="utf-8").split())
+        assert sentence in text, name
+        assert "first 82" not in text and "until a native speaker approves" not in text, name
+        assert "not yet reviewed by a native speaker" not in text, name
+
+
+def test_the_author_name_is_only_in_the_license_files():
+    """The git author's personal name may stand only where a license names its copyright holder."""
+    names = subprocess.run(["git", "log", "--format=%an"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8")
+    authors = {n for n in names.stdout.splitlines() if n.strip()}
+    if names.returncode != 0 or not authors:
+        pytest.skip("not a git checkout: no author name to look for")
+    found = set()
+    for author in authors:
+        done = subprocess.run(["git", "grep", "-l", "-F", "-e", author], cwd=ROOT, capture_output=True, text=True)
+        found |= set(done.stdout.split())
+    assert found <= {"LICENSE", "NOTICE", "skills/clucktalk/LICENSE"}, sorted(found)  # paths only, never the name
+
+
+def test_the_doing_well_wording_is_scoped_to_demo_mode_and_row_seven_makes_no_fit_claim():
+    matrix = DOCS["docs/SAFETY_MATRIX.md"]
+    assert "In **pilot mode**, a shed with no alert" in matrix and "In demo mode a shed with no alert" in matrix
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert (
+        "In demo mode a shed with no alert is still described as doing well; pilot mode says: no alert from the checks "
+        "I can make." in readme
+    )
+    assert "so it fits his farm by definition" not in matrix
 
 
 # -- submission.md --------------------------------------------------------------------------------------------

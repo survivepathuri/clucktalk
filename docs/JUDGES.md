@@ -8,15 +8,15 @@ Windows (cmd; on Linux or macOS use `python3`). Python 3.12 or 3.13.
 
 ```
 python tasks.py setup     :: creates .venv, installs the pinned dependencies
+python tasks.py verify    :: one table of what you can check, about 30 seconds (it starts its own temporary server)
 python tasks.py serve     :: the MCP server at http://127.0.0.1:8765/mcp with a fictional demo farm (leave it running)
-python tasks.py verify    :: in a second window: one table of what you can check, about 30 seconds
 ```
 
-For the Simulator in a browser (Echo Show and Echo Dot modes, cards, a panel showing the exact MCP calls), run `python tasks.py run` instead of `serve`; it opens http://127.0.0.1:8766/. Everything runs on seeded, fictional data in mock mode and shows a "Demo data" badge.
+`verify` starts its own temporary server, so it does not need `serve`. `serve` is needed only to call the tools yourself (minute 2). For the Simulator in a browser (Echo Show and Echo Dot modes, cards, a panel showing the exact MCP calls), run `python tasks.py run` instead of `serve`; it opens http://127.0.0.1:8766/. Everything runs on seeded, fictional data in mock mode and shows a "Demo data" badge.
 
 ## Five minutes, in this order
 
-1. **Minute 1: run `verify`** and read the table. Then open `docs/RESULTS.md` (test counts, the golden evals, mutation checks, protocol conformance, latency, readiness, the independent reviews). Both are generated from this machine's own runs.
+1. **Minute 1: run `verify`** and read the table. Then open `docs/RESULTS.md` (test counts, the golden evals, mutation checks, protocol conformance, latency, readiness, the independent reviews). The table and most of that page are generated from this machine's own runs; the mutation checks and the reviews are copied by hand from the builder's log, and the page says so.
 2. **Minute 2: see the tool calls.** With `serve` running, `npx @modelcontextprotocol/inspector@2.8.0 --cli http://127.0.0.1:8765/mcp --method tools/list` lists the 14 tools. Or `python tasks.py inspector-replay` replays the flow Amazon documents for its Local Inspector against a temporary copy of the server (our replay; the Local Inspector itself was not run).
 3. **Minute 3: ask the Simulator** "How is shed two doing?" Then say "5 birds died in shed 1". It reads the number back and saves nothing until you say yes.
 4. **Minute 4: the safety rules.** `docs/SAFETY_MATRIX.md` has one row per rule: where it came from, where it is in the code, which tests pin it, a before and after example, and which thresholds are general guidance that may not fit a given farm.
@@ -31,7 +31,7 @@ For the Simulator in a browser (Echo Show and Echo Dot modes, cards, a panel sho
 | Safety rules in code | `src/clucktalk/domain/` (`status.py`, `triage.py`, `follow_up.py`, `thresholds.py`) |
 | Golden evals | `data/eval/golden_cases.json`, results in `docs/EVALS.md` |
 | The architecture | `docs/ARCHITECTURE.md`; the full design is `docs/DESIGN.md` |
-| What the pilot is | `docs/PILOT_RUNBOOK_WINDOWS.md` (planned, not started) |
+| What the pilot is | `docs/PILOT_RUNBOOK_WINDOWS.md` (a link was shared with one farmer on 7 October 2026; usage numbers pending) |
 | Friction with the platforms we used | `FRICTION_LOG.md`, `FEATURE_REQUESTS.md`, `docs/PRODUCT_FEEDBACK.md` |
 | Security notes | `SECURITY.md` |
 | The Agent Skill | `skills/clucktalk/` |
@@ -43,6 +43,7 @@ For the Simulator in a browser (Echo Show and Echo Dot modes, cards, a panel sho
 - **Latency numbers** are server times on localhost in mock mode. Amazon's 500 ms is a round trip including the network, so we do not claim to meet it end to end.
 - **Simulated:** prices, sensors, the supplier, SMS and payments, and the whole demo farm.
 - **No veterinary or agronomic review.** The thresholds are general guidance or the builder's heuristics (`docs/SAFETY_MATRIX.md`). No tool gives a medicine or a dose.
-- **Telugu wording is draft** until a native speaker approves it (`docs/TELUGU_REVIEW.md`), and no Telugu voice was tested through Alexa+.
+- **Telugu:** 86 of 433 strings reviewed by the builder, a native Telugu speaker; 347 pending (including the pilot page); no independent review. No Telugu voice was tested through Alexa+ (`docs/TELUGU_REVIEW.md`).
+- **In demo mode a shed with no alert is still described as doing well;** pilot mode says "no alert from the checks I can make".
 - **Live AI** (Amazon Bedrock Nova 2 Lite) is off by default; the server's live path was not verified end to end here.
-- **The farmer pilot** is planned on the builder's own PC through a free tunnel and has not started (`docs/RESULTS.md`, section 8).
+- **The farmer pilot** is hosted on the builder's own PC through a free tunnel. A pilot link was shared with one farmer on 7 October 2026; usage numbers are pending (`docs/RESULTS.md`, section 9).
