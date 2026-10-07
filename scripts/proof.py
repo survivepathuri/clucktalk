@@ -1,8 +1,9 @@
 """Save the text output of four self-check commands under docs/proof/ (Step 54): ``python tasks.py proof``.
 
 Each file starts with a header: the command that made it, the date, the commit hash and whether the working tree was
-clean. The body is the command's own output, unchanged except that a temporary folder path (which names the local user
-account) is replaced by ``<temporary folder>``. No screenshots. Nothing is typed by hand.
+clean (the files this script and scripts/results.py write are not counted). The body is the command's own output,
+unchanged except that a temporary folder path (which names the local user account) is replaced by
+``<temporary folder>``. No screenshots. Nothing is typed by hand.
 
 Usage (Windows):  python tasks.py proof
 """
@@ -16,6 +17,10 @@ from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from results import tree_state  # noqa: E402  (the same rule for both: the generated files are not counted)
+
 PROOF = ROOT / "docs" / "proof"
 COMMANDS = {
     "verify": ["tasks.py", "verify"],
@@ -54,7 +59,8 @@ def main() -> int:
         print("proof: takes no options.", file=sys.stderr)
         return 2
     commit = _git("rev-parse", "--short", "HEAD") or "not recorded"
-    tree = "clean" if not _git("status", "--short") else "modified (uncommitted files)"
+    status = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True).stdout
+    tree = tree_state(status)
     PROOF.mkdir(parents=True, exist_ok=True)
     worst = 0
     for name, cmd in COMMANDS.items():

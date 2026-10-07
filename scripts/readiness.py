@@ -27,6 +27,7 @@ ADDON_DRAFT = ROOT / "docs" / "addon-package" / "addon.json"
 DOC = ROOT / "docs" / "ALEXA_READINESS.md"
 MET, NOT_MET, NOT_CHECKABLE = "MET", "NOT MET", "NOT CHECKABLE LOCALLY"
 NOT_AMAZON = "this is not an Amazon verdict"
+DOCUMENT_KEYS = frozenset({"screens", "addon"})  # checks that read a document, not the running server
 OVERLAP_LIMIT = 0.7  # our own bound on the word overlap of two tool descriptions (Jaccard); not an Amazon number
 ERROR_FIELDS = ("message_en", "message_te", "next_step_en", "next_step_te")
 
@@ -354,11 +355,24 @@ def collect(url: str, rounds: int) -> list[Requirement]:
     return reqs
 
 
+def _score(reqs: list[Requirement], label: str) -> str:
+    met = sum(r.status == MET for r in reqs)
+    return f"{met} {label} met" if met == len(reqs) else f"{met} of {len(reqs)} {label} met"
+
+
 def summary_line(reqs: list[Requirement]) -> str:
+    """Runtime checks (run against the server) and document-structure checks (read a file) are counted apart, so a
+    document that only declares something never reads as a runtime result."""
     local = [r for r in reqs if r.status != NOT_CHECKABLE]
-    met = sum(r.status == MET for r in local)
-    other = len(reqs) - len(local)
-    return f"{met} of {len(local)} locally checkable requirements met; {other} not checkable locally; {NOT_AMAZON}"
+    runtime = [r for r in local if r.key not in DOCUMENT_KEYS]
+    documents = [r for r in local if r.key in DOCUMENT_KEYS]
+    return (
+        f"{_score(runtime, 'runtime checks')}; {_score(documents, 'document-structure checks')}; not an Amazon verdict"
+    )
+
+
+def not_checkable_line(reqs: list[Requirement]) -> str:
+    return f"{sum(r.status == NOT_CHECKABLE for r in reqs)} requirements are not checkable locally"
 
 
 def render_list(reqs: list[Requirement]) -> str:
@@ -377,7 +391,7 @@ def render_doc(reqs: list[Requirement], rounds: int) -> str:
         "checked locally, and lists the ones that cannot. The Local Inspector itself was not run (FL-024); the latency "
         f"numbers come from `python tasks.py inspector-replay` ({rounds} rounds, localhost, mock mode).",
         "",
-        f"**{summary_line(reqs)}.**",
+        f"**{summary_line(reqs)}.** {not_checkable_line(reqs)}; they are listed below.",
         "",
         "| Status | Requirement | What was seen | Source page |",
         "|---|---|---|---|",
@@ -419,6 +433,7 @@ def main(argv: list[str] | None = None, rounds: int = 10) -> int:
         return 1
     print(render_list(reqs))
     print(f"\n{summary_line(reqs)}")
+    print(not_checkable_line(reqs))
     if args == ["--write-doc"]:
         DOC.write_text(render_doc(reqs, rounds), encoding="utf-8", newline="\n")
         print(f"readiness: wrote {DOC.relative_to(ROOT)}")

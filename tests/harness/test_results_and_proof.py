@@ -106,7 +106,9 @@ def _render(check_summary: list[str]) -> str:
         conformance="21 passed in 3.0s",
         probe_rows=["2025-11-25 | 200 | 2025-11-25"],
         replay=results.parse_replay(REPLAY_SAMPLE),
-        readiness_line="8 of 8 locally checkable requirements met; 4 not checkable locally; this is not an Amazon verdict.",
+        readiness_line="6 runtime checks met; 2 document-structure checks met; not an Amazon verdict.",
+        not_checkable="4 requirements are not checkable locally",
+        telugu=results.telugu_sentence("**Pending: 3** · Approved: 2"),
         check_summary=check_summary,
         mutations=json.loads(results.MUTATIONS.read_text(encoding="utf-8")),
         reviews=json.loads(results.REVIEWS.read_text(encoding="utf-8")),
@@ -122,6 +124,31 @@ def test_the_rendered_results_label_the_latency_and_the_readiness_and_keep_the_p
     assert "| `tests/contract` | not recorded |" in text  # a missing count is said, never invented
     assert "**3**" in text  # the total adds the counts that exist
     assert "Failing cases: `b-case`." in text and "2 of 3 cases passed" in text
+
+
+def test_the_header_says_which_sections_are_generated_and_which_are_copied_by_hand():
+    head = _render([]).split("## 1.")[0]
+    assert "Nothing here is typed by hand" not in head
+    assert "Sections 1, 2, 4, 5, 6 and 8 are generated" in head and "sections 3 and 7 are copied by hand" in head
+    assert "4 requirements are not checkable locally" in _render([])
+
+
+def test_only_the_generated_files_are_ignored_when_judging_the_tree():
+    assert results.tree_state("") == "clean"
+    assert results.tree_state(" M docs/RESULTS.md\n M docs/proof/verify.txt\n") == "clean"
+    assert results.tree_state(" M docs/RESULTS.md\n M README.md\n") == "modified (uncommitted files)"
+    assert results.tree_state("?? docs/proofs.md\n") == "modified (uncommitted files)"
+    assert proof.tree_state(" M docs/proof/verify.txt\n") == "clean"
+    assert proof.tree_state(" M scripts/proof.py\n") == "modified (uncommitted files)"
+
+
+def test_the_telugu_sentence_takes_its_numbers_from_the_review_file():
+    assert results.telugu_sentence("**Pending: 3** · Approved: 2") == (
+        "2 of 5 strings reviewed by the builder, a native Telugu speaker; 3 pending (including the pilot page); "
+        "no independent review."
+    )
+    assert "not recorded" in results.telugu_sentence("no counts here")
+    assert "- Telugu: 2 of 5 strings reviewed by the builder" in _render([])
 
 
 def test_a_missing_check_log_is_said_and_a_given_one_is_shown():
@@ -184,6 +211,7 @@ def test_the_build_history_is_a_table_of_commits_per_day_with_the_first_and_late
     text = results.history_text([("2026-09-27", 9), ("2026-09-28", 2)])
     assert "first commit is dated 2026-09-27 and the latest 2026-09-28; 11 commits on 2 days" in text
     assert "| 2026-09-27 | 9 |" in text
+    assert "The count does not include the commit that saves this page." in text
     assert "not recorded" in results.history_text([])
     assert "## 8. Build history" in _render([])
 

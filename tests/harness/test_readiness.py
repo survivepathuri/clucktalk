@@ -20,19 +20,30 @@ import tasks  # noqa: E402
 
 FORBIDDEN = re.compile(r"NOT_CERTIFIED|CERTIFIED|CONDITIONAL", re.I)
 SUMMARY = re.compile(
-    r"^\d+ of \d+ locally checkable requirements met; \d+ not checkable locally; this is not an Amazon verdict$", re.M
+    r"^\d+(?: of \d+)? runtime checks met; \d+(?: of \d+)? document-structure checks met; not an Amazon verdict$",
+    re.M,
 )
 
 
-def req(status):
-    return readiness.Requirement("k", "text", status, "detail", "source")
+def req(status, key="k"):
+    return readiness.Requirement(key, "text", status, "detail", "source")
 
 
 def test_the_summary_line_has_the_documented_shape_and_counts():
     reqs = [req("MET"), req("MET"), req("NOT MET"), req("NOT CHECKABLE LOCALLY"), req("NOT CHECKABLE LOCALLY")]
+    reqs += [req("MET", "screens"), req("MET", "addon")]
     assert readiness.summary_line(reqs) == (
-        "2 of 3 locally checkable requirements met; 2 not checkable locally; this is not an Amazon verdict"
+        "2 of 3 runtime checks met; 2 document-structure checks met; not an Amazon verdict"
     )
+    assert readiness.not_checkable_line(reqs) == "2 requirements are not checkable locally"
+
+
+def test_a_document_check_never_counts_as_a_runtime_check():
+    reqs = [req("MET"), req("NOT MET", "addon"), req("MET", "screens")]
+    assert readiness.summary_line(reqs) == (
+        "1 runtime checks met; 1 of 2 document-structure checks met; not an Amazon verdict"
+    )
+    assert readiness.DOCUMENT_KEYS == {"screens", "addon"}
 
 
 def test_the_list_shows_status_detail_and_source_for_each_requirement():
@@ -63,7 +74,8 @@ def test_a_real_run_prints_every_requirement_the_summary_and_the_disclaimer(caps
     ):
         assert "[NOT CHECKABLE LOCALLY] " in out and item in out
     assert out.count("    source: ") == 12
-    assert SUMMARY.search(out) and "8 of 8 locally checkable requirements met; 4 not checkable" in out
+    assert SUMMARY.search(out) and "6 runtime checks met; 2 document-structure checks met;" in out
+    assert "4 requirements are not checkable locally" in out
     assert hashlib.sha256(doc.read_bytes()).hexdigest() == before  # without --write-doc the doc is not touched
 
 
@@ -78,7 +90,7 @@ def test_a_draft_that_breaks_a_limit_is_reported_not_met(capsys, tmp_path, monke
     assert readiness.main([], rounds=1) == 0
     out = capsys.readouterr().out
     assert "[NOT MET] The draft add-on listing" in out and "name.value is 31 characters" in out
-    assert "7 of 8 locally checkable requirements met" in out
+    assert "6 runtime checks met; 1 of 2 document-structure checks met" in out
 
 
 def test_a_missing_screen_declaration_is_reported_not_met(capsys, monkeypatch):
