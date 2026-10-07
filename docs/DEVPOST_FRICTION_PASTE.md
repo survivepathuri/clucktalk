@@ -263,7 +263,34 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 **Why this matters to Alexa+ developers:** The docs give a builder no protocolVersion to implement or to refuse, and the Local Inspector example uses a different one than the hackathon track asks for, so a builder cannot tell which one to follow.
 
 
-## Entry 11 (FL-007): MCP Apps default CSP has no `font-src`, so even an inlined (data:) font is blocked; the reference host allows it; the spec does not say whether a CSP-blocked `@font-face` source falls through
+## Entry 11 (FL-027): AWS console sign-in failed with rejected authenticator codes across several project accounts, and App Runner no longer takes new customers
+
+**Origin:** Amazon · **Tag:** [AWS console/account] [AWS App Runner docs] · **Severity:** Medium · **Date:** 2026-10-07
+
+**Impact:** AWS access was unavailable on 7 October 2026 and the recovery was postponed (not done). The farmer pilot is hosted on the builder's own PC through a free Tailscale Funnel instead (builder-reported).
+
+**Tool / service:** AWS Management Console sign-in with multi-factor authentication (authenticator app one-time codes); AWS documentation page "AWS App Runner availability change". Builder-reported; no command output exists in the repository.
+
+**Task attempted:** Sign in to the AWS console to continue the AWS work, and choose a hosting service for the farmer pilot.
+
+**Steps taken:** (1) Entered the authenticator app's one-time codes at the console sign-in. (2) While choosing hosting, read the AWS documentation page "AWS App Runner availability change".
+
+**Expected vs actual:** (1) Expected the one-time code to sign the builder in. Actual: the codes were rejected. Several AWS accounts had been created during the project, so it was unclear which account held the credits and which authenticator entry belonged to it. (2) Expected App Runner to be available to a new customer. Actual: the page states that App Runner stopped accepting new customers on 30 April 2026 and recommends ECS Express Mode.
+
+**Workaround:** Postponed the account recovery; hosted the pilot on the builder's own PC through a free Tailscale Funnel; the demo needs no AWS (mock mode).
+
+**Actionable suggestion:** Owners: the AWS sign-in and account recovery team; the AWS App Runner documentation team. When a one-time code is rejected, show which account the sign-in is for (its alias or the last digits of its id) and the name of the MFA device registered on it, so a builder with several accounts can tell which authenticator entry to use; and show on the Billing credits page which account a promotional credit was applied to. Question to the App Runner documentation team: is the 30 April 2026 change shown at the top of every App Runner getting-started page, with the link to ECS Express Mode?
+
+**Time cost:** [BUILDER TO CONFIRM: How many hours did the AWS console sign-in problem on 7 October cost?]
+
+**Reproduce:** documentation-based, no command (the sign-in failure is specific to the builder's accounts).
+
+**Evidence in the repo:** none (builder-reported, 7 October 2026). Doc URL: not recorded.
+
+**Why this matters to Alexa+ developers:** For us it moved the farmer pilot off AWS onto the builder's own PC; an Alexa+ add-on needs a reachable HTTPS endpoint (`docs/PRODUCTION_PATH.md`, item 3), and the documented AWS option we first looked at, App Runner, no longer takes new customers.
+
+
+## Entry 12 (FL-007): MCP Apps default CSP has no `font-src`, so even an inlined (data:) font is blocked; the reference host allows it; the spec does not say whether a CSP-blocked `@font-face` source falls through
 
 **Origin:** MCP Apps SDK · **Tag:** [MCP Apps] · **Severity:** Medium · **Date:** 2026-09-27
 
@@ -292,7 +319,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** A card that bundles a Telugu font works on the reference host but may silently lose it on a host that applies the spec's default CSP, and Alexa+ font availability is not published (FL-009).
 
 
-## Entry 12 (FL-002): Default tool error text includes the tool name and validation details
+## Entry 13 (FL-002): Default tool error text includes the tool name and validation details
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-27
 
@@ -317,7 +344,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** Alexa+ guidance says tool errors must be customer-safe, but the SDK default puts the tool name and validation details in error text that a voice host may read aloud.
 
 
-## Entry 13 (FL-004): Unclear whether `outputSchema` applies to `isError` results; SDK and Inspector disagree
+## Entry 14 (FL-004): Unclear whether `outputSchema` applies to `isError` results; SDK and Inspector disagree
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-27
 
@@ -342,7 +369,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** The SDK client and the Inspector disagree on whether an error result must match the tool's output schema, so a structured error can be rejected by one and accepted by the other.
 
 
-## Entry 14 (FL-001): Middleware results skip per-version shaping, so `resultType` leaks onto the 2025-11-25 wire
+## Entry 15 (FL-001): Middleware results skip per-version shaping, so `resultType` leaks onto the 2025-11-25 wire
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-27
 
@@ -367,7 +394,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** A customer-safe error returned from server middleware carries a 2026-07-28 field onto the 2025-11-25 wire unless the server strips it itself.
 
 
-## Entry 15 (FL-008): On a 2025-11-25 connection, SDK 2.2.0 drops the server's `capabilities.extensions`, so the Apps extension is invisible in `initialize`
+## Entry 16 (FL-008): On a 2025-11-25 connection, SDK 2.2.0 drops the server's `capabilities.extensions`, so the Apps extension is invisible in `initialize`
 
 **Origin:** third-party MCP SDK · **Tag:** [MCP Apps] · **Severity:** Low · **Date:** 2026-09-27
 
@@ -392,7 +419,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** On a 2025-11-25 connection a server cannot declare the Apps extension in its initialize result; hosts must discover cards through the tool's _meta.ui.resourceUri.
 
 
-## Entry 16 (FL-003): Localhost default Origin allow-list accepts every localhost port
+## Entry 17 (FL-003): Localhost default Origin allow-list accepts every localhost port
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Low · **Date:** 2026-09-27
 
@@ -417,7 +444,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** On a local MCP server, a page served from any local port passes the SDK's default Origin check.
 
 
-## Entry 17 (FL-006): MCP Apps spec example sends `clientInfo` in `ui/initialize`, but the schema requires `appInfo`
+## Entry 18 (FL-006): MCP Apps spec example sends `clientInfo` in `ui/initialize`, but the schema requires `appInfo`
 
 **Origin:** MCP Apps SDK · **Tag:** [MCP Apps] · **Severity:** Low · **Date:** 2026-09-27
 
@@ -440,7 +467,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** A card written from the spec's own example would be rejected by a host that validates against the schema.
 
 
-## Entry 18 (FL-011): Two in-flight requests with the same JSON-RPC id on one session: the SDK silently never answers one
+## Entry 19 (FL-011): Two in-flight requests with the same JSON-RPC id on one session: the SDK silently never answers one
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-28
 
@@ -467,7 +494,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** A retrying host that reuses a JSON-RPC id on one session can leave requests unanswered with no server log line.
 
 
-## Entry 19 (FL-021): ext-apps basic-host cannot be built with `npm ci --ignore-scripts`: it needs the unbuilt repo root, bun, and bun's postinstall
+## Entry 20 (FL-021): ext-apps basic-host cannot be built with `npm ci --ignore-scripts`: it needs the unbuilt repo root, bun, and bun's postinstall
 
 **Origin:** MCP Apps SDK · **Tag:** [MCP Apps] · **Severity:** Low · **Date:** 2026-10-01
 

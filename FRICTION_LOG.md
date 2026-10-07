@@ -3,13 +3,15 @@
 Developer friction with the tools and services used (Alexa+, MCP, AWS, SDKs), recorded **as it happens** (CLAUDE.md Rule 2).
 Only real experiences. Never batched, never invented.
 
+**Environment** (from `docs/VERSIONS.md` unless another file is named): Windows 11 Pro 10.0.22621; Python 3.13.15 (the project's venv; CI also runs 3.12); the MCP Python SDK `mcp` 2.2.0 with `mcp-types` 2.2.0; the MCP Apps reference host ext-apps `basic-host` at commit 82221c0 (v2.0.3), as recorded in FL-021 and `docs/evidence/2026-10-01_basic_host/README.md` (`docs/VERSIONS.md` records the npm package `@modelcontextprotocol/ext-apps` 2.0.0, not the host commit); MCP Inspector 2.8.0; Node.js 24.15.0; AWS CLI 2.37.4 and boto3 1.43.103; the model calls in us-east-1 with `us.amazon.nova-2-lite-v1:0`, on an AWS account created in India (AWS India, AISPL; Paid plan, `docs/AWS_SETUP.md` section 5). Entries are dated 2026-09-27 to 2026-10-07.
+
 **Severity** is one word, rated from the point of view of the owner of the tool or service being criticised: Critical (blocks work) · High (major workaround) · Medium (slows work) · Low (annoyance / doc nit). Explanations of what it cost us go on a separate `Impact:` line.
 
-**Tags**: [Alexa+/MCP] Alexa+ docs, MCP protocol and the Python `mcp` SDK · [MCP Apps] MCP Apps spec and its reference host · [AWS/Bedrock/Nova] AWS CLI, Bedrock, Nova · [AWS account/credits] account plan, billing, credits · [Dev] our own tooling (Claude Code, Windows, npm, CI), kept in `docs/DEV_NOTES.md`.
+**Tags**: [Alexa+/MCP] Alexa+ docs, MCP protocol and the Python `mcp` SDK · [MCP Apps] MCP Apps spec and its reference host · [AWS/Bedrock/Nova] AWS CLI, Bedrock, Nova · [AWS account/credits] account plan, billing, credits · [AWS console/account] console sign-in and which account is which · [AWS App Runner docs] the App Runner documentation · [Dev] our own tooling (Claude Code, Windows, npm, CI), kept in `docs/DEV_NOTES.md`.
 
 Every entry uses the six official fields (task attempted, steps taken, expected vs actual, severity, workaround, actionable suggestion) plus date, tag, `Time cost:` (only what was recorded in the sessions, otherwise "not recorded"), `Reproduce:` (a real command or the exact test name, otherwise "documentation-based, no command") and `Evidence:` (only files that exist in this repo). Every suggestion names the owner, the page or mechanism and the concrete change; open points are phrased as questions to the owner.
 
-**Counts:** 26 FL numbers (FL-001 to FL-026): 23 live entries (19 in this file, 4 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
+**Counts:** 27 FL numbers (FL-001 to FL-027): 24 live entries (20 in this file, 4 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
 
 **FL numbers are stable ids.** They are never reused or renumbered, so every reference in the code, the docs and the submission copies stays valid. FL-010, FL-016 and FL-018 were merged into FL-007 and FL-014 (2026-10-01 audit); their numbers remain as short stubs.
 
@@ -33,6 +35,7 @@ Audit of 2026-10-01: three pairs of entries that describe one problem were merge
 | FL-022, FL-023, FL-025 | [Dev] | `docs/DEV_NOTES.md` (FL-022 includes its recurrence note) |
 | FL-024 | [Alexa+/MCP] | this file |
 | FL-026 | [Alexa+/MCP] | this file |
+| FL-027 | [AWS console/account] [AWS App Runner docs] | this file (builder-reported) |
 
 ---
 
@@ -360,3 +363,20 @@ Time cost: not recorded
 Reproduce: documentation-based, no command (plus `python tasks.py probe-protocol-version` and `python tasks.py inspector-replay` for our own server only).
 Evidence: `docs/SOURCES.md` (both pages); `tests/contract/test_protocol_conformance.py`; `scripts/probe_protocol_version.py`; `scripts/inspector_replay.py`.
 See also: FR-008 (the related distributionCountries question).
+
+### FL-027: AWS console sign-in failed with rejected authenticator codes across several project accounts, and App Runner no longer takes new customers
+Date: 2026-10-07
+Tool / service: AWS Management Console sign-in with multi-factor authentication (authenticator app one-time codes); AWS documentation page "AWS App Runner availability change". Builder-reported; no command output exists in this repository.
+Tag: [AWS console/account] [AWS App Runner docs]
+Task attempted: Sign in to the AWS console to continue the AWS work, and choose a hosting service for the farmer pilot.
+Steps taken: (1) Entered the authenticator app's one-time codes at the console sign-in. (2) While choosing hosting, read the AWS documentation page "AWS App Runner availability change".
+Expected vs actual: (1) Expected the one-time code to sign the builder in. Actual: the codes were rejected. Several AWS accounts had been created during the project, so it was unclear which account held the credits and which authenticator entry belonged to it. (2) Expected App Runner to be available to a new customer. Actual: the page states that App Runner stopped accepting new customers on 30 April 2026 and recommends ECS Express Mode.
+Severity: Medium
+Impact: AWS access was unavailable on 7 October 2026 and the recovery was postponed (not done). The farmer pilot is hosted on the builder's own PC through a free Tailscale Funnel instead (builder-reported).
+Workaround: Postponed the account recovery; hosted the pilot on the builder's own PC through a free Tailscale Funnel; the demo needs no AWS (mock mode).
+Actionable suggestion: Owners: the AWS sign-in and account recovery team; the AWS App Runner documentation team. When a one-time code is rejected, show which account the sign-in is for (its alias or the last digits of its id) and the name of the MFA device registered on it, so a builder with several accounts can tell which authenticator entry to use; and show on the Billing credits page which account a promotional credit was applied to. Question to the App Runner documentation team: is the 30 April 2026 change shown at the top of every App Runner getting-started page, with the link to ECS Express Mode?
+Time cost: [BUILDER TO CONFIRM: How many hours did the AWS console sign-in problem on 7 October cost?]
+Reproduce: documentation-based, no command (the sign-in failure is specific to the builder's accounts).
+Evidence: none in the repository (builder-reported, 7 October 2026).
+Verified on: 2026-10-07
+Doc URL: not recorded (the App Runner page's URL is not in `docs/SOURCES.md`).

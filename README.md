@@ -341,6 +341,8 @@ is unverified for all four.
 - `docs/AWS_SETUP.md` — live-mode AWS setup (not needed for the demo).
 - `skills/clucktalk/` — the Agent Skill for operating CluckTalk (see above).
 - `FRICTION_LOG.md` / `FEATURE_REQUESTS.md` — developer friction with the platforms used, recorded as it happens.
+- `docs/FRICTION_SUMMARY.md` — one page: the friction entries we would most like the Amazon teams to read.
+- `docs/PRODUCT_FEEDBACK.md` — feedback on every tool, API and service used (the five hackathon questions); paste-ready copy: `docs/PRODUCT_FEEDBACK_DEVPOST.md`.
 - `docs/TELUGU_REVIEW.md` — every Telugu string with its English pair and its review status.
 
 ## License

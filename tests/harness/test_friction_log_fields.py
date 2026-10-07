@@ -109,7 +109,7 @@ def test_the_header_counts_equal_the_entries_found():
     assert m, "the log header states the counts"
     numbers, live, here, dev = (int(x) for x in m.groups())
     found = [fl for _, fl, _ in ENTRIES]
-    assert numbers == len(set(found)) == 26
+    assert numbers == len(set(found)) == 27
     assert live == len(LIVE) == here + dev
     assert here == len([1 for n, _, _ in LIVE if n == "FRICTION_LOG.md"]) and dev == len(
         [1 for n, _, _ in LIVE if n == "docs/DEV_NOTES.md"]
@@ -163,6 +163,27 @@ def test_every_short_entry_is_under_120_words():
     assert len(entries) >= 19
     for entry in entries:
         assert len(entry.split()) < 120, entry.splitlines()[0]
+
+
+@pytest.mark.parametrize("name", PASTES)
+def test_fl_027_follows_fl_026_in_the_amazon_group(name):
+    text = (ROOT / name).read_text(encoding="utf-8")
+    order = [fl for _, fl in re.findall(r"(?m)^## Entry (\d+) \((FL-\d{3})\)", text)]
+    assert order[order.index("FL-026") + 1] == "FL-027" and order.index("FL-027") == 10
+    entry = text.split("(FL-027)")[1].split("\n## Entry ")[0]
+    assert "Origin:** Amazon" in entry and "Severity:** Medium" in entry and "30 April 2026" in entry
+
+
+def test_fl_027_is_builder_reported_with_its_date_and_an_unrecorded_url():
+    body = next(b for _, fl, b in LIVE if fl == "FL-027")
+    fields = _fields(body)
+    assert fields["Date"] == "2026-10-07" and fields["Tag"] == "[AWS console/account] [AWS App Runner docs]"
+    assert fields["Severity"] == "Medium" and "builder-reported" in body.lower()
+    assert fields["Time cost"].startswith("[BUILDER TO CONFIRM:")  # the hours are asked, never guessed
+    assert "Verified on: 2026-10-07" in body and "Doc URL: not recorded" in body
+    assert "ECS Express Mode" in fields["Expected vs actual"]
+    header = (ROOT / "FRICTION_LOG.md").read_text(encoding="utf-8").split("## Entry template")[0]
+    assert "**Environment**" in header and "2026-09-27 to 2026-10-07" in header and "us-east-1" in header
 
 
 def test_fl_026_agrees_across_the_log_and_both_copies():

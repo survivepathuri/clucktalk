@@ -103,7 +103,17 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Reproduce:** Documentation-based, no command (our own server: probe-protocol-version, inspector-replay).
 
 
-## Entry 11 (FL-007): MCP Apps default CSP blocks even inlined fonts
+## Entry 11 (FL-027): AWS console sign-in failed; App Runner takes no new customers
+**Tag:** [AWS console/account] [AWS App Runner docs] · **Origin:** Amazon · **Severity:** Medium
+**Task:** Sign in to the console; choose pilot hosting (builder-reported, 7 October 2026).
+**Steps:** Entered authenticator codes; read the App Runner availability page.
+**Expected vs actual:** Codes rejected; with several accounts, unclear which held the credits or matched the authenticator. App Runner stopped taking new customers on 30 April 2026 (ECS Express Mode recommended).
+**Workaround:** Recovery postponed; pilot on the builder's PC via a free Tailscale Funnel.
+**Suggestion:** Sign-in team: on a rejected code, name the account and its MFA device. App Runner docs: show the change on getting-started pages.
+**Reproduce:** Documentation-based, no command.
+
+
+## Entry 12 (FL-007): MCP Apps default CSP blocks even inlined fonts
 **Tag:** [MCP Apps] · **Origin:** MCP Apps SDK · **Severity:** Medium
 **Task:** Bundle a Telugu font in a card under the MCP Apps default CSP.
 **Steps:** Read the spec CSP and the reference host; built a strict-CSP mode; probed in Chrome.
@@ -113,7 +123,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Reproduce:** font_probe.py in docs/evidence/2026-09-28_strict_csp/.
 
 
-## Entry 12 (FL-002): Default tool errors name the tool and validation fields
+## Entry 13 (FL-002): Default tool errors name the tool and validation fields
 **Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Medium
 **Task:** Return customer-safe tool errors for a voice host.
 **Steps:** Read the SDK's tool error handling.
@@ -123,7 +133,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Reproduce:** Documentation-based, no command.
 
 
-## Entry 13 (FL-004): Does outputSchema apply to isError results?
+## Entry 14 (FL-004): Does outputSchema apply to isError results?
 **Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Medium
 **Task:** Return a structured error from a tool with an outputSchema.
 **Steps:** Called an unknown shed through the Python SDK client and the Inspector CLI.
@@ -133,7 +143,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Reproduce:** Documentation-based, no command.
 
 
-## Entry 14 (FL-001): Middleware results leak resultType onto the 2025-11-25 wire
+## Entry 15 (FL-001): Middleware results leak resultType onto the 2025-11-25 wire
 **Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Medium
 **Task:** Return a safe result from a server middleware.
 **Steps:** Returned a CallToolResult at protocol 2025-11-25 and called it with curl.
@@ -143,7 +153,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Reproduce:** pytest tests\contract\test_tools.py::test_no_2026_fields_on_the_2025_11_25_wire
 
 
-## Entry 15 (FL-008): SDK drops the server's extensions capability on 2025-11-25
+## Entry 16 (FL-008): SDK drops the server's extensions capability on 2025-11-25
 **Tag:** [MCP Apps] · **Origin:** third-party MCP SDK · **Severity:** Low
 **Task:** Serve the card through the SDK's Apps extension on 2025-11-25.
 **Steps:** Probed initialize, tools/list and resources over HTTP.
@@ -153,7 +163,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Reproduce:** Documentation-based, no command (probe not saved).
 
 
-## Entry 16 (FL-003): Localhost Origin allow-list accepts every port
+## Entry 17 (FL-003): Localhost Origin allow-list accepts every port
 **Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Low
 **Task:** Validate Origin on the local server.
 **Steps:** Read streamable_http_app.
@@ -163,7 +173,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Reproduce:** pytest tests\contract\test_transport.py::test_other_localhost_port_origin_is_403
 
 
-## Entry 17 (FL-006): MCP Apps spec example disagrees with its schema
+## Entry 18 (FL-006): MCP Apps spec example disagrees with its schema
 **Tag:** [MCP Apps] · **Origin:** MCP Apps SDK · **Severity:** Low
 **Task:** Write a card against the documented postMessage protocol.
 **Steps:** Followed the spec example and checked spec.types.ts.
@@ -173,7 +183,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Reproduce:** Documentation-based, no command.
 
 
-## Entry 18 (FL-011): Duplicate in-flight JSON-RPC id hangs silently
+## Entry 19 (FL-011): Duplicate in-flight JSON-RPC id hangs silently
 **Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Medium
 **Task:** Test that a repeated confirmation applies once.
 **Steps:** Sent 5 concurrent tools/call requests with the same JSON-RPC id.
@@ -183,7 +193,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Reproduce:** `.venv\Scripts\python -m pytest -q tests\contract\test_concurrency.py::test_two_overlapping_requests_with_the_same_id_leave_one_unanswered_pinned_finding`
 
 
-## Entry 19 (FL-021): basic-host cannot be built from its README
+## Entry 20 (FL-021): basic-host cannot be built from its README
 **Tag:** [MCP Apps] · **Origin:** MCP Apps SDK · **Severity:** Low
 **Task:** Build the reference basic-host to test our cards.
 **Steps:** Ran npm ci --ignore-scripts, then npm run build in examples/basic-host.
