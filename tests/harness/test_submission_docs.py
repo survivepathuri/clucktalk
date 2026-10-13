@@ -231,7 +231,7 @@ def test_the_submission_says_what_was_live_on_aws_and_what_was_mocked():
         "OpenSearch Serverless",
     ):
         assert needle in section, needle
-    assert "Nothing was deployed to AWS" in section
+    assert "Only the Lightsail cloud pilot was deployed to AWS" in section
 
 
 # -- security, production path, judges ---------------------------------------------------------------------

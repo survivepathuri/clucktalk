@@ -2,14 +2,14 @@
 
 One section per tool, API, SDK or service that this project actually used, with the five questions the hackathon asks. The list was taken from `requirements.txt`, `requirements-dev.txt`, `.github/workflows/ci.yml`, the imports in `src/`, `scripts/` and `tasks.py`, and the dated records in `docs/`. The paste-ready copy is `docs/PRODUCT_FEEDBACK_DEVPOST.md` (ten blocks, each under 110 words).
 
-Rules for this file: every sentence comes from the repository's own records (`FRICTION_LOG.md`, `docs/DEV_NOTES.md`, `docs/AWS_SETUP.md`, `docs/VERSIONS.md`, `docs/SOURCES.md`, `FEATURE_REQUESTS.md`, git history) or from facts the builder reported on 7 October 2026, which are marked **builder-reported**. The Onboarding and Build again fields hold the builder's own approved verdicts, the same as in the ten blocks of `docs/PRODUCT_FEEDBACK_DEVPOST.md`; a verdict is an opinion and is not checked against a file. The first ten sections below are those ten blocks with their evidence; the tools that are not in the paste-ready copy are kept under "Also used" at the end. FL numbers point to `FRICTION_LOG.md` (or `docs/DEV_NOTES.md` for our own tooling); FR numbers point to `FEATURE_REQUESTS.md`.
+Rules for this file: every sentence comes from the repository's own records (`FRICTION_LOG.md`, `docs/DEV_NOTES.md`, `docs/AWS_SETUP.md`, `docs/VERSIONS.md`, `docs/SOURCES.md`, `FEATURE_REQUESTS.md`, git history) or from facts the builder reported on 7 October 2026, which are marked **builder-reported**. The Onboarding and Build again fields hold the builder's own approved verdicts, the same as in the ten blocks of `docs/PRODUCT_FEEDBACK_DEVPOST.md`; a verdict is an opinion and is not checked against a file. The first ten sections below are those ten blocks with their evidence; the tools that are not in the paste-ready copy are kept under "Also used" at the end. FL numbers point to `FRICTION_LOG.md` (or `docs/DEV_NOTES.md` for my own tooling); FR numbers point to `FEATURE_REQUESTS.md`.
 
 The five questions:
-1. Which tool, API or SDK, and what did we use it for?
+1. Which tool, API or SDK, and what did I use it for?
 2. What worked well?
 3. What needs work?
 4. Onboarding: from zero to hello world, how was it?
-5. Would we build with it again? Yes or no, and why.
+5. Would I build with it again? Yes or no, and why.
 
 ---
 
@@ -18,8 +18,10 @@ The five questions:
 This matches `submission.md` ("How we built it") and `docs/AWS_SETUP.md` sections 5.2 and 5.3.
 
 - **Live:** Amazon Bedrock Runtime `converse` with Amazon Nova 2 Lite (`us.amazon.nova-2-lite-v1:0`) in us-east-1, a handful of one-off calls from the AWS CLI and boto3: a hello call (run twice, because the AWS CLI truncated the first capture, FL-019), then two forced-tool-choice spike calls on text and a tiny synthetic image (the second one misread a colour, FL-020). Their cost in `docs/AWS_SETUP.md` is under two tenths of a cent at third-party prices that were not confirmed on AWS's own price page. Also used: AWS Service Quotas and AWS Support cases, because the new account's Bedrock inference quotas were all 0 (FL-014), and an IAM Identity Center role for the CLI (FL-015).
-- **Mocked:** every AI answer in the demo, in the golden evals and in the tests (`MOCK_BEDROCK=true`, shown by a "Demo data" badge). The server's live-AI path (the triage and briefing agents on a live model) was **not** verified end to end. Nothing was deployed to AWS; no Lambda, no Polly, no Knowledge Base. OpenSearch Serverless is never used, and a script checks that (`scripts/check_no_aoss.py`).
-- **Read or attempted, not used (builder-reported, 7 October 2026):** AWS Lightsail and AWS App Runner documentation were read while choosing hosting; the hackathon's AWS credit request was submitted and is pending. None of these runs any part of CluckTalk. The farmer pilot is hosted on the builder's own PC through a free Tailscale Funnel instead.
+- **Mocked:** every AI answer in the demo, in the golden evals and in the tests (`MOCK_BEDROCK=true`, shown by a "Demo data" badge). The server's live-AI path (the triage and briefing agents on a live model) was **not** verified end to end. Only the Lightsail cloud pilot was deployed to AWS (since 13 October 2026, with the sample farm file and the rule-based test model, no Bedrock calls); no Lambda, no Polly, no Knowledge Base. OpenSearch Serverless is never used, and a script checks that (`scripts/check_no_aoss.py`). This sentence is the one in `submission.md` (next bullet: the Lightsail pilot).
+- **Live since 13 October 2026, Amazon Lightsail (cloud pilot):** one Lightsail instance in Mumbai (ap-south-1) with a static IP and the Lightsail firewall runs the pilot page and the MCP server with the sample farm file; the AI there is the rule-based test model (`MOCK_BEDROCK=true`, no Bedrock calls). Section 3 has the details. No farmer has used it yet (`docs/CLOUD_PILOT.md`). The PC pilot with a free Tailscale Funnel (section 9) stays as the fallback.
+- **Read, not used (builder-reported, 7 October 2026):** the AWS App Runner documentation (FL-027).
+- **AWS Builder summary:** Bedrock Runtime (Nova 2 Lite, a handful of calls), Service Quotas and AWS Support cases (quotas were 0, FL-014), IAM Identity Center for CLI sign-in (FL-012, FL-015), the Billing console and the Free Tier plan API (FL-013), and Lightsail for the pilot host. Monthly cost model, builder-reported: one Lightsail plan of about $7 a month, paid from the hackathon credit per the Devpost mail; the credit amount of the account is not stated here. Bedrock cost so far: under two tenths of a cent (`docs/AWS_SETUP.md` section 5.2). Not used: Lambda, Polly, Knowledge Bases, AgentCore, S3 Vectors, OpenSearch Serverless.
 
 ---
 
@@ -55,36 +57,43 @@ This matches `submission.md` ("How we built it") and `docs/AWS_SETUP.md` section
 
 ## 3. AWS console, accounts, credits and hosting options (Lightsail, App Runner, Free Tier credits)
 
-These were **read or attempted, not used in production**. Nothing in CluckTalk runs on Lightsail or App Runner.
+**Lightsail has run the cloud pilot since 13 October 2026.** App Runner was only read about. Nothing else in CluckTalk runs on AWS except the optional Bedrock calls in section 1.
 
-1. **Used for:** choosing where to host the farmer pilot (builder-reported, 7 October 2026). Earlier, the Billing console was used to check the account plan and credits (FL-013).
-2. **What worked well:** builder-reported: the AWS Lightsail documentation says that Lightsail is available in the Mumbai Region and that its short free trials were replaced by the AWS Free Tier credits. Recorded: the Billing console showed the account's credits ($120 active, FL-013).
+1. **Used for:** the Billing console, to check the account plan and credits (FL-013); and Amazon Lightsail as the host of the cloud pilot (`docs/CLOUD_PILOT.md`, `deploy/cloud/RUNBOOK.md`): one Ubuntu 24.04.4 instance in Mumbai (ap-south-1), a static IP, the Lightsail firewall (22, 80, 443), and a plan of about $7 a month paid from the hackathon credit per the Devpost mail (builder-reported, 13 October; no amounts of the account are stated here). On the instance, not AWS products: Caddy for HTTPS with a Let's Encrypt certificate on a `<ip-with-dashes>.sslip.io` name, and a systemd timer for a daily backup (newest 7 kept on the same disk). Snapshots: the runbook lists one as optional; none is recorded as taken. Automatic snapshots are enabled (builder-reported, 2026-10-13, confirmed by the builder in the console). The plan is about $7 a month with 1 GB (builder-reported, 2026-10-13).
+2. **What worked well:** recorded: `deploy.ps1` ran twice and `verify.ps1 -Reboot` ran twice on the real server, all PASS apart from one intended WARN for the sample farm file; the app, Caddy and the backup timer came back after a reboot (`docs/CLOUD_PILOT.md`, "What was tested"). Builder-reported: the Lightsail documentation says that Lightsail is available in the Mumbai Region and that its short free trials were replaced by the AWS Free Tier credits. Recorded: the Billing console showed the account's credits ($120 active, FL-013).
 3. **What needs work:**
-   - **App Runner (builder-reported, FL-027):** the AWS documentation page "AWS App Runner availability change" states that App Runner stopped accepting new customers on 30 April 2026 and recommends ECS Express Mode. The page's URL was not recorded.
+   - **Lightsail, port 443:** a new instance does not open HTTPS; it had to be added in the console firewall (`deploy/cloud/RUNBOOK.md`, section 0).
+   - **Lightsail, names (builder-reported, 13 October):** an instance name cannot be changed after creation, and a static IP gets a default name unless you set one (the default name is `staticip-1`, which says nothing about its purpose; builder-reported, 2026-10-13). The runbook therefore says to name everything `clucktalk-` at creation.
+   - **Lightsail, key download:** the key from the console is a one-time download. Its file permissions were refused by Windows OpenSSH (FL-028); its text was pasted into an assistant session, so it was replaced by a new key pair (FL-030, which suggests an option to install your own public key at creation).
+   - **Lightsail, my own mistake:** `ufw limit 22/tcp` locked my deploy scripts out of SSH after a few quick connections (FL-029). Not an AWS defect.
+   - **Lightsail, size:** the plan has about 900 MB of memory, and about 460 MB was free after the app started. Disk: 38 GB in total, about 2.5 GB used (7%), from `sudo clucktalk-status` on 2026-10-13 (builder-reported, 2026-10-13; the memory figures above were recorded earlier). Memory under real load: not tested.
    - **Lightsail (builder-reported):** the documentation says the Mumbai plans include half the data transfer.
-   - **Credits (builder-reported):** the hackathon's $150 AWS credit request is a Google Form on the Devpost Resources page; it was submitted on 7 October 2026 and the answer is pending. Recorded earlier: no AWS page states whether promotional credits cover Marketplace-billed Bedrock models (FL-013).
+   - **App Runner (builder-reported, FL-027):** the AWS documentation page "AWS App Runner availability change" states that App Runner stopped accepting new customers on 30 April 2026 and recommends ECS Express Mode. The page's URL was not recorded.
+   - **Credits (builder-reported):** the hackathon's $150 AWS credit request is a Google Form on the Devpost Resources page; it was submitted on 7 October 2026. The 13 October Lightsail plan is paid from that credit per the Devpost mail (builder-reported). Recorded earlier: no AWS page states whether promotional credits cover Marketplace-billed Bedrock models (FL-013).
    - **Account plan (recorded):** on the AWS India account the Billing console showed no Free or Paid plan, although the Billing docs say the console home shows it (FL-013, FR-007).
-4. **Onboarding:** on 7 October we lost about 1 hour signing in because we had created several accounts ourselves; that was our mistake, not AWS's (builder-reported).
-5. **Build again:** yes, with one account.
+4. **Onboarding:** a new AWS account plus redeeming the hackathon credit took about 1 hour (builder-reported, 2026-10-13); earlier sign-in problems on 7 October, on a previous account, were a separate issue (time not measured) (builder-reported). Lightsail, from creating the instance to the first deploy: the time was not recorded; the blockers were port 443 and the key file permissions above (FL-028).
+5. **Build again:** yes (AWS, Lightsail) (builder-reported, 2026-10-13). The price is fixed and predictable (about $7 a month, covered by the hackathon credit); one server, a static IP and a firewall were enough to put a one-farmer pilot online in Mumbai; automatic snapshots were easy to enable. It needs work on: port 443 closed by default, an instance name that cannot be changed after creation, and a default static IP name that means nothing.
 
 ## 4. Alexa+ MCP documentation (QuickStart, Local Inspector and related pages)
 
-1. **Used for:** the product target. CluckTalk is a self-hosted MCP server built to Amazon's published Alexa+ guidance. Pages read: the Alexa+ MCP QuickStart (last updated Jul 10, 2026), the Alexa+ Add-on Local Inspector page (last updated Aug 3, 2026), the MCP Toolkit overview, Choose an integration approach, Functional Requirements, the CX testing guide, MCP Toolkit Account Linking, `Alexa.ProactiveNotificationSource`, and "Set Up Your Development Environment" (`docs/SOURCES.md`, FL-009, FL-017, FL-024, FL-026). The Amazon Devices Builder Tools and the Local Inspector were **not** used (builder-reported; the Inspector install needs a Developer Console login, FL-024).
-2. **What worked well:** the QuickStart gave the transport (Streamable HTTP), the authentication checklist (OAuth 2.1 with PKCE, Protected Resource Metadata), the 500 ms round-trip requirement, the `addon.json` schema reference and the fact that tool information refreshes only when the add-on is deployed; the Local Inspector page documented an initialize flow that `python tasks.py inspector-replay` replays against our server (`docs/SOURCES.md`).
+1. **Used for:** the product target. CluckTalk is a self-hosted MCP server built to Amazon's published Alexa+ guidance. Pages read: the Alexa+ MCP QuickStart (last updated Jul 10, 2026), the Alexa+ Add-on Local Inspector page (last updated Aug 3, 2026), the MCP Toolkit overview, Choose an integration approach, Functional Requirements, the CX testing guide, MCP Toolkit Account Linking, `Alexa.ProactiveNotificationSource`, and "Set Up Your Development Environment" (`docs/SOURCES.md`, FL-009, FL-017, FL-024, FL-026). The Amazon Devices Builder Tools and the Local Inspector were **not** used (builder-reported; the Inspector install needs a Developer Console login, FL-024). The Alexa AI CLI was not used for the same reason (FL-024). The Alexa Web Simulator was not used; the reason is not recorded, and no add-on was ever deployed to Alexa+ (`docs/ALEXA_READINESS.md`).
+2. **What worked well:** the QuickStart gave the transport (Streamable HTTP), the authentication checklist (OAuth 2.1 with PKCE, Protected Resource Metadata), the 500 ms round-trip requirement, the `addon.json` schema reference and the fact that tool information refreshes only when the add-on is deployed; the Local Inspector page documented an initialize flow that `python tasks.py inspector-replay` replays against my server (`docs/SOURCES.md`).
 3. **What needs work:**
    - The Local Inspector and the Alexa AI CLI have no self-serve path for participants: the setup page asks for an AWS account provided to an Alexa Solutions Architect, lists macOS and Ubuntu only, and keeps the Local Inspector install guide behind a Developer Console login (FL-024, FR-004).
+   - **Access (builder-reported, Amazon docs as read on 13 October 2026):** the Alexa+ MCP Toolkit is documented as partner-only and US-only, so CluckTalk was never tested on a real Alexa+ device or with Alexa+ itself. The Simulator and `inspector-replay` are my own stand-ins.
+   - **Authentication and endpoint:** the QuickStart's checklist asks for OAuth 2.1 with PKCE, Protected Resource Metadata and a public HTTPS endpoint. I built no OAuth: the MCP server listens on `127.0.0.1` and, off localhost, uses a bearer token, which is not Amazon's account linking (`docs/ALEXA_READINESS.md`, README). The cloud pilot's HTTPS endpoint serves only the farmer page; the MCP server is not public (`docs/CLOUD_PILOT.md`).
    - No page states which MCP protocolVersion Alexa+ sends or requires; the QuickStart names 2025-11-25 only as the version that deprecated HTTP+SSE, and the Local Inspector example sends 2025-06-18 (FL-026).
    - The `addon.json` example lists only `US` in `distributionCountries`, and no page says whether `IN` is allowed for MCP add-ons (FR-008).
    - MCP Apps on Alexa+: no card container size, supported `ui/*` messages, CSP or font policy (Telugu included) (FL-009, FR-002).
    - No statement on whether an MCP add-on can send proactive notifications, or whether a request identifies which household member spoke (FL-017, FR-005).
-4. **Onboarding:** the pages read quickly; testing against Alexa+ itself was not possible (FL-024).
-5. **Build again:** yes.
+4. **Onboarding:** the pages read quickly; testing against Alexa+ itself was not possible (FL-024; access is partner-only and US-only, builder-reported).
+5. **Build again:** yes for the MCP approach, with a caveat (builder-reported, 2026-10-13). Reasons: the MCP standard is clear and I built a normal, spec-conformant server with it; the documentation is detailed on OAuth and the public endpoint. But access is partner-only and the MCP Toolkit is US-only, so a solo developer in India cannot follow it end to end; I never ran on real Alexa+ and cannot judge the platform itself. I would build with it again if access opens to individual developers.
 
 ## 5. MCP Python SDK (`mcp` 2.2.0 and `mcp-types` 2.2.0)
 
 1. **Used for:** the MCP server (`src/clucktalk/server/app.py`: `MCPServer`, `streamable_http_app`, `TransportSecuritySettings`, `mcp.server.apps.Apps`), tool results and middleware, and the protocol-version constants (`docs/VERSIONS.md`).
-2. **What worked well:** the 29 protocol tests in `tests/contract/test_protocol_conformance.py` pass against our server of 14 tools; SDK 2.2.0 ships MCP Apps server support in-core (`_meta.ui.resourceUri`, the `text/html;profile=mcp-app` resource) (`docs/VERSIONS.md`); tool meta, resources and the client's Apps capability work on 2025-11-25 (FL-008); the server answers `initialize` for 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05 (`docs/RESULTS.md` section 4).
-3. **What needs work:** middleware results skip per-version shaping, so `resultType` leaks onto the 2025-11-25 wire (FL-001); default tool error text names the tool and validation fields, with no hook to change it (FL-002, FR-001), and our own fuzz round found protocol errors that echoed input until `ProtocolErrorGate` replaced them (F1 and F2, `SECURITY.md`); the localhost Origin allow-list accepts every local port (FL-003); the client and the MCP Inspector disagree on whether `outputSchema` applies to `isError` results (FL-004); the server's `extensions` capability is dropped on 2025-11-25 (FL-008); two in-flight requests with the same JSON-RPC id leave one unanswered for at least 40 seconds, with no error (FL-011).
+2. **What worked well:** the 29 protocol tests in `tests/contract/test_protocol_conformance.py` pass against my server of 14 tools; SDK 2.2.0 ships MCP Apps server support in-core (`_meta.ui.resourceUri`, the `text/html;profile=mcp-app` resource) (`docs/VERSIONS.md`); tool meta, resources and the client's Apps capability work on 2025-11-25 (FL-008); the server answers `initialize` for 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05 (`docs/RESULTS.md` section 4).
+3. **What needs work:** middleware results skip per-version shaping, so `resultType` leaks onto the 2025-11-25 wire (FL-001); default tool error text names the tool and validation fields, with no hook to change it (FL-002, FR-001), and my own fuzz round found protocol errors that echoed input until `ProtocolErrorGate` replaced them (F1 and F2, `SECURITY.md`); the localhost Origin allow-list accepts every local port (FL-003); the client and the MCP Inspector disagree on whether `outputSchema` applies to `isError` results (FL-004); the server's `extensions` capability is dropped on 2025-11-25 (FL-008); two in-flight requests with the same JSON-RPC id leave one unanswered for at least 40 seconds, with no error (FL-011).
 4. **Onboarding:** straightforward from the documentation and examples; the server skeleton was built on the first day, 2026-09-27 (git history; `docs/evidence/2026-09-27_mcp_server_skeleton.md`).
 5. **Build again:** yes.
 
@@ -106,7 +115,7 @@ These were **read or attempted, not used in production**. Nothing in CluckTalk r
 
 ## 8. The Agent Skills format
 
-1. **Used for:** `skills/clucktalk/`, a `SKILL.md` plus three reference files and an MIT license, which packages our tool-routing and safety rules and teaches a coding agent how to operate CluckTalk's 14 tools (README, "Agent Skill").
+1. **Used for:** `skills/clucktalk/`, a `SKILL.md` plus three reference files and an MIT license, which packages my tool-routing and safety rules and teaches a coding agent how to operate CluckTalk's 14 tools (README, "Agent Skill").
 2. **What worked well:** one folder matches the skills layout that Kiro's and Cursor's documentation describe (web search on 2026-10-01); tests keep the skill in step with the server (`tests/unit/test_skill.py`).
 3. **What needs work:** each agent uses a different install folder (`.claude/skills/`, `.kiro/skills/`, `.cursor/skills/`, `.github/skills/`), and the GitHub Copilot path was seen only on a third-party page; the skill was never loaded in any agent, so whether each one picks it is unverified (README, "Agent Skill").
 4. **Onboarding:** short.
@@ -130,9 +139,9 @@ These were **read or attempted, not used in production**. Nothing in CluckTalk r
 
 These tools were used and have recorded evidence, but the builder's approved copy does not include them. They are kept so that nothing found is lost.
 
-### The simulated Alexa+ path (our own Simulator)
+### The simulated Alexa+ path (my own Simulator)
 
-1. **Used for:** playing the Alexa+ client role while no Alexa+ device could load the add-on: a local web app with Echo Show and Echo Dot modes, voice and text, cards, and a developer panel that shows the exact MCP wire (`src/clucktalk/simulator/`). It is our code, not Amazon's tool.
+1. **Used for:** playing the Alexa+ client role while no Alexa+ device could load the add-on: a local web app with Echo Show and Echo Dot modes, voice and text, cards, and a developer panel that shows the exact MCP wire (`src/clucktalk/simulator/`). It is my code, not Amazon's tool.
 2. **What worked well:** the Simulator speaks the tool's own text, so the card sentence equals the spoken sentence and every number is the same on both (tested, `tests/crossmodal.py`, `tests/contract/test_card.py`); the golden evals run against a real MCP server over real HTTP (`docs/EVALS.md`).
 3. **What needs work:** that equality holds in the Simulator only; on Alexa+ the assistant composes its own speech from the tool result and descriptions, so the words can differ (README, "Voice versus cards"). Its intent layer is rules, not a model (`src/clucktalk/simulator/intents.py`), so it is not a test of how Alexa+ picks a tool.
 4. **Onboarding:** not applicable: it is part of this repository and starts with `python tasks.py run`.
@@ -140,7 +149,7 @@ These tools were used and have recorded evidence, but the builder's approved cop
 
 ### MCP Inspector 2.8.0 (CLI)
 
-1. **Used for:** capturing evidence of tool calls and error results (`docs/evidence/`), as the stand-in for the Alexa+ Local Inspector we could not run (FL-024). Not a dependency of the code.
+1. **Used for:** capturing evidence of tool calls and error results (`docs/evidence/`), as the stand-in for the Alexa+ Local Inspector I could not run (FL-024). Not a dependency of the code.
 2. **What worked well:** `--method tools/list` and `--method tools/call` captured the evidence in `docs/evidence/2026-09-27_farm_status_and_feed.md`; successful calls exit 0 (FL-005).
 3. **What needs work:** on Windows the CLI crashes with a libuv assertion when a call ends in an error, so the exit code cannot be used (FL-005); it validates an error result's `structuredContent` against the success schema, unlike the Python SDK client (FL-004).
 4. **Onboarding:** no verdict is asked for; not in the ten paste-ready blocks.
@@ -148,7 +157,7 @@ These tools were used and have recorded evidence, but the builder's approved cop
 
 ### Hypothesis 6.168.3 (property and fuzz tests)
 1. **Used for:** the property tests (`tests/unit/test_property_*.py`) and the fuzz tests (`tests/contract/test_fuzz_*.py`); a dev dependency only (`docs/VERSIONS.md`).
-2. **What worked well:** the fuzz round found the protocol errors that echoed input back (F1 and F2, now short fixed messages), and the fuzz tests pin an SDK behaviour (F3) and our own shed-name reader (F4) (`SECURITY.md`; README, "Known SDK behaviors").
+2. **What worked well:** the fuzz round found the protocol errors that echoed input back (F1 and F2, now short fixed messages), and the fuzz tests pin an SDK behaviour (F3) and my own shed-name reader (F4) (`SECURITY.md`; README, "Known SDK behaviors").
 3. **What needs work:** nothing recorded.
 4. **Onboarding:** no verdict is asked for; not in the ten paste-ready blocks.
 5. **Build again:** no verdict is asked for; not in the ten paste-ready blocks.
@@ -163,4 +172,4 @@ These tools were used and have recorded evidence, but the builder's approved cop
 
 ## Mentioned but not used
 
-Amazon Polly appears in comments as the planned voice of the live Simulator host and is not imported or called. `strands-agents` and `bedrock-agentcore` are listed in `docs/VERSIONS.md` as available, not as dependencies, and are not imported. The `@modelcontextprotocol/ext-apps` JS SDK is not used (`docs/VERSIONS.md`). The Amazon Devices Builder Tools and the Alexa+ Local Inspector were not used (builder-reported; FL-024).
+Amazon Polly appears in comments as the planned voice of the live Simulator host and is not imported or called. `strands-agents` and `bedrock-agentcore` are listed in `docs/VERSIONS.md` as available, not as dependencies, and are not imported. The `@modelcontextprotocol/ext-apps` JS SDK is not used (`docs/VERSIONS.md`). The Amazon Devices Builder Tools, the Alexa AI CLI, the Alexa Web Simulator and the Alexa+ Local Inspector were not used (builder-reported; FL-024).

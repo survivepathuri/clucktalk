@@ -1,10 +1,10 @@
 # Product feedback: paste-ready copy
 
-Ten plain-text blocks for the Devpost product-feedback fields, one per tool, each under 110 words, in the builder's own words. The heading line is not part of the block. The long version with the sources is `docs/PRODUCT_FEEDBACK.md`; FL numbers are in `FRICTION_LOG.md` (or `docs/DEV_NOTES.md` for our own tooling), FR numbers in `FEATURE_REQUESTS.md`. Every FL and FR number and every count below was checked against those files and the tests on 7 October 2026. Where a sentence is marked builder-reported, the source is the builder's own report and not a file in this repository.
+Ten plain-text blocks for the Devpost product-feedback fields, one per tool, each under 110 words, in the builder's own words. The heading line is not part of the block. The long version with the sources is `docs/PRODUCT_FEEDBACK.md`; FL numbers are in `FRICTION_LOG.md` (or `docs/DEV_NOTES.md` for my own tooling), FR numbers in `FEATURE_REQUESTS.md`. Every FL and FR number and every count below was checked against those files and the tests on 7 October 2026 (blocks 3 and 4 updated on 13 October 2026). Where a sentence is marked builder-reported, the source is the builder's own report and not a file in this repository.
 
 ## 1. Amazon Bedrock and the Nova 2 Lite model
 
-Amazon Bedrock and the Nova 2 Lite model. Used for: the optional AI triage step (free-text signs to an urgency that our code can only raise, never lower). A handful of real calls so far; mock mode is the default. Worked well: once access worked, the call was simple. Needs work: models showed AVAILABLE with every quota at zero, a hidden verification refused the first call, Claude models were gated (FL-014); a billing error did not name the setting (FL-015). Onboarding: 1 day from first attempt to first successful call (28 to 29 September), after quota requests. Build again: yes, if quotas and access were visible up front.
+Amazon Bedrock and the Nova 2 Lite model. Used for: the optional AI triage step (free-text signs to an urgency that my code can only raise, never lower). A handful of real calls so far; mock mode is the default. Worked well: once access worked, the call was simple. Needs work: models showed AVAILABLE with every quota at zero, a hidden verification refused the first call, Claude models were gated (FL-014); a billing error did not name the setting (FL-015). Onboarding: 1 day from first attempt to first successful call (28 to 29 September), after quota requests. Build again: yes, if quotas and access were visible up front.
 
 ## 2. AWS CLI and boto3 on Windows
 
@@ -12,15 +12,15 @@ AWS CLI and boto3 on Windows. Used for: model-access checks and the few Nova cal
 
 ## 3. AWS console, accounts, credits and hosting options
 
-AWS console, accounts, credits and hosting options. Used for: model access, billing and credits; we also read the Lightsail and App Runner documentation when choosing hosting (builder-reported). Worked well: the Lightsail pages are clear about plans, the Mumbai Region and the Free Tier replacing old trials (builder-reported). Needs work: the account plan was not visible on an India account (FL-013, FR-007); App Runner, often suggested for simple hosting, stopped accepting new customers on 30 April 2026 (FL-027). Onboarding: on 7 October we lost about 1 hour signing in because we had created several accounts ourselves; that was our mistake, not AWS's. Build again: yes, with one account.
+AWS console, accounts, credits and hosting options. Used for: billing and credits; since 13 October the pilot runs on one Lightsail server in Mumbai (about $7 a month). Worked well: a server, static IP and firewall were enough. Needs work: port 443 closed by default; instance name cannot be changed; account plan not visible on an India account (FL-013, FR-007); App Runner closed to new customers 30 April 2026 (FL-027). Onboarding: new account plus credit about 1 hour; earlier sign-in problems on 7 October, on a previous account, were a separate issue (time not measured). Build again: yes (AWS, Lightsail). Builder-reported, 13 October.)
 
 ## 4. Alexa+ MCP documentation (QuickStart and Local Inspector)
 
-Alexa+ MCP documentation (QuickStart and Local Inspector). Used for: building an MCP server and a simulated Alexa+ experience; we read the QuickStart (10 Jul) and Local Inspector (3 Aug) pages. Worked well: the addon.json schema, the authentication checklist and the 500 ms target are clear. Needs work: no minimum protocolVersion is stated while the Inspector example sends 2025-06-18 (FL-026); we could not confirm a self-serve way to run the Inspector or Alexa AI validation (FL-024, FR-004); distributionCountries shows only US (FR-008). Onboarding: the pages read quickly; testing against Alexa+ itself was not possible. Build again: yes.
+Alexa+ MCP documentation (QuickStart and Local Inspector). Used for: an MCP server and a simulated Alexa+ experience, from the QuickStart (10 Jul) and Local Inspector (3 Aug) pages. Worked well: the addon.json schema, authentication checklist and 500 ms target are clear. Needs work: no minimum protocolVersion is stated while the Inspector example sends 2025-06-18 (FL-026); no self-serve Inspector (FL-024, FR-004); distributionCountries shows only US (FR-008). Onboarding: pages read quickly; testing on Alexa+ was not possible (partner-only, US-only, builder-reported). Build again: yes for MCP, with a caveat: access is partner-only and US-only, so I never ran on Alexa+; I would build again if access opens to individuals.
 
 ## 5. MCP Python SDK
 
-MCP Python SDK. Used for: the server, 14 tools, Streamable HTTP and sessions. Worked well: our 29 protocol tests pass, and older protocol versions are answered with the requested version. Needs work: a duplicate JSON-RPC id can leave one request unanswered for 40+ seconds (FL-011); SDK error text echoed input until we wrapped it (FL-002, and F1 and F2 in SECURITY.md); tool errors need special handling because outputSchema validation and isError interact (FL-004). Onboarding: straightforward from the documentation and examples. Build again: yes.
+MCP Python SDK. Used for: the server, 14 tools, Streamable HTTP and sessions. Worked well: my 29 protocol tests pass, and older protocol versions are answered with the requested version. Needs work: a duplicate JSON-RPC id can leave one request unanswered for 40+ seconds (FL-011); SDK error text echoed input until I wrapped it (FL-002, and F1 and F2 in SECURITY.md); tool errors need special handling because outputSchema validation and isError interact (FL-004). Onboarding: straightforward from the documentation and examples. Build again: yes.
 
 ## 6. MCP Apps (ext-apps) and the basic host
 
@@ -32,11 +32,11 @@ Claude Code and the Claude models. Used for: building the whole project tests-fi
 
 ## 8. Agent Skills format
 
-Agent Skills format. Used for: packaging our tool-routing and safety rules as a skill (skills/clucktalk). Worked well: the folder format is simple. Needs work: we never loaded the skill in any agent; Claude Code's install path was not tested as a separate step, and the Kiro, Cursor and Copilot paths are marked unverified in the README. Onboarding: short. Build again: yes.
+Agent Skills format. Used for: packaging my tool-routing and safety rules as a skill (skills/clucktalk). Worked well: the folder format is simple. Needs work: I never loaded the skill in any agent; Claude Code's install path was not tested as a separate step, and the Kiro, Cursor and Copilot paths are marked unverified in the README. Onboarding: short. Build again: yes.
 
 ## 9. Tailscale Funnel (free hosting tunnel for the pilot)
 
-Tailscale Funnel (free hosting tunnel for the pilot). Used for: a free HTTPS link from the builder's PC to one farmer's phone (builder-reported). Worked well: it worked on the first try after enabling HTTPS certificates and Funnel in the admin console (builder-reported). Needs work: we did not examine what the relay can see, and the PC's uptime is the real limit. Onboarding: short. Build again: yes for pilots.
+Tailscale Funnel (free hosting tunnel for the pilot). Used for: a free HTTPS link from the builder's PC to one farmer's phone (builder-reported). Worked well: it worked on the first try after enabling HTTPS certificates and Funnel in the admin console (builder-reported). Needs work: I did not examine what the relay can see, and the PC's uptime is the real limit. Onboarding: short. Build again: yes for pilots.
 
 ## 10. GitHub Actions (private repository)
 

@@ -71,10 +71,7 @@ def test_no_placeholder_is_left_and_the_two_computed_answers_are_filled_in():
     setup = (ROOT / "docs" / "AWS_SETUP.md").read_text(encoding="utf-8")
     assert "Results 2026-09-28" in setup and "First live Converse call: Nova 2 Lite (2026-09-29" in setup
     assert "Onboarding: 1 day from first attempt to first successful call (28 to 29 September)" in DEVPOST
-    sentence = (
-        "on 7 October we lost about 1 hour signing in because we had created several accounts ourselves; "
-        "that was our mistake, not AWS's"
-    )
+    sentence = "earlier sign-in problems on 7 October, on a previous account, were a separate issue (time not measured)"
     assert sentence in FEEDBACK and sentence in DEVPOST
     gone = ("authenticator", "codes were rejected", "sign-in failed", "aws access was unavailable", "recovery")
     for text in (FEEDBACK, DEVPOST, SUMMARY):  # the sign-in mix-up was ours; it is not described as AWS friction
@@ -122,7 +119,7 @@ def test_the_counts_in_the_blocks_match_the_tests():
         check=False,
     ).stdout
     collected = int(re.search(r"(\d+) tests? collected", out).group(1))
-    assert f"our {collected} protocol tests pass" in DEVPOST and f"the {collected} protocol tests" in FEEDBACK
+    assert f"my {collected} protocol tests pass" in DEVPOST and f"the {collected} protocol tests" in FEEDBACK
     assert "14 tools" in DEVPOST and "14 tools" in FEEDBACK
 
 
@@ -151,13 +148,17 @@ def test_the_aws_live_and_mocked_section_agrees_with_the_submission():
         "two forced-tool-choice spike calls",
         "under two tenths of a cent",
         "every AI answer in the demo, in the golden evals and in the tests",
-        "Nothing was deployed to AWS; no Lambda, no Polly, no Knowledge Base.",
+        "Only the Lightsail cloud pilot was deployed to AWS (since 13 October 2026, "
+        "with the sample farm file and the rule-based test model, no Bedrock calls); "
+        "no Lambda, no Polly, no Knowledge Base.",
         "OpenSearch Serverless is never used",
     ):
         assert needle in section, needle
         assert needle in submission, needle
     assert "**not** verified end to end" in section and "**not** verified end to end" in submission
-    assert "not used in production" in FEEDBACK and "builder-reported" in section
+    # Updated 2026-10-13 (owner-authorised): Lightsail now hosts the cloud pilot, App Runner was only read about.
+    assert "Lightsail has run the cloud pilot since 13 October 2026" in FEEDBACK and "builder-reported" in section
+    assert "read about" in FEEDBACK and "not used in production" not in FEEDBACK
 
 
 def test_builder_reported_facts_are_marked_and_the_inspector_was_not_used():
@@ -180,7 +181,7 @@ def test_the_friction_summary_has_the_seven_entries_in_order_with_three_lines_ea
         assert f"### {fl}:" in log, fl
         block = SUMMARY.split(f"### {fl}")[1].split("\n### ")[0].split("\n## ")[0]
         lines = [ln for ln in block.splitlines()[1:] if ln.strip()]
-        assert [ln.split(":**")[0] for ln in lines] == ["- **Who is affected", "- **What it cost us", "- **What we ask"]
+        assert [ln.split(":**")[0] for ln in lines] == ["- **Who is affected", "- **What it cost me", "- **What I ask"]
         for fr in re.findall(r"FR-\d{3}", block):
             assert f"### {fr}:" in requests, fr
 
