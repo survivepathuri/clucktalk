@@ -10,9 +10,9 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 - Status is tracked per string (`data/i18n/telugu_approvals.json`). An approval covers one exact English +
   Telugu pair: any new or changed string, in either language, is **pending** until reviewed again.
 
-**Pending: 361** · Approved: 86
+**Pending: 390** · Approved: 86
 
-## 1. Pending review (361)
+## 1. Pending review (390)
 
 | # | English | Telugu | Where | Reviewer |
 |---|---|---|---|---|
@@ -126,257 +126,286 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 | 108 | (the ending that asks you to tap yes or no) | నొక్కండి. | `src/clucktalk/i18n/pilot.py:117` |  |
 | 109 | Tell me today's paper rate | ఈరోజు పేపర్ రేటు చెప్పండి | `src/clucktalk/i18n/pilot.py:120` |  |
 | 110 | today's paper rate | ఈరోజు పేపర్ రేటు | `src/clucktalk/i18n/pilot.py:121` |  |
-| 111 | OK | బాగుంది | `src/clucktalk/server/cards/__init__.py:35` |  |
-| 112 | WATCH | గమనించాలి | `src/clucktalk/server/cards/__init__.py:36` |  |
-| 113 | ALERT | శ్రద్ధ అవసరం | `src/clucktalk/server/cards/__init__.py:37` |  |
-| 114 | UNKNOWN | తెలియదు | `src/clucktalk/server/cards/__init__.py:38` |  |
-| 115 | Follow-up | ఫాలో-అప్ | `src/clucktalk/server/cards/__init__.py:41` |  |
-| 116 | Farm status | ఫారం స్థితి | `src/clucktalk/server/cards/__init__.py:42` |  |
-| 117 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:43` |  |
-| 118 | Deaths today | ఈరోజు మరణాలు | `src/clucktalk/server/cards/__init__.py:44` |  |
-| 119 | Deaths, latest count | తాజా లెక్కలో మరణాలు | `src/clucktalk/server/cards/__init__.py:45` |  |
-| 120 | Feed stock | ఫీడ్ నిల్వ | `src/clucktalk/server/cards/__init__.py:46` |  |
-| 121 | Feed stock, days | ఫీడ్ నిల్వ, రోజులు | `src/clucktalk/server/cards/__init__.py:47` |  |
-| 122 | not known | తెలియదు | `src/clucktalk/server/cards/__init__.py:48` |  |
-| 123 | Average weight | సగటు బరువు | `src/clucktalk/server/cards/__init__.py:49` |  |
-| 124 | Laying | గుడ్ల ఉత్పత్తి | `src/clucktalk/server/cards/__init__.py:50` |  |
-| 125 | {n} days | {n} రోజులు | `src/clucktalk/server/cards/__init__.py:52` |  |
-| 126 | {n} day | {n} రోజు | `src/clucktalk/server/cards/__init__.py:53` |  |
-| 127 | at least {n} days | కనీసం {n} రోజులు | `src/clucktalk/server/cards/__init__.py:54` |  |
-| 128 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:55` |  |
-| 129 | target {n} g | లక్ష్యం {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:56` |  |
-| 130 | {n} birds | {n} కోళ్లు | `src/clucktalk/server/cards/__init__.py:57` |  |
-| 131 | Day {n} | {n}వ రోజు | `src/clucktalk/server/cards/__init__.py:58` |  |
-| 132 | Latest readings: {d} | తాజా రీడింగులు: {d} | `src/clucktalk/server/cards/__init__.py:59` |  |
-| 133 | Tap a shed for details | వివరాల కోసం షెడ్‌ను తాకండి | `src/clucktalk/server/cards/__init__.py:60` |  |
-| 134 | All sheds | అన్ని షెడ్లు | `src/clucktalk/server/cards/__init__.py:61` |  |
-| 135 | Could not check | తనిఖీ చేయలేకపోయాను | `src/clucktalk/server/cards/__init__.py:62` |  |
-| 136 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:63` |  |
-| 137 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:64` |  |
-| 138 | Sell-day plan | అమ్మకం రోజు ప్రణాళిక | `src/clucktalk/server/cards/__init__.py:79` |  |
-| 139 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:80` |  |
-| 140 | Simulated price | అంచనా ధర (డెమో) | `src/clucktalk/server/cards/__init__.py:81` |  |
-| 141 | Best day | మంచి రోజు | `src/clucktalk/server/cards/__init__.py:82` |  |
-| 142 | Today | ఈరోజు | `src/clucktalk/server/cards/__init__.py:83` |  |
-| 143 | Break-even | బ్రేక్-ఈవెన్ | `src/clucktalk/server/cards/__init__.py:84` |  |
-| 144 | Net vs today | ఈరోజుతో పోలిస్తే నికరం | `src/clucktalk/server/cards/__init__.py:85` |  |
-| 145 | Weight | బరువు | `src/clucktalk/server/cards/__init__.py:86` |  |
-| 146 | Growing charge | గ్రోయింగ్ ఛార్జ్ | `src/clucktalk/server/cards/__init__.py:88` |  |
-| 147 | Save your contract terms to see the growing charge | గ్రోయింగ్ ఛార్జ్ చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయండి | `src/clucktalk/server/cards/__init__.py:90` |  |
-| 148 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:92` |  |
-| 149 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:93` |  |
-| 150 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:96` |  |
-| 151 | Health check | ఆరోగ్య తనిఖీ | `src/clucktalk/server/cards/__init__.py:111` |  |
-| 152 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:112` |  |
-| 153 | not urgent | అత్యవసరం కాదు | `src/clucktalk/server/cards/__init__.py:113` |  |
-| 154 | watch closely today | ఈరోజు దగ్గరగా గమనించాలి | `src/clucktalk/server/cards/__init__.py:114` |  |
-| 155 | needs a vet today | ఈరోజే డాక్టర్ అవసరం | `src/clucktalk/server/cards/__init__.py:115` |  |
-| 156 | signs of a possible reportable disease | తెలియజేయాల్సిన వ్యాధి లక్షణాలు కావచ్చు | `src/clucktalk/server/cards/__init__.py:116` |  |
-| 157 | Still checking | ఇంకా తనిఖీ చేస్తున్నాను | `src/clucktalk/server/cards/__init__.py:117` |  |
-| 158 | Could not finish | పూర్తి చేయలేకపోయాను | `src/clucktalk/server/cards/__init__.py:118` |  |
-| 159 | Signs reported | చెప్పిన లక్షణాలు | `src/clucktalk/server/cards/__init__.py:119` |  |
-| 160 | The signs fit | లక్షణాలు సరిపోతున్నవి | `src/clucktalk/server/cards/__init__.py:120` |  |
-| 161 | Check first | ముందుగా చూడండి | `src/clucktalk/server/cards/__init__.py:121` |  |
-| 162 | PLACEHOLDER - not a real photo | ప్లేస్‌హోల్డర్ - నిజమైన ఫోటో కాదు | `src/clucktalk/server/cards/__init__.py:123` |  |
-| 163 | Sources | మూలాలు | `src/clucktalk/server/cards/__init__.py:124` |  |
-| 164 | Check again | మళ్ళీ చూడండి | `src/clucktalk/server/cards/__init__.py:125` |  |
-| 165 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:126` |  |
-| 166 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:129` |  |
-| 167 | Daily briefing | రోజువారీ బ్రీఫింగ్ | `src/clucktalk/server/cards/__init__.py:143` |  |
-| 168 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:144` |  |
-| 169 | ALERT | శ్రద్ధ అవసరం | `src/clucktalk/server/cards/__init__.py:145` |  |
-| 170 | WATCH | గమనించాలి | `src/clucktalk/server/cards/__init__.py:146` |  |
-| 171 | REMINDER | గుర్తుచేత | `src/clucktalk/server/cards/__init__.py:147` |  |
-| 172 | Health first | ఆరోగ్యం ముందు | `src/clucktalk/server/cards/__init__.py:148` |  |
-| 173 | Follow-up | ఫాలో-అప్ | `src/clucktalk/server/cards/__init__.py:149` |  |
-| 174 | Simulated | డెమో అంచనా | `src/clucktalk/server/cards/__init__.py:150` |  |
-| 175 | Previous | వెనుకకు | `src/clucktalk/server/cards/__init__.py:151` |  |
-| 176 | Next | తర్వాత | `src/clucktalk/server/cards/__init__.py:152` |  |
-| 177 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:153` |  |
-| 178 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:156` |  |
-| 179 | label_te | డెమో గడియారం: +{days} రోజులు | `src/clucktalk/server/errors.py:40` |  |
-| 180 | Here's your briefing for today. | ఈరోజు మీ బ్రీఫింగ్ ఇది. | `src/clucktalk/server/tools/briefing.py:52` |  |
-| 181 | Here's the rest. | మిగిలినవి ఇవి. | `src/clucktalk/server/tools/briefing.py:53` |  |
-| 182 | Nothing needs your attention today. | ఈరోజు మీ శ్రద్ధ అవసరమయ్యేది ఏమీ లేదు. | `src/clucktalk/server/tools/briefing.py:54` |  |
-| 183 | Say 'more' to hear the rest. | మిగిలినవి వినాలంటే 'మరిన్ని' అనండి. | `src/clucktalk/server/tools/briefing.py:55` |  |
-| 184 | That's everything for today. | ఈరోజుకు ఇంతే. | `src/clucktalk/server/tools/briefing.py:56` |  |
-| 185 | There are more things; ask about one shed for details. | ఇంకా విషయాలు ఉన్నాయి; వివరాల కోసం ఒక షెడ్ గురించి అడగండి. | `src/clucktalk/server/tools/briefing.py:57` |  |
-| 186 | Ask me for the health check result. | ఆరోగ్య తనిఖీ ఫలితం కోసం నన్ను అడగండి. | `src/clucktalk/server/tools/briefing.py:58` |  |
-| 187 | Ask me for the sell-day plan. | అమ్మకం రోజు ప్రణాళిక కోసం నన్ను అడగండి. | `src/clucktalk/server/tools/briefing.py:59` |  |
-| 188 | and | మరియు | `src/clucktalk/server/tools/briefing.py:60` |  |
-| 189 | Health items come first by safety rules; AI (Amazon Nova on Bedrock) orders the other items in the first three. | ఆరోగ్య అంశాలు భద్రతా నియమాల ప్రకారం ముందుంటాయి; మొదటి మూడింటిలో మిగిలిన అంశాల క్రమాన్ని AI (బెడ్‌రాక్‌పై Amazon Nova) నిర్ణయించింది. | `src/clucktalk/server/tools/briefing.py:64` |  |
-| 190 | The saved AI ordering was unreadable, so the items are in the rules order. | సేవ్ చేసిన AI క్రమం చదవడానికి వీలుకాలేదు, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి. | `src/clucktalk/server/tools/briefing.py:68` |  |
-| 191 | AI ordering is still preparing; showing the rules order for now. | AI క్రమం ఇంకా సిద్ధమవుతోంది; ప్రస్తుతం నియమాల క్రమం చూపిస్తున్నాను. | `src/clucktalk/server/tools/briefing.py:72` |  |
-| 192 | AI ordering didn't finish, so the items are in the rules order. | AI క్రమం పూర్తి కాలేదు, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి. | `src/clucktalk/server/tools/briefing.py:76` |  |
-| 193 | Today's AI limit is reached, so the items are in the rules order. | ఈరోజు AI పరిమితి అయిపోయింది, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి. | `src/clucktalk/server/tools/briefing.py:80` |  |
-| 194 | simulated estimate | అంచనా (డెమో) | `src/clucktalk/server/tools/briefing.py:82` |  |
-| 195 | tomorrow | రేపు | `src/clucktalk/server/tools/briefing.py:143` |  |
-| 196 | in {index} days | {index} రోజుల్లో | `src/clucktalk/server/tools/briefing.py:144` |  |
-| 197 | House {n} | షెడ్ {n} | `src/clucktalk/server/tools/briefing.py:175` |  |
-| 198 | No entry yet today for {listed.en}. | ఈరోజు ఇంకా నమోదు కాలేదు: {listed.te}. | `src/clucktalk/server/tools/briefing.py:177` |  |
-| 199 | Birds ate {drop}% less than expected. | కోళ్లు అంచనా కంటే {drop}% తక్కువ తిన్నాయి. | `src/clucktalk/server/tools/briefing.py:193` |  |
-| 200 | may be near its best time to sell: the best day looks like {when.en} ({SIMULATED.en}). | అమ్మడానికి మంచి సమయం దగ్గరలో ఉండవచ్చు: మంచి రోజు {when.te} ({SIMULATED.te}). | `src/clucktalk/server/tools/briefing.py:217` |  |
-| 201 | Today's briefing | ఈరోజు బ్రీఫింగ్ | `src/clucktalk/server/tools/briefing.py:361` |  |
-| 202 | That request timed out, so nothing changed. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:32` |  |
-| 203 | That request was replaced by a newer one, so nothing changed. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:35` |  |
-| 204 | That's different from what I read back, so nothing changed yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:39` |  |
-| 205 | I couldn't find that request, so nothing changed. | ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:41` |  |
-| 206 | That request was already cancelled, so nothing changed. | ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:44` |  |
-| 207 | Those terms were already saved earlier, so saying no now doesn't undo it. | ఆ నిబంధనలు ఇంతకుముందే సేవ్ అయ్యాయి, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు. | `src/clucktalk/server/tools/contract_terms.py:48` |  |
-| 208 | Okay, nothing changed. | సరే, ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:51` |  |
-| 209 | Save your contract terms: {rupees(base)} per kg at FCR {fcr}, {rupees(inc)} more per kg for every 0.1 better FCR, {rupees(ded)} less per kg for every 0.1 worse FCR. Say yes to confirm, or no to keep it as it is. | మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయాలా: FCR {fcr} వద్ద కిలోకు {rupees(base)}, ప్రతి 0.1 మెరుగైన FCRకి కిలోకు {rupees(inc)} ఎక్కువ, ప్రతి 0.1 తక్కువ FCRకి కిలోకు {rupees(ded)} తక్కువ. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/contract_terms.py:106` |  |
-| 210 | Those are already your saved contract terms, so nothing changed. | ఇవి ఇప్పటికే మీ సేవ్ చేసిన కాంట్రాక్ట్ నిబంధనలు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:190` |  |
-| 211 | Done. Your contract terms are saved. | సరే. మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ అయ్యాయి. | `src/clucktalk/server/tools/contract_terms.py:212` |  |
-| 212 | Save your contract terms | మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయండి | `src/clucktalk/server/tools/contract_terms.py:260` |  |
-| 213 | {num(deaths)} birds died {when.en}, more than your own limit of {num(limit)} a day at this age. By your own rule, take the birds to the vet today; do not wait for the next visit. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి, ఈ వయసులో మీరు పెట్టిన రోజువారీ హద్దు {num(limit)} కంటే ఎక్కువ. మీ నియమం ప్రకారం, ఈరోజే కోళ్లను డాక్టర్ దగ్గరికి తీసుకెళ్లండి; తదుపరి సందర్శన వరకు ఆగకండి. | `src/clucktalk/server/tools/farm_status.py:266` |  |
-| 214 | {num(deaths)} birds died {when.en}, after hardly any deaths the week before. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం దాదాపు ఏవీ చనిపోలేదు. | `src/clucktalk/server/tools/farm_status.py:306` |  |
-| 215 | {num(deaths)} birds died {when.en}, against about {num(base)} a day the week before. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం రోజుకు సుమారు {num(base)}. | `src/clucktalk/server/tools/farm_status.py:310` |  |
-| 216 | Ask me for a feed plan to hear how much feed to ask your supervisor for. | సూపర్‌వైజర్‌ని ఎంత ఫీడ్ అడగాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి. | `src/clucktalk/server/tools/farm_status.py:431` |  |
-| 217 | No need to ask your supervisor for feed yet. | ఇంకా సూపర్‌వైజర్‌ని ఫీడ్ అడగాల్సిన అవసరం లేదు. | `src/clucktalk/server/tools/feed.py:162` |  |
-| 218 | Ask your supervisor for {b} {plural(b, 'bag', 'bags')} of {p.bag_kg} kg now. | ఇప్పుడే మీ సూపర్‌వైజర్‌ని {p.bag_kg} కిలోల {b} బస్తాలు అడగండి. | `src/clucktalk/server/tools/feed.py:165` |  |
-| 219 | {head.en} Ask your supervisor for {b} {plural(b, 'bag', 'bags')} now. | {head.te} ఇప్పుడే సూపర్‌వైజర్‌ని {b} బస్తాలు అడగండి. | `src/clucktalk/server/tools/feed.py:273` |  |
-| 220 | Feed planning is not part of this pilot yet. | ఈ పైలట్ లో ఫీడ్ లెక్క ఇంకా లేదు. | `src/clucktalk/server/tools/feed.py:282` |  |
-| 221 | Say a shed number to hear its full feed plan. | పూర్తి ఫీడ్ ప్లాన్ కోసం షెడ్ నంబర్ చెప్పండి. | `src/clucktalk/server/tools/feed.py:339` |  |
-| 222 | To be safe, contact your vet or doctor. | జాగ్రత్త కోసం, మీ డాక్టర్‌కి ఫోన్ చేయండి. | `src/clucktalk/server/tools/follow_up.py:65` |  |
-| 223 | The record book shows a death spike of {n} deaths since the health check, so I'll record this as not better. | ఆరోగ్య తనిఖీ తర్వాత రికార్డ్ బుక్‌లో {n} మరణాల పెరుగుదల కనిపిస్తోంది, కాబట్టి దీన్ని 'మెరుగ్గా లేదు' అని నమోదు చేస్తాను. | `src/clucktalk/server/tools/follow_up.py:71` |  |
-| 224 | I'll note this for {label.en}: the birds are better. Say yes to save it, or no to keep things as they are. | {label.te} కోసం ఇది నమోదు చేస్తాను: కోళ్లు మెరుగ్గా ఉన్నాయి. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/follow_up.py:82` |  |
-| 225 | I'll note this for {label.en}: the birds are the same. Say yes to save it, or no to keep things as they are. | {label.te} కోసం ఇది నమోదు చేస్తాను: కోళ్లు అలాగే ఉన్నాయి. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/follow_up.py:88` |  |
-| 226 | I'll note this for {label.en}: the birds are worse. Say yes to save it, or no to keep things as they are. | {label.te} కోసం ఇది నమోదు చేస్తాను: కోళ్లు మరింత అధ్వాన్నంగా ఉన్నాయి. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/follow_up.py:94` |  |
-| 227 | I'll note this for {label.en}: you're not sure how the birds are. Say yes to save it, or no to keep things as they are. | {label.te} కోసం ఇది నమోదు చేస్తాను: కోళ్లు ఎలా ఉన్నాయో మీకు తెలియడం లేదు. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/follow_up.py:100` |  |
-| 228 | There's no health check waiting for a follow-up answer for {label_en}. | {label_te} కోసం ఫాలో-అప్ సమాధానం కోసం ఎదురుచూస్తున్న ఆరోగ్య తనిఖీ ఏదీ లేదు. | `src/clucktalk/server/tools/follow_up.py:113` |  |
-| 229 | {label.en}: your health check {d} {unit} ago needs a follow-up. How are the birds now: better, the same, or worse? | {label.te}: {d} రోజుల క్రితం చేసిన మీ ఆరోగ్య తనిఖీకి ఫాలో-అప్ అవసరం. కోళ్లు ఇప్పుడు ఎలా ఉన్నాయి: మెరుగ్గా, అలాగే, లేదా అధ్వాన్నంగా? | `src/clucktalk/server/tools/follow_up.py:357` |  |
-| 230 | {label.en}: the follow-up on the health check {d} {unit} ago still needs attention. | {label.te}: {d} రోజుల క్రితం చేసిన ఆరోగ్య తనిఖీ ఫాలో-అప్‌పై ఇంకా శ్రద్ధ అవసరం. | `src/clucktalk/server/tools/follow_up.py:365` |  |
-| 231 | {label.en}: there was no answer to the follow-up on the health check {d} {unit} ago. | {label.te}: {d} రోజుల క్రితం చేసిన ఆరోగ్య తనిఖీ ఫాలో-అప్‌కు సమాధానం రాలేదు. | `src/clucktalk/server/tools/follow_up.py:374` |  |
-| 232 | earlier today | ఈరోజు ముందు | `src/clucktalk/server/tools/follow_up.py:381` |  |
-| 233 | yesterday | నిన్న | `src/clucktalk/server/tools/follow_up.py:383` |  |
-| 234 | {days_ago} {plural(days_ago, 'day', 'days')} ago | {days_ago} రోజుల క్రితం | `src/clucktalk/server/tools/follow_up.py:384` |  |
-| 235 | your health check {when.en} said: {short.en}. | {when.te} మీ ఆరోగ్య తనిఖీ ఫలితం: {short.te}. | `src/clucktalk/server/tools/follow_up.py:393` |  |
-| 236 | your health check {when.en} is not finished; from the signs so far: {short.en}. | {when.te} మీ ఆరోగ్య తనిఖీ ఇంకా పూర్తి కాలేదు; ఇప్పటివరకు లక్షణాల ప్రకారం: {short.te}. | `src/clucktalk/server/tools/follow_up.py:397` |  |
-| 237 | Tell how a shed is now | షెడ్ ఇప్పుడు ఎలా ఉందో చెప్పండి | `src/clucktalk/server/tools/follow_up.py:559` |  |
-| 238 | This is guidance, not a diagnosis. Your vet decides any treatment. | ఇది సలహా మాత్రమే, రోగ నిర్ధారణ కాదు. ఏ చికిత్స అయినా మీ డాక్టరే నిర్ణయిస్తారు. | `src/clucktalk/server/tools/health.py:88` |  |
-| 239 | Shall I send a summary to your vet? | మీ డాక్టర్‌కి సారాంశం పంపమంటారా? | `src/clucktalk/server/tools/health.py:90` |  |
-| 240 | {h}: this doesn't look urgent right now; keep an eye on the birds. | {h}: ప్రస్తుతం ఇది అత్యవసరంగా కనిపించడం లేదు; కోళ్లను గమనిస్తూ ఉండండి. | `src/clucktalk/server/tools/health.py:94` |  |
-| 241 | {h}: keep a close watch on the birds today. | {h}: ఈరోజు కోళ్లను దగ్గరగా గమనించండి. | `src/clucktalk/server/tools/health.py:96` |  |
-| 242 | {h} needs your vet today. | {h} కి ఈరోజే మీ డాక్టర్ అవసరం. | `src/clucktalk/server/tools/health.py:97` |  |
-| 243 | {h}: these signs together can mean a serious bird disease that must be reported. | {h}: ఈ లక్షణాలు కలిసి ఉంటే, తప్పనిసరిగా తెలియజేయాల్సిన తీవ్రమైన కోళ్ల వ్యాధి కావచ్చు. | `src/clucktalk/server/tools/health.py:100` |  |
-| 244 | not urgent | అత్యవసరం కాదు | `src/clucktalk/server/tools/health.py:104` |  |
-| 245 | watch closely today | ఈరోజు దగ్గరగా గమనించాలి | `src/clucktalk/server/tools/health.py:105` |  |
-| 246 | needs a vet today | ఈరోజే డాక్టర్ అవసరం | `src/clucktalk/server/tools/health.py:106` |  |
-| 247 | signs of a possible reportable disease | తెలియజేయాల్సిన వ్యాధి లక్షణాలు కావచ్చు | `src/clucktalk/server/tools/health.py:107` |  |
-| 248 | Demo rules (no AI model) | డెమో నియమాలు (AI మోడల్ లేదు) | `src/clucktalk/server/tools/health.py:110` |  |
-| 249 | AI: Amazon Nova on Bedrock | AI: బెడ్‌రాక్‌పై Amazon Nova | `src/clucktalk/server/tools/health.py:111` |  |
-| 250 | Safety rules only (no AI needed) | భద్రతా నియమాలు మాత్రమే (AI అవసరం లేదు) | `src/clucktalk/server/tools/health.py:112` |  |
-| 251 | Test model | పరీక్ష మోడల్ | `src/clucktalk/server/tools/health.py:114` |  |
-| 252 | No AI answer: the check couldn't finish | AI సమాధానం రాలేదు: తనిఖీ పూర్తి కాలేదు | `src/clucktalk/server/tools/health.py:115` |  |
-| 253 | I couldn't match what you told me to a sign I know, so to be safe: | మీరు చెప్పినదాన్ని నాకు తెలిసిన ఏ లక్షణంతోనూ సరిపోల్చలేకపోయాను, కాబట్టి జాగ్రత్త కోసం: | `src/clucktalk/server/tools/health.py:118` |  |
-| 254 | Today's AI limit is reached, so this check used the demo rules. | ఈరోజు AI పరిమితి అయిపోయింది, కాబట్టి ఈ తనిఖీకి డెమో నియమాలు వాడాను. | `src/clucktalk/server/tools/health.py:122` |  |
-| 255 | That request timed out, so nothing was sent. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ పంపలేదు. | `src/clucktalk/server/tools/health.py:125` |  |
-| 256 | That request was replaced by a newer one, so nothing was sent. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ పంపలేదు. | `src/clucktalk/server/tools/health.py:128` |  |
-| 257 | That's different from what I read back, so nothing was sent yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ పంపలేదు. | `src/clucktalk/server/tools/health.py:132` |  |
-| 258 | I couldn't find that request, so nothing was sent. | ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ పంపలేదు. | `src/clucktalk/server/tools/health.py:134` |  |
-| 259 | That request was already cancelled, so nothing was sent. | ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ పంపలేదు. | `src/clucktalk/server/tools/health.py:137` |  |
-| 260 | That summary was already sent, so saying no now doesn't unsend it. | ఆ సారాంశం ఇప్పటికే పంపబడింది, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు. | `src/clucktalk/server/tools/health.py:141` |  |
-| 261 | Okay, nothing was sent. | సరే, ఏమీ పంపలేదు. | `src/clucktalk/server/tools/health.py:144` |  |
-| 262 | and | మరియు | `src/clucktalk/server/tools/health.py:151` |  |
-| 263 | or | లేదా | `src/clucktalk/server/tools/health.py:152` |  |
-| 264 | I couldn't use this shed's records, so this check is on the signs alone. | ఈ షెడ్ రికార్డులను ఉపయోగించలేకపోయాను, కాబట్టి ఈ తనిఖీ లక్షణాల ఆధారంగా మాత్రమే. | `src/clucktalk/server/tools/health.py:332` |  |
-| 265 | {d} birds died in the latest count, against about {b} a day before. | తాజా లెక్కలో {d} కోళ్లు చనిపోయాయి, అంతకుముందు రోజుకు సుమారు {b}. | `src/clucktalk/server/tools/health.py:340` |  |
-| 266 | Feed eaten is {p}% below its recent level. | మేత తినడం ఇటీవలి స్థాయి కంటే {p}% తక్కువగా ఉంది. | `src/clucktalk/server/tools/health.py:345` |  |
-| 267 | You said {n} birds show the signs, but {inp.label_en} has {live} birds alive, so I left that number out. | {n} కోళ్లలో లక్షణాలు ఉన్నాయని చెప్పారు, కానీ {inp.label_te} లో {live} కోళ్లే బతికి ఉన్నాయి, కాబట్టి ఆ సంఖ్యను వదిలేశాను. | `src/clucktalk/server/tools/health.py:364` |  |
-| 268 | Now: {steps.en}. | ఇప్పుడే: {steps.te}. | `src/clucktalk/server/tools/health.py:378` |  |
-| 269 | The signs fit {fits.en}. | లక్షణాలు {fits.te} కి సరిపోతున్నాయి. | `src/clucktalk/server/tools/health.py:391` |  |
-| 270 | First, {first.en}. | ముందుగా, {first.te}. | `src/clucktalk/server/tools/health.py:394` |  |
-| 271 | I'm checking {inp.label_en} now. Ask me in a few seconds if the health check is ready. | {inp.label_te} ని ఇప్పుడు తనిఖీ చేస్తున్నాను. కొన్ని సెకన్లలో ఆరోగ్య తనిఖీ సిద్ధమైందా అని అడగండి. | `src/clucktalk/server/tools/health.py:409` |  |
-| 272 | Still checking {inp.label_en}. Ask me again in a few seconds. | {inp.label_te} ని ఇంకా తనిఖీ చేస్తున్నాను. కొన్ని సెకన్ల తర్వాత మళ్ళీ అడగండి. | `src/clucktalk/server/tools/health.py:414` |  |
-| 273 | While I check: | తనిఖీ చేస్తుండగానే: | `src/clucktalk/server/tools/health.py:419` |  |
-| 274 | I couldn't finish the health check for {inp.label_en}. | {inp.label_te} ఆరోగ్య తనిఖీని పూర్తి చేయలేకపోయాను. | `src/clucktalk/server/tools/health.py:427` |  |
-| 275 | Please ask me again in a minute, and call your vet today if birds get worse. | దయచేసి ఒక నిమిషం తర్వాత మళ్ళీ అడగండి; కోళ్ల పరిస్థితి దిగజారితే ఈరోజే డాక్టర్‌కి ఫోన్ చేయండి. | `src/clucktalk/server/tools/health.py:435` |  |
-| 276 | The next briefing, in about {d} {unit}, will ask how {inp.label_en} is doing. | తదుపరి బ్రీఫింగ్‌లో, సుమారు {d} రోజుల్లో, {inp.label_te} ఎలా ఉందో అడుగుతాను. | `src/clucktalk/server/tools/health.py:461` |  |
-| 277 | I need to know which shed's health check you mean. | ఏ షెడ్ ఆరోగ్య తనిఖీ గురించి అడుగుతున్నారో తెలియాలి. | `src/clucktalk/server/tools/health.py:602` |  |
-| 278 | Tell me the shed, for example: is shed 2's health check ready? | షెడ్ చెప్పండి, ఉదాహరణకు: షెడ్ 2 ఆరోగ్య తనిఖీ సిద్ధమైందా? | `src/clucktalk/server/tools/health.py:603` |  |
-| 279 | that shed | ఆ షెడ్ | `src/clucktalk/server/tools/health.py:607` |  |
-| 280 | your vet (demo contact) | మీ డాక్టర్ (డెమో కాంటాక్ట్) | `src/clucktalk/server/tools/health.py:615` |  |
-| 281 | CluckTalk triage: {u.en} (guidance, not a diagnosis). | CluckTalk తనిఖీ: {u.te} (సలహా మాత్రమే, రోగ నిర్ధారణ కాదు). | `src/clucktalk/server/tools/health.py:623` |  |
-| 282 | The CluckTalk check could not finish; level from the signs and records: {u.en} (not a diagnosis). | CluckTalk తనిఖీ పూర్తి కాలేదు; లక్షణాలు, రికార్డుల ప్రకారం స్థాయి: {u.te} (రోగ నిర్ధారణ కాదు). | `src/clucktalk/server/tools/health.py:629` |  |
-| 283 | The CluckTalk check is still running; level from the signs and records so far: {u.en} (not a diagnosis). | CluckTalk తనిఖీ ఇంకా జరుగుతోంది; ఇప్పటివరకు లక్షణాలు, రికార్డుల ప్రకారం స్థాయి: {u.te} (రోగ నిర్ధారణ కాదు). | `src/clucktalk/server/tools/health.py:633` |  |
-| 284 | day {num(inp.age_days)} | {num(inp.age_days)}వ రోజు | `src/clucktalk/server/tools/health.py:642` |  |
-| 285 | {num(inp.live_birds)} birds alive | {num(inp.live_birds)} కోళ్లు బతికి ఉన్నాయి | `src/clucktalk/server/tools/health.py:644` |  |
-| 286 | none named | ఏవీ చెప్పలేదు | `src/clucktalk/server/tools/health.py:646` |  |
-| 287 | Signs reported: {signs.en}. | చెప్పిన లక్షణాలు: {signs.te}. | `src/clucktalk/server/tools/health.py:650` |  |
-| 288 | The farmer asks you to call back. | రైతు మిమ్మల్ని తిరిగి ఫోన్ చేయమని కోరుతున్నారు. | `src/clucktalk/server/tools/health.py:652` |  |
-| 289 | CluckTalk case summary (Simulated SMS, demo farm). {summary.en} | CluckTalk కేసు సారాంశం (సిమ్యులేటెడ్ SMS, డెమో ఫారం). {summary.te} | `src/clucktalk/server/tools/health.py:671` |  |
-| 290 | Your vet already has the summary for this {house.label_en} check (simulated SMS). | ఈ {house.label_te} తనిఖీ సారాంశం ఇప్పటికే మీ డాక్టర్‌కి పంపబడింది (సిమ్యులేటెడ్ SMS). | `src/clucktalk/server/tools/health.py:713` |  |
-| 291 | I'll send {RECIPIENT.en} this summary by simulated SMS: {summary.en} Say yes to send it, or no to keep it. | {RECIPIENT.te} కి ఈ సారాంశాన్ని సిమ్యులేటెడ్ SMS ద్వారా పంపుతాను: {summary.te} పంపాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/health.py:723` |  |
-| 292 | Sent to {RECIPIENT.en} as a simulated SMS. | {RECIPIENT.te} కి సిమ్యులేటెడ్ SMS గా పంపాను. | `src/clucktalk/server/tools/health.py:736` |  |
-| 293 | Check sick birds | జబ్బు పడిన కోళ్ల తనిఖీ | `src/clucktalk/server/tools/health.py:867` |  |
-| 294 | Send a health summary to your vet | మీ డాక్టర్‌కి ఆరోగ్య సారాంశం పంపండి | `src/clucktalk/server/tools/health.py:874` |  |
-| 295 | Your farm is set up as a contract farm: your company supplies the feed, so feed plans tell you how many bags to ask your supervisor for, without prices. | మీ ఫారం కాంట్రాక్ట్ ఫారంగా సెట్ అయి ఉంది: ఫీడ్ మీ కంపెనీ ఇస్తుంది, కాబట్టి ఫీడ్ ప్లాన్ ధరలు లేకుండా, సూపర్‌వైజర్‌ని ఎన్ని బస్తాలు అడగాలో చెబుతుంది. | `src/clucktalk/server/tools/profile.py:33` |  |
-| 296 | Your farm is set up as an independent farm: you buy your own feed, so feed plans include a simulated price. | మీ ఫారం సొంత ఫారంగా సెట్ అయి ఉంది: ఫీడ్ మీరే కొంటారు, కాబట్టి ఫీడ్ ప్లాన్‌లో అంచనా ధర (డెమో) కూడా ఉంటుంది. | `src/clucktalk/server/tools/profile.py:37` |  |
-| 297 | To change it, say: switch to contract farming. | మార్చాలంటే 'switch to contract farming' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:43` |  |
-| 298 | To change it, say: switch to independent farming. | మార్చాలంటే 'switch to independent farming' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:47` |  |
-| 299 | Switch your farm to contract farming? Then I'll stop suggesting feed purchases and prices, and tell you how many bags to ask your supervisor for. Say yes to confirm, or no to keep it as it is. | మీ ఫారంను కాంట్రాక్ట్ ఫారంగా మార్చాలా? అప్పుడు ఫీడ్ కొనుగోలు, ధరలు చెప్పను; సూపర్‌వైజర్‌ని ఎన్ని బస్తాలు అడగాలో చెబుతాను. మార్చాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:54` |  |
-| 300 | Switch your farm to independent farming? Then I'll plan feed purchases with a simulated price. Say yes to confirm, or no to keep it as it is. | మీ ఫారంను సొంత ఫారంగా మార్చాలా? అప్పుడు అంచనా ధర (డెమో)తో ఫీడ్ కొనుగోలు ప్లాన్ చెబుతాను. మార్చాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:60` |  |
-| 301 | Your farm is now set up as a contract farm. | మీ ఫారం ఇప్పుడు కాంట్రాక్ట్ ఫారంగా సెట్ అయింది. | `src/clucktalk/server/tools/profile.py:64` |  |
-| 302 | Your farm is now set up as an independent farm. | మీ ఫారం ఇప్పుడు సొంత ఫారంగా సెట్ అయింది. | `src/clucktalk/server/tools/profile.py:65` |  |
-| 303 | Your farm is already set up as a contract farm, so nothing changed. | మీ ఫారం ఇప్పటికే కాంట్రాక్ట్ ఫారంగా ఉంది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:70` |  |
-| 304 | Your farm is already set up as an independent farm, so nothing changed. | మీ ఫారం ఇప్పటికే సొంత ఫారంగా ఉంది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:74` |  |
-| 305 | Your farm stays a contract farm. | మీ ఫారం కాంట్రాక్ట్ ఫారంగానే ఉంటుంది. | `src/clucktalk/server/tools/profile.py:78` |  |
-| 306 | Your farm stays an independent farm. | మీ ఫారం సొంత ఫారంగానే ఉంటుంది. | `src/clucktalk/server/tools/profile.py:79` |  |
-| 307 | Done. | సరే. | `src/clucktalk/server/tools/profile.py:81` |  |
-| 308 | Okay, nothing changed. | సరే, ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:82` |  |
-| 309 | That change was made earlier and has been changed again since. | ఆ మార్పు ఇంతకుముందే జరిగింది, తర్వాత మళ్ళీ మార్చబడింది. | `src/clucktalk/server/tools/profile.py:85` |  |
-| 310 | That request timed out, so nothing changed. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:88` |  |
-| 311 | That request was replaced by a newer one, so nothing changed. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:91` |  |
-| 312 | That's different from what I read back, so nothing changed yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:95` |  |
-| 313 | I couldn't find that request, so nothing changed. | ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:97` |  |
-| 314 | That request was already cancelled, so nothing changed. | ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:100` |  |
-| 315 | That change was already made earlier, so saying no now doesn't undo it. | ఆ మార్పు ఇంతకుముందే జరిగిపోయింది, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు. | `src/clucktalk/server/tools/profile.py:104` |  |
-| 316 | Your contract terms are saved, so plan_sale can show the growing charge. | మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ అయ్యాయి, కాబట్టి ప్లాన్ సేల్ గ్రోయింగ్ ఛార్జ్ చూపగలదు. | `src/clucktalk/server/tools/profile.py:175` |  |
-| 317 | Say your contract terms to see the growing charge in the sale plan. | సేల్ ప్లాన్‌లో గ్రోయింగ్ ఛార్జ్ చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు చెప్పండి. | `src/clucktalk/server/tools/profile.py:180` |  |
-| 318 | Contract or independent farm | కాంట్రాక్ట్ లేదా సొంత ఫారం | `src/clucktalk/server/tools/profile.py:292` |  |
-| 319 | medicine | మందు | `src/clucktalk/server/tools/records.py:49` |  |
-| 320 | vaccine | వ్యాక్సిన్ | `src/clucktalk/server/tools/records.py:49` |  |
-| 321 | That request timed out, so nothing changed. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:59` |  |
-| 322 | That request was replaced by a newer one, so nothing changed. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:62` |  |
-| 323 | That's different from what I read back, so nothing changed yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:66` |  |
-| 324 | I couldn't find that request, so nothing changed. | ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:68` |  |
-| 325 | That request was already cancelled, so nothing changed. | ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:71` |  |
-| 326 | That record was already saved earlier, so saying no now doesn't undo it. | ఆ రికార్డ్ ఇంతకుముందే సేవ్ అయింది, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు. | `src/clucktalk/server/tools/records.py:75` |  |
-| 327 | Okay, nothing changed. | సరే, ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:78` |  |
-| 328 | on {weekday_en(day)} | {weekday_te(day)} రోజు | `src/clucktalk/server/tools/records.py:222` |  |
-| 329 | no deaths | మరణాలు లేవు | `src/clucktalk/server/tools/records.py:235` |  |
-| 330 | {num(deaths)} died | {num(deaths)} కోళ్లు చనిపోయాయి | `src/clucktalk/server/tools/records.py:235` |  |
-| 331 | {b} {plural(int(feed_bags), 'bag', 'bags')} of feed | {b} బస్తాల ఫీడ్ | `src/clucktalk/server/tools/records.py:239` |  |
-| 332 | average weight {num(avg_weight_g)} grams from {num(weight_sample_birds)} birds weighed | {num(weight_sample_birds)} కోళ్లను తూచగా సగటు బరువు {num(avg_weight_g)} గ్రాములు | `src/clucktalk/server/tools/records.py:244` |  |
-| 333 | , with a note | , ఒక గమనికతో | `src/clucktalk/server/tools/records.py:251` |  |
-| 334 | {t.name} {label.en} given{with_note.en} | {t.name} {label.te} ఇచ్చారు{with_note.te} | `src/clucktalk/server/tools/records.py:252` |  |
-| 335 | No entry yet for {house.label_en} today. | {house.label_te}కి ఈరోజు ఇంకా నమోదు కాలేదు. | `src/clucktalk/server/tools/records.py:282` |  |
-| 336 | {house.label_en} logged: {summary.en}. | {house.label_te}: {summary.te} నమోదు అయింది. | `src/clucktalk/server/tools/records.py:287` |  |
-| 337 | {num(logged)} of {num(len(entries))} houses logged today. | ఈరోజు {num(len(entries))} షెడ్లలో {num(logged)} నమోదు అయ్యాయి. | `src/clucktalk/server/tools/records.py:292` |  |
-| 338 | {house.label_en} already has that recorded for {when.en}, so nothing changed. | {house.label_te}కి {when.te} అది ఇప్పటికే రికార్డ్ అయింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:469` |  |
-| 339 | {house.label_en} already has a record for {when.en}; I'll add this to it. | {house.label_te}కి {when.te} రికార్డ్ ఇప్పటికే ఉంది; దీన్ని దానికి జోడిస్తాను. | `src/clucktalk/server/tools/records.py:479` |  |
-| 340 | For {house.label_en}, {when.en}: {given.en}. Say yes to save, or no to keep it as it is. | {house.label_te}కి, {when.te}: {given.te}. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/records.py:486` |  |
-| 341 | Done. Saved for {house.label_en}, {when.en}. | సరే. {house.label_te}కి, {when.te} సేవ్ చేశాను. | `src/clucktalk/server/tools/records.py:509` |  |
-| 342 | Today's record book | ఈరోజు రికార్డ్ బుక్ | `src/clucktalk/server/tools/records.py:536` |  |
-| 343 | Log today's record | ఈరోజు రికార్డ్ నమోదు చేయండి | `src/clucktalk/server/tools/records.py:573` |  |
-| 344 | tomorrow | రేపు | `src/clucktalk/server/tools/sale.py:175` |  |
-| 345 | {d.weekday_en} ({d.in_days} days from now) | {d.weekday_te} ({d.in_days} రోజుల్లో) | `src/clucktalk/server/tools/sale.py:176` |  |
-| 346 | {out.label_en}: selling today is best. Each extra day would lose value. | {out.label_te}: ఈరోజే అమ్మడం మంచిది. ప్రతి అదనపు రోజు నష్టమే. | `src/clucktalk/server/tools/sale.py:184` |  |
-| 347 | {out.label_en}: best to sell {lab.en}, about {rupees(diff)} more than selling today. | {out.label_te}: {lab.te} అమ్మడం మంచిది, ఈరోజు అమ్మడం కంటే సుమారు {rupees(diff)} ఎక్కువ. | `src/clucktalk/server/tools/sale.py:191` |  |
-| 348 | {head.en} From {lab.en}, one more day starts to cost more feed than the weight it adds. | {head.te} {lab.te} నుండి, ఒక్క రోజు ఎక్కువగా ఉంచితే అది జోడించే బరువు కంటే ఫీడ్ ఖర్చు ఎక్కువవుతుంది. | `src/clucktalk/server/tools/sale.py:198` |  |
-| 349 | {lab.en}: {num(d.weight_g)} g, net {rupees(d.net_vs_today_inr)} vs today | {lab.te}: {num(d.weight_g)} గ్రా., ఈరోజుతో పోలిస్తే నికరం {rupees(d.net_vs_today_inr)} | `src/clucktalk/server/tools/sale.py:211` |  |
-| 350 | Simulated price {rupees(out.live_price_per_kg_inr)} per kg; say today's rate to use it instead. | అంచనా ధర (డెమో) కిలోకు {rupees(out.live_price_per_kg_inr)}; బదులుగా ఈరోజు రేటు చెప్పండి. | `src/clucktalk/server/tools/sale.py:217` |  |
-| 351 | {out.label_en}: FCR is about {today.fcr} today; keeping the birds longer raises it (about {later.fcr} by {_day_label(later).en}). | {out.label_te}: ఈరోజు FCR సుమారు {today.fcr}; కోళ్లను ఎక్కువ రోజులు ఉంచితే అది పెరుగుతుంది ({_day_label(later).te} నాటికి సుమారు {later.fcr}). | `src/clucktalk/server/tools/sale.py:227` |  |
-| 352 | Say set_contract_terms with your rate to see how this changes your growing charge. | మీ గ్రోయింగ్ ఛార్జ్ ఎలా మారుతుందో చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు చెప్పండి. | `src/clucktalk/server/tools/sale.py:233` |  |
-| 353 | Your growing charge today is about {rupees(charge_today)}; by {_day_label(later).en} it would be about {rupees(charge_later)}, based on your own terms. | ఈరోజు మీ గ్రోయింగ్ ఛార్జ్ సుమారు {rupees(charge_today)}; {_day_label(later).te} నాటికి మీ నిబంధనల ప్రకారం సుమారు {rupees(charge_later)} అవుతుంది. | `src/clucktalk/server/tools/sale.py:240` |  |
-| 354 | Show this to your supervisor to ask for the birds to be lifted on time. | కోళ్లను సకాలంలో తీసుకెళ్లమని మీ సూపర్‌వైజర్‌ని అడగడానికి ఇది చూపించండి. | `src/clucktalk/server/tools/sale.py:245` |  |
-| 355 | Sale planning is not part of this pilot yet. | ఈ పైలట్ లో అమ్మకం లెక్క ఇంకా లేదు. | `src/clucktalk/server/tools/sale.py:293` |  |
-| 356 | That paper rate does not look right. Tell me today's paper rate in rupees per kg, like: paper rate 160. | ఆ పేపర్ రేటు సరిగా లేదు. ఈరోజు పేపర్ రేటు కిలోకు రూపాయలలో చెప్పండి, ఉదాహరణకు: ఈరోజు పేపర్ రేటు 160. | `src/clucktalk/server/tools/sale.py:297` |  |
-| 357 | Tell me today's paper rate, like: paper rate 160, and I will work out your price. | ఈరోజు పేపర్ రేటు చెప్పండి, ఉదాహరణకు: ఈరోజు పేపర్ రేటు 160, మీ ధర నేను లెక్కిస్తాను. | `src/clucktalk/server/tools/sale.py:304` |  |
-| 358 | Your price today: {rupees(paper - delta)} per kg (paper rate {rupees(paper)} minus {rupees(delta)}, your own rule). | మీ ఈరోజు ధర: కిలోకు {rupees(paper - delta)} (పేపర్ రేటు {rupees(paper)} నుండి {rupees(delta)} తగ్గింపు, మీ సొంత నియమం). | `src/clucktalk/server/tools/sale.py:309` |  |
-| 359 | Sell-day check for your broiler sheds. | మీ బ్రాయిలర్ షెడ్ల అమ్మకం రోజు తనిఖీ. | `src/clucktalk/server/tools/sale.py:372` |  |
-| 360 | No broiler sheds to check. | తనిఖీ చేయడానికి బ్రాయిలర్ షెడ్లు లేవు. | `src/clucktalk/server/tools/sale.py:378` |  |
-| 361 | When to sell | ఎప్పుడు అమ్మాలో | `src/clucktalk/server/tools/sale.py:424` |  |
+| 111 | Questions | ప్రశ్నలు | `src/clucktalk/i18n/pilot.py:127` |  |
+| 112 | As you told us: | మీరు చెప్పినట్లు: | `src/clucktalk/i18n/pilot.py:128` |  |
+| 113 | What day is it today? | ఈరోజు ఎన్నో రోజు? | `src/clucktalk/i18n/pilot.py:130` |  |
+| 114 | When is the next vaccination? | తదుపరి టీకా ఎప్పుడు? | `src/clucktalk/i18n/pilot.py:131` |  |
+| 115 | Is there a vaccination today? | ఈరోజు టీకా ఉందా? | `src/clucktalk/i18n/pilot.py:132` |  |
+| 116 | From when should I weigh the birds? | ఎప్పటి నుంచి బరువు చూడాలి? | `src/clucktalk/i18n/pilot.py:133` |  |
+| 117 | When should I spray water? | నీళ్లు ఎప్పుడు చల్లాలి? | `src/clucktalk/i18n/pilot.py:134` |  |
+| 118 | For how many days the heat lights? | వేడి లైట్లు ఎన్ని రోజులు? | `src/clucktalk/i18n/pilot.py:135` |  |
+| 119 | When does the doctor come? | డాక్టర్ ఎప్పుడు వస్తారు? | `src/clucktalk/i18n/pilot.py:136` |  |
+| 120 | How much feed in all for one bird? | ఒక కోడికి మొత్తం దాణా ఎంత? | `src/clucktalk/i18n/pilot.py:137` |  |
+| 121 | What weight on day 45? | 45వ రోజు బరువు ఎంత ఉండాలి? | `src/clucktalk/i18n/pilot.py:138` |  |
+| 122 | When is day 45? | 45వ రోజు ఎప్పుడు? | `src/clucktalk/i18n/pilot.py:139` |  |
+| 123 | {shed}: day {day}. | {shed}: {day}వ రోజు. | `src/clucktalk/i18n/pilot.py:141` |  |
+| 124 | {shed}: next vaccination on day {day}, in {left} days. | {shed}: తదుపరి టీకా {day}వ రోజున, {left} రోజుల్లో. | `src/clucktalk/i18n/pilot.py:144` |  |
+| 125 | {shed}: next vaccination is today, day {day}. | {shed}: తదుపరి టీకా ఈరోజే, {day}వ రోజు. | `src/clucktalk/i18n/pilot.py:148` |  |
+| 126 | {shed}: the vaccination days you told us are all over. | {shed}: మీరు చెప్పిన టీకా రోజులన్నీ అయిపోయాయి. | `src/clucktalk/i18n/pilot.py:152` |  |
+| 127 | {shed}: yes, vaccination today, day {day}. | {shed}: అవును, ఈరోజు టీకా ఉంది, {day}వ రోజు. | `src/clucktalk/i18n/pilot.py:154` |  |
+| 128 | {shed}: no vaccination today, day {day}. | {shed}: లేదు, ఈరోజు టీకా లేదు, {day}వ రోజు. | `src/clucktalk/i18n/pilot.py:155` |  |
+| 129 | Weigh the birds from day {day}. | {day}వ రోజు నుంచి కోళ్లను తూకం వేయండి. | `src/clucktalk/i18n/pilot.py:156` |  |
+| 130 | On day 40, above {kg} kg is good. | 40వ రోజున {kg} కిలోల కంటే ఎక్కువ ఉంటే బాగుంది. | `src/clucktalk/i18n/pilot.py:157` |  |
+| 131 | Spray water when it is hotter than {degrees} degrees. | వేడి {degrees} డిగ్రీల కంటే ఎక్కువ ఉన్నప్పుడు నీళ్లు చల్లండి. | `src/clucktalk/i18n/pilot.py:160` |  |
+| 132 | {shed}: heat lights for the first {days} days; now day {day}, keep them on. | {shed}: మొదటి {days} రోజులు వేడి లైట్లు; ఇప్పుడు {day}వ రోజు, ఇంకా ఉంచాలి. | `src/clucktalk/i18n/pilot.py:164` |  |
+| 133 | {shed}: heat lights were for the first {days} days; now day {day}, those days are over. | {shed}: మొదటి {days} రోజులు వేడి లైట్లు; ఇప్పుడు {day}వ రోజు, ఆ రోజులు అయిపోయాయి. | `src/clucktalk/i18n/pilot.py:168` |  |
+| 134 | The doctor comes every {days} days. | డాక్టర్ {days} రోజులకు ఒకసారి వస్తారు. | `src/clucktalk/i18n/pilot.py:170` |  |
+| 135 | The doctor comes every day. | డాక్టర్ రోజూ వస్తారు. | `src/clucktalk/i18n/pilot.py:171` |  |
+| 136 | One bird eats about {kg} kg of feed in all by day 45. | ఒక కోడికి 45వ రోజు వరకు మొత్తం సుమారు {kg} కిలోల దాణా. | `src/clucktalk/i18n/pilot.py:174` |  |
+| 137 | On day 45 the weight should be about {kg} kg. | 45వ రోజున బరువు సుమారు {kg} కిలోలు ఉండాలి. | `src/clucktalk/i18n/pilot.py:176` |  |
+| 138 | {shed}: day 45 is on {date}. | {shed}: 45వ రోజు {date} నాడు. | `src/clucktalk/i18n/pilot.py:177` |  |
+| 139 | No shed has birds now. | ఇప్పుడు ఏ షెడ్ లోనూ కోళ్లు లేవు. | `src/clucktalk/i18n/pilot.py:178` |  |
+| 140 | OK | బాగుంది | `src/clucktalk/server/cards/__init__.py:35` |  |
+| 141 | WATCH | గమనించాలి | `src/clucktalk/server/cards/__init__.py:36` |  |
+| 142 | ALERT | శ్రద్ధ అవసరం | `src/clucktalk/server/cards/__init__.py:37` |  |
+| 143 | UNKNOWN | తెలియదు | `src/clucktalk/server/cards/__init__.py:38` |  |
+| 144 | Follow-up | ఫాలో-అప్ | `src/clucktalk/server/cards/__init__.py:41` |  |
+| 145 | Farm status | ఫారం స్థితి | `src/clucktalk/server/cards/__init__.py:42` |  |
+| 146 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:43` |  |
+| 147 | Deaths today | ఈరోజు మరణాలు | `src/clucktalk/server/cards/__init__.py:44` |  |
+| 148 | Deaths, latest count | తాజా లెక్కలో మరణాలు | `src/clucktalk/server/cards/__init__.py:45` |  |
+| 149 | Feed stock | ఫీడ్ నిల్వ | `src/clucktalk/server/cards/__init__.py:46` |  |
+| 150 | Feed stock, days | ఫీడ్ నిల్వ, రోజులు | `src/clucktalk/server/cards/__init__.py:47` |  |
+| 151 | not known | తెలియదు | `src/clucktalk/server/cards/__init__.py:48` |  |
+| 152 | Average weight | సగటు బరువు | `src/clucktalk/server/cards/__init__.py:49` |  |
+| 153 | Laying | గుడ్ల ఉత్పత్తి | `src/clucktalk/server/cards/__init__.py:50` |  |
+| 154 | {n} days | {n} రోజులు | `src/clucktalk/server/cards/__init__.py:52` |  |
+| 155 | {n} day | {n} రోజు | `src/clucktalk/server/cards/__init__.py:53` |  |
+| 156 | at least {n} days | కనీసం {n} రోజులు | `src/clucktalk/server/cards/__init__.py:54` |  |
+| 157 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:55` |  |
+| 158 | target {n} g | లక్ష్యం {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:56` |  |
+| 159 | {n} birds | {n} కోళ్లు | `src/clucktalk/server/cards/__init__.py:57` |  |
+| 160 | Day {n} | {n}వ రోజు | `src/clucktalk/server/cards/__init__.py:58` |  |
+| 161 | Latest readings: {d} | తాజా రీడింగులు: {d} | `src/clucktalk/server/cards/__init__.py:59` |  |
+| 162 | Tap a shed for details | వివరాల కోసం షెడ్‌ను తాకండి | `src/clucktalk/server/cards/__init__.py:60` |  |
+| 163 | All sheds | అన్ని షెడ్లు | `src/clucktalk/server/cards/__init__.py:61` |  |
+| 164 | Could not check | తనిఖీ చేయలేకపోయాను | `src/clucktalk/server/cards/__init__.py:62` |  |
+| 165 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:63` |  |
+| 166 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:64` |  |
+| 167 | Sell-day plan | అమ్మకం రోజు ప్రణాళిక | `src/clucktalk/server/cards/__init__.py:79` |  |
+| 168 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:80` |  |
+| 169 | Simulated price | అంచనా ధర (డెమో) | `src/clucktalk/server/cards/__init__.py:81` |  |
+| 170 | Best day | మంచి రోజు | `src/clucktalk/server/cards/__init__.py:82` |  |
+| 171 | Today | ఈరోజు | `src/clucktalk/server/cards/__init__.py:83` |  |
+| 172 | Break-even | బ్రేక్-ఈవెన్ | `src/clucktalk/server/cards/__init__.py:84` |  |
+| 173 | Net vs today | ఈరోజుతో పోలిస్తే నికరం | `src/clucktalk/server/cards/__init__.py:85` |  |
+| 174 | Weight | బరువు | `src/clucktalk/server/cards/__init__.py:86` |  |
+| 175 | Growing charge | గ్రోయింగ్ ఛార్జ్ | `src/clucktalk/server/cards/__init__.py:88` |  |
+| 176 | Save your contract terms to see the growing charge | గ్రోయింగ్ ఛార్జ్ చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయండి | `src/clucktalk/server/cards/__init__.py:90` |  |
+| 177 | {n} g | {n} గ్రా. | `src/clucktalk/server/cards/__init__.py:92` |  |
+| 178 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:93` |  |
+| 179 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:96` |  |
+| 180 | Health check | ఆరోగ్య తనిఖీ | `src/clucktalk/server/cards/__init__.py:111` |  |
+| 181 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:112` |  |
+| 182 | not urgent | అత్యవసరం కాదు | `src/clucktalk/server/cards/__init__.py:113` |  |
+| 183 | watch closely today | ఈరోజు దగ్గరగా గమనించాలి | `src/clucktalk/server/cards/__init__.py:114` |  |
+| 184 | needs a vet today | ఈరోజే డాక్టర్ అవసరం | `src/clucktalk/server/cards/__init__.py:115` |  |
+| 185 | signs of a possible reportable disease | తెలియజేయాల్సిన వ్యాధి లక్షణాలు కావచ్చు | `src/clucktalk/server/cards/__init__.py:116` |  |
+| 186 | Still checking | ఇంకా తనిఖీ చేస్తున్నాను | `src/clucktalk/server/cards/__init__.py:117` |  |
+| 187 | Could not finish | పూర్తి చేయలేకపోయాను | `src/clucktalk/server/cards/__init__.py:118` |  |
+| 188 | Signs reported | చెప్పిన లక్షణాలు | `src/clucktalk/server/cards/__init__.py:119` |  |
+| 189 | The signs fit | లక్షణాలు సరిపోతున్నవి | `src/clucktalk/server/cards/__init__.py:120` |  |
+| 190 | Check first | ముందుగా చూడండి | `src/clucktalk/server/cards/__init__.py:121` |  |
+| 191 | PLACEHOLDER - not a real photo | ప్లేస్‌హోల్డర్ - నిజమైన ఫోటో కాదు | `src/clucktalk/server/cards/__init__.py:123` |  |
+| 192 | Sources | మూలాలు | `src/clucktalk/server/cards/__init__.py:124` |  |
+| 193 | Check again | మళ్ళీ చూడండి | `src/clucktalk/server/cards/__init__.py:125` |  |
+| 194 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:126` |  |
+| 195 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:129` |  |
+| 196 | Daily briefing | రోజువారీ బ్రీఫింగ్ | `src/clucktalk/server/cards/__init__.py:143` |  |
+| 197 | Demo data | డెమో డేటా | `src/clucktalk/server/cards/__init__.py:144` |  |
+| 198 | ALERT | శ్రద్ధ అవసరం | `src/clucktalk/server/cards/__init__.py:145` |  |
+| 199 | WATCH | గమనించాలి | `src/clucktalk/server/cards/__init__.py:146` |  |
+| 200 | REMINDER | గుర్తుచేత | `src/clucktalk/server/cards/__init__.py:147` |  |
+| 201 | Health first | ఆరోగ్యం ముందు | `src/clucktalk/server/cards/__init__.py:148` |  |
+| 202 | Follow-up | ఫాలో-అప్ | `src/clucktalk/server/cards/__init__.py:149` |  |
+| 203 | Simulated | డెమో అంచనా | `src/clucktalk/server/cards/__init__.py:150` |  |
+| 204 | Previous | వెనుకకు | `src/clucktalk/server/cards/__init__.py:151` |  |
+| 205 | Next | తర్వాత | `src/clucktalk/server/cards/__init__.py:152` |  |
+| 206 | Sorry | క్షమించండి | `src/clucktalk/server/cards/__init__.py:153` |  |
+| 207 | Loading | లోడ్ అవుతోంది | `src/clucktalk/server/cards/__init__.py:156` |  |
+| 208 | label_te | డెమో గడియారం: +{days} రోజులు | `src/clucktalk/server/errors.py:40` |  |
+| 209 | Here's your briefing for today. | ఈరోజు మీ బ్రీఫింగ్ ఇది. | `src/clucktalk/server/tools/briefing.py:52` |  |
+| 210 | Here's the rest. | మిగిలినవి ఇవి. | `src/clucktalk/server/tools/briefing.py:53` |  |
+| 211 | Nothing needs your attention today. | ఈరోజు మీ శ్రద్ధ అవసరమయ్యేది ఏమీ లేదు. | `src/clucktalk/server/tools/briefing.py:54` |  |
+| 212 | Say 'more' to hear the rest. | మిగిలినవి వినాలంటే 'మరిన్ని' అనండి. | `src/clucktalk/server/tools/briefing.py:55` |  |
+| 213 | That's everything for today. | ఈరోజుకు ఇంతే. | `src/clucktalk/server/tools/briefing.py:56` |  |
+| 214 | There are more things; ask about one shed for details. | ఇంకా విషయాలు ఉన్నాయి; వివరాల కోసం ఒక షెడ్ గురించి అడగండి. | `src/clucktalk/server/tools/briefing.py:57` |  |
+| 215 | Ask me for the health check result. | ఆరోగ్య తనిఖీ ఫలితం కోసం నన్ను అడగండి. | `src/clucktalk/server/tools/briefing.py:58` |  |
+| 216 | Ask me for the sell-day plan. | అమ్మకం రోజు ప్రణాళిక కోసం నన్ను అడగండి. | `src/clucktalk/server/tools/briefing.py:59` |  |
+| 217 | and | మరియు | `src/clucktalk/server/tools/briefing.py:60` |  |
+| 218 | Health items come first by safety rules; AI (Amazon Nova on Bedrock) orders the other items in the first three. | ఆరోగ్య అంశాలు భద్రతా నియమాల ప్రకారం ముందుంటాయి; మొదటి మూడింటిలో మిగిలిన అంశాల క్రమాన్ని AI (బెడ్‌రాక్‌పై Amazon Nova) నిర్ణయించింది. | `src/clucktalk/server/tools/briefing.py:64` |  |
+| 219 | The saved AI ordering was unreadable, so the items are in the rules order. | సేవ్ చేసిన AI క్రమం చదవడానికి వీలుకాలేదు, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి. | `src/clucktalk/server/tools/briefing.py:68` |  |
+| 220 | AI ordering is still preparing; showing the rules order for now. | AI క్రమం ఇంకా సిద్ధమవుతోంది; ప్రస్తుతం నియమాల క్రమం చూపిస్తున్నాను. | `src/clucktalk/server/tools/briefing.py:72` |  |
+| 221 | AI ordering didn't finish, so the items are in the rules order. | AI క్రమం పూర్తి కాలేదు, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి. | `src/clucktalk/server/tools/briefing.py:76` |  |
+| 222 | Today's AI limit is reached, so the items are in the rules order. | ఈరోజు AI పరిమితి అయిపోయింది, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి. | `src/clucktalk/server/tools/briefing.py:80` |  |
+| 223 | simulated estimate | అంచనా (డెమో) | `src/clucktalk/server/tools/briefing.py:82` |  |
+| 224 | tomorrow | రేపు | `src/clucktalk/server/tools/briefing.py:143` |  |
+| 225 | in {index} days | {index} రోజుల్లో | `src/clucktalk/server/tools/briefing.py:144` |  |
+| 226 | House {n} | షెడ్ {n} | `src/clucktalk/server/tools/briefing.py:175` |  |
+| 227 | No entry yet today for {listed.en}. | ఈరోజు ఇంకా నమోదు కాలేదు: {listed.te}. | `src/clucktalk/server/tools/briefing.py:177` |  |
+| 228 | Birds ate {drop}% less than expected. | కోళ్లు అంచనా కంటే {drop}% తక్కువ తిన్నాయి. | `src/clucktalk/server/tools/briefing.py:193` |  |
+| 229 | may be near its best time to sell: the best day looks like {when.en} ({SIMULATED.en}). | అమ్మడానికి మంచి సమయం దగ్గరలో ఉండవచ్చు: మంచి రోజు {when.te} ({SIMULATED.te}). | `src/clucktalk/server/tools/briefing.py:217` |  |
+| 230 | Today's briefing | ఈరోజు బ్రీఫింగ్ | `src/clucktalk/server/tools/briefing.py:361` |  |
+| 231 | That request timed out, so nothing changed. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:32` |  |
+| 232 | That request was replaced by a newer one, so nothing changed. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:35` |  |
+| 233 | That's different from what I read back, so nothing changed yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:39` |  |
+| 234 | I couldn't find that request, so nothing changed. | ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:41` |  |
+| 235 | That request was already cancelled, so nothing changed. | ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:44` |  |
+| 236 | Those terms were already saved earlier, so saying no now doesn't undo it. | ఆ నిబంధనలు ఇంతకుముందే సేవ్ అయ్యాయి, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు. | `src/clucktalk/server/tools/contract_terms.py:48` |  |
+| 237 | Okay, nothing changed. | సరే, ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:51` |  |
+| 238 | Save your contract terms: {rupees(base)} per kg at FCR {fcr}, {rupees(inc)} more per kg for every 0.1 better FCR, {rupees(ded)} less per kg for every 0.1 worse FCR. Say yes to confirm, or no to keep it as it is. | మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయాలా: FCR {fcr} వద్ద కిలోకు {rupees(base)}, ప్రతి 0.1 మెరుగైన FCRకి కిలోకు {rupees(inc)} ఎక్కువ, ప్రతి 0.1 తక్కువ FCRకి కిలోకు {rupees(ded)} తక్కువ. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/contract_terms.py:106` |  |
+| 239 | Those are already your saved contract terms, so nothing changed. | ఇవి ఇప్పటికే మీ సేవ్ చేసిన కాంట్రాక్ట్ నిబంధనలు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/contract_terms.py:190` |  |
+| 240 | Done. Your contract terms are saved. | సరే. మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ అయ్యాయి. | `src/clucktalk/server/tools/contract_terms.py:212` |  |
+| 241 | Save your contract terms | మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయండి | `src/clucktalk/server/tools/contract_terms.py:260` |  |
+| 242 | {num(deaths)} birds died {when.en}, more than your own limit of {num(limit)} a day at this age. By your own rule, take the birds to the vet today; do not wait for the next visit. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి, ఈ వయసులో మీరు పెట్టిన రోజువారీ హద్దు {num(limit)} కంటే ఎక్కువ. మీ నియమం ప్రకారం, ఈరోజే కోళ్లను డాక్టర్ దగ్గరికి తీసుకెళ్లండి; తదుపరి సందర్శన వరకు ఆగకండి. | `src/clucktalk/server/tools/farm_status.py:266` |  |
+| 243 | {num(deaths)} birds died {when.en}, after hardly any deaths the week before. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం దాదాపు ఏవీ చనిపోలేదు. | `src/clucktalk/server/tools/farm_status.py:306` |  |
+| 244 | {num(deaths)} birds died {when.en}, against about {num(base)} a day the week before. | {when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం రోజుకు సుమారు {num(base)}. | `src/clucktalk/server/tools/farm_status.py:310` |  |
+| 245 | Ask me for a feed plan to hear how much feed to ask your supervisor for. | సూపర్‌వైజర్‌ని ఎంత ఫీడ్ అడగాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి. | `src/clucktalk/server/tools/farm_status.py:431` |  |
+| 246 | No need to ask your supervisor for feed yet. | ఇంకా సూపర్‌వైజర్‌ని ఫీడ్ అడగాల్సిన అవసరం లేదు. | `src/clucktalk/server/tools/feed.py:162` |  |
+| 247 | Ask your supervisor for {b} {plural(b, 'bag', 'bags')} of {p.bag_kg} kg now. | ఇప్పుడే మీ సూపర్‌వైజర్‌ని {p.bag_kg} కిలోల {b} బస్తాలు అడగండి. | `src/clucktalk/server/tools/feed.py:165` |  |
+| 248 | {head.en} Ask your supervisor for {b} {plural(b, 'bag', 'bags')} now. | {head.te} ఇప్పుడే సూపర్‌వైజర్‌ని {b} బస్తాలు అడగండి. | `src/clucktalk/server/tools/feed.py:273` |  |
+| 249 | Feed planning is not part of this pilot yet. | ఈ పైలట్ లో ఫీడ్ లెక్క ఇంకా లేదు. | `src/clucktalk/server/tools/feed.py:282` |  |
+| 250 | Say a shed number to hear its full feed plan. | పూర్తి ఫీడ్ ప్లాన్ కోసం షెడ్ నంబర్ చెప్పండి. | `src/clucktalk/server/tools/feed.py:339` |  |
+| 251 | To be safe, contact your vet or doctor. | జాగ్రత్త కోసం, మీ డాక్టర్‌కి ఫోన్ చేయండి. | `src/clucktalk/server/tools/follow_up.py:65` |  |
+| 252 | The record book shows a death spike of {n} deaths since the health check, so I'll record this as not better. | ఆరోగ్య తనిఖీ తర్వాత రికార్డ్ బుక్‌లో {n} మరణాల పెరుగుదల కనిపిస్తోంది, కాబట్టి దీన్ని 'మెరుగ్గా లేదు' అని నమోదు చేస్తాను. | `src/clucktalk/server/tools/follow_up.py:71` |  |
+| 253 | I'll note this for {label.en}: the birds are better. Say yes to save it, or no to keep things as they are. | {label.te} కోసం ఇది నమోదు చేస్తాను: కోళ్లు మెరుగ్గా ఉన్నాయి. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/follow_up.py:82` |  |
+| 254 | I'll note this for {label.en}: the birds are the same. Say yes to save it, or no to keep things as they are. | {label.te} కోసం ఇది నమోదు చేస్తాను: కోళ్లు అలాగే ఉన్నాయి. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/follow_up.py:88` |  |
+| 255 | I'll note this for {label.en}: the birds are worse. Say yes to save it, or no to keep things as they are. | {label.te} కోసం ఇది నమోదు చేస్తాను: కోళ్లు మరింత అధ్వాన్నంగా ఉన్నాయి. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/follow_up.py:94` |  |
+| 256 | I'll note this for {label.en}: you're not sure how the birds are. Say yes to save it, or no to keep things as they are. | {label.te} కోసం ఇది నమోదు చేస్తాను: కోళ్లు ఎలా ఉన్నాయో మీకు తెలియడం లేదు. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/follow_up.py:100` |  |
+| 257 | There's no health check waiting for a follow-up answer for {label_en}. | {label_te} కోసం ఫాలో-అప్ సమాధానం కోసం ఎదురుచూస్తున్న ఆరోగ్య తనిఖీ ఏదీ లేదు. | `src/clucktalk/server/tools/follow_up.py:113` |  |
+| 258 | {label.en}: your health check {d} {unit} ago needs a follow-up. How are the birds now: better, the same, or worse? | {label.te}: {d} రోజుల క్రితం చేసిన మీ ఆరోగ్య తనిఖీకి ఫాలో-అప్ అవసరం. కోళ్లు ఇప్పుడు ఎలా ఉన్నాయి: మెరుగ్గా, అలాగే, లేదా అధ్వాన్నంగా? | `src/clucktalk/server/tools/follow_up.py:357` |  |
+| 259 | {label.en}: the follow-up on the health check {d} {unit} ago still needs attention. | {label.te}: {d} రోజుల క్రితం చేసిన ఆరోగ్య తనిఖీ ఫాలో-అప్‌పై ఇంకా శ్రద్ధ అవసరం. | `src/clucktalk/server/tools/follow_up.py:365` |  |
+| 260 | {label.en}: there was no answer to the follow-up on the health check {d} {unit} ago. | {label.te}: {d} రోజుల క్రితం చేసిన ఆరోగ్య తనిఖీ ఫాలో-అప్‌కు సమాధానం రాలేదు. | `src/clucktalk/server/tools/follow_up.py:374` |  |
+| 261 | earlier today | ఈరోజు ముందు | `src/clucktalk/server/tools/follow_up.py:381` |  |
+| 262 | yesterday | నిన్న | `src/clucktalk/server/tools/follow_up.py:383` |  |
+| 263 | {days_ago} {plural(days_ago, 'day', 'days')} ago | {days_ago} రోజుల క్రితం | `src/clucktalk/server/tools/follow_up.py:384` |  |
+| 264 | your health check {when.en} said: {short.en}. | {when.te} మీ ఆరోగ్య తనిఖీ ఫలితం: {short.te}. | `src/clucktalk/server/tools/follow_up.py:393` |  |
+| 265 | your health check {when.en} is not finished; from the signs so far: {short.en}. | {when.te} మీ ఆరోగ్య తనిఖీ ఇంకా పూర్తి కాలేదు; ఇప్పటివరకు లక్షణాల ప్రకారం: {short.te}. | `src/clucktalk/server/tools/follow_up.py:397` |  |
+| 266 | Tell how a shed is now | షెడ్ ఇప్పుడు ఎలా ఉందో చెప్పండి | `src/clucktalk/server/tools/follow_up.py:559` |  |
+| 267 | This is guidance, not a diagnosis. Your vet decides any treatment. | ఇది సలహా మాత్రమే, రోగ నిర్ధారణ కాదు. ఏ చికిత్స అయినా మీ డాక్టరే నిర్ణయిస్తారు. | `src/clucktalk/server/tools/health.py:88` |  |
+| 268 | Shall I send a summary to your vet? | మీ డాక్టర్‌కి సారాంశం పంపమంటారా? | `src/clucktalk/server/tools/health.py:90` |  |
+| 269 | {h}: this doesn't look urgent right now; keep an eye on the birds. | {h}: ప్రస్తుతం ఇది అత్యవసరంగా కనిపించడం లేదు; కోళ్లను గమనిస్తూ ఉండండి. | `src/clucktalk/server/tools/health.py:94` |  |
+| 270 | {h}: keep a close watch on the birds today. | {h}: ఈరోజు కోళ్లను దగ్గరగా గమనించండి. | `src/clucktalk/server/tools/health.py:96` |  |
+| 271 | {h} needs your vet today. | {h} కి ఈరోజే మీ డాక్టర్ అవసరం. | `src/clucktalk/server/tools/health.py:97` |  |
+| 272 | {h}: these signs together can mean a serious bird disease that must be reported. | {h}: ఈ లక్షణాలు కలిసి ఉంటే, తప్పనిసరిగా తెలియజేయాల్సిన తీవ్రమైన కోళ్ల వ్యాధి కావచ్చు. | `src/clucktalk/server/tools/health.py:100` |  |
+| 273 | not urgent | అత్యవసరం కాదు | `src/clucktalk/server/tools/health.py:104` |  |
+| 274 | watch closely today | ఈరోజు దగ్గరగా గమనించాలి | `src/clucktalk/server/tools/health.py:105` |  |
+| 275 | needs a vet today | ఈరోజే డాక్టర్ అవసరం | `src/clucktalk/server/tools/health.py:106` |  |
+| 276 | signs of a possible reportable disease | తెలియజేయాల్సిన వ్యాధి లక్షణాలు కావచ్చు | `src/clucktalk/server/tools/health.py:107` |  |
+| 277 | Demo rules (no AI model) | డెమో నియమాలు (AI మోడల్ లేదు) | `src/clucktalk/server/tools/health.py:110` |  |
+| 278 | AI: Amazon Nova on Bedrock | AI: బెడ్‌రాక్‌పై Amazon Nova | `src/clucktalk/server/tools/health.py:111` |  |
+| 279 | Safety rules only (no AI needed) | భద్రతా నియమాలు మాత్రమే (AI అవసరం లేదు) | `src/clucktalk/server/tools/health.py:112` |  |
+| 280 | Test model | పరీక్ష మోడల్ | `src/clucktalk/server/tools/health.py:114` |  |
+| 281 | No AI answer: the check couldn't finish | AI సమాధానం రాలేదు: తనిఖీ పూర్తి కాలేదు | `src/clucktalk/server/tools/health.py:115` |  |
+| 282 | I couldn't match what you told me to a sign I know, so to be safe: | మీరు చెప్పినదాన్ని నాకు తెలిసిన ఏ లక్షణంతోనూ సరిపోల్చలేకపోయాను, కాబట్టి జాగ్రత్త కోసం: | `src/clucktalk/server/tools/health.py:118` |  |
+| 283 | Today's AI limit is reached, so this check used the demo rules. | ఈరోజు AI పరిమితి అయిపోయింది, కాబట్టి ఈ తనిఖీకి డెమో నియమాలు వాడాను. | `src/clucktalk/server/tools/health.py:122` |  |
+| 284 | That request timed out, so nothing was sent. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ పంపలేదు. | `src/clucktalk/server/tools/health.py:125` |  |
+| 285 | That request was replaced by a newer one, so nothing was sent. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ పంపలేదు. | `src/clucktalk/server/tools/health.py:128` |  |
+| 286 | That's different from what I read back, so nothing was sent yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ పంపలేదు. | `src/clucktalk/server/tools/health.py:132` |  |
+| 287 | I couldn't find that request, so nothing was sent. | ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ పంపలేదు. | `src/clucktalk/server/tools/health.py:134` |  |
+| 288 | That request was already cancelled, so nothing was sent. | ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ పంపలేదు. | `src/clucktalk/server/tools/health.py:137` |  |
+| 289 | That summary was already sent, so saying no now doesn't unsend it. | ఆ సారాంశం ఇప్పటికే పంపబడింది, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు. | `src/clucktalk/server/tools/health.py:141` |  |
+| 290 | Okay, nothing was sent. | సరే, ఏమీ పంపలేదు. | `src/clucktalk/server/tools/health.py:144` |  |
+| 291 | and | మరియు | `src/clucktalk/server/tools/health.py:151` |  |
+| 292 | or | లేదా | `src/clucktalk/server/tools/health.py:152` |  |
+| 293 | I couldn't use this shed's records, so this check is on the signs alone. | ఈ షెడ్ రికార్డులను ఉపయోగించలేకపోయాను, కాబట్టి ఈ తనిఖీ లక్షణాల ఆధారంగా మాత్రమే. | `src/clucktalk/server/tools/health.py:332` |  |
+| 294 | {d} birds died in the latest count, against about {b} a day before. | తాజా లెక్కలో {d} కోళ్లు చనిపోయాయి, అంతకుముందు రోజుకు సుమారు {b}. | `src/clucktalk/server/tools/health.py:340` |  |
+| 295 | Feed eaten is {p}% below its recent level. | మేత తినడం ఇటీవలి స్థాయి కంటే {p}% తక్కువగా ఉంది. | `src/clucktalk/server/tools/health.py:345` |  |
+| 296 | You said {n} birds show the signs, but {inp.label_en} has {live} birds alive, so I left that number out. | {n} కోళ్లలో లక్షణాలు ఉన్నాయని చెప్పారు, కానీ {inp.label_te} లో {live} కోళ్లే బతికి ఉన్నాయి, కాబట్టి ఆ సంఖ్యను వదిలేశాను. | `src/clucktalk/server/tools/health.py:364` |  |
+| 297 | Now: {steps.en}. | ఇప్పుడే: {steps.te}. | `src/clucktalk/server/tools/health.py:378` |  |
+| 298 | The signs fit {fits.en}. | లక్షణాలు {fits.te} కి సరిపోతున్నాయి. | `src/clucktalk/server/tools/health.py:391` |  |
+| 299 | First, {first.en}. | ముందుగా, {first.te}. | `src/clucktalk/server/tools/health.py:394` |  |
+| 300 | I'm checking {inp.label_en} now. Ask me in a few seconds if the health check is ready. | {inp.label_te} ని ఇప్పుడు తనిఖీ చేస్తున్నాను. కొన్ని సెకన్లలో ఆరోగ్య తనిఖీ సిద్ధమైందా అని అడగండి. | `src/clucktalk/server/tools/health.py:409` |  |
+| 301 | Still checking {inp.label_en}. Ask me again in a few seconds. | {inp.label_te} ని ఇంకా తనిఖీ చేస్తున్నాను. కొన్ని సెకన్ల తర్వాత మళ్ళీ అడగండి. | `src/clucktalk/server/tools/health.py:414` |  |
+| 302 | While I check: | తనిఖీ చేస్తుండగానే: | `src/clucktalk/server/tools/health.py:419` |  |
+| 303 | I couldn't finish the health check for {inp.label_en}. | {inp.label_te} ఆరోగ్య తనిఖీని పూర్తి చేయలేకపోయాను. | `src/clucktalk/server/tools/health.py:427` |  |
+| 304 | Please ask me again in a minute, and call your vet today if birds get worse. | దయచేసి ఒక నిమిషం తర్వాత మళ్ళీ అడగండి; కోళ్ల పరిస్థితి దిగజారితే ఈరోజే డాక్టర్‌కి ఫోన్ చేయండి. | `src/clucktalk/server/tools/health.py:435` |  |
+| 305 | The next briefing, in about {d} {unit}, will ask how {inp.label_en} is doing. | తదుపరి బ్రీఫింగ్‌లో, సుమారు {d} రోజుల్లో, {inp.label_te} ఎలా ఉందో అడుగుతాను. | `src/clucktalk/server/tools/health.py:461` |  |
+| 306 | I need to know which shed's health check you mean. | ఏ షెడ్ ఆరోగ్య తనిఖీ గురించి అడుగుతున్నారో తెలియాలి. | `src/clucktalk/server/tools/health.py:602` |  |
+| 307 | Tell me the shed, for example: is shed 2's health check ready? | షెడ్ చెప్పండి, ఉదాహరణకు: షెడ్ 2 ఆరోగ్య తనిఖీ సిద్ధమైందా? | `src/clucktalk/server/tools/health.py:603` |  |
+| 308 | that shed | ఆ షెడ్ | `src/clucktalk/server/tools/health.py:607` |  |
+| 309 | your vet (demo contact) | మీ డాక్టర్ (డెమో కాంటాక్ట్) | `src/clucktalk/server/tools/health.py:615` |  |
+| 310 | CluckTalk triage: {u.en} (guidance, not a diagnosis). | CluckTalk తనిఖీ: {u.te} (సలహా మాత్రమే, రోగ నిర్ధారణ కాదు). | `src/clucktalk/server/tools/health.py:623` |  |
+| 311 | The CluckTalk check could not finish; level from the signs and records: {u.en} (not a diagnosis). | CluckTalk తనిఖీ పూర్తి కాలేదు; లక్షణాలు, రికార్డుల ప్రకారం స్థాయి: {u.te} (రోగ నిర్ధారణ కాదు). | `src/clucktalk/server/tools/health.py:629` |  |
+| 312 | The CluckTalk check is still running; level from the signs and records so far: {u.en} (not a diagnosis). | CluckTalk తనిఖీ ఇంకా జరుగుతోంది; ఇప్పటివరకు లక్షణాలు, రికార్డుల ప్రకారం స్థాయి: {u.te} (రోగ నిర్ధారణ కాదు). | `src/clucktalk/server/tools/health.py:633` |  |
+| 313 | day {num(inp.age_days)} | {num(inp.age_days)}వ రోజు | `src/clucktalk/server/tools/health.py:642` |  |
+| 314 | {num(inp.live_birds)} birds alive | {num(inp.live_birds)} కోళ్లు బతికి ఉన్నాయి | `src/clucktalk/server/tools/health.py:644` |  |
+| 315 | none named | ఏవీ చెప్పలేదు | `src/clucktalk/server/tools/health.py:646` |  |
+| 316 | Signs reported: {signs.en}. | చెప్పిన లక్షణాలు: {signs.te}. | `src/clucktalk/server/tools/health.py:650` |  |
+| 317 | The farmer asks you to call back. | రైతు మిమ్మల్ని తిరిగి ఫోన్ చేయమని కోరుతున్నారు. | `src/clucktalk/server/tools/health.py:652` |  |
+| 318 | CluckTalk case summary (Simulated SMS, demo farm). {summary.en} | CluckTalk కేసు సారాంశం (సిమ్యులేటెడ్ SMS, డెమో ఫారం). {summary.te} | `src/clucktalk/server/tools/health.py:671` |  |
+| 319 | Your vet already has the summary for this {house.label_en} check (simulated SMS). | ఈ {house.label_te} తనిఖీ సారాంశం ఇప్పటికే మీ డాక్టర్‌కి పంపబడింది (సిమ్యులేటెడ్ SMS). | `src/clucktalk/server/tools/health.py:713` |  |
+| 320 | I'll send {RECIPIENT.en} this summary by simulated SMS: {summary.en} Say yes to send it, or no to keep it. | {RECIPIENT.te} కి ఈ సారాంశాన్ని సిమ్యులేటెడ్ SMS ద్వారా పంపుతాను: {summary.te} పంపాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/health.py:723` |  |
+| 321 | Sent to {RECIPIENT.en} as a simulated SMS. | {RECIPIENT.te} కి సిమ్యులేటెడ్ SMS గా పంపాను. | `src/clucktalk/server/tools/health.py:736` |  |
+| 322 | Check sick birds | జబ్బు పడిన కోళ్ల తనిఖీ | `src/clucktalk/server/tools/health.py:867` |  |
+| 323 | Send a health summary to your vet | మీ డాక్టర్‌కి ఆరోగ్య సారాంశం పంపండి | `src/clucktalk/server/tools/health.py:874` |  |
+| 324 | Your farm is set up as a contract farm: your company supplies the feed, so feed plans tell you how many bags to ask your supervisor for, without prices. | మీ ఫారం కాంట్రాక్ట్ ఫారంగా సెట్ అయి ఉంది: ఫీడ్ మీ కంపెనీ ఇస్తుంది, కాబట్టి ఫీడ్ ప్లాన్ ధరలు లేకుండా, సూపర్‌వైజర్‌ని ఎన్ని బస్తాలు అడగాలో చెబుతుంది. | `src/clucktalk/server/tools/profile.py:33` |  |
+| 325 | Your farm is set up as an independent farm: you buy your own feed, so feed plans include a simulated price. | మీ ఫారం సొంత ఫారంగా సెట్ అయి ఉంది: ఫీడ్ మీరే కొంటారు, కాబట్టి ఫీడ్ ప్లాన్‌లో అంచనా ధర (డెమో) కూడా ఉంటుంది. | `src/clucktalk/server/tools/profile.py:37` |  |
+| 326 | To change it, say: switch to contract farming. | మార్చాలంటే 'switch to contract farming' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:43` |  |
+| 327 | To change it, say: switch to independent farming. | మార్చాలంటే 'switch to independent farming' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:47` |  |
+| 328 | Switch your farm to contract farming? Then I'll stop suggesting feed purchases and prices, and tell you how many bags to ask your supervisor for. Say yes to confirm, or no to keep it as it is. | మీ ఫారంను కాంట్రాక్ట్ ఫారంగా మార్చాలా? అప్పుడు ఫీడ్ కొనుగోలు, ధరలు చెప్పను; సూపర్‌వైజర్‌ని ఎన్ని బస్తాలు అడగాలో చెబుతాను. మార్చాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:54` |  |
+| 329 | Switch your farm to independent farming? Then I'll plan feed purchases with a simulated price. Say yes to confirm, or no to keep it as it is. | మీ ఫారంను సొంత ఫారంగా మార్చాలా? అప్పుడు అంచనా ధర (డెమో)తో ఫీడ్ కొనుగోలు ప్లాన్ చెబుతాను. మార్చాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/profile.py:60` |  |
+| 330 | Your farm is now set up as a contract farm. | మీ ఫారం ఇప్పుడు కాంట్రాక్ట్ ఫారంగా సెట్ అయింది. | `src/clucktalk/server/tools/profile.py:64` |  |
+| 331 | Your farm is now set up as an independent farm. | మీ ఫారం ఇప్పుడు సొంత ఫారంగా సెట్ అయింది. | `src/clucktalk/server/tools/profile.py:65` |  |
+| 332 | Your farm is already set up as a contract farm, so nothing changed. | మీ ఫారం ఇప్పటికే కాంట్రాక్ట్ ఫారంగా ఉంది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:70` |  |
+| 333 | Your farm is already set up as an independent farm, so nothing changed. | మీ ఫారం ఇప్పటికే సొంత ఫారంగా ఉంది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:74` |  |
+| 334 | Your farm stays a contract farm. | మీ ఫారం కాంట్రాక్ట్ ఫారంగానే ఉంటుంది. | `src/clucktalk/server/tools/profile.py:78` |  |
+| 335 | Your farm stays an independent farm. | మీ ఫారం సొంత ఫారంగానే ఉంటుంది. | `src/clucktalk/server/tools/profile.py:79` |  |
+| 336 | Done. | సరే. | `src/clucktalk/server/tools/profile.py:81` |  |
+| 337 | Okay, nothing changed. | సరే, ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:82` |  |
+| 338 | That change was made earlier and has been changed again since. | ఆ మార్పు ఇంతకుముందే జరిగింది, తర్వాత మళ్ళీ మార్చబడింది. | `src/clucktalk/server/tools/profile.py:85` |  |
+| 339 | That request timed out, so nothing changed. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:88` |  |
+| 340 | That request was replaced by a newer one, so nothing changed. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:91` |  |
+| 341 | That's different from what I read back, so nothing changed yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:95` |  |
+| 342 | I couldn't find that request, so nothing changed. | ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:97` |  |
+| 343 | That request was already cancelled, so nothing changed. | ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/profile.py:100` |  |
+| 344 | That change was already made earlier, so saying no now doesn't undo it. | ఆ మార్పు ఇంతకుముందే జరిగిపోయింది, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు. | `src/clucktalk/server/tools/profile.py:104` |  |
+| 345 | Your contract terms are saved, so plan_sale can show the growing charge. | మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ అయ్యాయి, కాబట్టి ప్లాన్ సేల్ గ్రోయింగ్ ఛార్జ్ చూపగలదు. | `src/clucktalk/server/tools/profile.py:175` |  |
+| 346 | Say your contract terms to see the growing charge in the sale plan. | సేల్ ప్లాన్‌లో గ్రోయింగ్ ఛార్జ్ చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు చెప్పండి. | `src/clucktalk/server/tools/profile.py:180` |  |
+| 347 | Contract or independent farm | కాంట్రాక్ట్ లేదా సొంత ఫారం | `src/clucktalk/server/tools/profile.py:292` |  |
+| 348 | medicine | మందు | `src/clucktalk/server/tools/records.py:49` |  |
+| 349 | vaccine | వ్యాక్సిన్ | `src/clucktalk/server/tools/records.py:49` |  |
+| 350 | That request timed out, so nothing changed. | ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:59` |  |
+| 351 | That request was replaced by a newer one, so nothing changed. | ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:62` |  |
+| 352 | That's different from what I read back, so nothing changed yet. | అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:66` |  |
+| 353 | I couldn't find that request, so nothing changed. | ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:68` |  |
+| 354 | That request was already cancelled, so nothing changed. | ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:71` |  |
+| 355 | That record was already saved earlier, so saying no now doesn't undo it. | ఆ రికార్డ్ ఇంతకుముందే సేవ్ అయింది, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు. | `src/clucktalk/server/tools/records.py:75` |  |
+| 356 | Okay, nothing changed. | సరే, ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:78` |  |
+| 357 | on {weekday_en(day)} | {weekday_te(day)} రోజు | `src/clucktalk/server/tools/records.py:222` |  |
+| 358 | no deaths | మరణాలు లేవు | `src/clucktalk/server/tools/records.py:235` |  |
+| 359 | {num(deaths)} died | {num(deaths)} కోళ్లు చనిపోయాయి | `src/clucktalk/server/tools/records.py:235` |  |
+| 360 | {b} {plural(int(feed_bags), 'bag', 'bags')} of feed | {b} బస్తాల ఫీడ్ | `src/clucktalk/server/tools/records.py:239` |  |
+| 361 | average weight {num(avg_weight_g)} grams from {num(weight_sample_birds)} birds weighed | {num(weight_sample_birds)} కోళ్లను తూచగా సగటు బరువు {num(avg_weight_g)} గ్రాములు | `src/clucktalk/server/tools/records.py:244` |  |
+| 362 | , with a note | , ఒక గమనికతో | `src/clucktalk/server/tools/records.py:251` |  |
+| 363 | {t.name} {label.en} given{with_note.en} | {t.name} {label.te} ఇచ్చారు{with_note.te} | `src/clucktalk/server/tools/records.py:252` |  |
+| 364 | No entry yet for {house.label_en} today. | {house.label_te}కి ఈరోజు ఇంకా నమోదు కాలేదు. | `src/clucktalk/server/tools/records.py:282` |  |
+| 365 | {house.label_en} logged: {summary.en}. | {house.label_te}: {summary.te} నమోదు అయింది. | `src/clucktalk/server/tools/records.py:287` |  |
+| 366 | {num(logged)} of {num(len(entries))} houses logged today. | ఈరోజు {num(len(entries))} షెడ్లలో {num(logged)} నమోదు అయ్యాయి. | `src/clucktalk/server/tools/records.py:292` |  |
+| 367 | {house.label_en} already has that recorded for {when.en}, so nothing changed. | {house.label_te}కి {when.te} అది ఇప్పటికే రికార్డ్ అయింది, కాబట్టి ఏమీ మారలేదు. | `src/clucktalk/server/tools/records.py:469` |  |
+| 368 | {house.label_en} already has a record for {when.en}; I'll add this to it. | {house.label_te}కి {when.te} రికార్డ్ ఇప్పటికే ఉంది; దీన్ని దానికి జోడిస్తాను. | `src/clucktalk/server/tools/records.py:479` |  |
+| 369 | For {house.label_en}, {when.en}: {given.en}. Say yes to save, or no to keep it as it is. | {house.label_te}కి, {when.te}: {given.te}. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి. | `src/clucktalk/server/tools/records.py:486` |  |
+| 370 | Done. Saved for {house.label_en}, {when.en}. | సరే. {house.label_te}కి, {when.te} సేవ్ చేశాను. | `src/clucktalk/server/tools/records.py:509` |  |
+| 371 | Today's record book | ఈరోజు రికార్డ్ బుక్ | `src/clucktalk/server/tools/records.py:536` |  |
+| 372 | Log today's record | ఈరోజు రికార్డ్ నమోదు చేయండి | `src/clucktalk/server/tools/records.py:573` |  |
+| 373 | tomorrow | రేపు | `src/clucktalk/server/tools/sale.py:175` |  |
+| 374 | {d.weekday_en} ({d.in_days} days from now) | {d.weekday_te} ({d.in_days} రోజుల్లో) | `src/clucktalk/server/tools/sale.py:176` |  |
+| 375 | {out.label_en}: selling today is best. Each extra day would lose value. | {out.label_te}: ఈరోజే అమ్మడం మంచిది. ప్రతి అదనపు రోజు నష్టమే. | `src/clucktalk/server/tools/sale.py:184` |  |
+| 376 | {out.label_en}: best to sell {lab.en}, about {rupees(diff)} more than selling today. | {out.label_te}: {lab.te} అమ్మడం మంచిది, ఈరోజు అమ్మడం కంటే సుమారు {rupees(diff)} ఎక్కువ. | `src/clucktalk/server/tools/sale.py:191` |  |
+| 377 | {head.en} From {lab.en}, one more day starts to cost more feed than the weight it adds. | {head.te} {lab.te} నుండి, ఒక్క రోజు ఎక్కువగా ఉంచితే అది జోడించే బరువు కంటే ఫీడ్ ఖర్చు ఎక్కువవుతుంది. | `src/clucktalk/server/tools/sale.py:198` |  |
+| 378 | {lab.en}: {num(d.weight_g)} g, net {rupees(d.net_vs_today_inr)} vs today | {lab.te}: {num(d.weight_g)} గ్రా., ఈరోజుతో పోలిస్తే నికరం {rupees(d.net_vs_today_inr)} | `src/clucktalk/server/tools/sale.py:211` |  |
+| 379 | Simulated price {rupees(out.live_price_per_kg_inr)} per kg; say today's rate to use it instead. | అంచనా ధర (డెమో) కిలోకు {rupees(out.live_price_per_kg_inr)}; బదులుగా ఈరోజు రేటు చెప్పండి. | `src/clucktalk/server/tools/sale.py:217` |  |
+| 380 | {out.label_en}: FCR is about {today.fcr} today; keeping the birds longer raises it (about {later.fcr} by {_day_label(later).en}). | {out.label_te}: ఈరోజు FCR సుమారు {today.fcr}; కోళ్లను ఎక్కువ రోజులు ఉంచితే అది పెరుగుతుంది ({_day_label(later).te} నాటికి సుమారు {later.fcr}). | `src/clucktalk/server/tools/sale.py:227` |  |
+| 381 | Say set_contract_terms with your rate to see how this changes your growing charge. | మీ గ్రోయింగ్ ఛార్జ్ ఎలా మారుతుందో చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు చెప్పండి. | `src/clucktalk/server/tools/sale.py:233` |  |
+| 382 | Your growing charge today is about {rupees(charge_today)}; by {_day_label(later).en} it would be about {rupees(charge_later)}, based on your own terms. | ఈరోజు మీ గ్రోయింగ్ ఛార్జ్ సుమారు {rupees(charge_today)}; {_day_label(later).te} నాటికి మీ నిబంధనల ప్రకారం సుమారు {rupees(charge_later)} అవుతుంది. | `src/clucktalk/server/tools/sale.py:240` |  |
+| 383 | Show this to your supervisor to ask for the birds to be lifted on time. | కోళ్లను సకాలంలో తీసుకెళ్లమని మీ సూపర్‌వైజర్‌ని అడగడానికి ఇది చూపించండి. | `src/clucktalk/server/tools/sale.py:245` |  |
+| 384 | Sale planning is not part of this pilot yet. | ఈ పైలట్ లో అమ్మకం లెక్క ఇంకా లేదు. | `src/clucktalk/server/tools/sale.py:293` |  |
+| 385 | That paper rate does not look right. Tell me today's paper rate in rupees per kg, like: paper rate 160. | ఆ పేపర్ రేటు సరిగా లేదు. ఈరోజు పేపర్ రేటు కిలోకు రూపాయలలో చెప్పండి, ఉదాహరణకు: ఈరోజు పేపర్ రేటు 160. | `src/clucktalk/server/tools/sale.py:297` |  |
+| 386 | Tell me today's paper rate, like: paper rate 160, and I will work out your price. | ఈరోజు పేపర్ రేటు చెప్పండి, ఉదాహరణకు: ఈరోజు పేపర్ రేటు 160, మీ ధర నేను లెక్కిస్తాను. | `src/clucktalk/server/tools/sale.py:304` |  |
+| 387 | Your price today: {rupees(paper - delta)} per kg (paper rate {rupees(paper)} minus {rupees(delta)}, your own rule). | మీ ఈరోజు ధర: కిలోకు {rupees(paper - delta)} (పేపర్ రేటు {rupees(paper)} నుండి {rupees(delta)} తగ్గింపు, మీ సొంత నియమం). | `src/clucktalk/server/tools/sale.py:309` |  |
+| 388 | Sell-day check for your broiler sheds. | మీ బ్రాయిలర్ షెడ్ల అమ్మకం రోజు తనిఖీ. | `src/clucktalk/server/tools/sale.py:372` |  |
+| 389 | No broiler sheds to check. | తనిఖీ చేయడానికి బ్రాయిలర్ షెడ్లు లేవు. | `src/clucktalk/server/tools/sale.py:378` |  |
+| 390 | When to sell | ఎప్పుడు అమ్మాలో | `src/clucktalk/server/tools/sale.py:424` |  |
 
 ## 2. Approved (86)
 

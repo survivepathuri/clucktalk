@@ -49,7 +49,7 @@ function ui(extra) {
       error: t("error"), error_next: t("next"), notice_title: t("Before you start"), ack: t("I understand"),
       not_understood: t("nu"), nothing_pending: t("np"), not_started: t("ns"), badge: t("badge"),
       alert: t("ALERT"), deaths_today: t("Deaths today"), vet_today: t("Take the birds to the vet today"), warn_tag: t("Note"),
-      placeholder: t("Write here"), rate_ask: { en: "Tell me", te: "ఈరోజు పేపర్ రేటు చెప్పండి" }, rate_phrase: { en: "rate", te: "ఈరోజు పేపర్ రేటు" }, send: t("Send"), say_suffix: { en: "say it.", te: "say it." }, tap_suffix: { en: "tap it.", te: "tap it." } },
+      placeholder: t("Write here"), rate_ask: { en: "Tell me", te: "ఈరోజు పేపర్ రేటు చెప్పండి" }, rate_phrase: { en: "rate", te: "ఈరోజు పేపర్ రేటు" }, questions: { en: "Questions", te: "ప్రశ్నలు" }, send: t("Send"), say_suffix: { en: "say it.", te: "say it." }, tap_suffix: { en: "tap it.", te: "tap it." } },
     chips: { help: t("Help"), status: t("Status"), deaths: t("Deaths") },
     outcomes: {}, signs: [], houses: [{ number: 1, label_te: "H1" }],
     notice_items: ["a", "b", "c", "d", "e", "f", "g"].map(t), notice_version: "v1", ...(extra || {}),
@@ -436,6 +436,50 @@ scenarios.a_number_outside_1_to_1000_keeps_the_existing_out_of_range_answer = as
   await type(p, "sell"); await type(p, "2000");
   eq(sentUtterances(p)[1], "ఈరోజు పేపర్ రేటు 2000", "sent as the sentence");
   eq(rawText(logEl(p).children[logEl(p).children.length - 1]), RANGE, "the server's own out-of-range line");
+};
+
+// The Questions button: a tap-list of what the server offers; an answer is a normal bubble; nothing runs before the notice.
+const QS = [{ id: 1, en: "Day?", te: "ఈరోజు ఎన్నో రోజు?" }, { id: 7, en: "Doctor?", te: "డాక్టర్ ఎప్పుడు వస్తారు?" }];
+const qAnswer = (body) => body.chip === "question"
+  ? { status: 200, body: { kind: "answer", speech_te: "మీరు చెప్పినట్లు: డాక్టర్ 2 రోజులకు ఒకసారి వస్తారు.", speech: "As you told us: x", result: null } }
+  : rateFarm(body);
+const questionsButton = (p) => chipButtons(p).find((b) => b.textContent === "ప్రశ్నలు");
+
+scenarios.the_questions_button_is_there_only_when_the_server_offers_questions = async () => {
+  eq(questionsButton(await open(qAnswer, { ui: ui({ questions: QS }) })) !== undefined, true, "button with questions");
+  eq(questionsButton(await open(qAnswer, { ui: ui({ questions: [] }) })), undefined, "no button for an empty list");
+  eq(questionsButton(await open(qAnswer)), undefined, "no button when the server sends no list");
+};
+
+scenarios.the_questions_button_opens_a_tap_list_and_a_tap_posts_the_question_and_shows_a_normal_bubble = async () => {
+  const p = await open(qAnswer, { ui: ui({ questions: QS }) });
+  await questionsButton(p).fire("click");
+  eq(p.els.get("picker").hidden, false, "list shown");
+  eq(p.els.get("picker-title").textContent, "ప్రశ్నలు", "title");
+  const rows = p.els.get("picker-body").children;
+  eq(rows.length, 2, "one tap target per question");
+  eq(rows.map((b) => b.textContent).join("|"), "ఈరోజు ఎన్నో రోజు?|డాక్టర్ ఎప్పుడు వస్తారు?", "the questions, in order");
+  eq(rows.every((b) => b.type === "button"), true, "real buttons (keyboard focusable)");
+  await rows[1].fire("click"); await flush();
+  const sent = JSON.parse(p.turns()[0].init.body);
+  eq(sent.chip, "question", "chip"); eq(sent.params.id, 7, "id"); eq(sent.utterance, "", "no free text");
+  const texts = logEl(p).children.map(rawText);
+  eq(texts[0], "డాక్టర్ ఎప్పుడు వస్తారు?", "his question as his own bubble");
+  eq(texts[1], "మీరు చెప్పినట్లు: డాక్టర్ 2 రోజులకు ఒకసారి వస్తారు.", "the answer as a normal bubble");
+  eq(p.els.get("picker").hidden, true, "the list closes after the tap");
+};
+
+scenarios.the_questions_button_does_nothing_before_the_notice_is_acknowledged = async () => {
+  const p = await boot({ turn: qAnswer, ui: ui({ questions: QS }) });
+  await questionsButton(p).fire("click"); await flush();
+  eq(p.els.get("picker").hidden, true, "no list before the acknowledgement");
+  eq(p.turns().length, 0, "no turn");
+};
+
+scenarios.opening_the_questions_clears_a_pending_paper_rate = async () => {
+  const p = await open(qAnswer, { ui: ui({ questions: QS }) });
+  await type(p, "sell"); await questionsButton(p).fire("click"); await type(p, "180");
+  eq(sentUtterances(p)[1], "180", "the bare number is not completed after the Questions button");
 };
 
 (async () => {

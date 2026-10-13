@@ -7,5 +7,17 @@
   "houses": [
     {"number": 1, "birds_placed": 3000, "placed_on": "2026-09-01", "deaths_before_pilot": 0},
     {"number": 2, "birds_placed": 2500, "placed_on": "2026-09-10", "deaths_before_pilot": 25}
-  ]
+  ],
+  "farmer_schedule": {
+    "vaccination_farmer_days": [4, 10, 18],
+    "weigh_from_farmer_day": 35,
+    "weight_ok_above_kg_at_day_40": 1.5,
+    "spray_water_above_c": 32,
+    "heat_lights_first_days": 4,
+    "vet_visit_every_days": 3,
+    "normal_feed_per_bird_kg_45d": 3.0,
+    "normal_weight_kg_45d": 2.0,
+    "note": "EXAMPLE ONLY: invented numbers, replace them with the farmer's own. Developer-only, never shown.",
+    "is_example": true
+  }
 }

@@ -57,6 +57,10 @@ SCENARIOS = [
     "the_pending_rate_is_cleared_by_any_other_message_or_tap_or_a_second_message",
     "telugu_digits_work_and_only_two_to_four_digits_count",
     "a_number_outside_1_to_1000_keeps_the_existing_out_of_range_answer",
+    "the_questions_button_is_there_only_when_the_server_offers_questions",
+    "the_questions_button_opens_a_tap_list_and_a_tap_posts_the_question_and_shows_a_normal_bubble",
+    "the_questions_button_does_nothing_before_the_notice_is_acknowledged",
+    "opening_the_questions_clears_a_pending_paper_rate",
 ]
 
 

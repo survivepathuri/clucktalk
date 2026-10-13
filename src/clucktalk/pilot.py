@@ -35,7 +35,22 @@ _FARM_FIELDS = {
     "sale_price_below_paper_rate_inr",
     "supplier_lead_days",
     "houses",
+    "farmer_schedule",
 }
+_SCHEDULE_FIELDS = {
+    "vaccination_farmer_days",
+    "weigh_from_farmer_day",
+    "weight_ok_above_kg_at_day_40",
+    "spray_water_above_c",
+    "heat_lights_first_days",
+    "vet_visit_every_days",
+    "normal_feed_per_bird_kg_45d",
+    "normal_weight_kg_45d",
+    "note",
+    "is_example",
+}
+_SCHEDULE_DATA = _SCHEDULE_FIELDS - {"note", "is_example"}
+MAX_FARMER_DAY = 120
 _HOUSE_FIELDS = {
     "number",
     "birds_placed",
@@ -67,6 +82,23 @@ class PilotHouseSpec:
 
 
 @dataclass(frozen=True)
+class FarmerSchedule:
+    """What the farmer himself told us about his routine. Every field is optional; a question whose data is absent is
+    never offered. Days are the farmer's own days (his day N is the repository's age N-1). The note is for whoever keeps
+    the file and is never shown."""
+
+    vaccination_farmer_days: tuple[int, ...] | None = None
+    weigh_from_farmer_day: int | None = None
+    weight_ok_above_kg_at_day_40: Decimal | None = None
+    spray_water_above_c: Decimal | None = None
+    heat_lights_first_days: int | None = None
+    vet_visit_every_days: int | None = None
+    normal_feed_per_bird_kg_45d: Decimal | None = None
+    normal_weight_kg_45d: Decimal | None = None
+    is_example: bool = False
+
+
+@dataclass(frozen=True)
 class PilotFarmConfig:
     feed_price_per_kg: Decimal
     feed_price_label: str  # who set the price and how: kept word for word, never presented as a market fact
@@ -75,6 +107,7 @@ class PilotFarmConfig:
     houses: tuple[PilotHouseSpec, ...]
     # His own rule: his price is the day's paper rate minus this many rupees per kg. None: no such rule.
     sale_price_below_paper_rate: Decimal | None = None
+    schedule: FarmerSchedule | None = None
 
 
 def is_unmodelled_breed(breed: str) -> bool:
@@ -141,6 +174,66 @@ def _house(spec: Any, index: int) -> PilotHouseSpec:
     return PilotHouseSpec(number, birds, placed_on, kind, breed.strip(), age0, float(stock), gone)
 
 
+def _schedule_number(data: dict[str, Any], key: str, high: int) -> Decimal | None:
+    if key not in data:
+        return None
+    value = data[key]
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not 0 < value <= high:
+        raise PilotFarmError(f"farmer_schedule.{key} must be a number greater than 0 and at most {high}")
+    return Decimal(str(value))
+
+
+def _schedule_days(data: dict[str, Any], key: str, high: int = MAX_FARMER_DAY) -> int | None:
+    if key not in data:
+        return None
+    value = data[key]
+    if not _is_int(value) or not 1 <= value <= high:
+        raise PilotFarmError(f"farmer_schedule.{key} must be a whole number from 1 to {high}")
+    return value
+
+
+def _parse_schedule(data: Any) -> FarmerSchedule:
+    if not isinstance(data, dict):
+        raise PilotFarmError("farmer_schedule must be an object")
+    unknown = set(data) - _SCHEDULE_FIELDS
+    if unknown:
+        raise PilotFarmError(
+            f"farmer_schedule has unknown field(s) {sorted(unknown)}; allowed: {sorted(_SCHEDULE_FIELDS)}"
+        )
+    if not set(data) & _SCHEDULE_DATA:
+        raise PilotFarmError("farmer_schedule needs at least one of: " + ", ".join(sorted(_SCHEDULE_DATA)))
+    days: tuple[int, ...] | None = None
+    if "vaccination_farmer_days" in data:
+        raw = data["vaccination_farmer_days"]
+        if (
+            not isinstance(raw, list)
+            or not 1 <= len(raw) <= 20
+            or not all(_is_int(d) and 1 <= d <= MAX_FARMER_DAY for d in raw)
+            or len(set(raw)) != len(raw)
+        ):
+            raise PilotFarmError(
+                f"farmer_schedule.vaccination_farmer_days must be 1 to 20 different days from 1 to {MAX_FARMER_DAY}"
+            )
+        days = tuple(sorted(raw))
+    note = data.get("note")
+    if note is not None and (not isinstance(note, str) or len(note) > MAX_LABEL):
+        raise PilotFarmError(f"farmer_schedule.note must be text of at most {MAX_LABEL} characters")
+    example = data.get("is_example", False)
+    if not isinstance(example, bool):
+        raise PilotFarmError("farmer_schedule.is_example must be true or false")
+    return FarmerSchedule(
+        vaccination_farmer_days=days,
+        weigh_from_farmer_day=_schedule_days(data, "weigh_from_farmer_day"),
+        weight_ok_above_kg_at_day_40=_schedule_number(data, "weight_ok_above_kg_at_day_40", 20),
+        spray_water_above_c=_schedule_number(data, "spray_water_above_c", 60),
+        heat_lights_first_days=_schedule_days(data, "heat_lights_first_days", 60),
+        vet_visit_every_days=_schedule_days(data, "vet_visit_every_days", 60),
+        normal_feed_per_bird_kg_45d=_schedule_number(data, "normal_feed_per_bird_kg_45d", 20),
+        normal_weight_kg_45d=_schedule_number(data, "normal_weight_kg_45d", 20),
+        is_example=example,
+    )
+
+
 def parse_pilot_farm(data: Any, name: str = "the pilot farm file") -> PilotFarmConfig:
     if not isinstance(data, dict):
         raise PilotFarmError(f"{name} must be a JSON object")
@@ -177,6 +270,7 @@ def parse_pilot_farm(data: Any, name: str = "the pilot farm file") -> PilotFarmC
         supplier_lead_days=lead,
         houses=specs,
         sale_price_below_paper_rate=delta,
+        schedule=_parse_schedule(data["farmer_schedule"]) if "farmer_schedule" in data else None,
     )
 
 

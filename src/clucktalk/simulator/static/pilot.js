@@ -258,6 +258,20 @@ function choose(chip, params) {
   if (chip === "health") return askSigns(label, params);
 }
 
+// The Questions button: a tap-list of what he told us (only the questions the server offers); an answer is a normal bubble.
+function openQuestions() {
+  if (!acked) return;
+  askedRate = false;
+  title(ui.strings.questions.te);
+  const body = $("picker-body");
+  body.replaceChildren();
+  ui.questions.forEach((q) => body.appendChild(button(q.te, () => {
+    say(q.te, "you");
+    post({ chip: "question", params: { id: q.id } });
+  }, "question")));
+  $("picker").hidden = false;
+}
+
 function askCount(label, params) {
   const body = $("picker-body");
   body.replaceChildren();
@@ -363,6 +377,7 @@ async function start() {
   $("replace").textContent = ui.strings.replace.te;
   $("readback-head").textContent = ui.strings.readback.te;
   Object.entries(ui.chips).forEach(([key, t]) => $("chips").appendChild(button(t.te, () => choose(key, {}))));
+  if (ui.questions && ui.questions.length) $("chips").appendChild(button(ui.strings.questions.te, openQuestions, "questions"));
   $("yes").addEventListener("click", () => post({ chip: "yes" }));
   $("no").addEventListener("click", () => post({ chip: "no" }));
   $("add").addEventListener("click", () => post({ chip: "add" }));

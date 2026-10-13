@@ -120,6 +120,63 @@ TAP_SUFFIX = Text(en="(the ending that asks you to tap yes or no)", te="నొ�
 RATE_ASK = Text(en="Tell me today's paper rate", te="ఈరోజు పేపర్ రేటు చెప్పండి")
 RATE_PHRASE = Text(en="today's paper rate", te="ఈరోజు పేపర్ రేటు")
 
+# The Questions button (farmer_schedule in the farm file). Every answer is built only from what the farmer
+# himself told us and starts with AS_TOLD: it is his own routine read back, never advice and never a checked fact.
+# All Telugu below is a DRAFT in simple village Telugu, pending native review (docs/TELUGU_REVIEW.md).
+# {shed} is SHED_LABEL; days are his own days.
+QUESTIONS_BUTTON = Text(en="Questions", te="ప్రశ్నలు")
+AS_TOLD = Text(en="As you told us:", te="మీరు చెప్పినట్లు:")
+QUESTION_LABELS = {
+    1: Text(en="What day is it today?", te="ఈరోజు ఎన్నో రోజు?"),
+    2: Text(en="When is the next vaccination?", te="తదుపరి టీకా ఎప్పుడు?"),
+    3: Text(en="Is there a vaccination today?", te="ఈరోజు టీకా ఉందా?"),
+    4: Text(en="From when should I weigh the birds?", te="ఎప్పటి నుంచి బరువు చూడాలి?"),
+    5: Text(en="When should I spray water?", te="నీళ్లు ఎప్పుడు చల్లాలి?"),
+    6: Text(en="For how many days the heat lights?", te="వేడి లైట్లు ఎన్ని రోజులు?"),
+    7: Text(en="When does the doctor come?", te="డాక్టర్ ఎప్పుడు వస్తారు?"),
+    8: Text(en="How much feed in all for one bird?", te="ఒక కోడికి మొత్తం దాణా ఎంత?"),
+    9: Text(en="What weight on day 45?", te="45వ రోజు బరువు ఎంత ఉండాలి?"),
+    10: Text(en="When is day 45?", te="45వ రోజు ఎప్పుడు?"),
+}
+ANSWER_DAY = Text(en="{shed}: day {day}.", te="{shed}: {day}వ రోజు.")
+ANSWER_NEXT_VACCINE = Text(
+    en="{shed}: next vaccination on day {day}, in {left} days.",
+    te="{shed}: తదుపరి టీకా {day}వ రోజున, {left} రోజుల్లో.",
+)
+ANSWER_VACCINE_TODAY_NEXT = Text(
+    en="{shed}: next vaccination is today, day {day}.",
+    te="{shed}: తదుపరి టీకా ఈరోజే, {day}వ రోజు.",
+)
+ANSWER_VACCINES_OVER = Text(
+    en="{shed}: the vaccination days you told us are all over.",
+    te="{shed}: మీరు చెప్పిన టీకా రోజులన్నీ అయిపోయాయి.",
+)
+ANSWER_VACCINE_YES = Text(en="{shed}: yes, vaccination today, day {day}.", te="{shed}: అవును, ఈరోజు టీకా ఉంది, {day}వ రోజు.")
+ANSWER_VACCINE_NO = Text(en="{shed}: no vaccination today, day {day}.", te="{shed}: లేదు, ఈరోజు టీకా లేదు, {day}వ రోజు.")
+ANSWER_WEIGH_FROM = Text(en="Weigh the birds from day {day}.", te="{day}వ రోజు నుంచి కోళ్లను తూకం వేయండి.")
+ANSWER_WEIGH_OK = Text(en="On day 40, above {kg} kg is good.", te="40వ రోజున {kg} కిలోల కంటే ఎక్కువ ఉంటే బాగుంది.")
+ANSWER_SPRAY = Text(
+    en="Spray water when it is hotter than {degrees} degrees.",
+    te="వేడి {degrees} డిగ్రీల కంటే ఎక్కువ ఉన్నప్పుడు నీళ్లు చల్లండి.",
+)
+ANSWER_LIGHTS_ON = Text(
+    en="{shed}: heat lights for the first {days} days; now day {day}, keep them on.",
+    te="{shed}: మొదటి {days} రోజులు వేడి లైట్లు; ఇప్పుడు {day}వ రోజు, ఇంకా ఉంచాలి.",
+)
+ANSWER_LIGHTS_OVER = Text(
+    en="{shed}: heat lights were for the first {days} days; now day {day}, those days are over.",
+    te="{shed}: మొదటి {days} రోజులు వేడి లైట్లు; ఇప్పుడు {day}వ రోజు, ఆ రోజులు అయిపోయాయి.",
+)
+ANSWER_VET = Text(en="The doctor comes every {days} days.", te="డాక్టర్ {days} రోజులకు ఒకసారి వస్తారు.")
+ANSWER_VET_DAILY = Text(en="The doctor comes every day.", te="డాక్టర్ రోజూ వస్తారు.")
+ANSWER_FEED = Text(
+    en="One bird eats about {kg} kg of feed in all by day 45.",
+    te="ఒక కోడికి 45వ రోజు వరకు మొత్తం సుమారు {kg} కిలోల దాణా.",
+)
+ANSWER_WEIGHT = Text(en="On day 45 the weight should be about {kg} kg.", te="45వ రోజున బరువు సుమారు {kg} కిలోలు ఉండాలి.")
+ANSWER_DAY_45 = Text(en="{shed}: day 45 is on {date}.", te="{shed}: 45వ రోజు {date} నాడు.")
+NO_FLOCK = Text(en="No shed has birds now.", te="ఇప్పుడు ఏ షెడ్ లోనూ కోళ్లు లేవు.")
+
 PILOT_UI = {
     "badge": PILOT_BADGE,
     "notice": PILOT_NOTICE,
@@ -145,4 +202,5 @@ PILOT_UI = {
     "tap_suffix": TAP_SUFFIX,
     "rate_ask": RATE_ASK,
     "rate_phrase": RATE_PHRASE,
+    "questions": QUESTIONS_BUTTON,
 }

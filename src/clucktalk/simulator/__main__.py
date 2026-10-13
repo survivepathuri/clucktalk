@@ -87,6 +87,7 @@ def load_simulator_settings(env: dict[str, str] | None = None) -> SimulatorSetti
         rate_per_minute=_whole(env, "CLUCKTALK_RATE_PER_MINUTE", 60, 1, 6000),
         max_sessions=_whole(env, "CLUCKTALK_MAX_SESSIONS", 20, 1, 1000),
         disabled_file=Path(disabled) if disabled else state_dir / "DISABLED",
+        farm_path=server.pilot_farm_path if pilot else None,
         usage_path=(Path(usage) if usage else state_dir / f"usage_{server.instance_name}.json") if pilot else None,
     )
 

@@ -55,7 +55,9 @@ from clucktalk.i18n.pilot import (
     SHED_LABEL,
     notice_version,
 )
+from clucktalk.pilot import load_pilot_farm_file
 from clucktalk.server.farm_state import today_ist
+from clucktalk.simulator import questions as farmer_questions
 from clucktalk.simulator.intents import Intent, match, normalise, yes_no
 from clucktalk.simulator.intents_te import chip_intent, choice_te, match_te, yes_no_te
 from clucktalk.simulator.mcp_client import Exchange, McpClient, McpUnavailable
@@ -93,6 +95,7 @@ class SimulatorSettings:
     max_body: int = 8192  # bytes in a request body
     disabled_file: Path | None = None  # the kill switch: this file existing pauses the Simulator
     usage_path: Path | None = None  # anonymous usage counters (pilot)
+    farm_path: Path | None = None  # the pilot farm file: the Questions button reads the farmer's own schedule from it
 
     @property
     def origins(self) -> set[str]:
@@ -426,6 +429,7 @@ def build_app(
     usage = (
         UsageCounters(settings.usage_path, today_ist) if settings.usage_path is not None else None
     )  # damaged: fails loud
+    farm = load_pilot_farm_file(settings.farm_path) if pilot and settings.farm_path is not None else None
 
     @asynccontextmanager
     async def lifespan(_app: Starlette) -> AsyncIterator[None]:
@@ -531,8 +535,18 @@ def build_app(
         answer: str | None = None
         choice: str | None = None
         routed = None
+        asked: Any = None  # a tapped question: answered from the farmer's own schedule, no tool and no model
         if chip is not None:  # a tapped chip: validated here, never through a text matcher
-            if chip in ("yes", "no"):
+            if chip == "question":
+                number = params.get("id")
+                asked = (
+                    farmer_questions.answer(farm, today_ist(), number)
+                    if farm is not None and isinstance(number, int) and not isinstance(number, bool)
+                    else None
+                )
+                if asked is None:
+                    return JSONResponse({"error": "bad chip: not one of the offered questions"}, status_code=400)
+            elif chip in ("yes", "no"):
                 answer = chip
             elif chip in ("add", "replace"):  # the answer to the add-or-replace question (a tap is the whole answer)
                 answer, choice = "yes", chip
@@ -620,6 +634,8 @@ def build_app(
             out.update(
                 kind="choose", speech="", speech_te="", choose={"chip": routed.chip.value, "params": routed.params}
             )
+        elif asked is not None:
+            out.update(kind="answer", speech=asked.en, speech_te=asked.te)
         elif intent is None:
             if answer is not None and host_awaiting and choice is None:
                 out.update(kind="fallback", speech=HOST_NOT_STARTED.en, speech_te=HOST_NOT_STARTED.te)
@@ -709,6 +725,7 @@ def build_app(
                 "notice_version": notice_version(),
                 "signs": [{"code": s.value, "label_te": SIGN_TEXT[s].te} for s in Sign],
                 "houses": houses,
+                "questions": farmer_questions.labels(farm.schedule) if farm is not None else [],
             }
         )
 
