@@ -83,9 +83,16 @@ def test_the_chip_shows_the_spoken_sentence_verbatim_with_no_arithmetic():
 def test_the_chip_is_on_the_tile_and_on_the_shed_detail_and_names_itself_for_a_screen_reader():
     text = _template("farm_status")
     assert text.count("      followUpChip(h),") == 1  # in the tile, before the least important line
-    assert text.count("root.append(followUpChip(h))") == 1  # and in the shed detail view
+    assert text.count("const chip = followUpChip(h);\n  if (chip) root.append(chip);") == 1  # and in the shed detail
     assert "h.follow_up.text_en" in text  # the tile's accessible name includes the sentence
     assert 'role: "group"' in text[text.index("function followUpChip") :]
+
+
+def test_a_shed_with_no_follow_up_appends_nothing_not_the_text_null():
+    # followUpChip returns null when there is nothing to say; DOM append(null) would write the word "null".
+    text = _template("farm_status")
+    assert ".append(followUpChip(" not in text
+    assert "if (chip) root.append(chip);" in text
 
 
 def test_the_chip_shows_nothing_for_a_follow_up_with_nothing_to_say():

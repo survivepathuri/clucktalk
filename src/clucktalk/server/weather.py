@@ -1,8 +1,8 @@
 """The forecast port and the farmer's weather rules file (Step 50W-B, docs/DESIGN.md).
 
-* ``weather_rules.json`` (path from CLUCKTALK_WEATHER_RULES_PATH, default ``.local/weather_rules.json``) holds the
-  farm's latitude and longitude and the farmer's own rules. No file means the feature is OFF: nothing is built, no
-  forecast is ever asked for and no network call is possible.
+* ``weather_rules.json`` (path from CLUCKTALK_WEATHER_RULES_PATH; read only when that is set, never a ``.local``
+  default) holds the farm's latitude and longitude and the farmer's own rules. No file means the
+  feature is OFF: nothing is built, no forecast is ever asked for and no network call is possible.
 * ``MockForecast`` is the default forecast: deterministic and labelled SIMULATED.
 * ``OpenMeteoForecast`` is the one live adapter. It is built only when the file exists AND
   CLUCKTALK_WEATHER_LIVE=true. It asks for hourly ``temperature_2m`` only, with no API key, a timeout of at most 3
@@ -33,7 +33,6 @@ logger = logging.getLogger("clucktalk.server")
 
 SOURCE_LIVE = "Open-Meteo"
 SOURCE_MOCK = "simulated"
-DEFAULT_RULES_PATH = REPO_ROOT / ".local" / "weather_rules.json"
 OPEN_METEO_URL = (
     "https://api.open-meteo.com/v1/forecast"  # the path is documented; the host is not verified (docs/SOURCES.md)
 )
@@ -266,9 +265,7 @@ class WeatherReminders:
 
 # -- the environment -------------------------------------------------------------------------
 def resolve_rules_path(raw: str) -> Path:
-    """A relative path is taken from the repo root; it must be a .json file. Empty means the default location."""
-    if not raw.strip():
-        return DEFAULT_RULES_PATH
+    """A relative path is taken from the repo root; it must be a .json file."""
     path = Path(raw.strip())
     if path.suffix.lower() != ".json":
         raise WeatherConfigError(f"CLUCKTALK_WEATHER_RULES_PATH={raw!r} must name a .json file")
@@ -283,7 +280,10 @@ def weather_from_env(
     live_raw = env.get("CLUCKTALK_WEATHER_LIVE", "").strip().lower()
     if live_raw not in ("", "true", "false", "0"):
         raise WeatherConfigError(f"CLUCKTALK_WEATHER_LIVE={live_raw!r} must be true or false")
-    config = load_weather_config(resolve_rules_path(env.get("CLUCKTALK_WEATHER_RULES_PATH", "")))
+    raw = env.get("CLUCKTALK_WEATHER_RULES_PATH", "").strip()
+    if not raw:  # no default location: the demo never looks in .local
+        return None
+    config = load_weather_config(resolve_rules_path(raw))
     if config is None:
         return None
     port: ForecastPort = OpenMeteoForecast(transport=transport) if live_raw == "true" else MockForecast()

@@ -406,7 +406,8 @@ function houseView(sc) {
   } else {
     root.append(stacked({ en: h.summary_en, te: h.summary_te }, "say"));
   }
-  root.append(followUpChip(h));
+  const chip = followUpChip(h);
+  if (chip) root.append(chip);
   root.append(el("button", { class: "action", type: "button", onclick: () => openFarm() }, icon("back"), bi(L.back_all)));
   return root;
 }

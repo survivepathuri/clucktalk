@@ -142,6 +142,14 @@ function alertBar(rows) {
   return bar;
 }
 
+// After the "tell me today's paper rate" ask line, his next typed message that is only 2 to 4 digits (Telugu digits too)
+// is sent as the full sentence the server already understands. Anything else he does clears this; nothing is kept.
+let askedRate = false;
+function bareRate(text) {
+  const digits = text.replace(/[\u0c66-\u0c6f]/g, (c) => String(c.charCodeAt(0) - 0x0c66));
+  return askedRate && /^[0-9]{2,4}$/.test(digits) ? ui.strings.rate_phrase.te + " " + digits : text;
+}
+
 function setBusy(on) {
   busy = on;
   document.querySelectorAll("button, #text").forEach((el) => { el.disabled = on; });
@@ -162,6 +170,7 @@ function button(label, onClick, cls) {
 
 async function post(body) {
   if (busy || !acked) return;
+  askedRate = false;
   setBusy(true);
   clearPicker();
   try {
@@ -212,6 +221,7 @@ function render(out) {
     const rows = out.kind === "tool" && !warn ? alertRows(out.result && out.result.structuredContent) : [];
     if (rows.length) show(alertBar(rows));
     const isSale = out.intent && out.intent.tool === "plan_sale" && !warn;
+    askedRate = isSale && text.includes(ui.strings.rate_ask.te);
     if (!(isSale && sayPrice(text))) say(text, warn ? "warn" : "");
   }
   showReadBack(out);
@@ -228,6 +238,7 @@ function title(text) { $("picker-title").textContent = text; }
 
 function choose(chip, params) {
   if (!acked) return;
+  askedRate = false;
   const label = ui.chips[chip] ? ui.chips[chip].te : "";
   title(label);
   if (chip === "status" || chip === "briefing" || chip === "help" || chip === "sale") {
@@ -362,7 +373,7 @@ async function start() {
     if (!text || !acked) return;
     say(text, "you");
     $("text").value = "";
-    post({ utterance: text });
+    post({ utterance: bareRate(text) });
   });
   if (isAcked()) enterApp(); else showNotice();
 }

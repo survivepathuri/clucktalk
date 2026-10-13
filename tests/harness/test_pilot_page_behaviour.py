@@ -52,6 +52,11 @@ SCENARIOS = [
     "the_input_has_a_telugu_placeholder_and_the_send_button_a_word",
     "the_log_keeps_only_the_newest_answers",
     "a_read_back_says_tap_where_the_server_text_says_say_and_is_unchanged_otherwise",
+    "a_bare_number_after_the_ask_line_is_sent_as_the_full_paper_rate_sentence",
+    "a_bare_number_without_a_preceding_ask_is_sent_as_it_is_and_not_understood",
+    "the_pending_rate_is_cleared_by_any_other_message_or_tap_or_a_second_message",
+    "telugu_digits_work_and_only_two_to_four_digits_count",
+    "a_number_outside_1_to_1000_keeps_the_existing_out_of_range_answer",
 ]
 
 

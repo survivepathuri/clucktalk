@@ -115,6 +115,10 @@ INPUT_PLACEHOLDER = Text(en="Write here", te="ఇక్కడ రాయండి
 SEND_BUTTON = Text(en="Send", te="పంపండి")
 SAY_SUFFIX = Text(en="(the ending that asks you to say yes or no)", te="అని చెప్పండి.")
 TAP_SUFFIX = Text(en="(the ending that asks you to tap yes or no)", te="నొక్కండి.")
+# The bare paper rate: RATE_ASK is the start of the sell question's ask line, RATE_PHRASE the words the server's typed
+# matcher already accepts before the number. Both are pieces of sentences the server already says (tools/sale.py).
+RATE_ASK = Text(en="Tell me today's paper rate", te="ఈరోజు పేపర్ రేటు చెప్పండి")
+RATE_PHRASE = Text(en="today's paper rate", te="ఈరోజు పేపర్ రేటు")
 
 PILOT_UI = {
     "badge": PILOT_BADGE,
@@ -139,4 +143,6 @@ PILOT_UI = {
     "send": SEND_BUTTON,
     "say_suffix": SAY_SUFFIX,
     "tap_suffix": TAP_SUFFIX,
+    "rate_ask": RATE_ASK,
+    "rate_phrase": RATE_PHRASE,
 }

@@ -49,7 +49,7 @@ function ui(extra) {
       error: t("error"), error_next: t("next"), notice_title: t("Before you start"), ack: t("I understand"),
       not_understood: t("nu"), nothing_pending: t("np"), not_started: t("ns"), badge: t("badge"),
       alert: t("ALERT"), deaths_today: t("Deaths today"), vet_today: t("Take the birds to the vet today"), warn_tag: t("Note"),
-      placeholder: t("Write here"), send: t("Send"), say_suffix: { en: "say it.", te: "say it." }, tap_suffix: { en: "tap it.", te: "tap it." } },
+      placeholder: t("Write here"), rate_ask: { en: "Tell me", te: "ఈరోజు పేపర్ రేటు చెప్పండి" }, rate_phrase: { en: "rate", te: "ఈరోజు పేపర్ రేటు" }, send: t("Send"), say_suffix: { en: "say it.", te: "say it." }, tap_suffix: { en: "tap it.", te: "tap it." } },
     chips: { help: t("Help"), status: t("Status"), deaths: t("Deaths") },
     outcomes: {}, signs: [], houses: [{ number: 1, label_te: "H1" }],
     notice_items: ["a", "b", "c", "d", "e", "f", "g"].map(t), notice_version: "v1", ...(extra || {}),
@@ -366,6 +366,76 @@ scenarios.a_read_back_says_tap_where_the_server_text_says_say_and_is_unchanged_o
   p = await open(q("House 1: 7 died. Other wording."));
   await chipButtons(p)[0].fire("click"); await flush();
   eq(p.els.get("readback-text").textContent, "House 1: 7 died. Other wording.", "unchanged without the suffix");
+};
+
+
+// The bare paper rate: after the page shows the ask line, the next typed 2 to 4 digit number is sent as the full sentence.
+const ASK = "మీ బ్రాయిలర్ షెడ్ల అమ్మకం రోజు తనిఖీ. ఈరోజు పేపర్ రేటు చెప్పండి, ఉదాహరణకు: ఈరోజు పేపర్ రేటు 160, మీ ధర నేను లెక్కిస్తాను.";
+const RANGE = "ఆ పేపర్ రేటు సరిగా లేదు. ఈరోజు పేపర్ రేటు కిలోకు రూపాయలలో చెప్పండి, ఉదాహరణకు: ఈరోజు పేపర్ రేటు 160.";
+const rateFarm = (body) => {  // a fake server with the farm's own rule: price = paper rate minus 20
+  const say = (t, tool) => ({ status: 200, body: { kind: "tool", intent: { tool }, speech_te: t, speech: t, result: { structuredContent: {} } } });
+  const m = /^ఈరోజు పేపర్ రేటు (\d+)$/.exec(body.utterance || "");
+  if (body.utterance === "sell") return say(ASK, "plan_sale");
+  if (m && Number(m[1]) > 1000) return say(RANGE, "plan_sale");
+  if (m) return say(`మీ ఈరోజు ధర: కిలోకు ₹${Number(m[1]) - 20} (పేపర్ రేటు ₹${m[1]} నుండి ₹20 తగ్గింపు, మీ సొంత నియమం).`, "plan_sale");
+  if (body.chip === "help") return say("help text", "get_help");
+  if (body.utterance === "boom") return { status: 500, body: {} };
+  return { status: 200, body: { kind: "fallback", speech_te: "NOT UNDERSTOOD", speech: "nu", result: null } };
+};
+const type = async (p, text) => { p.els.get("text").value = text; await p.els.get("ask").fire("submit"); await flush(); };
+const sentUtterances = (p) => p.turns().map((c) => JSON.parse(c.init.body).utterance);
+
+scenarios.a_bare_number_after_the_ask_line_is_sent_as_the_full_paper_rate_sentence = async () => {
+  const p = await open(rateFarm);
+  await type(p, "sell");
+  await type(p, "180");
+  eq(sentUtterances(p)[1], "ఈరోజు పేపర్ రేటు 180", "the sentence sent");
+  eq(logEl(p).children.some((k) => rawText(k) === "180"), true, "the farmer's bubble shows just the number");
+  eq(withClass(logEl(p), "price")[0].textContent, "₹160", "the price answer: 180 minus 20");
+};
+
+scenarios.a_bare_number_without_a_preceding_ask_is_sent_as_it_is_and_not_understood = async () => {
+  const p = await open(rateFarm);
+  await type(p, "180");
+  eq(sentUtterances(p)[0], "180", "sent unchanged");
+  eq(rawText(logEl(p).children[logEl(p).children.length - 1]), "NOT UNDERSTOOD", "not understood");
+};
+
+scenarios.the_pending_rate_is_cleared_by_any_other_message_or_tap_or_a_second_message = async () => {
+  let p = await open(rateFarm);
+  await type(p, "sell"); await type(p, "hello"); await type(p, "180");
+  eq(sentUtterances(p)[2], "180", "another message cleared it");
+  p = await open(rateFarm);
+  await type(p, "sell"); await chipButtons(p)[0].fire("click"); await flush(); await type(p, "180");
+  eq(sentUtterances(p)[2], "180", "a tap cleared it");
+  p = await open(rateFarm);
+  await type(p, "sell"); await type(p, "180"); await type(p, "170");
+  eq(sentUtterances(p)[2], "170", "a second number after the answer is not completed");
+  p = await open(rateFarm);
+  await type(p, "sell"); await type(p, "boom"); await type(p, "180");
+  eq(sentUtterances(p)[2], "180", "a failed message also cleared it");
+  p = await open(rateFarm);
+  await type(p, "sell"); await chipButtons(p)[2].fire("click"); await flush();
+  await type(p, "180");
+  eq(sentUtterances(p)[1], "180", "opening a picker also cleared it");
+};
+
+scenarios.telugu_digits_work_and_only_two_to_four_digits_count = async () => {
+  let p = await open(rateFarm);
+  await type(p, "sell"); await type(p, "౧౮౦");
+  eq(sentUtterances(p)[1], "ఈరోజు పేపర్ రేటు 180", "Telugu digits become the sentence with ASCII digits");
+  for (const text of ["5", "12345", "180 kg", "a180"]) {
+    p = await open(rateFarm);
+    await type(p, "sell"); await type(p, text);
+    eq(sentUtterances(p)[1], text, "sent as typed: " + text);
+  }
+};
+
+scenarios.a_number_outside_1_to_1000_keeps_the_existing_out_of_range_answer = async () => {
+  const p = await open(rateFarm);
+  await type(p, "sell"); await type(p, "2000");
+  eq(sentUtterances(p)[1], "ఈరోజు పేపర్ రేటు 2000", "sent as the sentence");
+  eq(rawText(logEl(p).children[logEl(p).children.length - 1]), RANGE, "the server's own out-of-range line");
 };
 
 (async () => {

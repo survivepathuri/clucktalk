@@ -1,6 +1,7 @@
 """The farmer's daily deaths rule file (Step 51 part B), the same pattern as the weather rules file.
 
-``daily_deaths_rule.json`` (path from CLUCKTALK_DAILY_DEATHS_RULE_PATH, default ``.local/daily_deaths_rule.json``)::
+``daily_deaths_rule.json`` (path from CLUCKTALK_DAILY_DEATHS_RULE_PATH; the demo default is
+``docs/daily_deaths_limit.example.json``, never a ``.local`` file)::
 
     {"per_1000_live": 2, "note": "his own words", "is_example": false}
 
@@ -32,7 +33,7 @@ from typing import Any
 from clucktalk.config import REPO_ROOT
 from clucktalk.domain.daily_deaths import AgeBand, DailyDeathsRule
 
-DEFAULT_RULE_PATH = REPO_ROOT / ".local" / "daily_deaths_rule.json"
+DEFAULT_RULE_PATH = REPO_ROOT / "docs" / "daily_deaths_limit.example.json"  # the demo; never a .local file
 MAX_NOTE = 200
 MAX_PER_1000 = 1000
 MAX_COMMENT = 300

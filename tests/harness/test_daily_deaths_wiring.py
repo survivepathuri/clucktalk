@@ -113,3 +113,12 @@ def test_a_pilot_reads_a_rule_file_only_from_an_explicit_path():
     finally:
         if not existed:
             default.unlink()
+
+
+def test_the_demo_uses_the_docs_example_rule_and_reads_no_weather_file_by_default():
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d)
+        (tmp / "state").mkdir()
+        text, _ = _banner(_env(tmp, probe._free_port(), False), tmp)
+        assert "Daily deaths rule: ON" in text  # docs/daily_deaths_limit.example.json, the same on every clone
+        assert "Weather reminders: off" in text  # no .local/weather_rules.json fallback

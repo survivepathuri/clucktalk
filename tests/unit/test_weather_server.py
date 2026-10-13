@@ -404,7 +404,18 @@ def test_a_relative_rules_path_is_taken_from_the_repo_root_and_must_be_json(tmp_
     with pytest.raises(WeatherConfigError, match=r"\.json"):
         weather_from_env({"CLUCKTALK_WEATHER_RULES_PATH": str(tmp_path / "rules.txt")}, lambda: NOW)
     assert weather.resolve_rules_path("docs/weather_rules.example.json") == ROOT / "docs" / "weather_rules.example.json"
-    assert weather.resolve_rules_path("") == ROOT / ".local" / "weather_rules.json"
+    with pytest.raises(WeatherConfigError, match=r"\.json"):
+        weather.resolve_rules_path("")  # there is no default location any more
+
+
+def test_without_a_path_nothing_is_read_at_all_least_of_all_a_local_file(monkeypatch):
+    seen = []
+    real = Path.exists
+    monkeypatch.setattr(Path, "exists", lambda self: (seen.append(self), real(self))[1])
+    monkeypatch.setattr(Path, "read_text", lambda self, *a, **k: seen.append(self) or "{}")
+    assert weather_from_env({}, lambda: NOW) is None
+    assert weather_from_env({"CLUCKTALK_WEATHER_RULES_PATH": "  "}, lambda: NOW) is None
+    assert seen == []
 
 
 # -- the service: rules + forecast + the clock -----------------------------------------------

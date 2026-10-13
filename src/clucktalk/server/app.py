@@ -334,8 +334,8 @@ def main() -> int:
     else:
         source = DemoFarmSource(store=store, demo_clock=demo_clock)
     try:  # the farmer's own weather rules: off unless the rules file exists (docs/DESIGN.md, Step 50W-B)
-        # A pilot reads a weather file only from an explicit path, never the demo's default location.
-        if settings.mode != "pilot" or os.environ.get("CLUCKTALK_WEATHER_RULES_PATH", "").strip():
+        # A weather file is read only from an explicit path; the demo never reads a .local file.
+        if os.environ.get("CLUCKTALK_WEATHER_RULES_PATH", "").strip():
             source.weather = weather_from_env(os.environ, source.now)
     except WeatherConfigError as exc:
         print(f"Weather configuration error: {exc}", file=sys.stderr)

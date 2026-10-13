@@ -76,8 +76,8 @@ def test_every_bad_file_is_refused(tmp_path, data):
         load_deaths_rule(write(tmp_path, text))
 
 
-def test_the_path_must_be_a_json_file_and_default_is_under_local():
-    assert resolve_rule_path("").name == "daily_deaths_rule.json"
+def test_the_path_must_be_a_json_file_and_default_is_the_docs_example():
+    assert resolve_rule_path("") == ROOT / "docs" / "daily_deaths_limit.example.json"
     with pytest.raises(DeathsRuleError, match=".json"):
         resolve_rule_path("rule.txt")
 
@@ -108,3 +108,20 @@ def test_the_file_is_reread_when_it_changes_and_a_bad_edit_is_unreadable_not_ign
     path.unlink()
     state = live.current()
     assert state.rule is None and state.unreadable is False  # no file: the feature is simply off
+
+
+def test_the_demo_default_never_reads_a_local_file_and_is_the_example(monkeypatch):
+    """A fresh clone shows the same demo story as the builder's PC: the default is the docs example, never .local."""
+    seen: list[Path] = []
+    real = Path.read_text
+
+    def spy(self, *a, **k):
+        seen.append(self)
+        return real(self, *a, **k)
+
+    monkeypatch.setattr(Path, "read_text", spy)
+    service = deaths_rule_from_env({})
+    assert service is not None
+    state = service.current()
+    assert state.rule is not None and state.rule.is_example is True
+    assert seen and not any(".local" in p.parts for p in seen)
