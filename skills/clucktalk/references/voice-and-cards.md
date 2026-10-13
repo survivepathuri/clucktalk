@@ -45,4 +45,4 @@ English and Telugu speak the same numbers. The farmer's language decides which s
 
 - An error is one customer-safe sentence plus one next step. Cards show it in both languages; voice speaks the English `content` sentence or the Telugu one.
 - A health check runs in the background: the first result says it is still checking, and the farmer or agent asks `get_health_check` a few seconds later. Signs that need action at once are answered immediately from code.
-- Every tool answers from stored state, with no model call inside a tool, so a tool returns quickly. If the server is down, say that plainly.
+- Every tool answers from stored state and never waits for a model, so a tool returns quickly. Two tools, `start_health_check` and `get_daily_briefing`, hand a job to a background worker that can call the model when live AI is chosen; everything else makes no model call. The demo and the pilot use a rule-based stand-in. If the server is down, say that plainly.
