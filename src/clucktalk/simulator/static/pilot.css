@@ -1,26 +1,30 @@
 /* Frosted glass, kept light and quiet: a warm-white to pale green-blue page, translucent white surfaces with a thin light
    border and a soft shadow. The blur is the only extra; without it (or with reduced transparency) the same surfaces are
-   opaque and carry the same text colours. The red ALERT bar is solid on purpose and never glass. */
+   opaque and carry the same text colours. The red ALERT bar is solid on purpose and never glass.
+   Tints: one pale hue per role (own message green, answer blue, prompt amber) and one per chip button, each as hsl(hue, --ts, --tl)
+   with a darker same-hue border. Red is only for warnings: the ALERT bar and the warning bubble. A tint is never the only signal: every label stays. */
 :root { color-scheme: light dark; --fg: #1d1b16; --muted: #55514a; --line: #b9b39f; --edge: #7b8a80;
   --accent: #b96a00; --yes: #1f7a3a; --no: #a3281f; --no-btn: #a3281f; --alertbg: #a3281f;
   --bg1: #fbf8ee; --bg2: #eef4ef; --bg3: #e4eef1; --blob1: rgba(190,225,205,.55); --blob2: rgba(255,226,170,.45);
   --card: rgba(255,255,255,.66); --chip: rgba(255,255,255,.58); --chip-hover: rgba(255,255,255,.82); --you: rgba(214,236,226,.72);
   --warnbg: rgba(253,236,235,.84); --pill: rgba(255,244,222,.72); --rim: rgba(255,255,255,.9); --hair: rgba(70,95,85,.24);
   --shadow: inset 0 1px 0 var(--rim), 0 4px 16px rgba(40,60,50,.10), 0 1px 3px rgba(40,60,50,.08);
-  --blur: blur(14px) saturate(1.15); }
+  --blur: blur(14px) saturate(1.15);
+  --ts: 78%; --tl: 88%; --tlh: 94%; --tbs: 34%; --tbl: 38%; --rl: 94%; --ta: .8; --h-you: 135; --h-ans: 214; --h-ask: 42; }
 @media (prefers-color-scheme: dark) { :root { --fg: #f4efe2; --muted: #bdb6a3; --line: #4a4434; --edge: #8a9a8f;
   --accent: #f2a623; --yes: #2e7d46; --no: #f0877e; --no-btn: #a3281f; --alertbg: #7f1d1d;
   --bg1: #17140e; --bg2: #141a17; --bg3: #111a1c; --blob1: rgba(60,110,85,.28); --blob2: rgba(140,100,30,.22);
   --card: rgba(38,34,24,.66); --chip: rgba(52,46,32,.62); --chip-hover: rgba(70,62,42,.8); --you: rgba(40,66,56,.72);
   --warnbg: rgba(70,28,25,.84); --pill: rgba(60,48,20,.72); --rim: rgba(255,255,255,.14); --hair: rgba(255,255,255,.16);
-  --shadow: inset 0 1px 0 var(--rim), 0 4px 16px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3); } }
+  --shadow: inset 0 1px 0 var(--rim), 0 4px 16px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3);
+  --ts: 34%; --tl: 26%; --tlh: 31%; --tbs: 32%; --tbl: 62%; --rl: 20%; --ta: .72; } }
 /* No blur available, or the farmer's device asks for less transparency: opaque surfaces, same contrast. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :root { --blur: none; --card: #fdfefb; --chip: #f4f8f3; --chip-hover: #ffffff; --you: #dcefe5; --warnbg: #fdeceb; --pill: #fff1d6; }
-  @media (prefers-color-scheme: dark) { :root { --card: #26221a; --chip: #342e20; --chip-hover: #463e2a; --you: #28423a; --warnbg: #461c19; --pill: #3c3014; } } }
+  :root { --blur: none; --card: #fdfefb; --chip: #f4f8f3; --chip-hover: #ffffff; --you: #dcefe5; --warnbg: #fdeceb; --pill: #fff1d6; --ta: 1; }
+  @media (prefers-color-scheme: dark) { :root { --card: #26221a; --chip: #342e20; --chip-hover: #463e2a; --you: #28423a; --warnbg: #461c19; --pill: #3c3014; --ta: 1; } } }
 @media (prefers-reduced-transparency: reduce) {
-  :root { --blur: none; --card: #fdfefb; --chip: #f4f8f3; --chip-hover: #ffffff; --you: #dcefe5; --warnbg: #fdeceb; --pill: #fff1d6; }
-  @media (prefers-color-scheme: dark) { :root { --card: #26221a; --chip: #342e20; --chip-hover: #463e2a; --you: #28423a; --warnbg: #461c19; --pill: #3c3014; } } }
+  :root { --blur: none; --card: #fdfefb; --chip: #f4f8f3; --chip-hover: #ffffff; --you: #dcefe5; --warnbg: #fdeceb; --pill: #fff1d6; --ta: 1; }
+  @media (prefers-color-scheme: dark) { :root { --card: #26221a; --chip: #342e20; --chip-hover: #463e2a; --you: #28423a; --warnbg: #461c19; --pill: #3c3014; --ta: 1; } } }
 * { box-sizing: border-box; }
 body { margin: 0; min-height: 100vh; color: var(--fg);
   background: radial-gradient(60rem 40rem at 8% -6%, var(--blob1), transparent 60%), radial-gradient(50rem 36rem at 100% 18%, var(--blob2), transparent 60%),
@@ -31,9 +35,12 @@ body { margin: 0; min-height: 100vh; color: var(--fg);
 .badge small { font-size: .72rem; color: var(--muted); }
 main { padding: 0 16px 24px; max-width: 560px; margin: 0 auto; }
 .log { display: flex; flex-direction: column; gap: 10px; min-height: 120px; padding: 12px 0; }
-.bubble { padding: 10px 14px; border-radius: 16px; border: 1px solid var(--hair); border-left: 5px solid var(--accent); background: var(--card); box-shadow: var(--shadow); white-space: pre-wrap; overflow-wrap: anywhere; }
-.bubble.you { align-self: flex-end; background: var(--you); border-left-color: var(--edge); }
+.bubble { --h: var(--h-ans); padding: 10px 14px; border-radius: 16px; border: 1px solid var(--hair); border-left: 5px solid var(--accent); background: hsl(var(--h) var(--ts) var(--rl) / var(--ta)); box-shadow: var(--shadow); white-space: pre-wrap; overflow-wrap: anywhere; }
+.bubble:not(.warn) { border-left-color: hsl(var(--h) var(--tbs) var(--tbl)); }
+.bubble.you { --h: var(--h-you); align-self: flex-end; background: hsl(var(--h) var(--ts) var(--rl) / var(--ta)); }
 .bubble.warn { border-color: var(--no); border-left-color: var(--no); background: var(--warnbg); }
+/* The prompts (the read-back question, the pickers): amber. */
+#readback, #picker { --h: var(--h-ask); border-color: hsl(var(--h) var(--tbs) var(--tbl)); background: hsl(var(--h) var(--ts) var(--rl) / var(--ta)); }
 .bubble[data-tag]::before { content: "\26A0  " attr(data-tag); display: block; font-weight: 800; color: var(--no); margin-bottom: 2px; }
 /* The red ALERT bar: a warning sign, the word, the shed and today's deaths big, then the one line to act on. */
 .alertbar { background: var(--alertbg); color: #fff; border: 3px solid var(--no); border-radius: 16px; padding: 12px 14px; }
@@ -67,8 +74,22 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--fg); outlin
 button.on { outline: 3px solid var(--accent); }
 .big { min-height: 64px; font-size: 1.15rem; font-weight: 700; }
 .yes, .yes:hover { background: var(--yes); color: #fff; border-color: var(--yes); }
-.no, .no:hover { background: var(--no-btn); color: #fff; border-color: var(--no-btn); }
-button.questions { background: var(--you); border-color: var(--edge); font-weight: 700; }
+/* The chip buttons, one tint each, the same in every state (hover only lifts the lightness). They are plain buttons in #chips in the
+   order of CHIPS (i18n/pilot.py): deaths, no deaths, status, briefing, health, sale, follow-up, help; then Questions. */
+#chips > button { background: hsl(var(--h) var(--ts) var(--tl) / var(--ta)); border-color: hsl(var(--h) var(--tbs) var(--tbl)); }
+#chips > button:hover { background: hsl(var(--h) var(--ts) var(--tlh) / var(--ta)); }
+#chips > :nth-child(1) { --h: 246; }
+#chips > :nth-child(2) { --h: 143; }
+#chips > :nth-child(3) { --h: 192; }
+#chips > :nth-child(4) { --h: 62; }
+#chips > :nth-child(5) { --h: 170; }
+#chips > :nth-child(6) { --h: 280; }
+#chips > :nth-child(7) { --h: 214; }
+#chips > :nth-child(8) { --h: 38; --ts: 24%; }
+#chips > button.questions { --h: 89; font-weight: 700; }
+/* The read-back "no": a neutral slate, not red (red is only for warnings). Its label says no. */
+.no, .no:hover { --h: 205; --ts: 20%; background: hsl(var(--h) var(--ts) var(--tl)); color: var(--fg); border-color: hsl(var(--h) var(--tbs) var(--tbl)); }
+.no:hover { background: hsl(var(--h) var(--ts) var(--tlh)); }
 .ask { display: flex; gap: 8px; }
 .ask input { flex: 1; min-height: 56px; font: inherit; padding: 8px 12px; border-radius: 16px; border: 1px solid var(--edge); background: var(--card); color: var(--fg); box-shadow: var(--shadow); }
 .send { min-width: 64px; flex: none; white-space: nowrap; }
