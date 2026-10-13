@@ -117,9 +117,12 @@ def test_the_flow_is_the_documented_one_with_json_only_accept(stub):
     assert all(ok for _, _, ok, _ in steps)
 
 
+# Note: a handler must read the request body before it replies. HTTPServer closes the socket after each reply, and
+# closing it with unread request bytes makes Windows send a reset, so the client got WinError 10053, not the reply.
 def test_a_non_json_answer_is_not_ok():
     class SSE(Stub):
         def do_POST(self):
+            self.rfile.read(int(self.headers["content-length"]))  # read the request before replying, see note
             data = b"event: message\ndata: {}\n\n"
             self.send_response(200)
             self.send_header("content-type", "text/event-stream")
@@ -172,6 +175,7 @@ def test_tasks_has_the_command_and_it_takes_no_arguments(monkeypatch):
 def test_a_json_body_with_an_event_stream_content_type_is_not_ok():
     class WrongType(Stub):
         def do_POST(self):
+            self.rfile.read(int(self.headers["content-length"]))  # read the request before replying, see note
             data = json.dumps({"jsonrpc": "2.0", "id": 1, "result": {"tools": []}}).encode()
             self.send_response(200)
             self.send_header("content-type", "text/event-stream")
