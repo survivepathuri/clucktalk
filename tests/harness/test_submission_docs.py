@@ -108,9 +108,11 @@ def test_the_pilot_placeholder_is_used_exactly_and_no_pilot_number_is_invented()
     assert PLACEHOLDER in DOCS["submission.md"] and PLACEHOLDER in DOCS["docs/RESULTS.md"]
     pilot = DOCS["submission.md"].split("## The farmer pilot")[1].split("## Challenges")[0]
     assert not re.search(r"\b\d+ (days|records|alerts|farmers)\b", pilot), pilot
-    assert (
-        f"A pilot link was shared with one farmer on 7 October 2026; usage numbers are pending {PLACEHOLDER}." in pilot
-    )
+    # Updated 2026-10-13 (owner-authorised): no farmer has used the pilot yet; the cloud pilot runs with the sample farm.
+    assert "No farmer has used the pilot yet." in pilot
+    assert "deployed since 13 October 2026" in pilot and "with the sample farm file" in pilot
+    assert f"Results will be added after the pilot {PLACEHOLDER}." in pilot
+    assert "shared with one farmer" not in pilot
     assert "Nothing about uptime, speed or reliability has been measured." in pilot
     assert not re.search(r"\b(uses it|used it daily|every day|reliabl[ey] (ran|runs))\b", pilot), pilot
 
