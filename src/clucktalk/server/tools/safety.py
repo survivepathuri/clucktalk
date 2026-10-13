@@ -66,7 +66,7 @@ def safety_from(card_level: str, reason_codes: Iterable[str], vet_contact_advise
 def item_needs_safety_step(item: Any) -> bool:
     """The ONE rule for "contact your vet": a death alert, or a stored check that says urgent or a suspected reportable
     disease (the same next step). ``item`` has ``category``, ``pinned`` and ``values``."""
-    if item.category in ("mortality_spike", "recent_logged_spike", "cum_mortality_high"):
+    if item.category in ("mortality_spike", "daily_limit_exceeded", "recent_logged_spike", "cum_mortality_high"):
         return item.pinned
     # an urgent or reportable check keeps its vet line the day after, when the follow-up item carries the check
     return item.category in ("open_health_check", "follow_up") and item.values.get("urgency") in (

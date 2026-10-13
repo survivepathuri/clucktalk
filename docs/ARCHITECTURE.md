@@ -75,7 +75,7 @@ flowchart LR
 | Amazon Bedrock Nova 2 Lite | Mock by default; a few one-off live calls were made outside the server | The server's live-AI path was not verified end to end here (`docs/AWS_SETUP.md`, FL-014). |
 | Weather forecast | Off by default; simulated curve in the demo | The live Open-Meteo adapter was tested only with a fake transport (`docs/SOURCES.md`). |
 | Voice | The phone keyboard's own voice typing, in Telugu | No Telugu audio output exists; no Telugu voice was tested through Alexa+. |
-| Telugu wording | Mostly pending | 86 of 433 strings reviewed by the builder, a native Telugu speaker; 347 pending (including the pilot page); no independent review. (`docs/TELUGU_REVIEW.md`) |
+| Telugu wording | Mostly pending | 86 of 434 strings reviewed by the builder, a native Telugu speaker; 348 pending (including the pilot page); no independent review. (`docs/TELUGU_REVIEW.md`) |
 
 ## 2. The pilot deployment (the PC pilot; the Lightsail cloud pilot since 2026-10-13 is in `docs/CLOUD_PILOT.md`)
 

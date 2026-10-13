@@ -253,6 +253,18 @@ def _finding(f: Finding, breed: str, is_today: bool) -> FindingOut:
                 f"{when.te} గుడ్ల ఉత్పత్తి {num(pct)}%, {LAYING_AVG_DAYS} రోజుల సగటు {num(avg)}% కంటే "
                 f"{num(drop)} పాయింట్లు తక్కువ."
             )
+        case "daily_limit_exceeded":
+            deaths, limit, age = int(v["deaths"]), int(v["limit"]), int(v["age_days"])
+            vals = {"deaths": deaths, "limit": limit, "age_days": age}
+            when = _when(is_today)
+            en = (
+                f"{num(deaths)} birds died {when.en}, more than your own limit of {num(limit)} a day at this age. "
+                "By your own rule, take the birds to the vet today; do not wait for the next visit."
+            )
+            te = (
+                f"{when.te} {num(deaths)} కోళ్లు చనిపోయాయి, ఈ వయసులో మీరు పెట్టిన రోజువారీ హద్దు {num(limit)} కంటే ఎక్కువ. "
+                "మీ నియమం ప్రకారం, ఈరోజే కోళ్లను డాక్టర్ దగ్గరికి తీసుకెళ్లండి; తదుపరి సందర్శన వరకు ఆగకండి."
+            )
         case "daily_deaths_rule":
             deaths, rate, limit = int(v["deaths"]), float(v["per_1000"]), float(v["limit_per_1000"])
             vals = {
@@ -420,7 +432,7 @@ def _closing(spoken: list[FindingOut], contract: bool, vet_line: bool = False) -
     check or a suspected reportable disease (open, or carried by its follow-up): the same vet step as a death spike."""
     codes = {f.code for f in spoken}
     extra = []
-    if "mortality_spike" in codes or "recent_logged_spike" in codes or vet_line:
+    if "mortality_spike" in codes or "daily_limit_exceeded" in codes or "recent_logged_spike" in codes or vet_line:
         extra.append(SAFETY_STEP)
     if "feed_stock_low" in codes:
         extra.append(FEED_PLAN_HINT_CONTRACT if contract else FEED_PLAN_HINT)
@@ -598,11 +610,17 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
             if not h.findings:
                 items.append(Text(head.en + tail.en, head.te + tail.te))
                 continue
+            # His limit by age is read out with the first finding when another alert comes first: it is the sentence
+            # that says to go to the vet today, and the first finding stays exactly as it was.
+            limit = next((f for f in h.findings[1:] if f.code == "daily_limit_exceeded"), None)
+            first_en, first_te = h.findings[0].text_en, h.findings[0].text_te
+            if limit is not None:
+                first_en, first_te = f"{first_en} {limit.text_en}", f"{first_te} {limit.text_te}"
             if len(items) < MAX_SPOKEN_HOUSES:
                 spoken.append(h.findings[0])
-            items.append(
-                Text(f"{head.en} {h.findings[0].text_en}{tail.en}", f"{head.te} {h.findings[0].text_te}{tail.te}")
-            )
+                if limit is not None:
+                    spoken.append(limit)
+            items.append(Text(f"{head.en} {first_en}{tail.en}", f"{head.te} {first_te}{tail.te}"))
         items += [unavailable_text(u) for u in unavailable]
         parts += items[:MAX_SPOKEN_HOUSES]  # voice-only: at most 5 houses read out, checked or not
         if len(items) > MAX_SPOKEN_HOUSES:
@@ -611,7 +629,7 @@ def build_status(source: DemoFarmSource, house_ref: str | None) -> FarmStatusOut
             )
         vet_houses &= {h.house_id for h in houses[:MAX_SPOKEN_HOUSES]}  # only the sheds actually read out
     parts += _closing(spoken, source.profile().mode is FarmMode.CONTRACT, bool(vet_houses))
-    parts += deaths_rule_parts(source, any(f.code == "daily_deaths_rule" for f in spoken))
+    parts += deaths_rule_parts(source, any(f.code in ("daily_deaths_rule", "daily_limit_exceeded") for f in spoken))
     weather_texts, weather_items = weather_parts(source)  # after everything else; it feeds nothing above or below
     parts += weather_texts
     level = min((h.level for h in houses), key=lambda lv: order[lv], default="unknown")

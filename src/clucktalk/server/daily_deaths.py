@@ -4,10 +4,18 @@
 
     {"per_1000_live": 2, "note": "his own words", "is_example": false}
 
+or, a limit by age (repository age: 0 on the arrival day), alone or beside ``per_1000_live``::
+
+    {"age_bands": [{"from_day": 0, "to_day": 29, "max_deaths_per_day": 6},
+                   {"from_day": 30, "max_deaths_per_day": 3}], "note": "...", "comment": "never spoken"}
+
+``comment`` is for the person who reads the file; it is never spoken and not kept.
+
 No file means the feature is off and every answer is byte-identical to what it was without the feature. A bad file at
 startup stops the start (Rule 6). The file is re-read when it changes while the server runs, so the farmer's number
 can be edited without a restart; if an edit makes it unreadable, answers say so and the rule is used for nothing.
-The rule can only raise a shed to WATCH (clucktalk.domain.daily_deaths); it never lowers a level or removes vet advice.
+The per-1000 rule can only raise a shed to WATCH, and the limit by age only to ALERT (clucktalk.domain.daily_deaths);
+neither lowers a level or removes vet advice.
 """
 
 from __future__ import annotations
@@ -22,12 +30,16 @@ from pathlib import Path
 from typing import Any
 
 from clucktalk.config import REPO_ROOT
-from clucktalk.domain.daily_deaths import DailyDeathsRule
+from clucktalk.domain.daily_deaths import AgeBand, DailyDeathsRule
 
 DEFAULT_RULE_PATH = REPO_ROOT / ".local" / "daily_deaths_rule.json"
 MAX_NOTE = 200
 MAX_PER_1000 = 1000
-_KEYS = {"per_1000_live", "note", "is_example"}
+MAX_COMMENT = 300
+MAX_BANDS = 4
+MAX_DEATHS_LIMIT = 10_000  # a sanity ceiling: a limit above any real flock could never fire
+_KEYS = {"per_1000_live", "note", "is_example", "age_bands", "comment"}
+_BAND_KEYS = {"from_day", "to_day", "max_deaths_per_day"}
 
 
 class DeathsRuleError(ValueError):
@@ -49,18 +61,54 @@ def parse_rule(data: Any, name: str = "the daily deaths rule file") -> DailyDeat
     unknown = set(data) - _KEYS
     if unknown:
         raise DeathsRuleError(f"{name} has unknown field(s) {sorted(unknown)}; allowed: {sorted(_KEYS)}")
-    value = data.get("per_1000_live")
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
-        raise DeathsRuleError("per_1000_live must be a finite number")
-    if not 0 < value <= MAX_PER_1000:
-        raise DeathsRuleError(f"per_1000_live must be greater than 0 and at most {MAX_PER_1000}")
+    bands = _parse_bands(data["age_bands"]) if "age_bands" in data else ()
+    if "per_1000_live" not in data and not bands:
+        raise DeathsRuleError(f"{name} needs per_1000_live, age_bands, or both")
+    number: Decimal | None = None
+    if "per_1000_live" in data:
+        value = data.get("per_1000_live")
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+            raise DeathsRuleError("per_1000_live must be a finite number")
+        if not 0 < value <= MAX_PER_1000:
+            raise DeathsRuleError(f"per_1000_live must be greater than 0 and at most {MAX_PER_1000}")
+        number = Decimal(str(value))
     note = data.get("note")
     if note is not None and (not isinstance(note, str) or len(note) > MAX_NOTE):
         raise DeathsRuleError(f"note must be text of at most {MAX_NOTE} characters (the farmer's own words)")
     example = data.get("is_example", False)
     if not isinstance(example, bool):
         raise DeathsRuleError("is_example must be true or false")
-    return DailyDeathsRule(Decimal(str(value)), note, example)
+    comment = data.get("comment")
+    if comment is not None and (not isinstance(comment, str) or len(comment) > MAX_COMMENT):
+        raise DeathsRuleError(f"comment must be text of at most {MAX_COMMENT} characters")
+    return DailyDeathsRule(number, note, example, bands)
+
+
+def _whole(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _parse_bands(raw: Any) -> tuple[AgeBand, ...]:
+    if not isinstance(raw, list) or not 1 <= len(raw) <= MAX_BANDS:
+        raise DeathsRuleError(f"age_bands must be a list of 1 to {MAX_BANDS} bands")
+    bands: list[AgeBand] = []
+    for i, item in enumerate(raw, start=1):
+        where = f"age_bands[{i}]"
+        if not isinstance(item, dict) or set(item) - _BAND_KEYS or not {"from_day", "max_deaths_per_day"} <= set(item):
+            raise DeathsRuleError(f"{where} must have from_day and max_deaths_per_day, and may have to_day, only")
+        start, end, limit = item["from_day"], item.get("to_day"), item["max_deaths_per_day"]
+        if not _whole(start) or start < 0:
+            raise DeathsRuleError(f"{where}.from_day must be a whole number from 0")
+        if end is not None and (not _whole(end) or end < start):
+            raise DeathsRuleError(f"{where}.to_day must be a whole number, not before from_day")
+        if not _whole(limit) or not 1 <= limit <= MAX_DEATHS_LIMIT:
+            raise DeathsRuleError(f"{where}.max_deaths_per_day must be a whole number from 1 to {MAX_DEATHS_LIMIT}")
+        if bands and (bands[-1].to_day is None or start <= bands[-1].to_day):
+            raise DeathsRuleError(
+                f"{where} overlaps the band before it, or is out of order; only the last band may be open"
+            )
+        bands.append(AgeBand(start, end, limit))
+    return tuple(bands)
 
 
 def load_deaths_rule(path: Path) -> DailyDeathsRule | None:

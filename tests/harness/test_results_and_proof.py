@@ -200,9 +200,9 @@ def test_every_golden_case_the_matrix_names_exists():
     assert not (cases - GOLDEN), cases - GOLDEN
 
 
-def test_the_matrix_has_a_row_for_each_of_the_ten_rules_and_marks_what_may_not_fit():
+def test_the_matrix_has_a_row_for_each_of_the_eleven_rules_and_marks_what_may_not_fit():
     rows = re.findall(r"^\| (\d+) \| \*\*", MATRIX, re.M)
-    assert rows == [str(n) for n in range(1, 11)]
+    assert rows == [str(n) for n in range(1, 12)]
     assert "No agronomic or veterinary review" in MATRIX and "General guidance may not fit a given farm" in MATRIX
     assert "**No.**" in MATRIX  # at least one threshold marked as not fitting every farm
 

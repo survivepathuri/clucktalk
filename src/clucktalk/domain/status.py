@@ -12,7 +12,7 @@ from datetime import date, timedelta
 from enum import IntEnum
 
 from clucktalk.domain import thresholds as t
-from clucktalk.domain.daily_deaths import DailyDeathsRule
+from clucktalk.domain.daily_deaths import DailyDeathsRule, evaluate_limit
 from clucktalk.domain.daily_deaths import evaluate as evaluate_deaths_rule
 from clucktalk.domain.errors import InsufficientData, NoReferenceCurve
 from clucktalk.domain.models import DailyRecord, House, HouseKind
@@ -201,8 +201,9 @@ def _layer_production(house: House, records: tuple[DailyRecord, ...], latest: Da
 
 
 def house_status(house: House, as_of: date, deaths_rule: DailyDeathsRule | None = None) -> HouseStatus:
-    """``deaths_rule``: the farmer's own daily deaths rule, if he has one. It can only ADD a WATCH finding, so the
-    house's level is max(what the rules above say, WATCH); no other finding, number or level reads it."""
+    """``deaths_rule``: the farmer's own daily deaths rule, if he has one. It can only ADD a finding: WATCH for his
+    rate, ALERT for his limit by age (more than N deaths at this age, with no history needed). The house's level is
+    the highest of what the rules above say and what he added; no other finding, number or level reads it."""
     records = house.records_until(as_of)
     if not records:
         raise InsufficientData(f"the status of {house.label_en}", f"{house.label_te} స్థితి")
@@ -220,7 +221,18 @@ def house_status(house: House, as_of: date, deaths_rule: DailyDeathsRule | None 
             Finding("records_stale", Level.WATCH, {"days_since_record": stale_days, "latest": latest.day.isoformat()})
         )
     findings += _mortality_findings(house, records, latest)
+    limit_hit = None
     if deaths_rule is not None:
+        limit_hit = evaluate_limit(deaths_rule, latest.deaths, house.age_days(latest.day))
+        if limit_hit is not None:  # his limit by age: an ALERT (his rate, if he gave one too, is then not said again)
+            findings.append(
+                Finding(
+                    "daily_limit_exceeded",
+                    Level.ALERT,
+                    {"deaths": limit_hit.deaths, "limit": limit_hit.limit, "age_days": limit_hit.age_days},
+                )
+            )
+    if deaths_rule is not None and limit_hit is None:
         hit = evaluate_deaths_rule(deaths_rule, latest.deaths, _live_at_start_of(house, latest.day))
         if hit is not None:
             findings.append(

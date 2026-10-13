@@ -1,0 +1,9 @@
+{
+  "age_bands": [
+    {"from_day": 0, "to_day": 29, "max_deaths_per_day": 6},
+    {"from_day": 30, "max_deaths_per_day": 3}
+  ],
+  "note": "Example note: replace this with your own words",
+  "comment": "EXAMPLE ONLY: a farmer's figures, relayed by the builder and NOT confirmed in writing. Age is 0 on the arrival day; this farmer counts it as day 1, so his day 31 is age 30 here. The same limit applies to every shed.",
+  "is_example": true
+}

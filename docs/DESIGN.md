@@ -260,7 +260,7 @@ against a freshly started mock-mode server, checked against literal field values
 (`scripts/eval_fast.py`). Writes `docs/EVALS.md` with a real pass/fail count; never fakes a score (Rule 6).
 v0 covers a handful of read-only, single-call cases (farm status, feed reorder, and `plan_sale`'s before /
 at / after break-even and rising-mortality stories); contract-mode's multi-step confirmation flow is covered by
-the contract test suite instead, since this runner is single-call by design. The suite has 78 cases
+the contract test suite instead, since this runner is single-call by design. The suite has 84 cases
 (the table in `docs/EVALS.md` is the count; a harness test keeps this number equal to it). Multi-step cases (`steps`, `save`,
 `poll_until`) and model-fixture cases (`model_fixture`, `tests/fakes.py`) came with the agents (§18); a case marked
 `fresh_state` runs on a server of its own, so its answer cannot depend on what earlier cases changed.
@@ -570,3 +570,13 @@ has no Telugu, so this is the Simulator's own phone page; output is Telugu text 
   documented paths are outside the repository) and `tests/harness/test_windows_runbook.py`. Text checks only: the scripts were
   tried by hand in a temporary folder (tokens, two refusals, backup, restore, kill switch), never with a real pilot, a tunnel or
   a phone. The claims table says so.
+
+### 19.3 The farmer's own limit by age (`daily_limit_exceeded`, built 2026-10-13)
+
+The spike rule is relative (3 times the earlier week) and cannot fire without 3 earlier days. The farmer's own rule is a number he states: more than N deaths in a day, for an age band. It is one more optional rule in the existing `daily_deaths_rule.json` (`age_bands`), declared by him, off unless declared.
+
+- **Decision.** More deaths than his limit for the shed's age raise the shed to ALERT with the vet step. It works with no history, counts whole birds (not a share of the flock) and applies to every shed. It adds a finding and removes, lowers, hides or rewords none; the spike stays first and unchanged when both fire, and his per-1000 rule is not said again beside it. Without `age_bands` every answer is byte-identical.
+- **Age.** The code's age is 0 on the arrival day (`House.age_days`). This farmer counts the arrival day as day 1, so his day N is age N-1 and his bands are 0 to 29 (limit 6) and 30 on (limit 3). For a flock placed on 2026-09-21 the limit drops from 6 to 3 on 2026-10-21.
+- **Wording.** One sentence, in his name: "N birds died today, more than your own limit of L a day at this age. By your own rule, take the birds to the vet today; do not wait for the next visit." No medicine, dose, diagnosis, reassurance or promise of a reminder. The generic vet step ("Please check the birds today and call your vet if deaths continue.") is still spoken once after it; making the limit's own sentence replace it in the briefing is a one-line change in `src/clucktalk/server/tools/briefing.py` that was not made.
+- **Not done on purpose.** It does not feed the health-check floor; the briefing does not repeat his note for it; the start-up line still says the rule "can only raise a shed to WATCH" (true for the per-1000 rule only).
+- **Status.** The numbers are the farmer's, relayed by the builder and not confirmed in writing. The repository ships only an example file. Nothing here claims the rule works for a real farm.

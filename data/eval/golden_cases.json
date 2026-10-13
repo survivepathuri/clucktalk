@@ -5003,6 +5003,372 @@
       ]
     },
     {
+      "id": "limit-exactly-his-number-changes-nothing",
+      "description": "The farmer's own limit by age (4 deaths a day, the same at every age here) is met exactly by shed 1's 4 deaths today (age 34): not MORE than his limit, so a shed the existing rules call fine stays fine and no limit line appears.",
+      "fresh_state": true,
+      "deaths_rule": {
+        "age_bands": [
+          {
+            "from_day": 0,
+            "max_deaths_per_day": 4
+          }
+        ],
+        "note": "kotam note",
+        "is_example": false
+      },
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed 1"
+          },
+          "checks": [
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "ok"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "your own limit"
+            },
+            {
+              "field": "safety.level",
+              "op": "eq",
+              "value": "OK"
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "limit-one-more-than-his-number-is-an-alert-with-the-vet-today-sentence",
+      "description": "His limit by age is 3 deaths a day; shed 1 (age 34) had 4 today, one more than his limit. The shed is an ALERT (the 'doing well' line is not spoken), the sentence is his own rule's, the vet step follows once, his note is last, and the safety field says ALERT with vet contact advised.",
+      "fresh_state": true,
+      "deaths_rule": {
+        "age_bands": [
+          {
+            "from_day": 0,
+            "max_deaths_per_day": 3
+          }
+        ],
+        "note": "kotam note",
+        "is_example": false
+      },
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed 1"
+          },
+          "checks": [
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "houses.0.findings.0.code",
+              "op": "eq",
+              "value": "daily_limit_exceeded"
+            },
+            {
+              "field": "houses.0.findings.0.level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "4 birds died today, more than your own limit of 3 a day at this age. By your own rule, take the birds to the vet today; do not wait for the next visit."
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "doing well"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "Please check the birds today and call your vet if deaths continue. Your note: kotam note."
+            },
+            {
+              "field": "safety.level",
+              "op": "eq",
+              "value": "ALERT"
+            },
+            {
+              "field": "safety.reason_codes",
+              "op": "eq",
+              "value": [
+                "daily_limit_exceeded"
+              ]
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "limit-band-edge-the-first-age-of-the-next-band-uses-the-next-limit",
+      "description": "Shed 1 is age 34. His first band ends at age 33 (limit 3) and the next starts at 34 (limit 4): age 34 is judged by the next band, 4 deaths are not more than 4, and nothing is added.",
+      "fresh_state": true,
+      "deaths_rule": {
+        "age_bands": [
+          {
+            "from_day": 0,
+            "to_day": 33,
+            "max_deaths_per_day": 3
+          },
+          {
+            "from_day": 34,
+            "max_deaths_per_day": 4
+          }
+        ],
+        "note": "kotam note",
+        "is_example": false
+      },
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed 1"
+          },
+          "checks": [
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "ok"
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "your own limit"
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "limit-band-edge-the-last-age-of-a-band-still-uses-that-limit",
+      "description": "Shed 1 is age 34. His first band runs to age 34 (limit 3) and the next starts at 35: age 34 is still judged by the first band, and 4 deaths are more than 3.",
+      "fresh_state": true,
+      "deaths_rule": {
+        "age_bands": [
+          {
+            "from_day": 0,
+            "to_day": 34,
+            "max_deaths_per_day": 3
+          },
+          {
+            "from_day": 35,
+            "max_deaths_per_day": 4
+          }
+        ],
+        "note": "kotam note",
+        "is_example": false
+      },
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed 1"
+          },
+          "checks": [
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "houses.0.findings.0.code",
+              "op": "eq",
+              "value": "daily_limit_exceeded"
+            },
+            {
+              "field": "houses.0.findings.0.values.limit",
+              "op": "eq",
+              "value": 3
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "4 birds died today, more than your own limit of 3 a day at this age. By your own rule, take the birds to the vet today; do not wait for the next visit."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "limit-and-a-spike-on-the-same-day-keep-the-spike-first-and-say-both",
+      "description": "Shed 2 (age 23) had 26 deaths today, a spike the existing rules call ALERT, and 26 is more than his limit of 6. The spike stays the first finding with its own words, his limit follows, the vet step is spoken once, and the level and vet advice are the same as without his limit.",
+      "fresh_state": true,
+      "deaths_rule": {
+        "age_bands": [
+          {
+            "from_day": 0,
+            "to_day": 29,
+            "max_deaths_per_day": 6
+          },
+          {
+            "from_day": 30,
+            "max_deaths_per_day": 3
+          }
+        ],
+        "note": "kotam note",
+        "is_example": false
+      },
+      "steps": [
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed 2"
+          },
+          "checks": [
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "houses.0.findings.0.code",
+              "op": "eq",
+              "value": "mortality_spike"
+            },
+            {
+              "field": "houses.0.findings.1.code",
+              "op": "eq",
+              "value": "daily_limit_exceeded"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "26 birds died today, against about 4 a day this past week."
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "26 birds died today, more than your own limit of 6 a day at this age. By your own rule, take the birds to the vet today; do not wait for the next visit."
+            },
+            {
+              "field": "safety.reason_codes",
+              "op": "contains",
+              "value": "mortality_spike"
+            },
+            {
+              "field": "safety.reason_codes",
+              "op": "contains",
+              "value": "daily_limit_exceeded"
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "Please check the birds today and call your vet if deaths continue."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "limit-with-no-history-is-an-alert-where-the-spike-rule-is-silent",
+      "description": "Pilot farm, no earlier records: the spike rule needs three earlier days and cannot fire, so 40 deaths logged today read 'fine' without his limit. With his limit of 6 a day (any age) it is an ALERT with the vet-today sentence.",
+      "fresh_state": true,
+      "pilot": true,
+      "deaths_rule": {
+        "age_bands": [
+          {
+            "from_day": 0,
+            "max_deaths_per_day": 6
+          }
+        ],
+        "note": "kotam note",
+        "is_example": false
+      },
+      "steps": [
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 40
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "needs_confirmation"
+            }
+          ],
+          "save": {
+            "pid": "proposal_id"
+          }
+        },
+        {
+          "tool": "log_daily_record",
+          "args": {
+            "house": "shed 1",
+            "deaths": 40,
+            "proposal_id": "$pid",
+            "answer": "yes"
+          },
+          "checks": [
+            {
+              "field": "status",
+              "op": "eq",
+              "value": "changed"
+            }
+          ]
+        },
+        {
+          "tool": "get_farm_status",
+          "args": {
+            "house": "shed 1"
+          },
+          "checks": [
+            {
+              "field": "level",
+              "op": "eq",
+              "value": "alert"
+            },
+            {
+              "field": "houses.0.findings.0.code",
+              "op": "eq",
+              "value": "daily_limit_exceeded"
+            },
+            {
+              "field": "text_en",
+              "op": "contains",
+              "value": "40 birds died today, more than your own limit of 6 a day at this age. By your own rule, take the birds to the vet today; do not wait for the next visit."
+            },
+            {
+              "field": "safety.vet_contact_advised",
+              "op": "eq",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "pilot-the-first-log-of-the-day-asks-yes-or-no-and-no-question",
       "description": "Pilot farm: the first log of deaths for a house today is read back exactly as before (say yes to save, or no): no add-or-replace question.",
       "fresh_state": true,

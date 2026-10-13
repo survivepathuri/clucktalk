@@ -43,6 +43,7 @@ SALE_WINDOW_DAYS = 3
 
 class Category(StrEnum):
     MORTALITY_SPIKE = "mortality_spike"
+    DAILY_LIMIT_EXCEEDED = "daily_limit_exceeded"  # the farmer's own limit by age (more than N deaths a day): ALERT
     RECENT_LOGGED_SPIKE = "recent_logged_spike"
     OPEN_HEALTH_CHECK = "open_health_check"
     FOLLOW_UP = "follow_up"
@@ -65,6 +66,7 @@ CATEGORY_ORDER = tuple(Category)
 # Status findings that become facts (the code of the finding is the category).
 STATUS_CATEGORIES = {
     Category.MORTALITY_SPIKE,
+    Category.DAILY_LIMIT_EXCEEDED,
     Category.CUM_MORTALITY_HIGH,
     Category.DAILY_DEATHS_RULE,
     Category.WEIGHT_BELOW_TARGET,
@@ -81,6 +83,7 @@ NOTIFIABLE_SEVERITY = 4
 HEALTH_CATEGORIES = frozenset(
     {
         Category.MORTALITY_SPIKE,
+        Category.DAILY_LIMIT_EXCEEDED,
         Category.RECENT_LOGGED_SPIKE,
         Category.OPEN_HEALTH_CHECK,
         Category.FOLLOW_UP,
