@@ -3,7 +3,7 @@
 Developer friction with the tools and services used (Alexa+, MCP, AWS, SDKs), recorded **as it happens** (CLAUDE.md Rule 2).
 Only real experiences. Never batched, never invented.
 
-**Environment** (from `docs/VERSIONS.md` unless another file is named): Windows 11 Pro 10.0.22621; Python 3.13.15 (the project's venv; CI also runs 3.12); the MCP Python SDK `mcp` 2.2.0 with `mcp-types` 2.2.0; the MCP Apps reference host ext-apps `basic-host` at commit 82221c0 (v2.0.3), as recorded in FL-021 and `docs/evidence/2026-10-01_basic_host/README.md` (`docs/VERSIONS.md` records the npm package `@modelcontextprotocol/ext-apps` 2.0.0, not the host commit); MCP Inspector 2.8.0; Node.js 24.15.0; AWS CLI 2.37.4 and boto3 1.43.103; the model calls in us-east-1 with `us.amazon.nova-2-lite-v1:0`, on an AWS account created in India (AWS India, AISPL; Paid plan, `docs/AWS_SETUP.md` section 5). Entries are dated 2026-09-27 to 2026-10-07.
+**Environment** (from `docs/VERSIONS.md` unless another file is named): Windows 11 Pro 10.0.22621; Python 3.13.15 (the project's venv; CI also runs 3.12); the MCP Python SDK `mcp` 2.2.0 with `mcp-types` 2.2.0; the MCP Apps reference host ext-apps `basic-host` at commit 82221c0 (v2.0.3), as recorded in FL-021 and `docs/evidence/2026-10-01_basic_host/README.md` (`docs/VERSIONS.md` records the npm package `@modelcontextprotocol/ext-apps` 2.0.0, not the host commit); MCP Inspector 2.8.0; Node.js 24.15.0; AWS CLI 2.37.4 and boto3 1.43.103; the model calls in us-east-1 with `us.amazon.nova-2-lite-v1:0`, on an AWS account created in India (AWS India, AISPL; Paid plan, `docs/AWS_SETUP.md` section 5). Entries are dated 2026-09-27 to 2026-10-13.
 
 **Severity** is one word, rated from the point of view of the owner of the tool or service being criticised: Critical (blocks work) · High (major workaround) · Medium (slows work) · Low (annoyance / doc nit). Explanations of what it cost us go on a separate `Impact:` line.
 
@@ -11,7 +11,7 @@ Only real experiences. Never batched, never invented.
 
 Every entry uses the six official fields (task attempted, steps taken, expected vs actual, severity, workaround, actionable suggestion) plus date, tag, `Time cost:` (only what was recorded in the sessions, otherwise "not recorded"), `Reproduce:` (a real command or the exact test name, otherwise "documentation-based, no command") and `Evidence:` (only files that exist in this repo). Every suggestion names the owner, the page or mechanism and the concrete change; open points are phrased as questions to the owner.
 
-**Counts:** 27 FL numbers (FL-001 to FL-027): 24 live entries (20 in this file, 4 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
+**Counts:** 30 FL numbers (FL-001 to FL-030): 27 live entries (20 in this file, 7 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
 
 **FL numbers are stable ids.** They are never reused or renumbered, so every reference in the code, the docs and the submission copies stays valid. FL-010, FL-016 and FL-018 were merged into FL-007 and FL-014 (2026-10-01 audit); their numbers remain as short stubs.
 
@@ -36,6 +36,7 @@ Audit of 2026-10-01: three pairs of entries that describe one problem were merge
 | FL-024 | [Alexa+/MCP] | this file |
 | FL-026 | [Alexa+/MCP] | this file |
 | FL-027 | [AWS App Runner docs] | this file (builder-reported) |
+| FL-028 to FL-030 | [Dev] | `docs/DEV_NOTES.md` |
 
 ---
 

@@ -62,3 +62,48 @@ Actionable suggestion: Owner: CluckTalk build scripts (ours, `scripts/build_card
 Time cost: not recorded
 Reproduce: `.venv\Scripts\python -m pytest -q tests\harness\test_build_cards.py`. The original failure was on CI before the fix in `cdde7ff`; the tests now also build from a CRLF template.
 Evidence: `scripts/build_cards.py`, `tests/harness/test_build_cards.py`, `.gitattributes`.
+
+## FL-028: Windows OpenSSH refused a freshly downloaded Lightsail key ("UNPROTECTED PRIVATE KEY FILE") because the file inherited another local group's read access
+Date: 2026-10-13
+Tool / service: OpenSSH_for_Windows_9.5p1 (ssh.exe), Windows 11 Pro; the private key file was on the Desktop
+Tag: [Dev]
+Task attempted: First non-interactive SSH login to the new Lightsail server with the key downloaded from the console.
+Steps taken: `ssh.exe -i <key.pem> -o IdentitiesOnly=yes -o BatchMode=yes ubuntu@<static IP> "echo ok"`; then `icacls <key.pem>`; then `icacls <key.pem> /inheritance:r /grant:r "$($env:USERNAME):(R)"` and the same ssh command again.
+Expected vs actual: Expected the key to work as downloaded. Actual: exit 255, "WARNING: UNPROTECTED PRIVATE KEY FILE! ... Permissions ... are too open ... This private key will be ignored ... Permission denied (publickey)". `icacls` showed the file inherited read access for a second local group, a local sandbox group of another tool, besides SYSTEM, Administrators and the user. The message named the group, which made the fix clear.
+Severity: Low
+Impact: One failed login before the fix.
+Workaround: `icacls <key.pem> /inheritance:r /grant:r "$($env:USERNAME):(R)"` on that one file only; the file was not moved or copied.
+Actionable suggestion: Owner: our own runbook (`deploy/cloud/RUNBOOK.md`, section 0): add the one `icacls` line for the key; `deploy.ps1` and `verify.ps1` could test the ACL and print it. I did not check whether the Lightsail console's own SSH page mentions this on Windows.
+Time cost: not recorded
+Reproduce: `icacls <key.pem>` shows the inherited entries; any `ssh.exe -i <key.pem> ...` shows the error.
+Evidence: the ssh output above, 2026-10-13 (exit code 255); the `icacls` output after the fix lists only the current user with read access.
+
+## FL-029: `ufw limit 22/tcp` locked our own deploy and verify scripts out of SSH (connection timed out) after a few quick connections
+Date: 2026-10-13
+Tool / service: ufw on Ubuntu 24.04.4 (Lightsail, Mumbai); our `deploy/cloud/bootstrap.sh`, `deploy.ps1`, `verify.ps1`; Windows OpenSSH (no ControlMaster, so every command is a new connection)
+Tag: [Dev]
+Task attempted: Run `deploy.ps1` a second time (idempotency test) right after several ssh commands from the same PC.
+Steps taken: `bootstrap.sh` had set `ufw limit 22/tcp` (meant to slow SSH guessing). A run of about six ssh/scp connections within 30 seconds (checks, then the second `deploy.ps1`) followed.
+Expected vs actual: Expected the second run to connect. Actual: "ssh: connect to host <IP> port 22: Connection timed out" from our own PC. `ufw limit` denies an address that opens 6 or more connections in 30 seconds. It cleared by itself after about a minute.
+Severity: Low
+Impact: One failed deploy run and a short wait; with `verify.ps1` (about 8 connections) it could have happened mid-test.
+Workaround: `bootstrap.sh` now runs `ufw delete limit 22/tcp` and `ufw allow 22/tcp`; SSH stays key-only and port 22 should be restricted to the owner's IP in the Lightsail firewall. The second `deploy.ps1` run applied the change (`ufw status` then shows ALLOW).
+Actionable suggestion: Owner: our own scripts and `docs/CLOUD_PILOT.md`. Do not use `ufw limit` on a port that automation connects to many times in a row; use the provider firewall's source-IP restriction instead (written in the doc).
+Time cost: not recorded
+Reproduce: on a server with `ufw limit 22/tcp`, open 6 or more SSH connections within 30 seconds from one address, then connect once more.
+Evidence: the ssh error above on 2026-10-13; `ufw status` before ("22/tcp LIMIT") and after ("22/tcp ALLOW") the second deploy.
+
+## FL-030: A private SSH key's text was pasted into an assistant session, so the key had to be replaced (rotation steps that worked)
+Date: 2026-10-13
+Tool / service: Amazon Lightsail (key downloaded from the console), Windows OpenSSH 9.5p1, `ssh-keygen`, an AI assistant session (Claude Code)
+Tag: [Dev]
+Task attempted: Run the cloud pilot deployment with a key whose text had been included in a task description.
+Steps taken: (1) generated an ed25519 pair with `ssh-keygen -t ed25519 -N ""` and restricted the private file to the user with `icacls`; (2) appended the new public line to `~/.ssh/authorized_keys` using the old key (first attempt appended nothing: the key line was passed as a remote shell argument and split at the spaces, so the "already present" check ran on an empty string; it was then sent as script text); (3) logged in with the new key alone (`-o IdentitiesOnly=yes -i`); (4) found the old key's line by comparing the public key derived with `ssh-keygen -y -f` (public output only) and removed exactly one matching line; (5) checked that the old key is refused and the new one works; (6) counted key lines in every file sshd reads, comments only.
+Expected vs actual: Expected the console's key to be the only way in until replaced. Actual: the rotation worked; afterwards `authorized_keys` held exactly 1 line (the new key), root had none, and no other key had been injected. The old private key file stays on the PC until its owner deletes it. I did not check how Lightsail's browser-based SSH authenticates.
+Severity: Low
+Impact: About one working session of rotation work; the exposure window was the time the text sat in a session transcript, which cannot be deleted from here.
+Workaround: Rotation as above (RUNBOOK section 11). The scripts now default to `~\.ssh\clucktalk-pilot-ed25519`, so a key path is never needed in a task description.
+Actionable suggestion: Owner: our runbook and any task template. Give a key by path only; never paste key text. For the platform: Lightsail's key download is a one-time secret that is easy to leak into chats and tickets; a console option to install your own public key at creation would avoid the download.
+Time cost: not recorded
+Reproduce: follow RUNBOOK section 11 on any instance; check with `grep -c "^ssh-"` on the `authorized_keys` files.
+Evidence: login with the old key after the change printed "Permission denied (publickey)"; the new key logged in; `verify.ps1` passed with the new key (2026-10-13).

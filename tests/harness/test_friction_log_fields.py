@@ -109,7 +109,7 @@ def test_the_header_counts_equal_the_entries_found():
     assert m, "the log header states the counts"
     numbers, live, here, dev = (int(x) for x in m.groups())
     found = [fl for _, fl, _ in ENTRIES]
-    assert numbers == len(set(found)) == 27
+    assert numbers == len(set(found)) == 30
     assert live == len(LIVE) == here + dev
     assert here == len([1 for n, _, _ in LIVE if n == "FRICTION_LOG.md"]) and dev == len(
         [1 for n, _, _ in LIVE if n == "docs/DEV_NOTES.md"]
@@ -184,7 +184,7 @@ def test_fl_027_is_builder_reported_with_its_date_and_an_unrecorded_url():
     assert "Verified on: 2026-10-07" in body and "Doc URL: not recorded" in body
     assert "ECS Express Mode" in fields["Expected vs actual"]
     header = (ROOT / "FRICTION_LOG.md").read_text(encoding="utf-8").split("## Entry template")[0]
-    assert "**Environment**" in header and "2026-09-27 to 2026-10-07" in header and "us-east-1" in header
+    assert "**Environment**" in header and "2026-09-27 to 2026-10-13" in header and "us-east-1" in header
 
 
 def test_fl_026_agrees_across_the_log_and_both_copies():
