@@ -5732,7 +5732,12 @@
         {
           "field": "text_en",
           "op": "contains",
-          "value": "Tell me today's paper rate and I will work out your price."
+          "value": "Tell me today's paper rate, like: paper rate 160, and I will work out your price."
+        },
+        {
+          "field": "text_te",
+          "op": "contains",
+          "value": "ఈరోజు పేపర్ రేటు 160"
         },
         {
           "field": "text_en",
@@ -5743,6 +5748,37 @@
           "field": "text_en",
           "op": "not_contains",
           "value": "growth standard"
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "flock"
+        }
+      ]
+    },
+    {
+      "id": "pilot-paper-rate-outside-1-to-1000-gets-one-line-and-no-price",
+      "description": "A typed paper rate that is a slip (5000) is never turned into a price: one short line asks again with an example.",
+      "pilot": true,
+      "tool": "plan_sale",
+      "args": {
+        "live_price_per_kg": 5000
+      },
+      "checks": [
+        {
+          "field": "text_en",
+          "op": "contains",
+          "value": "That paper rate does not look right. Tell me today's paper rate in rupees per kg, like: paper rate 160."
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "Your price today"
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "₹"
         },
         {
           "field": "text_en",

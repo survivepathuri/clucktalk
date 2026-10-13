@@ -84,7 +84,7 @@ The same syntax sets `CLUCKTALK_SIMULATOR_PORT` (default 8766) and `CLUCKTALK_NO
 - **Latency numbers** are server times on localhost in mock mode. Amazon's 500 ms is a round trip including the network, so we do not claim to meet it end to end.
 - **Simulated:** prices, sensors, the supplier, SMS and payments, and the whole demo farm.
 - **No veterinary or agronomic review.** The thresholds are general guidance or the builder's heuristics (`docs/SAFETY_MATRIX.md`). No tool gives a medicine or a dose.
-- **Telugu:** 86 of 438 strings reviewed by the builder, a native Telugu speaker; 352 pending (including the pilot page); no independent review. No Telugu voice was tested through Alexa+ (`docs/TELUGU_REVIEW.md`).
+- **Telugu:** 86 of 439 strings reviewed by the builder, a native Telugu speaker; 353 pending (including the pilot page); no independent review. No Telugu voice was tested through Alexa+ (`docs/TELUGU_REVIEW.md`).
 - **In demo mode a shed with no alert is still described as doing well;** pilot mode says "no alert from the checks I can make".
 - **Live AI** (Amazon Bedrock Nova 2 Lite) is off by default; the server's live path was not verified end to end here.
 - **The farmer pilot** has a PC version (the builder's own PC through a free tunnel) and a Lightsail cloud version. No farmer has used the pilot yet, so usage numbers are pending (`docs/RESULTS.md`, section 9). The Lightsail cloud pilot with the sample farm has been deployed since 2026-10-13; results will be added after the pilot.

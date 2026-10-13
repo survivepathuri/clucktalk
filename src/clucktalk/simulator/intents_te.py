@@ -68,6 +68,7 @@ BRIEFING_WORDS = tuple(_WORDS["BRIEFING_WORDS"])
 HEALTH_WORDS = tuple(_WORDS["HEALTH_WORDS"])
 SALE_STEMS = tuple(_WORDS["SALE_STEMS"])
 RATE_WORDS = set(_WORDS["RATE_WORDS"])
+RATE_WORDS_NEED_SALE_WORD = set(_WORDS["RATE_WORDS_NEED_SALE_WORD"])  # the price word also names the feed price
 STATUS_STEMS = tuple(_WORDS["STATUS_STEMS"])
 FARM_WORDS = tuple(_WORDS["FARM_WORDS"])
 BETTER = tuple(_WORDS["BETTER"])
@@ -329,14 +330,14 @@ def _match(text: str) -> TeResult:  # noqa: C901 - one flat list of rules, in or
             return TeResult("choose", chip=Chip.FOLLOW_UP, params={"outcome": outcome}, rule="follow-up: which shed")
         args = {"house": _house_arg(house), "outcome": outcome}
         return TeResult("intent", Intent("report_health_follow_up", args, "follow-up (Telugu)"), rule="follow-up")
-    if _has(tokens, SALE_STEMS):
+    sale_word = _has(tokens, SALE_STEMS)
+    stated = _stated_rate(rest, price_word_counts=sale_word)
+    if sale_word or stated is not None:
         args = {} if house is None else {"house": _house_arg(house)}
-        for i, tok in enumerate(rest[:-1]):
-            if tok in RATE_WORDS and rest[i + 1].isdecimal():
-                price = parse_number([rest[i + 1]])
-                if price is None:
-                    return NONE
-                args["live_price_per_kg"] = float(price)
+        if stated is not None:
+            if stated == 0 or len(_number_runs(rest)) > 1:
+                return NONE  # an unreadable number, or a second number: never guessed
+            args["live_price_per_kg"] = float(stated)
         return TeResult("intent", Intent("plan_sale", args, "sale (Telugu)"), rule="sale")
     if house is not None or _has(tokens, STATUS_STEMS) or _has(tokens, FARM_WORDS):
         asks = _has(tokens, STATUS_STEMS) or _has(tokens, FARM_WORDS)
@@ -347,6 +348,18 @@ def _match(text: str) -> TeResult:  # noqa: C901 - one flat list of rules, in or
         args = {} if house is None else {"house": _house_arg(house)}
         return TeResult("intent", Intent("get_farm_status", args, "status (Telugu)"), rule="status")
     return NONE
+
+
+def _stated_rate(rest: list[str], *, price_word_counts: bool) -> int | None:
+    """The number right after a rate word ("paper rate 160", the Telugu words for it), alone it is a sale question too
+    (the page keeps no sale state, so a bare number is never one). 0 when the number cannot be read; None when no rate
+    was stated. The price word (dhara) counts only beside a sale word: it also names the feed price."""
+    for i, tok in enumerate(rest[:-1]):
+        if tok in RATE_WORDS and (price_word_counts or tok not in RATE_WORDS_NEED_SALE_WORD):
+            j = i + 2 if rest[i + 1] == "is" and i + 2 < len(rest) else i + 1  # "paper rate is 160"
+            if rest[j].isdecimal():
+                return parse_number([rest[j]]) or 0
+    return None
 
 
 def _outcome(tokens: list[str]) -> str | None:

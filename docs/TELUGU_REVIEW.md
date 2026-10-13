@@ -10,9 +10,9 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 - Status is tracked per string (`data/i18n/telugu_approvals.json`). An approval covers one exact English +
   Telugu pair: any new or changed string, in either language, is **pending** until reviewed again.
 
-**Pending: 352** · Approved: 86
+**Pending: 353** · Approved: 86
 
-## 1. Pending review (352)
+## 1. Pending review (353)
 
 | # | English | Telugu | Where | Reviewer |
 |---|---|---|---|---|
@@ -362,12 +362,13 @@ in the source file shown under **Where**, or write the fix in the **Reviewer** c
 | 344 | Say set_contract_terms with your rate to see how this changes your growing charge. | మీ గ్రోయింగ్ ఛార్జ్ ఎలా మారుతుందో చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు చెప్పండి. | `src/clucktalk/server/tools/sale.py:233` |  |
 | 345 | Your growing charge today is about {rupees(charge_today)}; by {_day_label(later).en} it would be about {rupees(charge_later)}, based on your own terms. | ఈరోజు మీ గ్రోయింగ్ ఛార్జ్ సుమారు {rupees(charge_today)}; {_day_label(later).te} నాటికి మీ నిబంధనల ప్రకారం సుమారు {rupees(charge_later)} అవుతుంది. | `src/clucktalk/server/tools/sale.py:240` |  |
 | 346 | Show this to your supervisor to ask for the birds to be lifted on time. | కోళ్లను సకాలంలో తీసుకెళ్లమని మీ సూపర్‌వైజర్‌ని అడగడానికి ఇది చూపించండి. | `src/clucktalk/server/tools/sale.py:245` |  |
-| 347 | Sale planning is not part of this pilot yet. | ఈ పైలట్ లో అమ్మకం లెక్క ఇంకా లేదు. | `src/clucktalk/server/tools/sale.py:289` |  |
-| 348 | Tell me today's paper rate and I will work out your price. | ఈరోజు పేపర్ రేటు చెప్పండి, మీ ధర నేను లెక్కిస్తాను. | `src/clucktalk/server/tools/sale.py:293` |  |
-| 349 | Your price today: {rupees(paper - delta)} per kg (paper rate {rupees(paper)} minus {rupees(delta)}, your own rule). | మీ ఈరోజు ధర: కిలోకు {rupees(paper - delta)} (పేపర్ రేటు {rupees(paper)} నుండి {rupees(delta)} తగ్గింపు, మీ సొంత నియమం). | `src/clucktalk/server/tools/sale.py:298` |  |
-| 350 | Sell-day check for your broiler sheds. | మీ బ్రాయిలర్ షెడ్ల అమ్మకం రోజు తనిఖీ. | `src/clucktalk/server/tools/sale.py:361` |  |
-| 351 | No broiler sheds to check. | తనిఖీ చేయడానికి బ్రాయిలర్ షెడ్లు లేవు. | `src/clucktalk/server/tools/sale.py:367` |  |
-| 352 | When to sell | ఎప్పుడు అమ్మాలో | `src/clucktalk/server/tools/sale.py:413` |  |
+| 347 | Sale planning is not part of this pilot yet. | ఈ పైలట్ లో అమ్మకం లెక్క ఇంకా లేదు. | `src/clucktalk/server/tools/sale.py:293` |  |
+| 348 | That paper rate does not look right. Tell me today's paper rate in rupees per kg, like: paper rate 160. | ఆ పేపర్ రేటు సరిగా లేదు. ఈరోజు పేపర్ రేటు కిలోకు రూపాయలలో చెప్పండి, ఉదాహరణకు: ఈరోజు పేపర్ రేటు 160. | `src/clucktalk/server/tools/sale.py:297` |  |
+| 349 | Tell me today's paper rate, like: paper rate 160, and I will work out your price. | ఈరోజు పేపర్ రేటు చెప్పండి, ఉదాహరణకు: ఈరోజు పేపర్ రేటు 160, మీ ధర నేను లెక్కిస్తాను. | `src/clucktalk/server/tools/sale.py:304` |  |
+| 350 | Your price today: {rupees(paper - delta)} per kg (paper rate {rupees(paper)} minus {rupees(delta)}, your own rule). | మీ ఈరోజు ధర: కిలోకు {rupees(paper - delta)} (పేపర్ రేటు {rupees(paper)} నుండి {rupees(delta)} తగ్గింపు, మీ సొంత నియమం). | `src/clucktalk/server/tools/sale.py:309` |  |
+| 351 | Sell-day check for your broiler sheds. | మీ బ్రాయిలర్ షెడ్ల అమ్మకం రోజు తనిఖీ. | `src/clucktalk/server/tools/sale.py:372` |  |
+| 352 | No broiler sheds to check. | తనిఖీ చేయడానికి బ్రాయిలర్ షెడ్లు లేవు. | `src/clucktalk/server/tools/sale.py:378` |  |
+| 353 | When to sell | ఎప్పుడు అమ్మాలో | `src/clucktalk/server/tools/sale.py:424` |  |
 
 ## 2. Approved (86)
 

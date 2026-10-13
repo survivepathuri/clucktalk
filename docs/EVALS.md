@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-10-13T13:25:12+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
+Run 2026-10-13T14:51:09+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -90,6 +90,7 @@ Run 2026-10-13T13:25:12+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | pilot-a-shed-with-no-alert-says-so-and-never-doing-well | PASS | — |
 | pilot-paper-rate-160-gives-his-price-140 | PASS | — |
 | pilot-sale-question-without-a-rate-asks-once-and-shows-no-number | PASS | — |
+| pilot-paper-rate-outside-1-to-1000-gets-one-line-and-no-price | PASS | — |
 | pilot-feed-question-gets-one-plain-line | PASS | — |
 
-**Score: 87/87**
+**Score: 88/88**

@@ -280,6 +280,10 @@ def _house_plan(
     return out
 
 
+MIN_PAPER_RATE = Decimal(1)  # rupees per kg: a stated paper rate outside 1 to 1000 is a slip, never a price
+MAX_PAPER_RATE = Decimal(1000)
+
+
 def _unmodelled_text(source: DemoFarmSource, paper: Decimal | None) -> Text:
     """A pilot house with no growth standard has no sale plan. With the farmer's own rule (price = paper rate minus a
     fixed amount) the answer is his price, or one ask for the rate; never a made-up rate. Without the rule, one plain
@@ -287,10 +291,17 @@ def _unmodelled_text(source: DemoFarmSource, paper: Decimal | None) -> Text:
     delta = source.paper_rate_delta
     if delta is None:
         return Text("Sale planning is not part of this pilot yet.", "ఈ పైలట్ లో అమ్మకం లెక్క ఇంకా లేదు.")
-    if paper is None or paper <= delta:
+    if paper is not None and not MIN_PAPER_RATE <= paper <= MAX_PAPER_RATE:
         return Text(
-            "Tell me today's paper rate and I will work out your price.",
-            "ఈరోజు పేపర్ రేటు చెప్పండి, మీ ధర నేను లెక్కిస్తాను.",
+            "That paper rate does not look right. Tell me today's paper rate in rupees per kg, like: paper rate 160.",
+            "ఆ పేపర్ రేటు సరిగా లేదు. ఈరోజు పేపర్ రేటు కిలోకు రూపాయలలో చెప్పండి, ఉదాహరణకు: ఈరోజు పేపర్ రేటు 160.",
+        )
+    if paper is None or paper <= delta:
+        # The page keeps no sale conversation between turns, so a bare number would not be understood: the example is
+        # a phrase both typed matchers accept (intents.py, intents_te.py).
+        return Text(
+            "Tell me today's paper rate, like: paper rate 160, and I will work out your price.",
+            "ఈరోజు పేపర్ రేటు చెప్పండి, ఉదాహరణకు: ఈరోజు పేపర్ రేటు 160, మీ ధర నేను లెక్కిస్తాను.",
         )
     return Text(
         f"Your price today: {rupees(paper - delta)} per kg (paper rate {rupees(paper)} minus {rupees(delta)}, "

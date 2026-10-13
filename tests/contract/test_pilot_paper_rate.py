@@ -24,7 +24,8 @@ NOW = datetime(2026, 10, 9, 8, 0, tzinfo=IST)
 BANNED = ("verified growth standard", "flock target", "flock", "Simulated", "simulated")
 FEED_LINE_EN = "Feed planning is not part of this pilot yet."
 FEED_LINE_TE = "ఈ పైలట్ లో ఫీడ్ లెక్క ఇంకా లేదు."
-ASK_EN = "Tell me today's paper rate and I will work out your price."
+ASK_EN = "Tell me today's paper rate, like: paper rate 160, and I will work out your price."
+BAD_RATE_EN = "That paper rate does not look right. Tell me today's paper rate in rupees per kg, like: paper rate 160."
 
 
 def make(delta="20", drop_simulated=True, **house_changes):
@@ -102,12 +103,50 @@ def test_a_paper_rate_not_above_the_delta_never_shows_a_price(pilot):
     assert ASK_EN in en and "Your price today" not in en
 
 
+def test_the_ask_line_gives_an_example_in_both_languages_that_the_typed_matchers_accept(pilot):
+    from clucktalk.simulator.intents import match
+    from clucktalk.simulator.intents_te import match_te
+
+    en, te = texts(pilot.call("plan_sale"))
+    assert "paper rate 160" in en and "పేపర్ రేటు 160" in te
+    assert match("paper rate 160").arguments == {"live_price_per_kg": 160.0}
+    assert match_te("ఈరోజు పేపర్ రేటు 160").intent.arguments == {"live_price_per_kg": 160.0}
+
+
+@pytest.mark.parametrize("rate", [0.5, 1001, 5000, 100000])  # 0 and below: the tool schema refuses (gt=0)
+def test_a_rate_outside_1_to_1000_gets_one_short_line_never_a_price(pilot, rate):
+    en, te = texts(pilot.call("plan_sale", live_price_per_kg=rate))
+    assert BAD_RATE_EN in en and "Your price today" not in en and "₹" not in en
+    assert te and "₹" not in te
+    assert_quiet(en, te)
+
+
+@pytest.mark.parametrize(("rate", "shown"), [(21, "₹21"), (1000, "₹1,000")])
+def test_the_ends_of_the_range_are_accepted(pilot, rate, shown):
+    en, _ = texts(pilot.call("plan_sale", live_price_per_kg=rate))
+    assert f"paper rate {shown} minus ₹20" in en
+
+
+def test_typed_phrases_end_to_end_give_his_price(pilot):
+    from clucktalk.simulator.intents import match
+    from clucktalk.simulator.intents_te import match_te
+
+    intents = [match(t) for t in ("paper rate 160", "today paper rate is 160", "sell, paper rate 160")]
+    intents += [match_te(t).intent for t in ("ఈరోజు పేపర్ రేటు 160", "పేపర్ రేట్ 160", "రేటు 160 ఉంది")]
+    for intent in intents:
+        assert intent is not None and intent.tool == "plan_sale"
+        en, te = texts(pilot.call(intent.tool, **intent.arguments))
+        assert "Your price today: ₹140 per kg (paper rate ₹160 minus ₹20, your own rule)." in en
+        assert_quiet(en, te)
+
+
 def test_without_the_delta_field_the_sale_answer_is_the_quiet_limitation_not_a_price():
     p = make(delta=None)
     try:
-        for args in ({}, {"live_price_per_kg": 160}):
+        for args in ({}, {"live_price_per_kg": 160}, {"live_price_per_kg": 5000}):
             en, te = texts(p.call("plan_sale", **args))
             assert "Your price today" not in en and "₹140" not in en
+            assert "Sale planning is not part of this pilot yet." in en and BAD_RATE_EN not in en
             assert_quiet(en, te)
     finally:
         p.stop()
