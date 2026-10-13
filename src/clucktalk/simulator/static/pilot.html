@@ -9,9 +9,8 @@
 <body>
 <header class="top">
   <strong class="name">CluckTalk · @APP_NAME_TE@</strong>
-  <span class="badge" id="badge" role="note" title="@BADGE_TE@">@BADGE_EN@</span>
+  <span class="badge" id="badge" role="note"><span lang="te">@BADGE_TE@</span><small>@BADGE_EN@</small></span>
 </header>
-<p class="notice" id="notice"></p>
 <p class="bubble warn fatal" id="fatal" lang="te" hidden>@OPEN_LINK_TE@<br><small>@OPEN_LINK_EN@</small></p>
 
 <section class="card" id="notice-screen" hidden>
@@ -42,8 +41,8 @@
   <div class="chips" id="chips"></div>
 
   <form class="ask" id="ask" autocomplete="off">
-    <input id="text" name="text" type="text" lang="te" inputmode="text" enterkeyhint="send" aria-labelledby="notice">
-    <button type="submit" class="send" aria-label="&#10148;">&#10148;</button>
+    <input id="text" name="text" type="text" lang="te" inputmode="text" enterkeyhint="send">
+    <button type="submit" class="send" id="send"></button>
   </form>
 </main>
 <script src="/static/pilot.js"></script>

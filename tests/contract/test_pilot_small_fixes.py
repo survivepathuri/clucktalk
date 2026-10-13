@@ -117,16 +117,16 @@ def _pilot_with_deaths():
     return source
 
 
-def test_in_pilot_mode_the_example_rule_never_puts_demo_data_before_the_farmers_note():
+def test_in_pilot_mode_the_example_rule_shows_no_note_and_never_says_demo_data():
     source = _pilot_with_deaths()
     source.deaths_rule = Fixed(EXAMPLE_RULE)
     out = build_status(source, "shed 1").model_dump(mode="json")
-    assert out["text_en"].endswith("Your note: Example note: replace this with your own words.")
+    assert "Example note" not in out["text_en"] and "Your note" not in out["text_en"]  # (Commit A: no note)
     assert "Demo data" not in out["text_en"] and "డెమో" not in out["text_te"]
 
 
-def test_in_the_demo_the_example_rule_still_says_demo_data():
+def test_in_the_demo_the_example_rule_shows_no_note_either():
     source = DemoFarmSource(clock=lambda: date(2026, 9, 29))
     source.deaths_rule = Fixed(EXAMPLE_RULE)
     out = build_status(source, "shed 2").model_dump(mode="json")
-    assert "Demo data. Your note: Example note" in out["text_en"]
+    assert "Example note" not in out["text_en"] and "Your note" not in out["text_en"]  # (Commit A: no note)

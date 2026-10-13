@@ -507,7 +507,7 @@ has no Telugu, so this is the Simulator's own phone page; output is Telugu text 
 - **His own daily deaths rule** (`daily_deaths_rule.json`, `clucktalk.domain.daily_deaths`): deaths that day divided by the
   live birds at the start of the day, times 1000, **strictly greater** than his number (exact decimal arithmetic) adds a WATCH
   fact. It can only raise a shed to WATCH (`max(existing, WATCH)`); it never lowers a level or removes vet advice (a property
-  test); his note comes last, after all health and safety text. No file: byte-identical output. The file is re-read when it
+  test); his file's note is never shown to the farmer (Commit A: it is for whoever keeps the file). No file: byte-identical output. The file is re-read when it
   changes; if it becomes unreadable the answer says so. His value (2 per 1000) was relayed, not confirmed in writing.
 - **Telugu input** (`simulator/intents_te.py`, vocabulary in `telugu_words.json`): typed Telugu (his keyboard's voice typing
   speaks; no browser speech change), NFC, Telugu digits and number words (0 to 20, tens, 100, 1000, compounds), 8 actions;

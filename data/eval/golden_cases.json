@@ -4896,7 +4896,7 @@
       ]
     },
     {
-      "id": "deaths-rule-raises-a-clean-shed-to-watch-with-his-line-and-his-note-last",
+      "id": "deaths-rule-raises-a-clean-shed-to-watch-with-his-line-and-never-shows-his-note",
       "description": "The farmer's own daily deaths rule (0.5 per 1000 birds here) is crossed by shed 1's 4 deaths today on about 4,866 birds, a shed the existing rules call fine. The shed becomes WATCH, the status says why in one plain line, his note is the last words, the safety field says WATCH with the rule's own code, and no vet advice appears that was not already there.",
       "fresh_state": true,
       "deaths_rule": {
@@ -4933,8 +4933,8 @@
             },
             {
               "field": "text_en",
-              "op": "contains",
-              "value": "Your note: kotam note."
+              "op": "not_contains",
+              "value": "kotam note"
             },
             {
               "field": "safety.level",
@@ -4958,7 +4958,7 @@
       ]
     },
     {
-      "id": "deaths-rule-never-lowers-an-alert-and-his-note-follows-the-vet-line",
+      "id": "deaths-rule-never-lowers-an-alert-and-never-shows-his-note",
       "description": "On shed 2, where the existing rules already say ALERT (a death spike), his rule adds its line but the level stays ALERT, the vet step is the same as without the rule, and his note comes after it.",
       "fresh_state": true,
       "deaths_rule": {
@@ -4996,7 +4996,12 @@
             {
               "field": "text_en",
               "op": "contains",
-              "value": "Please check the birds today and call your vet if deaths continue. Your note: kotam note."
+              "value": "Please check the birds today and call your vet if deaths continue."
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "kotam note"
             }
           ]
         }
@@ -5096,7 +5101,12 @@
             {
               "field": "text_en",
               "op": "contains",
-              "value": "Please check the birds today and call your vet if deaths continue. Your note: kotam note."
+              "value": "Please check the birds today and call your vet if deaths continue."
+            },
+            {
+              "field": "text_en",
+              "op": "not_contains",
+              "value": "kotam note"
             },
             {
               "field": "safety.level",

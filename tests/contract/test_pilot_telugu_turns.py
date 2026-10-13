@@ -264,3 +264,12 @@ def test_a_chip_never_touches_a_matcher_whatever_language_the_page_says(rig, mon
     for lang in ({}, {"lang": "en"}):
         out = rig.turn(chip="briefing", **lang)
         assert out["kind"] == "tool" and out["intent"]["tool"] == "get_daily_briefing"
+
+
+def test_the_servers_deaths_read_back_ends_with_the_say_suffix_the_page_turns_into_tap(rig):
+    from clucktalk.i18n.pilot import PILOT_UI
+
+    out = rig.turn(chip="deaths", params={"house": 1, "count": 3}, lang="te")
+    assert out["awaiting_answer"] is True
+    assert out["speech_te"].endswith(PILOT_UI["say_suffix"].te)
+    assert not PILOT_UI["tap_suffix"].te.startswith("అని")  # the page's tap ending has no "say" in it

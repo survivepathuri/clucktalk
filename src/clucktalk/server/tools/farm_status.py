@@ -486,18 +486,12 @@ def deaths_rule_state(source: DemoFarmSource):
 
 
 def deaths_rule_parts(source: DemoFarmSource, fired: bool) -> list[Text]:
-    """After all health and safety text (and before the weather lines): his note once, if the rule fired in what was
-    read out, exactly as he wrote it; or the one line saying his rule could not be read. Feeds no level or field."""
-    rule, unreadable = deaths_rule_state(source)
-    if unreadable:
-        return [DAILY_DEATHS_UNREADABLE]
-    if rule is None or not fired or rule.note is None or not rule.note.strip():
-        return []
-    en, te = WEATHER_NOTE.en.format(note=rule.note), WEATHER_NOTE.te.format(note=rule.note)
-    if rule.is_example and source.demo_data:  # on the pilot farm nothing is "demo data", whatever file he copied
-        demo = BRIEFING_LABELS["demo_badge"]  # the existing "Demo data" label
-        en, te = f"{demo.en}. {en}", f"{demo.te}. {te}"
-    return [Text(en, te)]
+    """After all health and safety text (and before the weather lines): the one line saying his rule could not be read,
+    or nothing. The rule file's ``note`` is for whoever keeps the file (the builder, the farmer's own words to himself),
+    never for the farmer's ears or screen: it is read and checked with the file but is not part of any answer. ``fired``
+    is kept so the callers stay as they were. Feeds no level or field."""
+    _, unreadable = deaths_rule_state(source)
+    return [DAILY_DEATHS_UNREADABLE] if unreadable else []
 
 
 def weather_parts(source: DemoFarmSource) -> tuple[list[Text], list[WeatherReminderOut] | None]:

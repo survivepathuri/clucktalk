@@ -89,13 +89,16 @@ def test_a_shed_that_is_otherwise_fine_becomes_watch_with_the_rule_and_says_why(
     assert on["safety"]["reason_codes"] == ["daily_deaths_rule"]
 
 
-def test_his_note_comes_last_after_all_health_and_safety_text():
+def test_his_note_is_never_part_of_an_answer():
+    # Changed on purpose (Commit A): the note is for whoever keeps the file, not for the farmer (the full check is in
+    # test_deaths_note_never_shown.py). Before, it came last in every answer.
     source = make_source()
     source.deaths_rule = Fixed(RULE)
     on, _, brief = asked(source)
-    assert on["text_en"].endswith(f"Your note: {NOTE}.") and brief["text_en"].endswith(f"Your note: {NOTE}.")
-    assert on["text_te"].endswith(f"మీ గమనిక: {NOTE}.")
-    assert on["text_en"].count("Your note:") == 1
+    for answer in (on, brief):
+        assert NOTE not in answer["text_en"] and NOTE not in answer["text_te"]
+        assert "Your note" not in answer["text_en"] and "మీ గమనిక" not in answer["text_te"]
+    assert "more than your own limit of 2." in on["text_en"]  # the rule's own factual line is still there
 
 
 def test_exactly_his_number_changes_nothing_and_one_more_death_fires():
@@ -119,7 +122,7 @@ def test_it_never_lowers_an_alert_and_the_vet_advice_stays_the_same():
     assert on["safety"]["level"] == base_status["safety"]["level"] == "ALERT"
     assert on["safety"]["vet_contact_advised"] is True and base_status["safety"]["vet_contact_advised"] is True
     assert "Please check the birds today and call your vet if deaths continue." in on["text_en"]
-    assert on["text_en"].index("call your vet") < on["text_en"].index("Your note:")
+    assert "Your note" not in on["text_en"] and "Your note" not in brief["text_en"]  # (the note is never shown)
     assert on["houses"][0]["findings"][0]["code"] == "mortality_spike"  # the alert stays first
 
 
@@ -154,7 +157,7 @@ def add_check(source, house_number, urgency):
     source.store.add_health_check(check)
 
 
-def test_a_suspected_reportable_disease_keeps_its_text_first_and_his_note_after_it():
+def test_a_suspected_reportable_disease_keeps_its_text_first_and_his_note_is_not_shown():
     source = make_source()  # 9 deaths today: his rule fires on shed 1
     add_check(source, 1, Urgency.NOTIFIABLE_SUSPECT)
     off, _, off_brief = asked(source)
@@ -165,12 +168,11 @@ def test_a_suspected_reportable_disease_keeps_its_text_first_and_his_note_after_
     assert on["safety"]["vet_contact_advised"] is True and off["safety"]["vet_contact_advised"] is True
     assert set(off["safety"]["reason_codes"]) <= set(on["safety"]["reason_codes"])
     line = next(f["text_en"] for f in on["houses"][0]["findings"] if f["code"] == "daily_deaths_rule")
-    # Take out his one factual line and his note: what is left is exactly what he heard without the rule.
-    assert on["text_en"].replace(f" {line}", "").removesuffix(f" Your note: {NOTE}.") == off["text_en"]
+    # Take out his one factual line: what is left is exactly what he heard without the rule (and no note).
+    assert on["text_en"].replace(f" {line}", "") == off["text_en"]
     for a in (on, on_brief):
-        assert a["text_en"].endswith(f"Your note: {NOTE}.")  # his note is the last words
-        assert a["text_en"].index("reportable disease") < a["text_en"].index("Your note:")  # the check text first
-        assert a["text_en"].index("call your vet") < a["text_en"].index("Your note:")
+        assert NOTE not in a["text_en"] and "Your note" not in a["text_en"]
+        assert a["text_en"].index("reportable disease") < a["text_en"].index("call your vet")  # the check text first
     spoken_check = off["houses"][0]["open_health_check"]
     assert spoken_check is not None and spoken_check["urgency"] == "notifiable_suspect"
 
@@ -202,17 +204,17 @@ def test_a_real_rule_file_object_works_end_to_end(tmp_path):
     source = make_source()
     source.deaths_rule = DeathsRuleFile(path)
     on, _, _ = asked(source)
-    assert codes(on) == ["daily_deaths_rule"] and on["text_en"].endswith(f"Your note: {NOTE}.")
+    assert codes(on) == ["daily_deaths_rule"] and NOTE not in on["text_en"] and "Your note" not in on["text_en"]
 
 
-def test_an_example_rule_says_demo_data_before_the_note_in_the_demo():
-    # Step 52: on the pilot farm the example rule no longer says "Demo data." (test_pilot_small_fixes.py).
+def test_an_example_rule_shows_no_note_and_no_demo_line_in_the_demo():
+    # Changed on purpose (Commit A): the "Demo data." line only ever introduced the note, which is no longer shown.
     from clucktalk.server.farm_state import DemoFarmSource
 
     source = DemoFarmSource(clock=lambda: date(2026, 9, 29))
     source.deaths_rule = Fixed(DailyDeathsRule(Decimal("2"), NOTE, True))
     on = build_status(source, "shed 2").model_dump(mode="json")
-    assert f"Demo data. Your note: {NOTE}." in on["text_en"]
+    assert NOTE not in on["text_en"] and "Your note" not in on["text_en"]
 
 
 @pytest.mark.parametrize("deaths", [0, 1, 4, 5])  # 5 / 2976 * 1000 = 1.68; 6 would be 2.02
@@ -223,9 +225,9 @@ def test_small_days_never_fire(deaths):
     assert "daily_deaths_rule" not in codes(on)
 
 
-def test_his_note_is_shown_exactly_as_he_wrote_it_even_with_odd_spacing():
+def test_a_note_with_odd_spacing_is_not_shown_either():
     source = make_source()
     source.deaths_rule = Fixed(DailyDeathsRule(Decimal("2"), "  check   the water ", False))
     on, _, brief = asked(source)
-    assert on["text_en"].endswith("Your note:   check   the water .")
-    assert brief["text_en"].endswith("Your note:   check   the water .")
+    assert "check   the water" not in on["text_en"] and "check   the water" not in brief["text_en"]
+    assert "Your note" not in on["text_en"] and "Your note" not in brief["text_en"]

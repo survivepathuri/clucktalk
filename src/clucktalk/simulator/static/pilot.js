@@ -56,14 +56,90 @@ function auth(extra) {
   return TOKEN ? { ...extra, authorization: "Bearer " + TOKEN } : { ...extra };
 }
 
+const MAX_LOG = 6; // the newest answers only: an old one is never between the farmer and the newest
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+// Keep the log short, then show the newest answer from its top (a long ALERT answer must not start out of sight).
+function show(node) {
+  const log = $("log");
+  log.appendChild(node);
+  const kids = Array.from(log.children);
+  if (kids.length > MAX_LOG) log.replaceChildren(...kids.slice(-MAX_LOG));
+  node.scrollIntoView({ block: node.offsetHeight > window.innerHeight * 0.6 ? "start" : "end" });
+}
+
 function say(text, cls) {
   if (!text) return;
   const p = document.createElement("p");
   p.className = "bubble " + (cls || "");
   p.textContent = text;
   p.lang = "te";
-  $("log").appendChild(p);
-  p.scrollIntoView({ block: "end" });
+  // A warning carries its word too (a colour alone is not a signal): the CSS prints this attribute above the text.
+  if ((cls || "").includes("warn")) p.setAttribute("data-tag", ui.strings.warn_tag.te);
+  show(p);
+}
+
+// The sell answer: "...per kg ₹140 (paper rate ₹160 minus ₹20, your own rule)." The price is the first rupee amount
+// before the bracket; it is shown big and the bracket small. Every character stays, in order, so nothing is lost.
+const PRICE = /^([^₹(]*)(₹[0-9][0-9,]*(?:\.[0-9]+)?)([^(]*)(\([\s\S]*)$/;
+function sayPrice(text) {
+  const m = PRICE.exec(text);
+  if (!m) return false;
+  const p = el("p", "bubble");
+  p.lang = "te";
+  p.append(el("span", "lead", m[1]), el("span", "price", m[2]), el("span", "mid", m[3]), el("span", "rule", m[4]));
+  show(p);
+  return true;
+}
+
+// Which sheds are at ALERT, from what the answer already carries: the status lists its sheds with a level and the
+// findings behind it; the briefing lists ranked items. Nothing is parsed out of the sentences.
+function alertRows(sc) {
+  if (!sc) return [];
+  const rows = [];
+  if (Array.isArray(sc.houses)) {
+    sc.houses.filter((h) => h.level === "alert").forEach((h) => {
+      const f = (h.findings || []).find((x) => x.level === "alert") || {};
+      const today = h.latest_record_day === sc.as_of && Number.isInteger(h.deaths_latest);
+      rows.push({ label: h.label_te, deaths: today ? h.deaths_latest : null, code: f.code, text: f.text_te });
+    });
+  } else if (Array.isArray(sc.items)) {
+    sc.items.filter((i) => i.level === "alert" && i.label_te).forEach((i) => {
+      if (!rows.some((r) => r.label === i.label_te)) rows.push({ label: i.label_te, deaths: null, code: i.category, text: i.text_te });
+    });
+  }
+  return rows;
+}
+
+function alertBar(rows) {
+  const bar = el("section", "alertbar");
+  bar.setAttribute("role", "alert");
+  rows.forEach((r) => {
+    const row = el("div", "row");
+    const icon = el("span", "icon", "⚠");
+    icon.setAttribute("aria-hidden", "true");
+    const head = el("div", "head");
+    head.append(icon, el("span", "word", ui.strings.alert.te));
+    const main = el("div", "main");
+    main.append(el("span", "big", r.label || ""));
+    if (r.deaths !== null) {
+      const deaths = el("div", "deaths");
+      deaths.append(el("span", "big", String(r.deaths)), el("span", "small", ui.strings.deaths_today.te));
+      main.append(deaths);
+    }
+    row.append(head, main);
+    // The vet line is only for the farmer's own daily limit (his rule says exactly that); any other alert shows its own text.
+    const line = r.code === "daily_limit_exceeded" ? ui.strings.vet_today.te : r.text;
+    if (line) row.append(el("p", "line", line));
+    bar.appendChild(row);
+  });
+  return bar;
 }
 
 function setBusy(on) {
@@ -116,7 +192,11 @@ function showReadBack(out) {
   $("add").hidden = !choice;
   $("replace").hidden = !choice;
   if (waiting) {
-    $("readback-text").textContent = out.speech_te || out.speech;
+    // Here he taps buttons: where the server's text ends "...say yes or no", the page says tap instead.
+    let question = out.speech_te || out.speech;
+    const say_ = ui.strings.say_suffix.te;
+    if (question.endsWith(say_)) question = question.slice(0, -say_.length) + ui.strings.tap_suffix.te;
+    $("readback-text").textContent = question;
     (choice ? $("add") : $("yes")).focus();
   }
 }
@@ -127,7 +207,13 @@ function render(out) {
     return choose(out.choose.chip, out.choose.params || {});
   }
   const warn = out.is_error || out.kind === "fallback" || out.kind === "unavailable" || out.kind === "protocol_error";
-  if (!out.awaiting_answer) say(out.speech_te || out.speech, warn ? "warn" : "");
+  if (!out.awaiting_answer) {
+    const text = out.speech_te || out.speech;
+    const rows = out.kind === "tool" && !warn ? alertRows(out.result && out.result.structuredContent) : [];
+    if (rows.length) show(alertBar(rows));
+    const isSale = out.intent && out.intent.tool === "plan_sale" && !warn;
+    if (!(isSale && sayPrice(text))) say(text, warn ? "warn" : "");
+  }
   showReadBack(out);
 }
 
@@ -257,7 +343,9 @@ async function start() {
     document.body.textContent = "CluckTalk: " + e.message;
     return;
   }
-  $("notice").textContent = ui.strings.notice.te;
+  $("text").placeholder = ui.strings.placeholder.te;
+  $("text").setAttribute("aria-label", ui.strings.placeholder.te);
+  $("send").textContent = ui.strings.send.te;
   $("yes").textContent = ui.strings.yes.te;
   $("no").textContent = ui.strings.no.te;
   $("add").textContent = ui.strings.add.te;

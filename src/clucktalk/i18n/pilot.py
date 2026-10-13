@@ -8,6 +8,7 @@ from __future__ import annotations
 import hashlib
 
 from clucktalk.i18n import GENERIC_ERROR, GENERIC_NEXT_STEP, PILOT_BADGE, Text
+from clucktalk.server.cards import FARM_STATUS_LABELS
 
 PILOT_NOTICE = Text(
     en="Your keyboard's voice typing sends what you say to its own speech service. CluckTalk never hears your voice.",
@@ -102,6 +103,19 @@ CHIPS = {
 }
 OUTCOMES = {"better": OUTCOME_BETTER, "same": OUTCOME_SAME, "worse": OUTCOME_WORSE}
 
+# Commit A (the page's look): new words, all DRAFTS awaiting native review (pending in docs/TELUGU_REVIEW.md). The ALERT
+# word and the deaths label are the status card's own (FARM_STATUS_LABELS), not new. The vet line is the phrase of the
+# farmer's-own-limit sentence the server already says, shown big only when that rule fired. SAY_SUFFIX is how every
+# yes-or-no read-back ends on the server; the page swaps it for TAP_SUFFIX because the farmer taps buttons here.
+ALERT_WORD = FARM_STATUS_LABELS["level_alert"]
+DEATHS_TODAY = FARM_STATUS_LABELS["deaths_today"]
+VET_TODAY = Text(en="Take the birds to the vet today", te="ఈరోజే కోళ్లను డాక్టర్ దగ్గరికి తీసుకెళ్లండి")
+WARN_TAG = Text(en="Note", te="గమనిక")
+INPUT_PLACEHOLDER = Text(en="Write here", te="ఇక్కడ రాయండి")
+SEND_BUTTON = Text(en="Send", te="పంపండి")
+SAY_SUFFIX = Text(en="(the ending that asks you to say yes or no)", te="అని చెప్పండి.")
+TAP_SUFFIX = Text(en="(the ending that asks you to tap yes or no)", te="నొక్కండి.")
+
 PILOT_UI = {
     "badge": PILOT_BADGE,
     "notice": PILOT_NOTICE,
@@ -117,4 +131,12 @@ PILOT_UI = {
     "replace": BUTTON_REPLACE,
     "error": GENERIC_ERROR,
     "error_next": GENERIC_NEXT_STEP,
+    "alert": ALERT_WORD,
+    "deaths_today": DEATHS_TODAY,
+    "vet_today": VET_TODAY,
+    "warn_tag": WARN_TAG,
+    "placeholder": INPUT_PLACEHOLDER,
+    "send": SEND_BUTTON,
+    "say_suffix": SAY_SUFFIX,
+    "tap_suffix": TAP_SUFFIX,
 }

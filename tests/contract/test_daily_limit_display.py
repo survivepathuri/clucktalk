@@ -165,13 +165,13 @@ def test_his_per_1000_rule_is_not_said_twice_when_the_limit_fires(tmp_path):
     assert all(i["category"] != "daily_deaths_rule" for i in brief["items"])
 
 
-def test_his_note_comes_last_when_the_limit_fires(tmp_path):
+def test_his_note_is_not_shown_when_the_limit_fires(tmp_path):
     source = make_source(tmp_path, 20, 7)
     source.deaths_rule = Fixed(LIMIT)
     on, whole, brief = asked(source)
-    for out in (on, whole):  # (the briefing says his note only for his per-1000 rule: a known gap, tools/briefing.py)
-        assert out["text_en"].endswith(f"Your note: {NOTE}.") and out["text_en"].count("Your note:") == 1
-    assert on["text_en"].index(VET) < on["text_en"].index("Your note:")
+    for out in (on, whole, brief):  # changed on purpose (Commit A): the note is never part of an answer
+        assert NOTE not in out["text_en"] and "Your note" not in out["text_en"] and NOTE not in out["text_te"]
+    assert VET in on["text_en"]  # the vet line is untouched
 
 
 def test_no_bands_means_every_answer_is_identical(tmp_path):

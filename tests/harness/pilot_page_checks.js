@@ -47,7 +47,9 @@ function ui(extra) {
   return {
     strings: { notice: t("voice"), yes: t("Yes"), no: t("No"), add: t("Add"), replace: t("Replace"), readback: t("Is this right?"),
       error: t("error"), error_next: t("next"), notice_title: t("Before you start"), ack: t("I understand"),
-      not_understood: t("nu"), nothing_pending: t("np"), not_started: t("ns"), badge: t("badge") },
+      not_understood: t("nu"), nothing_pending: t("np"), not_started: t("ns"), badge: t("badge"),
+      alert: t("ALERT"), deaths_today: t("Deaths today"), vet_today: t("Take the birds to the vet today"), warn_tag: t("Note"),
+      placeholder: t("Write here"), send: t("Send"), say_suffix: { en: "say it.", te: "say it." }, tap_suffix: { en: "tap it.", te: "tap it." } },
     chips: { help: t("Help"), status: t("Status"), deaths: t("Deaths") },
     outcomes: {}, signs: [], houses: [{ number: 1, label_te: "H1" }],
     notice_items: ["a", "b", "c", "d", "e", "f", "g"].map(t), notice_version: "v1", ...(extra || {}),
@@ -223,6 +225,147 @@ scenarios.the_device_id_falls_back_to_the_tab_without_local_storage = async () =
   const p = await boot({ brokenLocal: true });
   const id = p.session.map.get("ct_session");
   if (!/^[A-Za-z0-9_-]{16,64}$/.test(id || "")) throw new Error("no fallback id: " + id);
+};
+
+// ---- Commit A (appearance): the red ALERT bar, the price, tagged warnings, one notice, a short log, tap not say ----
+const textOf = (e) => [e.textContent || "", ...e.children.map(textOf)].join(" ").replace(/\s+/g, " ").trim();
+const rawText = (e) => (e.textContent || "") + e.children.map(rawText).join("");
+const flat = (e) => [e, ...e.children.flatMap(flat)];
+const withClass = (root, name) => flat(root).filter((e) => (e.className || "").split(/\s+/).includes(name));
+const logEl = (p) => p.els.get("log");
+async function open(turn, extra) {
+  const p = await boot({ turn, ...(extra || {}) });
+  await p.els.get("ack").fire("click");
+  return p;
+}
+const status = (sc, speech) => () => ({ status: 200, body: { kind: "tool", speech_te: speech || "te status text", speech: "status text", result: { structuredContent: sc } } });
+const house = (level, extra) => ({ number: 1, label_te: "H1", level, latest_record_day: "2026-10-13", deaths_latest: 7, findings: [], ...(extra || {}) });
+const ALERT_SC = { as_of: "2026-10-13", level: "alert", houses: [house("alert", { findings: [{ code: "daily_limit_exceeded", level: "alert", text_te: "limit text te" }] }), house("ok", { number: 2, label_te: "H2", deaths_latest: 1 })] };
+
+scenarios.an_alert_status_gets_one_red_bar_with_icon_word_shed_deaths_and_the_vet_line_and_the_rest_below = async () => {
+  const p = await open(status(ALERT_SC));
+  await chipButtons(p)[1].fire("click"); await flush();
+  const bars = withClass(logEl(p), "alertbar");
+  eq(bars.length, 1, "one bar (only the ALERT shed)");
+  const text = textOf(bars[0]);
+  for (const want of ["te:ALERT", "H1", "7", "te:Deaths today", "te:Take the birds to the vet today"]) if (!text.includes(want)) throw new Error(`bar lacks ${want}: ${text}`);
+  if (text.includes("H2")) throw new Error("the OK shed is in the bar: " + text);
+  eq(bars[0].attrs.role, "alert", "role");
+  if (withClass(bars[0], "icon").length !== 1) throw new Error("no icon in the bar");
+  const kids = logEl(p).children;
+  eq(kids.indexOf(bars[0]) < kids.findIndex((k) => k.textContent === "te status text"), true, "the bar comes before the full answer");
+  eq(kids.some((k) => k.textContent === "te status text"), true, "the full answer is still shown below");
+};
+
+scenarios.the_bar_shows_only_the_alert_codes_own_text_when_it_is_not_the_farmers_death_limit = async () => {
+  const sc = { as_of: "2026-10-13", level: "alert", houses: [house("alert", { findings: [{ code: "mortality_spike", level: "alert", text_te: "spike te" }] })] };
+  const p = await open(status(sc));
+  await chipButtons(p)[1].fire("click"); await flush();
+  const text = textOf(withClass(logEl(p), "alertbar")[0]);
+  if (!text.includes("spike te")) throw new Error("the finding text is missing: " + text);
+  if (text.includes("te:Take the birds to the vet today")) throw new Error("the vet line is only for the farmer's own limit: " + text);
+};
+
+scenarios.the_bar_is_never_shown_on_ok_or_watch_or_without_houses = async () => {
+  for (const sc of [
+    { as_of: "2026-10-13", level: "ok", houses: [house("ok")] },
+    { as_of: "2026-10-13", level: "watch", houses: [house("watch", { findings: [{ code: "daily_deaths_rule", level: "watch", text_te: "w" }] })] },
+    { as_of: "2026-10-13", level: "ok", items: [{ level: "watch", category: "x", label_te: "H1", text_te: "w" }] },
+    {},
+  ]) {
+    const p = await open(status(sc));
+    await chipButtons(p)[1].fire("click"); await flush();
+    eq(withClass(logEl(p), "alertbar").length, 0, "no bar for " + JSON.stringify(sc).slice(0, 60));
+  }
+  const p = await open(() => ({ status: 200, body: { kind: "fallback", speech_te: "nu" } }));
+  await chipButtons(p)[1].fire("click"); await flush();
+  eq(withClass(logEl(p), "alertbar").length, 0, "no bar on a fallback");
+};
+
+scenarios.the_briefings_alert_items_get_the_bar_too = async () => {
+  const sc = { as_of: "2026-10-13", level: "alert", items: [{ level: "alert", category: "daily_limit_exceeded", label_te: "H1", text_te: "item text te" }, { level: "watch", category: "x", label_te: "H2", text_te: "w" }] };
+  const p = await open(status(sc));
+  await chipButtons(p)[1].fire("click"); await flush();
+  const bars = withClass(logEl(p), "alertbar");
+  eq(bars.length, 1, "one bar");
+  const text = textOf(bars[0]);
+  for (const want of ["te:ALERT", "H1", "te:Take the birds to the vet today"]) if (!text.includes(want)) throw new Error(`bar lacks ${want}: ${text}`);
+  if (text.includes("H2")) throw new Error("the WATCH item is in the bar: " + text);
+};
+
+scenarios.a_deaths_count_from_another_day_is_not_shown_as_todays = async () => {
+  const sc = { as_of: "2026-10-13", level: "alert", houses: [house("alert", { latest_record_day: "2026-10-12", findings: [{ code: "mortality_spike", level: "alert", text_te: "spike te" }] })] };
+  const p = await open(status(sc));
+  await chipButtons(p)[1].fire("click"); await flush();
+  const text = textOf(withClass(logEl(p), "alertbar")[0]);
+  if (text.includes("te:Deaths today")) throw new Error("yesterday's number shown as today's: " + text);
+};
+
+const SALE = "te your price: per kg ₹140 (paper rate ₹160 minus ₹20, your own rule).";
+const sale = (speech, tool) => () => ({ status: 200, body: { kind: "tool", intent: { tool: tool || "plan_sale" }, speech_te: speech, speech: speech, result: { structuredContent: {} } } });
+
+scenarios.the_sell_price_is_one_big_number_and_the_rule_line_is_small_and_nothing_is_lost = async () => {
+  const p = await open(sale(SALE));
+  await chipButtons(p)[1].fire("click"); await flush();
+  const prices = withClass(logEl(p), "price");
+  eq(prices.length, 1, "one big number");
+  eq(prices[0].textContent, "₹140", "the big number is the price, not the paper rate or the deduction");
+  const rules = withClass(logEl(p), "rule");
+  eq(rules.length, 1, "one rule line");
+  eq(rules[0].textContent.startsWith("(paper rate ₹160"), true, "the rule line is the bracket");
+  const bubble = logEl(p).children.find((k) => withClass(k, "price").length);
+  eq(rawText(bubble), SALE, "every character is still there, in order");
+};
+
+scenarios.the_sell_question_and_other_answers_get_no_price_emphasis = async () => {
+  for (const [speech, tool] of [["te ask: say paper rate 160 and I will work out your price.", "plan_sale"], ["te price ₹140 (rule ₹20)", "get_farm_status"], ["te bad rate: say it in rupees, like paper rate 160.", "plan_sale"]]) {
+    const p = await open(sale(speech, tool));
+    await chipButtons(p)[1].fire("click"); await flush();
+    eq(withClass(logEl(p), "price").length, 0, "no emphasis for: " + speech);
+  }
+};
+
+scenarios.a_warning_has_a_word_and_an_icon_marker_not_only_a_colour_and_your_own_words_have_none = async () => {
+  const p = await open(() => ({ status: 200, body: { kind: "fallback", speech_te: "nu text" } }));
+  await chipButtons(p)[1].fire("click"); await flush();
+  const warn = logEl(p).children.find((k) => k.textContent === "nu text");
+  eq((warn.className || "").includes("warn"), true, "warn class");
+  eq(warn.attrs["data-tag"], "te:Note", "the warning carries its word");
+  p.els.get("text").value = "typed";
+  await p.els.get("ask").fire("submit"); await flush();
+  const you = logEl(p).children.find((k) => k.textContent === "typed");
+  eq(you.attrs["data-tag"], undefined, "the farmer's own words carry no tag");
+};
+
+scenarios.the_notice_text_is_on_the_screen_once_and_not_in_a_strip_under_the_header = async () => {
+  const items = ["a", "b", "c", "d", "voice", "f", "g"].map((x) => ({ en: x, te: "te:" + x }));  // the real list holds the voice-typing sentence
+  const p = await boot({ ui: ui({ notice_items: items }) });
+  if (HTML.includes('id="notice"')) throw new Error("the voice-typing strip is still in the page");
+  const copies = [...p.els.values(), ...flat(p.els.get("notice-list"))].filter((e) => e.textContent === "te:voice");
+  eq(copies.length, 1, "the notice sentence appears once");
+};
+
+scenarios.the_input_has_a_telugu_placeholder_and_the_send_button_a_word = async () => {
+  const p = await boot();
+  eq(p.els.get("text").placeholder, "te:Write here", "placeholder");
+  eq(p.els.get("send").textContent, "te:Send", "send button label");
+};
+
+scenarios.the_log_keeps_only_the_newest_answers = async () => {
+  const p = await open(status({}, "answer"));
+  for (let i = 0; i < 12; i++) { await chipButtons(p)[1].fire("click"); await flush(); }
+  eq(logEl(p).children.length <= 6, true, "log length " + logEl(p).children.length);
+  eq(logEl(p).children.length > 0, true, "the newest answer is there");
+};
+
+scenarios.a_read_back_says_tap_where_the_server_text_says_say_and_is_unchanged_otherwise = async () => {
+  const q = (t) => () => ({ status: 200, body: { kind: "tool", awaiting_answer: true, speech_te: t, result: { structuredContent: {} } } });
+  let p = await open(q("House 1: 7 died. To save, yes, otherwise no say it."));
+  await chipButtons(p)[0].fire("click"); await flush();
+  eq(p.els.get("readback-text").textContent, "House 1: 7 died. To save, yes, otherwise no tap it.", "say became tap");
+  p = await open(q("House 1: 7 died. Other wording."));
+  await chipButtons(p)[0].fire("click"); await flush();
+  eq(p.els.get("readback-text").textContent, "House 1: 7 died. Other wording.", "unchanged without the suffix");
 };
 
 (async () => {

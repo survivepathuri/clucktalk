@@ -1,6 +1,6 @@
 # Golden eval results (v0)
 
-Run 2026-10-13T14:51:09+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
+Run 2026-10-13T15:54:13+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python tasks.py eval-fast`. Fault cases (model fixture) run against a test model that answers 'routine' to everything or always fails (tests/fakes.py). Extended to the full suite later.
 
 | Case | Result | Detail |
 |---|---|---|
@@ -76,8 +76,8 @@ Run 2026-10-13T14:51:09+05:30, mock mode (`MOCK_BEDROCK=true`), no AWS. `python 
 | weather-no-rule-in-the-file-shows-nothing-and-asks-for-nothing | PASS | — |
 | weather-feature-off-the-answers-carry-nothing-weather-related | PASS | — |
 | weather-an-unavailable-forecast-says-so-and-changes-nothing-else | PASS | — |
-| deaths-rule-raises-a-clean-shed-to-watch-with-his-line-and-his-note-last | PASS | — |
-| deaths-rule-never-lowers-an-alert-and-his-note-follows-the-vet-line | PASS | — |
+| deaths-rule-raises-a-clean-shed-to-watch-with-his-line-and-never-shows-his-note | PASS | — |
+| deaths-rule-never-lowers-an-alert-and-never-shows-his-note | PASS | — |
 | limit-exactly-his-number-changes-nothing | PASS | — |
 | limit-one-more-than-his-number-is-an-alert-with-the-vet-today-sentence | PASS | — |
 | limit-band-edge-the-first-age-of-the-next-band-uses-the-next-limit | PASS | — |
