@@ -102,7 +102,10 @@ button, input, select { font: inherit; color: inherit; }
 .dev { position: fixed; right: 16px; bottom: 16px; width: min(560px, calc(100vw - 32px)); background: #111418; color: #e6e9ee;
   border-radius: 14px; box-shadow: 0 16px 40px -12px rgba(0,0,0,.5); font: 13px/1.45 ui-monospace, Consolas, monospace; z-index: 10; }
 .dev-toggle { width: 100%; display: flex; justify-content: space-between; gap: 12px; background: transparent; border: 0; color: inherit;
-  padding: 10px 14px; cursor: pointer; font: 600 14px system-ui, sans-serif; }
+  padding: 10px 14px; min-height: 44px; cursor: pointer; font: 600 14px system-ui, sans-serif; }
+/* Closed, the panel is a small pill (it used to be 560 px wide over the device frame and the transcript). */
+.dev[data-open="false"] { width: auto; max-width: calc(100vw - 32px); }
+.dev[data-open="false"] .dev-toggle { width: auto; }
 .dev-sum { color: #9fb3c8; font-weight: 400; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
 .dev-body { max-height: 70vh; overflow: auto; padding: 0 14px 14px; border-top: 1px solid #2a3038; }
 .dev-grid { display: grid; gap: 8px; margin: 10px 0; font-family: system-ui, sans-serif; }
