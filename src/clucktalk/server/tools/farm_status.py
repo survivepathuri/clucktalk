@@ -35,6 +35,7 @@ from clucktalk.i18n import (
     WEATHER_UNAVAILABLE,
     Text,
 )
+from clucktalk.pilot import is_unmodelled_breed
 from clucktalk.server.cards import BRIEFING_LABELS, FARM_STATUS_URI, farm_status_html
 from clucktalk.server.errors import domain_error_result
 from clucktalk.server.farm_state import DemoFarmSource
@@ -340,7 +341,11 @@ def _house_out(
     """``floor``: the level the shed's open health check or follow-up asks for; the shed is never shown lower."""
     st = house_status(house, as_of, deaths_rule)
     is_today = st.latest_record_day == as_of
-    findings = [_finding(f, st.breed, is_today) for f in st.findings]
+    # The placeholder breed has no growth standard: the farmer is not told so; the reason is logged instead.
+    quiet = is_unmodelled_breed(st.breed)
+    if quiet and any(f.code == "no_reference_curve" for f in st.findings):
+        logger.info("status for %s: no growth standard, target comparison skipped", house.house_id)
+    findings = [_finding(f, st.breed, is_today) for f in st.findings if not (quiet and f.code == "no_reference_curve")]
 
     days_covered, is_min = None, None
     try:

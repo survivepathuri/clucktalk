@@ -87,6 +87,7 @@ class DemoFarmSource:
     asks_deaths_choice = False  # pilot: a second log of deaths on a day that has deaths asks add or replace
     overlay_adds_days = False  # the seed has a record for every day; a pilot farm has none, so its logs are added
     weights_allowed = True  # the demo farm's breed has a curve; a pilot's birds do not (PilotFarmSource)
+    paper_rate_delta = None  # his rule: price = paper rate minus this (Decimal); only a pilot farm file sets it
 
     def __init__(
         self,
@@ -146,6 +147,10 @@ class PilotFarmSource(DemoFarmSource):
     def __init__(self, config: PilotFarmConfig, **kwargs) -> None:
         self.config = config  # set before super().__init__, which builds the first snapshot
         super().__init__(**kwargs)
+
+    @property
+    def paper_rate_delta(self):
+        return self.config.sale_price_below_paper_rate
 
     def _build_farm(self, as_of: date) -> Farm:
         return build_pilot_farm(self.config, as_of)

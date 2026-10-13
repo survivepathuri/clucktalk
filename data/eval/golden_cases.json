@@ -5688,6 +5688,97 @@
           ]
         }
       ]
+    },
+    {
+      "id": "pilot-paper-rate-160-gives-his-price-140",
+      "description": "Pilot farm with his own rule (price = paper rate minus 20): the paper rate he states becomes his price, in the words of his rule, with no 'Simulated' price and no growth-standard wording.",
+      "pilot": true,
+      "tool": "plan_sale",
+      "args": {
+        "live_price_per_kg": 160
+      },
+      "checks": [
+        {
+          "field": "text_en",
+          "op": "contains",
+          "value": "Your price today: ₹140 per kg (paper rate ₹160 minus ₹20, your own rule)."
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "imulated"
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "growth standard"
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "flock"
+        }
+      ]
+    },
+    {
+      "id": "pilot-sale-question-without-a-rate-asks-once-and-shows-no-number",
+      "description": "Asked about selling without a paper rate, the pilot farm asks for it once and shows no rupee figure.",
+      "pilot": true,
+      "tool": "plan_sale",
+      "args": {
+        "house": "shed 1"
+      },
+      "checks": [
+        {
+          "field": "text_en",
+          "op": "contains",
+          "value": "Tell me today's paper rate and I will work out your price."
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "₹"
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "growth standard"
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "flock"
+        }
+      ]
+    },
+    {
+      "id": "pilot-feed-question-gets-one-plain-line",
+      "description": "A feed question on a pilot farm with no growth standard gets one short line, not the technical reason.",
+      "pilot": true,
+      "tool": "plan_feed",
+      "args": {},
+      "checks": [
+        {
+          "field": "text_en",
+          "op": "contains",
+          "value": "Feed planning is not part of this pilot yet."
+        },
+        {
+          "field": "text_te",
+          "op": "contains",
+          "value": "ఈ పైలట్ లో ఫీడ్ లెక్క ఇంకా లేదు."
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "growth standard"
+        },
+        {
+          "field": "text_en",
+          "op": "not_contains",
+          "value": "flock"
+        }
+      ]
     }
   ]
 }

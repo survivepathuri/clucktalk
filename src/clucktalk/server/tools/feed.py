@@ -8,6 +8,7 @@ Same build order as get_farm_status: domain plan -> rounded output model -> text
 
 from __future__ import annotations
 
+import logging
 from datetime import date, timedelta
 from typing import Annotated, Literal
 
@@ -15,7 +16,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field
 
-from clucktalk.domain.errors import DomainError
+from clucktalk.domain.errors import DomainError, NoReferenceCurve
 from clucktalk.domain.feed import (
     BAG_KG,
     COVERAGE_LOOKAHEAD_DAYS,
@@ -29,6 +30,7 @@ from clucktalk.domain.models import Farm, House
 from clucktalk.domain.profile import FarmMode
 from clucktalk.domain.thresholds import STALE_AFTER_DAYS
 from clucktalk.i18n import Text
+from clucktalk.pilot import is_unmodelled_breed
 from clucktalk.server.errors import domain_error_result
 from clucktalk.server.farm_state import DemoFarmSource
 from clucktalk.server.render import num, plural, rupees, weekday_en, weekday_te
@@ -37,6 +39,8 @@ from clucktalk.server.tools import Capability, CapabilityRegistry, unavailable_t
 MAX_SPOKEN_HOUSES = 5
 WEEKDAY_WINDOW_DAYS = 6  # name the weekday only when it is unambiguous (within the coming week)
 PHASE_TE = {"pre-starter": "ప్రీ-స్టార్టర్", "starter": "స్టార్టర్", "finisher": "ఫినిషర్"}
+
+logger = logging.getLogger("clucktalk.server")
 
 
 class DayNeedOut(BaseModel):
@@ -274,21 +278,39 @@ def _short(p: HouseFeedPlanOut, as_of: date, contract: bool) -> Text:
     )
 
 
+# A pilot house with no growth standard has no feed plan. The farmer reads one plain line; the reason stays in the log.
+UNMODELLED_FEED = Text("Feed planning is not part of this pilot yet.", "ఈ పైలట్ లో ఫీడ్ లెక్క ఇంకా లేదు.")
+
+
 def build_plan(source: DemoFarmSource, house_ref: str | None, horizon_days: int) -> FeedPlanOutput:
     farm, as_of = source.snapshot()
     mode = source.profile().mode
     contract = mode is FarmMode.CONTRACT
     house_ref = whole_farm_or(house_ref)
     if house_ref is not None:
-        out = _house_plan(farm, resolve_house(farm, house_ref), as_of, horizon_days, contract)
-        plans, unavailable = [out], []
-        parts = [Text(out.summary_en, out.summary_te)]
+        house = resolve_house(farm, house_ref)
+        plans, unavailable = [], []
+        try:
+            out = _house_plan(farm, house, as_of, horizon_days, contract)
+        except NoReferenceCurve as err:
+            if not is_unmodelled_breed(house.breed):
+                raise
+            logger.info("feed for %s: no growth standard (%s)", house.house_id, err.customer_message)
+            parts = [UNMODELLED_FEED]
+        else:
+            plans = [out]
+            parts = [Text(out.summary_en, out.summary_te)]
     else:
         plans, unavailable = [], []
+        unmodelled = False
         for house in sorted(farm.houses, key=lambda h: h.number):
             try:
                 plans.append(_house_plan(farm, house, as_of, horizon_days, contract))
             except DomainError as err:
+                if isinstance(err, NoReferenceCurve) and is_unmodelled_breed(house.breed):
+                    logger.info("feed for %s: no growth standard (%s)", house.house_id, err.customer_message)
+                    unmodelled = True
+                    continue
                 unavailable.append(
                     HouseUnavailableOut(
                         house_id=house.house_id,
@@ -305,6 +327,8 @@ def build_plan(source: DemoFarmSource, house_ref: str | None, horizon_days: int)
         parts = [Text("Feed check for every house.", "అన్ని షెడ్ల ఫీడ్ తనిఖీ.")]
         items = [_short(p, as_of, contract) for p in plans]
         items += [unavailable_text(u) for u in unavailable]
+        if unmodelled:  # said once for the farm
+            items.append(UNMODELLED_FEED)
         parts += items[:MAX_SPOKEN_HOUSES]  # voice-only: at most 5 houses read out, planned or not
         if len(items) > MAX_SPOKEN_HOUSES:
             parts.append(

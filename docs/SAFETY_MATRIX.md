@@ -28,5 +28,5 @@ One row per safety rule: what it says in plain words, where the rule came from, 
 
 - It lists the rules a farmer's safety can depend on. The other checks (for example the shed-name reader, the protocol errors and the fuzz tests) are in `docs/DESIGN.md` section 4 and `docs/RESULTS.md`.
 - Alexa+ composes its own speech from a tool's result, so a safety step that lives only in our sentence can be left out when Alexa+ speaks. The structured `safety` field exists so a host can show the urgency itself. We do not claim Alexa+ uses it (README).
-- Telugu: 86 of 434 strings reviewed by the builder, a native Telugu speaker; 348 pending (including the pilot page); no independent review. (`docs/TELUGU_REVIEW.md`)
+- Telugu: 86 of 438 strings reviewed by the builder, a native Telugu speaker; 352 pending (including the pilot page); no independent review. (`docs/TELUGU_REVIEW.md`)
 - In **pilot mode**, a shed with no alert is described as "no alert from the checks I can make", never as doing well, because the checks are few and the thresholds above are general guidance. In demo mode a shed with no alert is still described as doing well (README, "Known limitations").

@@ -260,7 +260,7 @@ against a freshly started mock-mode server, checked against literal field values
 (`scripts/eval_fast.py`). Writes `docs/EVALS.md` with a real pass/fail count; never fakes a score (Rule 6).
 v0 covers a handful of read-only, single-call cases (farm status, feed reorder, and `plan_sale`'s before /
 at / after break-even and rising-mortality stories); contract-mode's multi-step confirmation flow is covered by
-the contract test suite instead, since this runner is single-call by design. The suite has 84 cases
+the contract test suite instead, since this runner is single-call by design. The suite has 87 cases
 (the table in `docs/EVALS.md` is the count; a harness test keeps this number equal to it). Multi-step cases (`steps`, `save`,
 `poll_until`) and model-fixture cases (`model_fixture`, `tests/fakes.py`) came with the agents (§18); a case marked
 `fresh_state` runs on a server of its own, so its answer cannot depend on what earlier cases changed.
@@ -580,3 +580,13 @@ The spike rule is relative (3 times the earlier week) and cannot fire without 3 
 - **Wording.** One sentence, in his name: "N birds died today, more than your own limit of L a day at this age. By your own rule, take the birds to the vet today; do not wait for the next visit." No medicine, dose, diagnosis, reassurance or promise of a reminder. The generic vet step ("Please check the birds today and call your vet if deaths continue.") is still spoken once after it; making the limit's own sentence replace it in the briefing is a one-line change in `src/clucktalk/server/tools/briefing.py` that was not made.
 - **Not done on purpose.** It does not feed the health-check floor; the briefing does not repeat his note for it; the start-up line still says the rule "can only raise a shed to WATCH" (true for the per-1000 rule only).
 - **Status.** The numbers are the farmer's, relayed by the builder and not confirmed in writing. The repository ships only an example file. Nothing here claims the rule works for a real farm.
+
+### 19.4 The farmer's own price rule and the quiet limitation (built 2026-10-13)
+
+A pilot house has the placeholder breed `flock`, which has no verified growth standard, so the sale plan and the feed plan cannot run for it. The farmer sells live birds at the day's paper rate minus a fixed amount, so the useful answer is his price.
+
+- **Decision.** An optional farm-file field `sale_price_below_paper_rate_inr` (text decimal, 0 to 1000, checked like the feed price). When he states today's paper rate (the existing `live_price_per_kg` argument), the sell answer for a placeholder-breed house is "Your price today: ₹P per kg (paper rate ₹R minus ₹D, your own rule)." Without a rate it asks once: "Tell me today's paper rate and I will work out your price." A rate not above the amount gets the ask, never a price. No rate is ever made up.
+- **Absent field.** No rule means no price line: the sell answer is "Sale planning is not part of this pilot yet." Houses with a verified curve are untouched (their stated rate is still the live-bird price of the sale plan).
+- **Simulated price.** `simulated_live_bird_price_per_kg_inr` stays for other farms. It may be left out only when the rule is set and no broiler house has a verified curve; the parser refuses the file otherwise.
+- **Quiet.** For the placeholder breed the farmer never reads "no verified growth standard", "flock target" or "flock": the status finding is dropped from the text and card (the reason is logged), the briefing already skips it, and a feed question gets one line: "Feed planning is not part of this pilot yet." (Telugu pending review). A named breed with no curve keeps the technical message. Developer-facing data keeps the breed.
+- **Status.** The rule is the farmer's, relayed by the builder and **not confirmed in writing**. The repository ships only an example value in `docs/pilot_farm.example.json`; the real value stays in the git-ignored farm file. Nothing here claims the rule works for a real farm.

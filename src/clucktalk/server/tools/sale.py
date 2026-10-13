@@ -11,6 +11,7 @@ Same build order as the other tools: domain plan -> rounded output model -> text
 
 from __future__ import annotations
 
+import logging
 from datetime import date
 from decimal import Decimal
 from typing import Annotated, Literal
@@ -19,12 +20,13 @@ from mcp.server.apps import Apps
 from mcp_types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field
 
-from clucktalk.domain.errors import DomainError
+from clucktalk.domain.errors import DomainError, NoReferenceCurve
 from clucktalk.domain.houses import resolve_house
 from clucktalk.domain.models import Farm, House, HouseKind
 from clucktalk.domain.profile import ContractTerms, FarmMode
 from clucktalk.domain.sale import DayOutcome, SalePlan, plan_sale
 from clucktalk.i18n import Text
+from clucktalk.pilot import is_unmodelled_breed
 from clucktalk.server.cards import SALE_PLAN_URI, sale_plan_html
 from clucktalk.server.errors import domain_error_result
 from clucktalk.server.farm_state import DemoFarmSource
@@ -33,6 +35,8 @@ from clucktalk.server.tools import Capability, CapabilityRegistry, unavailable_t
 
 MAX_SPOKEN_DAYS = 3  # the farmer's own limit for this feature: today, the best day, and the break-even day
 MAX_SPOKEN_HOUSES = 5  # voice-only rule: at most 5 options (docs/DESIGN.md §6)
+
+logger = logging.getLogger("clucktalk.server")
 
 
 class DayOut(BaseModel):
@@ -276,6 +280,25 @@ def _house_plan(
     return out
 
 
+def _unmodelled_text(source: DemoFarmSource, paper: Decimal | None) -> Text:
+    """A pilot house with no growth standard has no sale plan. With the farmer's own rule (price = paper rate minus a
+    fixed amount) the answer is his price, or one ask for the rate; never a made-up rate. Without the rule, one plain
+    line. The technical reason stays in the logs, not in what the farmer reads."""
+    delta = source.paper_rate_delta
+    if delta is None:
+        return Text("Sale planning is not part of this pilot yet.", "ఈ పైలట్ లో అమ్మకం లెక్క ఇంకా లేదు.")
+    if paper is None or paper <= delta:
+        return Text(
+            "Tell me today's paper rate and I will work out your price.",
+            "ఈరోజు పేపర్ రేటు చెప్పండి, మీ ధర నేను లెక్కిస్తాను.",
+        )
+    return Text(
+        f"Your price today: {rupees(paper - delta)} per kg (paper rate {rupees(paper)} minus {rupees(delta)}, "
+        "your own rule).",
+        f"మీ ఈరోజు ధర: కిలోకు {rupees(paper - delta)} (పేపర్ రేటు {rupees(paper)} నుండి {rupees(delta)} తగ్గింపు, మీ సొంత నియమం).",
+    )
+
+
 def build_plan(source: DemoFarmSource, house_ref: str | None, live_price_per_kg: float | None) -> PlanSaleOutput:
     farm, as_of = source.snapshot()
     mode = source.profile().mode
@@ -285,7 +308,22 @@ def build_plan(source: DemoFarmSource, house_ref: str | None, live_price_per_kg:
     house_ref = whole_farm_or(house_ref)
     if house_ref is not None:
         house = resolve_house(farm, house_ref)
-        out = _house_plan(farm, house, as_of, mode, price, terms)  # DomainError propagates: the one house asked
+        try:
+            out = _house_plan(farm, house, as_of, mode, price, terms)  # DomainError propagates: the one house asked
+        except NoReferenceCurve as err:
+            if not is_unmodelled_breed(house.breed):
+                raise
+            logger.info("sale for %s: no growth standard (%s)", house.house_id, err.customer_message)
+            quiet = _unmodelled_text(source, price)
+            return PlanSaleOutput(
+                text_en=quiet.en,
+                text_te=quiet.te,
+                demo_data=source.demo_data,
+                as_of=as_of.isoformat(),
+                farm_mode=mode.value,
+                plans=[],
+                unavailable=[],
+            )
         return PlanSaleOutput(
             text_en=out.text_en,
             text_te=out.text_te,
@@ -299,10 +337,15 @@ def build_plan(source: DemoFarmSource, house_ref: str | None, live_price_per_kg:
     broilers = sorted((h for h in farm.houses if h.kind is HouseKind.BROILER), key=lambda h: h.number)
     plans: list[HouseSaleOut] = []
     unavailable: list[HouseUnavailableOut] = []
+    unmodelled = False
     for house in broilers:
         try:
             plans.append(_house_plan(farm, house, as_of, mode, price, terms))
         except DomainError as err:
+            if isinstance(err, NoReferenceCurve) and is_unmodelled_breed(house.breed):
+                logger.info("sale for %s: no growth standard (%s)", house.house_id, err.customer_message)
+                unmodelled = True
+                continue
             unavailable.append(
                 HouseUnavailableOut(
                     house_id=house.house_id,
@@ -318,13 +361,15 @@ def build_plan(source: DemoFarmSource, house_ref: str | None, live_price_per_kg:
     parts = [Text("Sell-day check for your broiler sheds.", "మీ బ్రాయిలర్ షెడ్ల అమ్మకం రోజు తనిఖీ.")]
     items = [Text(p.text_en, p.text_te) for p in plans]
     items += [unavailable_text(u) for u in unavailable]
-    if not plans and not unavailable:
+    if unmodelled:  # said once for the farm, after the sheds that could be planned
+        items.append(_unmodelled_text(source, price))
+    if not plans and not unavailable and not unmodelled:
         parts.append(Text("No broiler sheds to check.", "తనిఖీ చేయడానికి బ్రాయిలర్ షెడ్లు లేవు."))
     parts += items[:MAX_SPOKEN_HOUSES]
     return PlanSaleOutput(
         text_en=" ".join(p.en for p in parts),
         text_te=" ".join(p.te for p in parts),
-        demo_data=True,
+        demo_data=source.demo_data if unmodelled and not plans else True,
         as_of=as_of.isoformat(),
         farm_mode=mode.value,
         plans=plans,

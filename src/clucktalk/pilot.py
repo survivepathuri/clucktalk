@@ -15,7 +15,9 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 
+from clucktalk.domain.errors import NoReferenceCurve
 from clucktalk.domain.models import Farm, House, HouseKind
+from clucktalk.domain.reference import curve_for
 
 PILOT_FARM_ID = "farm-pilot"
 PILOT_FARM_NAME = "Pilot farm"
@@ -24,11 +26,13 @@ PILOT_FARM_NAME = "Pilot farm"
 PILOT_DEFAULT_BREED = "flock"  # reads naturally in "no verified flock growth standard"
 MAX_HOUSES = 20
 MAX_LABEL = 200
+MAX_PAPER_RATE_DELTA = Decimal("1000")  # a sanity ceiling in rupees per kg, not a sourced figure
 
 _FARM_FIELDS = {
     "feed_price_per_kg_inr",
     "feed_price_label",
     "simulated_live_bird_price_per_kg_inr",
+    "sale_price_below_paper_rate_inr",
     "supplier_lead_days",
     "houses",
 }
@@ -66,16 +70,23 @@ class PilotHouseSpec:
 class PilotFarmConfig:
     feed_price_per_kg: Decimal
     feed_price_label: str  # who set the price and how: kept word for word, never presented as a market fact
-    simulated_live_bird_price_per_kg: Decimal  # used only when the farmer states no rate; labeled Simulated
+    simulated_live_bird_price_per_kg: Decimal | None  # used only when the farmer states no rate; labeled Simulated
     supplier_lead_days: int
     houses: tuple[PilotHouseSpec, ...]
+    # His own rule: his price is the day's paper rate minus this many rupees per kg. None: no such rule.
+    sale_price_below_paper_rate: Decimal | None = None
+
+
+def is_unmodelled_breed(breed: str) -> bool:
+    """True for the placeholder breed: the farmer-facing text stays quiet about the missing growth standard."""
+    return breed == PILOT_DEFAULT_BREED
 
 
 def _is_int(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
 
-def _decimal(data: dict[str, Any], key: str) -> Decimal:
+def _decimal(data: dict[str, Any], key: str, *, zero_ok: bool = False, high: Decimal | None = None) -> Decimal:
     raw = data.get(key)
     if not isinstance(raw, str):
         raise PilotFarmError(f'{key} must be a number written as text, for example "40"')
@@ -83,8 +94,10 @@ def _decimal(data: dict[str, Any], key: str) -> Decimal:
         value = Decimal(raw)
     except InvalidOperation as exc:
         raise PilotFarmError(f'{key} must be a number written as text, for example "40"') from exc
-    if not value.is_finite() or value <= 0:
-        raise PilotFarmError(f"{key} must be greater than 0")
+    if not value.is_finite() or value < 0 or (value == 0 and not zero_ok):
+        raise PilotFarmError(f"{key} must be greater than 0" if not zero_ok else f"{key} must be 0 or more")
+    if high is not None and value > high:
+        raise PilotFarmError(f"{key} must be at most {high}")
     return value
 
 
@@ -148,13 +161,31 @@ def parse_pilot_farm(data: Any, name: str = "the pilot farm file") -> PilotFarmC
     specs = tuple(_house(h, i) for i, h in enumerate(houses))
     if len({h.number for h in specs}) != len(specs):
         raise PilotFarmError("house numbers must be unique")
+    delta = None
+    if "sale_price_below_paper_rate_inr" in data:
+        delta = _decimal(data, "sale_price_below_paper_rate_inr", zero_ok=True, high=MAX_PAPER_RATE_DELTA)
+    simulated = None
+    if "simulated_live_bird_price_per_kg_inr" in data or delta is None:
+        simulated = _decimal(data, "simulated_live_bird_price_per_kg_inr")
+    elif any(h.kind is HouseKind.BROILER and _has_curve(h.breed) for h in specs):
+        # the paper-rate rule replaces the simulated price only where no sale plan can ever use it
+        raise PilotFarmError("simulated_live_bird_price_per_kg_inr is needed: a house has a verified growth curve")
     return PilotFarmConfig(
         feed_price_per_kg=_decimal(data, "feed_price_per_kg_inr"),
         feed_price_label=label.strip(),
-        simulated_live_bird_price_per_kg=_decimal(data, "simulated_live_bird_price_per_kg_inr"),
+        simulated_live_bird_price_per_kg=simulated,
         supplier_lead_days=lead,
         houses=specs,
+        sale_price_below_paper_rate=delta,
     )
+
+
+def _has_curve(breed: str) -> bool:
+    try:
+        curve_for(breed)
+    except NoReferenceCurve:
+        return False
+    return True
 
 
 def load_pilot_farm_file(path: Path) -> PilotFarmConfig:
@@ -197,5 +228,6 @@ def build_pilot_farm(config: PilotFarmConfig, as_of: date) -> Farm:
         houses=tuple(houses),
         feed_price_per_kg=config.feed_price_per_kg,
         supplier_lead_days=config.supplier_lead_days,
-        live_bird_price_per_kg=config.simulated_live_bird_price_per_kg,
+        # With no simulated price (the paper-rate rule, no house with a curve) no sale plan runs: 1 is never shown.
+        live_bird_price_per_kg=config.simulated_live_bird_price_per_kg or Decimal(1),
     )
