@@ -1,0 +1,25 @@
+# One backup of the cloud pilot's state (run by clucktalk-backup.timer). Reuses deploy/backup_sqlite.py and
+# deploy/restore_test.py unchanged. Keeps the newest 7 backups. A backup that cannot be restored makes this unit fail.
+# The backups are on the SAME disk: they protect against a bad edit or a corrupt file, not against losing the
+# instance. Copy them off the server (deploy/cloud/RUNBOOK.md) or take a Lightsail snapshot for that.
+
+[Unit]
+Description=CluckTalk pilot (cloud): daily state backup and restore test
+
+[Service]
+Type=oneshot
+User=clucktalk-pilot
+Group=clucktalk-pilot
+WorkingDirectory=/opt/clucktalk
+UMask=0077
+ProtectSystem=strict
+ReadWritePaths=/var/backups/clucktalk-pilot
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/clucktalk/.venv/bin/python deploy/backup_sqlite.py --state /var/lib/clucktalk-pilot/state/pilot_state.sqlite3 --dest /var/backups/clucktalk-pilot --also /var/lib/clucktalk-pilot/state/usage_pilot.json --also /var/lib/clucktalk-pilot/pilot_farm.json --keep 7
+ExecStart=/opt/clucktalk/.venv/bin/python deploy/restore_test.py --dest /var/backups/clucktalk-pilot --live /var/lib/clucktalk-pilot/state/pilot_state.sqlite3

@@ -1,0 +1,44 @@
+# systemd unit for the CLOUD pilot. Installed by bootstrap.sh to /etc/systemd/system/. Same hardening as
+# deploy/clucktalk-pilot.service (the PC/server template), with Restart=always for an unattended server.
+# Runs as its own non-login user, writes only /var/lib/clucktalk-pilot, reads secrets from /etc/clucktalk/pilot.env.
+
+[Unit]
+Description=CluckTalk pilot (cloud; the farmer's own farm; prototype)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+User=clucktalk-pilot
+Group=clucktalk-pilot
+WorkingDirectory=/opt/clucktalk
+EnvironmentFile=/etc/clucktalk/pilot.env
+ExecStart=/opt/clucktalk/.venv/bin/python scripts/run_instance.py
+Restart=always
+RestartSec=5
+ProtectSystem=strict
+ReadWritePaths=/var/lib/clucktalk-pilot
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+UMask=0077
+ProtectProc=invisible
+ProcSubset=pid
+PrivateUsers=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+RestrictNamespaces=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+RemoveIPC=true
+
+[Install]
+WantedBy=multi-user.target

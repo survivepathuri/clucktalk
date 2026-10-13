@@ -1,0 +1,35 @@
+# Caddy for the CluckTalk cloud pilot. TEMPLATE: bootstrap.sh replaces @HOST@ (for example 203-0-113-10.sslip.io) and
+# writes the result to /etc/caddy/Caddyfile. Caddy gets and renews the Let's Encrypt certificate by itself.
+# Based on deploy/Caddyfile.template (same headers, same "no access log" choice), cut down to ONE site.
+#
+# Public: only what the farmer's phone page uses. Everything else answers 404 at the proxy. The MCP server (port
+# 8765) is not proxied at all and listens on 127.0.0.1 only; ufw allows only 22, 80 and 443.
+# Rate limits, the 8 KB body cap and the bearer-token check on /api/ are in the app (CLUCKTALK_RATE_PER_MINUTE,
+# 20 failed tokens per minute in total), so they hold whatever sits in front of it.
+
+{
+	# No admin endpoint (so change this file, then: sudo systemctl restart caddy), and no server banner.
+	admin off
+}
+
+@HOST@ {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	@farmer_page {
+		path / /static/* /api/pilot/ui /api/turn /healthz
+	}
+	handle @farmer_page {
+		reverse_proxy 127.0.0.1:8766 {
+			header_up Host {host}
+		}
+	}
+	handle {
+		respond "Not found" 404
+	}
+}

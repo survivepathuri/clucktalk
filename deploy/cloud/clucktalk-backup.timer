@@ -1,0 +1,13 @@
+# Runs the cloud pilot backup once a day at 02:30 server time (UTC on a default Lightsail Ubuntu = 08:00 IST).
+# Installed by bootstrap.sh and enabled there.
+
+[Unit]
+Description=CluckTalk pilot (cloud): daily backup
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
