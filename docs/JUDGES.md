@@ -72,7 +72,7 @@ The same syntax sets `CLUCKTALK_SIMULATOR_PORT` (default 8766) and `CLUCKTALK_NO
 | Safety rules in code | `src/clucktalk/domain/` (`status.py`, `triage.py`, `follow_up.py`, `thresholds.py`) |
 | Golden evals | `data/eval/golden_cases.json`, results in `docs/EVALS.md` |
 | The architecture | `docs/ARCHITECTURE.md`; the full design is `docs/DESIGN.md` |
-| What the pilot is | `docs/PILOT_RUNBOOK_WINDOWS.md` (a link was shared with one farmer on 7 October 2026; usage numbers pending) |
+| What the pilot is | `docs/PILOT_RUNBOOK_WINDOWS.md` (no farmer has used it yet; usage numbers pending; the Lightsail cloud pilot with the sample farm has been deployed since 2026-10-13) |
 | Friction with the platforms we used | `FRICTION_LOG.md`, `FEATURE_REQUESTS.md`, `docs/PRODUCT_FEEDBACK.md` |
 | Security notes | `SECURITY.md` |
 | The Agent Skill | `skills/clucktalk/` |
@@ -87,4 +87,4 @@ The same syntax sets `CLUCKTALK_SIMULATOR_PORT` (default 8766) and `CLUCKTALK_NO
 - **Telugu:** 86 of 433 strings reviewed by the builder, a native Telugu speaker; 347 pending (including the pilot page); no independent review. No Telugu voice was tested through Alexa+ (`docs/TELUGU_REVIEW.md`).
 - **In demo mode a shed with no alert is still described as doing well;** pilot mode says "no alert from the checks I can make".
 - **Live AI** (Amazon Bedrock Nova 2 Lite) is off by default; the server's live path was not verified end to end here.
-- **The farmer pilot** is hosted on the builder's own PC through a free tunnel. A pilot link was shared with one farmer on 7 October 2026; usage numbers are pending (`docs/RESULTS.md`, section 9).
+- **The farmer pilot** has a PC version (the builder's own PC through a free tunnel) and a Lightsail cloud version. No farmer has used the pilot yet, so usage numbers are pending (`docs/RESULTS.md`, section 9). The Lightsail cloud pilot with the sample farm has been deployed since 2026-10-13; results will be added after the pilot.

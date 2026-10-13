@@ -14,7 +14,7 @@ CluckTalk (కోడి మిత్ర) is a self-hosted MCP server for the Ale
 
 It gives a daily briefing that puts health items first, a voice record book (deaths, feed, weights, treatments) that is saved only after a spoken yes, health triage with a vet handoff (guidance, never a diagnosis or a dose; the vet message is a simulated SMS), a follow-up question days later, and feed and sale plans (the price is simulated). Each tool returns English text, Telugu text and structured data.
 
-I have not run it on real Alexa+. The Alexa+ developer tools are preview for select partners and I found no way to apply. The Devpost FAQ says a self-built web simulator acting as a real MCP client over Streamable HTTP meets the requirement `[FILL: check the FAQ wording and paste the link]`, so I tested it through my own Simulator. The Simulator picks tools with rule-based matchers.
+I have not run it on real Alexa+. The Alexa+ developer tools are preview for select partners and I found no way to apply. As I read the Devpost FAQ (https://amazonappdev2026.devpost.com/details/faqs), testing on real Alexa+ is not required, and a web simulator that I build myself and that acts as a real MCP client meets the requirement. So I tested it through my own Simulator. The Simulator picks tools with rule-based matchers.
 
 ## How I built it
 
@@ -55,7 +55,7 @@ Python 3.13, `mcp` 2.2.0, Model Context Protocol 2025-11-25 over Streamable HTTP
 
 ## What I built during the submission window vs before
 
-The submission window opened on 2026-08-31 `[FILL: confirm]`. The first commit is dated 2026-09-27 and there are 123 commits up to 2026-10-13, so everything in the repository's history falls inside the window. I did not find an earlier repository, and I cannot say what code I wrote outside this history.
+The submission window opened on 2026-08-31 `[FILL: confirm]`. The first commit is dated 2026-09-27 and there are 124 commits as of 2026-10-13 (`git rev-list --count HEAD`), so everything in the repository's history falls inside the window. I did not find an earlier repository, and I cannot say what code I wrote outside this history.
 
 ## Track and mini challenges
 

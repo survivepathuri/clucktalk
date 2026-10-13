@@ -59,7 +59,7 @@ flowchart LR
 
 - **Pilot page and Simulator.** One local web app. In the pilot it serves a Telugu phone page; in the demo it serves the Alexa+ Simulator with device modes and cards. The Simulator plays the part an Alexa+ host would play, so the MCP server can be tried while no Alexa+ device can load the add-on. Its source is `src/clucktalk/simulator/`.
 - **Intent layer.** Rules, not a model. It picks the tool from the farmer's words (English, Hinglish, typed Telugu) and passes the farmer's shed words through unchanged; the server resolves them. When no rule matches it says so and makes no tool call.
-- **MCP server.** `src/clucktalk/server/`, Streamable HTTP, MCP 2025-11-25. 14 tools: `get_farm_status`, `plan_feed`, `plan_sale`, `get_daily_briefing`, `start_health_check`, `get_health_check`, `prepare_vet_handoff`, `report_health_follow_up`, `log_daily_record`, `get_record_book`, `get_farm_profile`, `set_farm_mode`, `set_contract_terms`, `get_help`. Tools answer from precomputed state with no model call inside a tool (design rule, `docs/DESIGN.md` section 3). State is SQLite.
+- **MCP server.** `src/clucktalk/server/`, Streamable HTTP, MCP 2025-11-25. 14 tools: `get_farm_status`, `plan_feed`, `plan_sale`, `get_daily_briefing`, `start_health_check`, `get_health_check`, `prepare_vet_handoff`, `report_health_follow_up`, `log_daily_record`, `get_record_book`, `get_farm_profile`, `set_farm_mode`, `set_contract_terms`, `get_help`. Tools answer from stored state and never wait for a model. Two tools, `start_health_check` and `get_daily_briefing`, hand a job to a background worker that can call the model when live AI is chosen; everything else makes no model call (design rule, `docs/DESIGN.md` section 3). State is SQLite.
 - **Safety in code.** Levels, the minimum urgency of a health check, the follow-up rule and the vet advice are computed in `src/clucktalk/domain/` and `src/clucktalk/server/tools/`. See `docs/SAFETY_MATRIX.md`.
 
 ### What is real and what is simulated
@@ -70,14 +70,14 @@ flowchart LR
 | The Simulator and the Telugu pilot page | Real code, run locally; **plays the Alexa+ client role** | Not Amazon's tool and not an Alexa+ device. The page's logic is tested in Node against a hand-made DOM, not in a phone browser. |
 | Alexa+ device, Alexa's own speech, Amazon's review | **SIMULATED / not done** | Nothing was loaded on an Alexa+ device. Alexa composes its own speech from a tool's result. |
 | Farm data in the demo | **SIMULATED** (fictional farm) | `data/seed/demo_farm.json`, "Demo data" badge. |
-| Farm data in the pilot | Real farmer's houses, entered by the builder from what the farmer said | A pilot link was shared with one farmer on 7 October 2026; usage numbers are pending (`docs/PILOT_RUNBOOK_WINDOWS.md`). |
+| Farm data in the pilot | Real farmer's houses, entered by the builder from what the farmer said | No farmer has used the pilot yet, so usage numbers are pending (`docs/PILOT_RUNBOOK_WINDOWS.md`, `docs/CLOUD_PILOT.md`). |
 | Market prices, sensors, supplier, SMS, payments, the vet message | **SIMULATED** | Labelled "Simulated" in the text and the tool descriptions. No SMS is ever sent. |
 | Amazon Bedrock Nova 2 Lite | Mock by default; a few one-off live calls were made outside the server | The server's live-AI path was not verified end to end here (`docs/AWS_SETUP.md`, FL-014). |
 | Weather forecast | Off by default; simulated curve in the demo | The live Open-Meteo adapter was tested only with a fake transport (`docs/SOURCES.md`). |
 | Voice | The phone keyboard's own voice typing, in Telugu | No Telugu audio output exists; no Telugu voice was tested through Alexa+. |
 | Telugu wording | Mostly pending | 86 of 433 strings reviewed by the builder, a native Telugu speaker; 347 pending (including the pilot page); no independent review. (`docs/TELUGU_REVIEW.md`) |
 
-## 2. The pilot deployment (a link shared on 7 October 2026)
+## 2. The pilot deployment (the PC pilot; the Lightsail cloud pilot since 2026-10-13 is in `docs/CLOUD_PILOT.md`)
 
 ```mermaid
 flowchart LR
@@ -104,7 +104,7 @@ flowchart LR
   ST --> BK
 ```
 
-The plan is `docs/PILOT_RUNBOOK_WINDOWS.md`; the launcher scripts are in `deploy/windows/`. **A pilot link was shared with one farmer on 7 October 2026; usage numbers are pending.** This repository records no measurement of it: no usage numbers, no uptime and no speed.
+The plan is `docs/PILOT_RUNBOOK_WINDOWS.md`; the launcher scripts are in `deploy/windows/`. **No farmer has used the pilot yet, so usage numbers are pending; the Lightsail cloud pilot with the sample farm has been deployed since 2026-10-13, and results will be added after the pilot.** This repository records no measurement of it: no usage numbers, no uptime and no speed.
 
 ### What is real and what is simulated, and the honest limits
 

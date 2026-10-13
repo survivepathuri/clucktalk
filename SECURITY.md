@@ -36,7 +36,7 @@ Reported and left as they are, because they are SDK behaviors (pinned by tests, 
 
 ## What is not protected
 
-- **The pilot runs on a personal Windows PC** (the builder's own, through a free tunnel; a pilot link was shared with one farmer on 7 October 2026). Anyone with administrator access to it, anyone who takes the backup USB drive, and malware on it can read the farmer's records. The runbook recommends disk encryption; it does not check it. There is no hardened server, no firewall review and no intrusion monitoring.
+- **The pilot runs on a personal Windows PC** (the builder's own, through a free tunnel; no farmer has used it yet, and a Lightsail cloud pilot with the sample farm has been deployed since 2026-10-13). Anyone with administrator access to it, anyone who takes the backup USB drive, and malware on it can read the farmer's records. The runbook recommends disk encryption; it does not check it. There is no hardened server, no firewall review and no intrusion monitoring.
 - **No account system and no OAuth.** Access is one bearer token in a link. The server does not implement OAuth 2.1 with PKCE, Protected Resource Metadata or account linking, which Alexa+ add-ons need. A lost phone or a shared link means making a new token by hand.
 - **The tunnel is a third party.** A free Tailscale Funnel relays the connection; what it can see was not examined here.
 - **Alexa+ add-on security and data policies were not published to us**, so none were checked. We do not know what Amazon will require, and we make no claim about meeting it (`docs/ALEXA_READINESS.md`).
