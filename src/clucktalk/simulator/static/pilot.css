@@ -1,17 +1,38 @@
-:root { color-scheme: light dark; --bg: #fffdf7; --fg: #1d1b16; --muted: #5d584c; --card: #ffffff; --line: #d9d2bf;
-  --accent: #b96a00; --yes: #1f7a3a; --no: #a3281f; --chip: #fff1d6; --alertbg: #a3281f; --warnbg: #fdeceb; }
-@media (prefers-color-scheme: dark) { :root { --bg: #17140e; --fg: #f4efe2; --muted: #b8b09c; --card: #221e15;
-  --line: #3a3426; --accent: #f2a623; --yes: #49b26b; --no: #e0645b; --chip: #2f2711; --alertbg: #7f1d1d; --warnbg: #3a1a17; } }
+/* Frosted glass, kept light and quiet: a warm-white to pale green-blue page, translucent white surfaces with a thin light
+   border and a soft shadow. The blur is the only extra; without it (or with reduced transparency) the same surfaces are
+   opaque and carry the same text colours. The red ALERT bar is solid on purpose and never glass. */
+:root { color-scheme: light dark; --fg: #1d1b16; --muted: #55514a; --line: #b9b39f; --edge: #7b8a80;
+  --accent: #b96a00; --yes: #1f7a3a; --no: #a3281f; --no-btn: #a3281f; --alertbg: #a3281f;
+  --bg1: #fbf8ee; --bg2: #eef4ef; --bg3: #e4eef1; --blob1: rgba(190,225,205,.55); --blob2: rgba(255,226,170,.45);
+  --card: rgba(255,255,255,.66); --chip: rgba(255,255,255,.58); --chip-hover: rgba(255,255,255,.82); --you: rgba(214,236,226,.72);
+  --warnbg: rgba(253,236,235,.84); --pill: rgba(255,244,222,.72); --rim: rgba(255,255,255,.9); --hair: rgba(70,95,85,.24);
+  --shadow: inset 0 1px 0 var(--rim), 0 4px 16px rgba(40,60,50,.10), 0 1px 3px rgba(40,60,50,.08);
+  --blur: blur(14px) saturate(1.15); }
+@media (prefers-color-scheme: dark) { :root { --fg: #f4efe2; --muted: #bdb6a3; --line: #4a4434; --edge: #8a9a8f;
+  --accent: #f2a623; --yes: #2e7d46; --no: #f0877e; --no-btn: #a3281f; --alertbg: #7f1d1d;
+  --bg1: #17140e; --bg2: #141a17; --bg3: #111a1c; --blob1: rgba(60,110,85,.28); --blob2: rgba(140,100,30,.22);
+  --card: rgba(38,34,24,.66); --chip: rgba(52,46,32,.62); --chip-hover: rgba(70,62,42,.8); --you: rgba(40,66,56,.72);
+  --warnbg: rgba(70,28,25,.84); --pill: rgba(60,48,20,.72); --rim: rgba(255,255,255,.14); --hair: rgba(255,255,255,.16);
+  --shadow: inset 0 1px 0 var(--rim), 0 4px 16px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.3); } }
+/* No blur available, or the farmer's device asks for less transparency: opaque surfaces, same contrast. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --blur: none; --card: #fdfefb; --chip: #f4f8f3; --chip-hover: #ffffff; --you: #dcefe5; --warnbg: #fdeceb; --pill: #fff1d6; }
+  @media (prefers-color-scheme: dark) { :root { --card: #26221a; --chip: #342e20; --chip-hover: #463e2a; --you: #28423a; --warnbg: #461c19; --pill: #3c3014; } } }
+@media (prefers-reduced-transparency: reduce) {
+  :root { --blur: none; --card: #fdfefb; --chip: #f4f8f3; --chip-hover: #ffffff; --you: #dcefe5; --warnbg: #fdeceb; --pill: #fff1d6; }
+  @media (prefers-color-scheme: dark) { :root { --card: #26221a; --chip: #342e20; --chip-hover: #463e2a; --you: #28423a; --warnbg: #461c19; --pill: #3c3014; } } }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 18px/1.5 "Noto Sans Telugu", "Nirmala UI", system-ui, sans-serif; }
-.top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+body { margin: 0; min-height: 100vh; color: var(--fg);
+  background: radial-gradient(60rem 40rem at 8% -6%, var(--blob1), transparent 60%), radial-gradient(50rem 36rem at 100% 18%, var(--blob2), transparent 60%),
+    linear-gradient(165deg, var(--bg1) 0%, var(--bg2) 55%, var(--bg3) 100%) fixed var(--bg2); font: 18px/1.5 "Noto Sans Telugu", "Nirmala UI", system-ui, sans-serif; }
+.top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--hair); background: var(--card); box-shadow: var(--shadow); }
 .name { font-size: 1.1rem; }
-.badge { display: flex; flex-direction: column; font-size: .8rem; line-height: 1.3; padding: 4px 12px; border-radius: 14px; background: var(--chip); border: 1px solid var(--accent); }
+.badge { display: flex; flex-direction: column; font-size: .8rem; line-height: 1.3; padding: 4px 12px; border-radius: 14px; background: var(--pill); border: 1px solid var(--accent); }
 .badge small { font-size: .72rem; color: var(--muted); }
 main { padding: 0 16px 24px; max-width: 560px; margin: 0 auto; }
 .log { display: flex; flex-direction: column; gap: 10px; min-height: 120px; padding: 12px 0; }
-.bubble { padding: 10px 14px; border-radius: 14px; border: 1px solid var(--line); border-left: 5px solid var(--accent); background: var(--card); white-space: pre-wrap; overflow-wrap: anywhere; }
-.bubble.you { align-self: flex-end; background: var(--chip); border-left-color: var(--line); }
+.bubble { padding: 10px 14px; border-radius: 16px; border: 1px solid var(--hair); border-left: 5px solid var(--accent); background: var(--card); box-shadow: var(--shadow); white-space: pre-wrap; overflow-wrap: anywhere; }
+.bubble.you { align-self: flex-end; background: var(--you); border-left-color: var(--edge); }
 .bubble.warn { border-color: var(--no); border-left-color: var(--no); background: var(--warnbg); }
 .bubble[data-tag]::before { content: "\26A0  " attr(data-tag); display: block; font-weight: 800; color: var(--no); margin-bottom: 2px; }
 /* The red ALERT bar: a warning sign, the word, the shed and today's deaths big, then the one line to act on. */
@@ -27,7 +48,7 @@ main { padding: 0 16px 24px; max-width: 560px; margin: 0 auto; }
 /* The sell answer: the price big, the rule behind it small and grey. */
 .price { font-size: 2.4rem; font-weight: 800; line-height: 1.2; display: inline-block; }
 .rule { display: block; font-size: .85rem; color: var(--muted); margin-top: 4px; }
-.card { border: 2px solid var(--accent); border-radius: 16px; padding: 14px; background: var(--card); margin: 8px 0 12px; }
+.card { border: 1px solid var(--hair); border-radius: 18px; padding: 14px; background: var(--card); box-shadow: var(--shadow); margin: 8px 0 12px; }
 .fatal { margin: 16px; padding: 14px; font-size: 1.1rem; }
 #notice-list { padding-left: 1.2rem; }
 #notice-list li { margin-bottom: 10px; }
@@ -38,14 +59,23 @@ main { padding: 0 16px 24px; max-width: 560px; margin: 0 auto; }
 .pair.three .no { grid-column: 1 / -1; }
 .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
 .chips { grid-template-columns: repeat(2, 1fr); margin: 8px 0 14px; }
-button { font: inherit; color: var(--fg); min-height: 56px; border-radius: 14px; border: 1px solid var(--line); background: var(--chip); padding: 8px 12px; }
-button:disabled { opacity: .5; }
+button { font: inherit; color: var(--fg); min-height: 56px; border-radius: 16px; border: 1px solid var(--hair); background: var(--chip); padding: 8px 12px;
+  box-shadow: var(--shadow); cursor: pointer; }
+button:hover { background: var(--chip-hover); }
+button:disabled { opacity: .5; cursor: default; }
 button:focus-visible, input:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
 button.on { outline: 3px solid var(--accent); }
 .big { min-height: 64px; font-size: 1.15rem; font-weight: 700; }
-.yes { background: var(--yes); color: #fff; border-color: var(--yes); }
-.no { background: var(--no); color: #fff; border-color: var(--no); }
+.yes, .yes:hover { background: var(--yes); color: #fff; border-color: var(--yes); }
+.no, .no:hover { background: var(--no-btn); color: #fff; border-color: var(--no-btn); }
+button.questions { background: var(--you); border-color: var(--edge); font-weight: 700; }
 .ask { display: flex; gap: 8px; }
-.ask input { flex: 1; min-height: 56px; font: inherit; padding: 8px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); color: var(--fg); }
-.send { min-width: 64px; }
-input[type=number] { width: 100%; min-height: 56px; font: inherit; padding: 8px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); color: var(--fg); }
+.ask input { flex: 1; min-height: 56px; font: inherit; padding: 8px 12px; border-radius: 16px; border: 1px solid var(--edge); background: var(--card); color: var(--fg); box-shadow: var(--shadow); }
+.send { min-width: 64px; flex: none; white-space: nowrap; }
+.ask input { min-width: 0; }
+.ask input::placeholder { color: var(--muted); opacity: 1; }
+input[type=number] { width: 100%; min-height: 56px; font: inherit; padding: 8px 12px; border-radius: 16px; border: 1px solid var(--edge); background: var(--card); color: var(--fg); box-shadow: var(--shadow); }
+/* The blur itself, last: every glass surface in one place. The ALERT bar is not in this list. */
+.top, .bubble, .card, button, .badge, .ask input, input[type=number] { -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+.yes, .no { -webkit-backdrop-filter: none; backdrop-filter: none; }
+@media (prefers-reduced-motion: no-preference) { button { transition: background-color .15s, transform .1s; } button:active:not(:disabled) { transform: scale(.98); } }
