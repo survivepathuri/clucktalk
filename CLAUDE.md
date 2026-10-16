@@ -73,7 +73,7 @@ python tasks.py reset-demo  :: delete local farm state (.local/), so the demo st
 ### RULE 9: Secrets and safety of the repo
 - Never commit credentials, `.env`, AWS keys, or tokens. Commit `.env.example` only. `scripts/scan_secrets.py` runs in `check`.
 - Never commit `CLAUDE.local.md` or anything under `private/`; both are gitignored and stay local.
-- Commit author email is `Survivepathuri@gmail.com` (maintainer's explicit choice). No other personal data (emails, phone numbers, addresses, names) in files or commit messages.
+- Commits use the maintainer's configured git author email (their explicit choice; the address is not printed here). No other personal data (emails, phone numbers, addresses, names) in files or commit messages.
 - No real personal data of farmers in the repo. Use seeded demo data only, clearly fictional.
 
 ### RULE 10: Session memory (beat cold-start amnesia)

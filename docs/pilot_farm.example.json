@@ -1,6 +1,6 @@
 {
   "feed_price_per_kg_inr": "40",
-  "feed_price_label": "the builder's blend of your three feeds (49, 55 and 24 rupees per kg)",
+  "feed_price_label": "an invented example blend of three feeds (45, 40 and 35 rupees per kg)",
   "simulated_live_bird_price_per_kg_inr": "90",
   "sale_price_below_paper_rate_inr": "20",
   "supplier_lead_days": 2,

@@ -20,7 +20,7 @@ I have not run it on real Alexa+. The Alexa+ developer tools are preview for sel
 
 I built it alone with Claude Code, in Python 3.13 with Starlette, uvicorn, SQLite and Pydantic. A tool answers from stored state and does not wait for a model. Two tools, `start_health_check` and `get_daily_briefing`, hand a job to a background worker, and that worker is the only code that can call a model.
 
-Amazon Nova 2 Lite through the Bedrock Converse API is the live engine for those two agents. It answers closed-list questions only. My code sets the minimum urgency, so the model can raise it and never lower it. The integration is wired and covered by tests with a botocore Stubber, and I made a few one-off live calls on 2026-09-29. I have not run it end to end through the server.
+Amazon Nova 2 Lite through the Bedrock Converse API is wired for those two agents but is off by default. It answers closed-list questions only. My code sets the minimum urgency, so the model can raise it and never lower it. The integration is wired and covered by tests with a botocore Stubber, and I made a few one-off live calls on 2026-09-29. I have not run it end to end through the server.
 
 The demo and the Lightsail pilot use a rule-based stand-in labelled "AI: off", and pilot mode forces `MOCK_BEDROCK=true`. The pilot makes no Bedrock calls. A live call is capped at 100 a day and one every 4 seconds, and every call is written to a ledger. A script fails the build if anything refers to OpenSearch Serverless, because it bills for always-on capacity.
 
@@ -35,7 +35,7 @@ The cloud pilot runs on one AWS Lightsail server in Mumbai, with the sample farm
 
 ## Accomplishments
 
-14 tools, four MCP Apps cards, 3,132 automated tests collected on 2026-10-13, and 78 of 78 golden eval cases passing in mock mode on 2026-10-07. A safety matrix ties each rule to its source and tests. My friction log has 27 live entries (FL-001 to FL-030, three merged), and I wrote product feedback for the Amazon teams.
+14 tools, four MCP Apps cards, 3,403 automated tests (all passed in `python tasks.py check` on 2026-10-16), and 88 of 88 golden eval cases passing in mock mode on 2026-10-16. A safety matrix ties each rule to its source and tests. My friction log has 27 live entries (FL-001 to FL-030, three merged), and I wrote product feedback for the Amazon teams.
 
 ## What I learned
 
@@ -55,11 +55,11 @@ Python 3.13, `mcp` 2.2.0, Model Context Protocol 2025-11-25 over Streamable HTTP
 
 ## What I built during the submission window vs before
 
-The submission window opened on 2026-08-31 `[FILL: confirm]`. The first commit is dated 2026-09-27 and there are 124 commits as of 2026-10-13 (`git rev-list --count HEAD`), so everything in the repository's history falls inside the window. I did not find an earlier repository, and I cannot say what code I wrote outside this history.
+The submission window opened on 2026-08-31 `[FILL: confirm]`. The first commit is dated 2026-09-27 and there were 135 commits on 2026-10-16, before the audit-fix commits (`git rev-list --count HEAD`), so everything in the repository's history falls inside the window. I did not find an earlier repository, and I cannot say what code I wrote outside this history.
 
 ## Track and mini challenges
 
-Alexa+ track. Mini challenges: AWS Builder, claimed for the Lightsail pilot (runtime) and the Amazon Nova 2 Lite integration, with the limits above. Open Source: undecided, no claim.
+Alexa+ track. Mini challenges: AWS Builder, claimed only for what runs on AWS: the Lightsail instance in Mumbai that hosts the cloud pilot. The pilot makes no Bedrock calls, and Amazon Nova 2 Lite is not part of this claim (it is wired but off by default, and was called live only in four one-off calls outside the server). Open Source: undecided, no claim.
 
 ## Sources
 

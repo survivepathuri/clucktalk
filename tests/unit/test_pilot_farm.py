@@ -39,7 +39,7 @@ def test_the_example_file_builds_a_farm_with_no_records_at_all():
 
 def test_the_feed_price_label_is_kept_word_for_word():
     cfg = load_pilot_farm_file(EXAMPLE)
-    assert cfg.feed_price_label == "the builder's blend of your three feeds (49, 55 and 24 rupees per kg)"
+    assert cfg.feed_price_label == "an invented example blend of three feeds (45, 40 and 35 rupees per kg)"
 
 
 @pytest.mark.parametrize("field", ["name", "owner_first_name", "latitude", "longitude", "location", "phone"])

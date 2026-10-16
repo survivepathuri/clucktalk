@@ -47,10 +47,10 @@ explicit paths); (3) different OS users and folders (the `.service` templates); 
    `install -d -o clucktalk-pilot -g clucktalk-pilot -m 700 /var/backups/clucktalk-pilot` (without it the first night's backup fails).
 2. `git clone` the repository to `/opt/clucktalk`, then `cd /opt/clucktalk && python3.13 -m venv .venv && .venv/bin/pip install -r requirements.txt`.
 3. Put the farmer's real houses in `/var/lib/clucktalk-pilot/pilot_farm.json` (shape: `docs/pilot_farm.example.json`; the real
-   file is never committed). His feed price is the builder's blend of his three feeds (49, 55 and 24 rupees per kg); the
-   file keeps that wording with the number. Put his number for the daily deaths rule in
+   file is never committed). His feed price goes in the file with a label saying where it comes from (the example file
+   shows the shape with an invented blend of three feeds); the file keeps that wording with the number. Put his number for the daily deaths rule in
    `/var/lib/clucktalk-pilot/daily_deaths_rule.json` (shape: `docs/daily_deaths_rule.example.json`, with `"is_example": false`).
-   His "2 per 1000" was relayed, **not confirmed in writing**: confirm it with him.
+   His "2 per 1000" is a rule from a broiler farmer's practice (not measured data), relayed and **not confirmed in writing**: confirm it with him.
    **Ask him, for each house, how many birds died before the pilot started** (since the chicks were placed) and enter that
    number as `deaths_before_pilot` for the house (a whole number from 0 up to the birds placed; the example file shows it).
    CluckTalk only sees the deaths logged from now on; without this number the live birds, the room for new deaths and the
@@ -146,7 +146,7 @@ start, and the line can be removed with a note in the friction log.
   its own speech service; what is stored and that you can read it; he can ask for deletion at any time). He acknowledges it with one big button; nothing
   else on the page works until he has, and the page remembers it on that device (it asks again if the wording changes or the browser keeps
   nothing). Check it reads naturally to him before he starts: the Telugu is a draft pending a native speaker's review.
-- **What the farmer must be told, in Telugu, before he starts** (draft in `private/PILOT_TELUGU_DRAFTS.md`, to be reviewed by a
+- **What the farmer must be told, in Telugu, before he starts** (a Telugu draft, to be reviewed by a
   native speaker): what is stored; that you can read it; that he can ask for deletion; that this is a test and not a
   veterinary service; that an alert is a prompt to look, not a diagnosis; that the weight and total-mortality targets are
   general curves that may not fit his birds; and that his keyboard's voice typing sends his voice to its own speech service.

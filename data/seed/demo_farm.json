@@ -3,7 +3,7 @@
   "farm_id": "farm-demo-001",
   "name": "Sri Lakshmi Poultry Farm",
   "owner_first_name": "Ravi",
-  "location": "Eluru district, Andhra Pradesh",
+  "location": "fictional farm, location not stated",
   "simulated": {
     "feed_price_per_kg_inr": "38.50",
     "live_bird_price_per_kg_inr": "95.00",
