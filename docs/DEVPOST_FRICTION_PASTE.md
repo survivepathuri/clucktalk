@@ -17,7 +17,7 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 
 **Steps taken:** (1) `aws bedrock get-foundation-model-availability` for Nova Lite, Nova 2 Lite, Claude Sonnet 5, Claude Haiku 4.5; then `aws service-quotas list-service-quotas` vs `list-aws-default-service-quotas` for service code `bedrock`. (2) Two Support cases (opened about 28 Sep) replied 28-29 Sep: "Your Amazon Bedrock access has been enabled in the US East (N. Virginia) Region. You can begin using supported models immediately. Your account has been granted access to reduced quotas. Some higher-tier foundation models may not be available at this access level." Re-checked the same day with the CLI. (3) `aws bedrock-runtime converse --model-id us.amazon.nova-2-lite-v1:0 --messages '[{"role":"user","content":[{"text":"Say hello to a poultry farmer in one short sentence."}]}]' --inference-config '{"maxTokens":50}' --region us-east-1 --profile clucktalk`. One attempt, no retry loop.
 
-**Expected vs actual:** (1) Expected a model that reports `agreementAvailability: AVAILABLE`, `authorizationStatus: AUTHORIZED`, `entitlementAvailability: AVAILABLE` (Nova Lite, Nova 2 Lite) to be callable. Actual: the account's applied value is 0 for every on-demand, cross-region and global cross-region requests-per-minute and tokens-per-minute quota of all four models, while the AWS defaults are large (e.g. Claude Sonnet 5 cross-region tokens per minute: default 6,000,000, account 0; Nova Lite on-demand requests per minute: default 2,000, account 0, not adjustable). Nothing in the model availability response or the model access docs mentions it; only a quota-by-quota comparison shows it. (2) Expected either the new quota numbers or a list of which models are now enabled. Actual: the reply confirms access is "enabled" and quotas are "reduced" but states no numbers and no model list, so it cannot be used on its own to know which models are callable; only a fresh `list-service-quotas` call (or a real Converse call) can confirm that. Re-check: Nova 2 Lite got a real nonzero quota (20 req/min, 8M tokens/min, reduced from 2,000/8M) and already has its Marketplace agreement: callable, not yet call-tested. Haiku 4.5 also got a real nonzero quota (10 req/min, 5M tokens/min) but its Marketplace agreement is still `NOT_AVAILABLE`: the quota fix did not unblock it. Sonnet 5 cross-region tokens/min is still 0 (default 6,000,000) and its agreement is also `NOT_AVAILABLE`, the "higher-tier" model the reply warned about. (3) Expected a response (the model's quota was nonzero and its Marketplace agreement `AVAILABLE`). Actual: `AccessDeniedException`: "Your account is currently being verified. Verification normally takes less than 2 hours. Until your account is verified, you may not have access to this operation. If you are still receiving this message after more than 2 hours, please let us know by writing to AWS verification support (the address is in the error text)." This is a third gate never mentioned by `get-foundation-model-availability`, `list-service-quotas`, or the two Support replies; none of them surfaces "account verification" as a state, so a read-only check can look fully green and a live call can still fail.
+**Expected vs actual:** (1) Expected a model that reports `agreementAvailability: AVAILABLE`, `authorizationStatus: AUTHORIZED`, `entitlementAvailability: AVAILABLE` (Nova Lite, Nova 2 Lite) to be callable. Actual: the account's applied value is 0 for every on-demand, cross-region and global cross-region requests-per-minute and tokens-per-minute quota of all four models, while the AWS defaults are large (e.g. Claude Sonnet 5 cross-region tokens per minute: default 6,000,000, account 0; Nova Lite on-demand requests per minute: default 2,000, account 0, not adjustable). Nothing in the model availability response or the model access docs mentions it; only a quota-by-quota comparison shows it. (2) Expected either the new quota numbers or a list of which models are now enabled. Actual: the reply confirms access is "enabled" and quotas are "reduced" but states no numbers and no model list, so it cannot be used on its own to know which models are callable; only a fresh `list-service-quotas` call (or a real Converse call) can confirm that. Re-check: Nova 2 Lite got a real nonzero quota (20 req/min, reduced from the default 2,000; 8M tokens/min, the same as the default) and already has its Marketplace agreement: callable, not yet call-tested. Haiku 4.5 also got a real nonzero quota (10 req/min, 5M tokens/min) but its Marketplace agreement is still `NOT_AVAILABLE`: the quota fix did not unblock it. Sonnet 5 cross-region tokens/min is still 0 (default 6,000,000) and its agreement is also `NOT_AVAILABLE`, the "higher-tier" model the reply warned about. (3) Expected a response (the model's quota was nonzero and its Marketplace agreement `AVAILABLE`). Actual: `AccessDeniedException`: "Your account is currently being verified. Verification normally takes less than 2 hours. Until your account is verified, you may not have access to this operation. If you are still receiving this message after more than 2 hours, please let us know by writing to AWS verification support (the address is in the error text)." This is a third gate never mentioned by `get-foundation-model-availability`, `list-service-quotas`, or the two Support replies; none of them surfaces "account verification" as a state, so a read-only check can look fully green and a live call can still fail.
 
 **Workaround:** Request increases for the adjustable quotas and open a Support case for the non-adjustable zeros; re-run the quota comparison after each reply, per model, and also check `get-foundation-model-availability`'s `agreementAvailability` (a fixed quota does not imply a usable Marketplace agreement); for the verification gate, wait and re-check (Amazon's own estimate: under 2 hours; write to AWS verification support if it persists past that). Keep demo mode (no AWS) as the working path meanwhile.
 
@@ -61,6 +61,8 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 
 **Origin:** Amazon · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-27
 
+**Impact:** Card sizes had to be taken from the Alexa Presentation Language (skills) documentation, which does not describe add-on cards.
+
 **Tool / service:** Amazon Alexa+ developer docs (MCP Toolkit overview, Choose an integration approach, Functional Requirements, CX testing guide)
 
 **Task attempted:** Size the farm-status card for Echo Show and phone from official Amazon docs rather than guesses.
@@ -88,6 +90,8 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 
 **Origin:** Amazon · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-29
 
+**Impact:** Alerts were designed as pull-based only, and worker attribution around separately linked accounts, because push and per-person behaviour for MCP add-ons could not be verified.
+
 **Tool / service:** Amazon Alexa+ developer docs: `Alexa.ProactiveNotificationSource` (device-apis), MCP Toolkit Overview, MCP Toolkit Account Linking (all under developer.amazon.com/docs/alexaplus)
 
 **Task attempted:** Plan an "Owner-Worker mode" (owner assigns tasks by voice while away; a worker at the shed asks "my tasks today?" and marks them done; alerts should reach the owner) without guessing at undocumented behavior.
@@ -112,6 +116,8 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 ## Entry 5 (FL-013): AWS India (AISPL) account: plan not shown in the console; Claude-on-Bedrock and credit rules scattered or missing
 
 **Origin:** Amazon · **Tag:** [AWS account/credits] · **Severity:** Medium · **Date:** 2026-09-28
+
+**Impact:** The account plan could not be confirmed in the console and was checked with a CLI command; manual payment had to be set before the first Claude call.
 
 **Tool / service:** AWS Billing console (AWS India / AISPL account), AWS Knowledge Center, Amazon Bedrock (Anthropic via AWS Marketplace), AWS promotional credits
 
@@ -138,6 +144,8 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 
 **Origin:** Amazon · **Tag:** [AWS account/credits] · **Severity:** Medium · **Date:** 2026-09-28
 
+**Impact:** Following the recommended CLI setup would change the account plan, so the plan had to be checked and decided before setup.
+
 **Tool / service:** AWS Billing (Free vs Paid account plan), AWS IAM Identity Center, AWS CLI v2 guide, Amazon Bedrock model access
 
 **Task attempted:** Plan a least-privilege, key-free CLI identity for a brand-new account and check that Bedrock (Anthropic models) is usable, from AWS docs only.
@@ -162,6 +170,8 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 ## Entry 7 (FL-019): AWS CLI (Windows) crashes writing a Bedrock Converse response to a file if the model's text contains certain Unicode (an emoji), truncating the output with no clear signal
 
 **Origin:** Amazon · **Tag:** [AWS/Bedrock/Nova] · **Severity:** Medium · **Date:** 2026-09-29
+
+**Impact:** The usage counts of that call were lost and the identical call was run a second time to capture a clean reply.
 
 **Tool / service:** AWS CLI 2.37.4 on Windows, `aws bedrock-runtime converse`, redirecting `--output json` to a file
 
@@ -188,6 +198,8 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 
 **Origin:** Amazon · **Tag:** [AWS account/credits] · **Severity:** Low · **Date:** 2026-09-28
 
+**Impact:** The credits could not be read from the CLI with the least-privilege role; they were read in the console as root instead.
+
 **Tool / service:** AWS CLI 2.37.4 `aws billing get-credits`, IAM Identity Center permission set with `billing:GetCredits`
 
 **Task attempted:** Read the account's credits from the CLI with a least-privilege SSO role.
@@ -213,7 +225,7 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 
 **Origin:** Amazon · **Tag:** [AWS/Bedrock/Nova] · **Severity:** Low · **Date:** 2026-09-29
 
-**Impact:** For CluckTalk, photo triage was already designed as advisory below a deterministic safety floor, so little was lost. One sample at a very small resolution is an observation, not a benchmark.
+**Impact:** For CluckTalk, photo triage was already designed as advisory below a deterministic safety floor, so little was lost.
 
 **Tool / service:** Amazon Bedrock Runtime `Converse` (boto3 1.43.103), `us.amazon.nova-2-lite-v1:0`, us-east-1
 
@@ -522,7 +534,7 @@ Merged from FL-010 (2026-10-01 audit).
 
 ## Entry 21 (FL-031): Nova 2 Lite calls through the server code path all returned ThrottlingException; every Nova 2 Lite requests-per-minute and tokens-per-day quota in the account is 0
 
-**Origin:** Amazon · **Tag:** [Bedrock quotas] [AWS CLI login] · **Severity:** Medium · **Date:** 2026-10-17
+**Origin:** Amazon · **Tag:** [AWS/Bedrock/Nova] · **Severity:** Medium · **Date:** 2026-10-17
 
 **Impact:** No live Nova 2 Lite evidence could be produced on 2026-10-17; the earlier 2026-09-29 calls are the only recorded live calls.
 
@@ -543,3 +555,5 @@ Merged from FL-010 (2026-10-01 audit).
 **Reproduce:** `aws service-quotas list-service-quotas --service-code bedrock --region us-east-1 --query "Quotas[?contains(QuotaName,'Nova 2 Lite')]"`.
 
 **Evidence in the repo:** the server log lines "Bedrock ThrottlingException for agent triage / briefing"; 4 Bedrock request ids were captured locally (not committed). See also FL-014.
+
+**Why this matters to Alexa+ developers:** A new account can list a model as available and still answer every call with a ThrottlingException, with nothing in the error saying the quota is 0.

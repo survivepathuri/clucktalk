@@ -203,7 +203,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Reproduce:** Commands in docs/evidence/2026-10-01_basic_host/README.md.
 
 ## Entry 21 (FL-031): Nova 2 Lite calls all throttled; every Nova 2 Lite quota is 0
-**Tag:** [Bedrock quotas] [AWS CLI login] · **Origin:** Amazon · **Severity:** Medium
+**Tag:** [AWS/Bedrock/Nova] · **Origin:** Amazon · **Severity:** Medium
 **Task:** Run Nova 2 Lite once through CluckTalk's own server code path.
 **Steps:** aws login, 4 Converse calls, then list-service-quotas for bedrock.
 **Expected vs actual:** Expected a reply as on 2026-09-29; all 4 calls returned ThrottlingException. The account's Nova 2 Lite requests-per-minute and tokens-per-day quotas are 0 (AWS defaults: 2,000 per minute, 5,760,000,000 per day).
