@@ -4,17 +4,19 @@ Written for the Devpost fields, in the order of the form. Every claim points to 
 
 ## Project name
 
-CluckTalk (కోడి మిత్ర)
+CluckTalk (కోడి మిత్ర; Kodi Mitra, 'Chicken Friend')
 
 ## Tagline options (60 characters or fewer)
 
-1. A voice farm manager for broiler farmers, built on MCP
+Locked tagline, use this one: **Telugu-first MCP assistant for broiler farmers** (45 characters). It is option 1 below.
+
+1. Telugu-first MCP assistant for broiler farmers
 2. Poultry records by voice, read back and saved on a yes
 3. Telugu and English farm help, safety decided in code
 
 ## Opening sentence
 
-CluckTalk is a self-hosted MCP server (Streamable HTTP, spec 2025-11-25) for Alexa+, with a simulated Alexa+ web experience, that is built to help Indian broiler farmers keep their daily records and see which shed needs attention first.
+CluckTalk is a self-hosted MCP server (spec 2025-11-25, Streamable HTTP), shown through a simulated Alexa+ web app and the MCP Inspector. It is built to help Indian broiler farmers keep their daily records and see which shed needs attention first, through a simulated Alexa+ web experience.
 
 ## Inspiration
 

@@ -1,5 +1,7 @@
 # A one-page guide for judges
 
+**Telugu-first MCP assistant for broiler farmers**
+
 **Python 3.12 or 3.13 is required.** Check it first: `python --version` on Windows, `python3 --version` on macOS and Linux. Use `python` on Windows and `python3` on macOS and Linux in every command below. No virtual-environment activation is needed: `tasks.py` creates and uses its own `.venv`. Nothing else is needed: no Docker, no AWS account, no Node.js (Node.js is optional, see minute 2).
 
 If you do not have Python 3.12 or 3.13 (these install lines are the ones in the README; they were not run here):
@@ -8,7 +10,7 @@ If you do not have Python 3.12 or 3.13 (these install lines are the ones in the 
 - macOS: `brew install python@3.13`
 - Ubuntu: `sudo apt install python3 python3-venv` (Ubuntu 24.04 ships Python 3.12). On an older Ubuntu, use the deadsnakes PPA or `pyenv install 3.13`.
 
-CluckTalk (కోడి మిత్ర) is a self-hosted **MCP server** (Streamable HTTP, spec 2025-11-25) for Alexa+, with a simulated Alexa+ web experience, for Indian broiler farmers. It tracks a shed's deaths, feed and health checks, and tells the farmer in English and Telugu what needs attention first. Nothing here has run on an Alexa+ device; the Simulator plays the client role. The Simulator is a web app: browser UI plus a backend MCP client that sends initialize (protocolVersion 2025-11-25), tools/list and tools/call to the MCP server over Streamable HTTP; the browser page itself only calls the Simulator's own backend (README, "How the Simulator speaks MCP"; also in `docs/SIMULATOR_MCP.md`, with file and line references and a captured exchange).
+CluckTalk is a self-hosted MCP server (spec 2025-11-25, Streamable HTTP), shown through a simulated Alexa+ web app and the MCP Inspector. The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend'). It is for Indian broiler farmers. It tracks a shed's deaths, feed and health checks, and tells the farmer in English and Telugu what needs attention first. Nothing here has run on an Alexa+ device; the Simulator plays the client role. The Simulator is a web app: browser UI plus a backend MCP client that sends initialize (protocolVersion 2025-11-25), tools/list and tools/call to the MCP server over Streamable HTTP; the browser page itself only calls the Simulator's own backend (README, "How the Simulator speaks MCP"; also in `docs/SIMULATOR_MCP.md`, with file and line references and a captured exchange).
 
 ## Run it: three commands
 

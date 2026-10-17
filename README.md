@@ -1,5 +1,9 @@
 # CluckTalk (కోడి మిత్ర)
 
+**Telugu-first MCP assistant for broiler farmers**
+
+The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend').
+
 The voice farm manager for India's **broiler** poultry farmers. A self-hosted MCP server (implements MCP 2025-11-25 over
 Streamable HTTP) plus an Agent Skill, built for the Alexa+ add-on program.
 

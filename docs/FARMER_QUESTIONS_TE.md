@@ -1,5 +1,10 @@
 # రైతు ప్రశ్నల పత్రం (Telugu question sheet)
 
+English summary: this file is the Telugu question list used for the farmer conversation.
+It lists the questions in order (sheds, birds placed, placement date, deaths so far, feed stock), with an example answer and a unit for each.
+It is supporting material, not part of the running product, and the Telugu wording is a first draft.
+The rest of the page is in Telugu, with English column labels.
+
 Use this at the farm with `deploy/cloud/make-farm.ps1`. Ask each question in order, one shed at a time, and type the
 answer. The Telugu wording is a plain first draft: have a Telugu speaker read it before it is used with the farmer.
 
