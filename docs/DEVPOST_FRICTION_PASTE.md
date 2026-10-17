@@ -11,7 +11,7 @@ Every Alexa+, MCP, MCP Apps and AWS friction we hit while building CluckTalk, a 
 
 Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 
-**Tool / service:** Amazon Bedrock (us-east-1), Service Quotas, Bedrock Runtime `converse`, AWS Support (Service Quota increase cases), AWS CLI 2.37.4; new Paid-plan AWS India account
+**Tool / service:** Amazon Bedrock (us-east-1), Service Quotas, Bedrock Runtime `converse`, AWS Support (Service Quota increase cases), AWS CLI 2.37.4; new Paid-plan AWS India account (the builder's older AWS account; access to it was later lost, see FL-031)
 
 **Task attempted:** (1) Read-only check that the host model candidates can be called before the first (paid) request. (2) Get Bedrock inference quotas for Claude Haiku 4.5, Sonnet 5 and Nova 2 Lite above 0 in us-east-1. (3) One real (paid) Converse call to Amazon Nova 2 Lite, the one model confirmed both quota-ready and agreement-ready, to prove live Bedrock access end to end, with the account owner's explicit go-ahead.
 
@@ -23,7 +23,7 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 
 **Actionable suggestion:** Owners: Amazon Bedrock service team (`GetFoundationModelAvailability` and the model access console page); AWS Support (Bedrock quota-increase cases). Return a quota status in `GetFoundationModelAvailability` (for example `inferenceQuotaAvailability: ZERO`) and show 'your account's quota for this model is 0' on the model catalog page. Add a `verificationStatus` next to agreement, authorization, entitlement and Region, so a new account does not have to hit `AccessDeniedException` on a real call to find out. Support replies should state the new applied quota per model and whether the Marketplace agreement is still needed separately. Question to document: what is the expected path from reduced quotas to normal limits for a new account?
 
-**Time cost:** Waiting time recorded: two Support cases opened about 28 Sep, replies 28 to 29 Sep; the account-verification gate had cleared at the retry on 29 Sep after 1:30 PM IST (Amazon's own estimate: under 2 hours). Hands-on time: not recorded.
+**Time cost:** Waiting time recorded: two Support cases opened about 28 Sep, replies 28 to 29 Sep; the account-verification gate had cleared at the retry on 29 Sep after 1:30 PM IST (Amazon's own estimate: under 2 hours). Hands-on time: about 30 minutes (the builder's statement).
 
 **Reproduce:** Commands are in `docs/AWS_SETUP.md` §5 and §5.1: `aws bedrock get-foundation-model-availability`; `aws service-quotas list-service-quotas` against `list-aws-default-service-quotas` for service code `bedrock`; the Converse call is in this entry's Steps. They reproduce only on a new account in the same state.
 
@@ -538,7 +538,7 @@ Merged from FL-010 (2026-10-01 audit).
 
 **Impact:** No live Nova 2 Lite evidence could be produced on 2026-10-17; the earlier 2026-09-29 calls are the only recorded live calls.
 
-**Tool / service:** Amazon Bedrock Runtime `Converse` (`us.amazon.nova-2-lite-v1:0`, us-east-1); Service Quotas (`bedrock`); `aws login`.
+**Tool / service:** Amazon Bedrock Runtime `Converse` (`us.amazon.nova-2-lite-v1:0`, us-east-1); Service Quotas (`bedrock`); `aws login`. Recorded on the builder's newer AWS account, opened later because access to the older account (FL-014) was lost. New accounts start with Nova 2 Lite quotas at 0.
 
 **Task attempted:** Run Nova 2 Lite once through CluckTalk's own server code path (triage and briefing agents, synthetic demo farm, local process, live Bedrock for that process only).
 
@@ -554,6 +554,32 @@ Merged from FL-010 (2026-10-01 audit).
 
 **Reproduce:** `aws service-quotas list-service-quotas --service-code bedrock --region us-east-1 --query "Quotas[?contains(QuotaName,'Nova 2 Lite')]"`.
 
-**Evidence in the repo:** the server log lines "Bedrock ThrottlingException for agent triage / briefing"; 4 Bedrock request ids were captured locally (not committed). See also FL-014.
+**Evidence in the repo:** the server log lines "Bedrock ThrottlingException for agent triage / briefing"; 4 Bedrock request ids were captured locally (not committed). See also FL-014. FL-014 and FL-031 were recorded on two different AWS accounts: the nonzero Nova 2 Lite quota of FL-014 (20 requests per minute) belonged to the older account and was not reverted.
 
 **Why this matters to Alexa+ developers:** A new account can list a model as available and still answer every call with a ThrottlingException, with nothing in the error saying the quota is 0.
+
+## Entry 22 (FL-032): With an `aws login` profile, building a real boto3 client needs `botocore[crt]` (awscrt); a unit test failed and the server needed temporary environment credentials
+
+**Origin:** Amazon · **Tag:** [AWS/Bedrock/Nova] · **Severity:** Medium · **Date:** Detail not recorded (builder-reported; the `aws login` session of FL-031 was on 2026-10-17)
+
+**Impact:** A unit test failed on the builder's machine, and the live-path run had to use a different credential route. Time lost: Detail not recorded.
+
+**Tool / service:** AWS CLI `aws login` credentials; boto3 1.43.103 / botocore 1.43.104 (the pinned versions in `docs/VERSIONS.md`; the versions on the day are not recorded).
+
+**Task attempted:** Use the credentials of an `aws login` profile with a real boto3 client, for CluckTalk's live Bedrock path and its tests.
+
+**Steps taken:** Detail not recorded.
+
+**Expected vs actual:** Expected a boto3 client to build from the `aws login` profile like from any other profile. Actual (builder-reported): botocore requires `botocore[crt]` (the `awscrt` package) when a real client is built with an `aws login` profile, which made a unit test fail on the builder's machine. The exact error text is not recorded.
+
+**Workaround:** Temporary environment credentials for the server process only. How they were obtained and set is not recorded. `botocore[crt]` is not in `requirements.txt` and was not added.
+
+**Actionable suggestion:** Owner: AWS CLI and botocore (boto3) maintainers. State on the `aws login` documentation page that using the profile from boto3 requires `botocore[crt]`, and make the botocore error name that extra (the error text was not recorded, so whether it already does is not known).
+
+**Time cost:** not recorded
+
+**Reproduce:** Detail not recorded.
+
+**Evidence in the repo:** none (builder-reported). See also FL-031.
+
+**Why this matters to Alexa+ developers:** A developer who signs in with `aws login` and then builds a boto3 client for Bedrock can hit a missing-extra failure that the login page does not mention.

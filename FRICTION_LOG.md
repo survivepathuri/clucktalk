@@ -11,7 +11,7 @@ Only real experiences. Never batched, never invented.
 
 Every entry uses the six official fields (task attempted, steps taken, expected vs actual, severity, workaround, actionable suggestion) plus date, tag, `Time cost:` (only what was recorded in the sessions, otherwise "not recorded"), `Reproduce:` (a real command or the exact test name, otherwise "documentation-based, no command") and `Evidence:` (only files that exist in this repo). Every suggestion names the owner, the page or mechanism and the concrete change; open points are phrased as questions to the owner.
 
-**Counts:** 31 FL numbers (FL-001 to FL-031): 28 live entries (21 in this file, 7 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
+**Counts:** 32 FL numbers (FL-001 to FL-032): 29 live entries (22 in this file, 7 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
 
 **FL numbers are stable ids.** They are never reused or renumbered, so every reference in the code, the docs and the submission copies stays valid. FL-010, FL-016 and FL-018 were merged into FL-007 and FL-014 (2026-10-01 audit); their numbers remain as short stubs.
 
@@ -37,7 +37,7 @@ Audit of 2026-10-01: three pairs of entries that describe one problem were merge
 | FL-026 | [Alexa+/MCP] | this file |
 | FL-027 | [AWS App Runner docs] | this file (builder-reported) |
 | FL-028 to FL-030 | [Dev] | `docs/DEV_NOTES.md` |
-| FL-031 | [AWS/Bedrock/Nova] | this file |
+| FL-031, FL-032 | [AWS/Bedrock/Nova] | this file |
 
 ---
 
@@ -237,7 +237,7 @@ See also: FL-012 (the plan decides what the recommended CLI setup does to a new 
 ### FL-014: New account: Bedrock reports models "AVAILABLE" but every inference quota is 0; after quota cases, a Marketplace agreement and an "account verification" gate still blocked the first call
 Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages: quotas (2026-09-28), Support reply (2026-09-29), first call (2026-09-29).
 Date: 2026-09-28
-Tool / service: Amazon Bedrock (us-east-1), Service Quotas, Bedrock Runtime `converse`, AWS Support (Service Quota increase cases), AWS CLI 2.37.4; new Paid-plan AWS India account
+Tool / service: Amazon Bedrock (us-east-1), Service Quotas, Bedrock Runtime `converse`, AWS Support (Service Quota increase cases), AWS CLI 2.37.4; new Paid-plan AWS India account (the builder's older AWS account; access to it was later lost, see FL-031)
 Tag: [AWS/Bedrock/Nova]
 Task attempted: (1) Read-only check that the host model candidates can be called before the first (paid) request. (2) Get Bedrock inference quotas for Claude Haiku 4.5, Sonnet 5 and Nova 2 Lite above 0 in us-east-1. (3) One real (paid) Converse call to Amazon Nova 2 Lite, the one model confirmed both quota-ready and agreement-ready, to prove live Bedrock access end to end, with the account owner's explicit go-ahead.
 Steps taken: (1) `aws bedrock get-foundation-model-availability` for Nova Lite, Nova 2 Lite, Claude Sonnet 5, Claude Haiku 4.5; then `aws service-quotas list-service-quotas` vs `list-aws-default-service-quotas` for service code `bedrock`. (2) Two Support cases (opened about 28 Sep) replied 28-29 Sep: "Your Amazon Bedrock access has been enabled in the US East (N. Virginia) Region. You can begin using supported models immediately. Your account has been granted access to reduced quotas. Some higher-tier foundation models may not be available at this access level." Re-checked the same day with the CLI. (3) `aws bedrock-runtime converse --model-id us.amazon.nova-2-lite-v1:0 --messages '[{"role":"user","content":[{"text":"Say hello to a poultry farmer in one short sentence."}]}]' --inference-config '{"maxTokens":50}' --region us-east-1 --profile clucktalk`. One attempt, no retry loop.
@@ -246,7 +246,7 @@ Severity: High
 Impact: Blocks every live Bedrock call; the quota fix goes through quota requests and AWS Support with unknown lead time.
 Workaround: Request increases for the adjustable quotas and open a Support case for the non-adjustable zeros; re-run the quota comparison after each reply, per model, and also check `get-foundation-model-availability`'s `agreementAvailability` (a fixed quota does not imply a usable Marketplace agreement); for the verification gate, wait and re-check (Amazon's own estimate: under 2 hours; write to AWS verification support if it persists past that). Keep demo mode (no AWS) as the working path meanwhile.
 Actionable suggestion: Owners: Amazon Bedrock service team (`GetFoundationModelAvailability` and the model access console page); AWS Support (Bedrock quota-increase cases). Return a quota status in `GetFoundationModelAvailability` (for example `inferenceQuotaAvailability: ZERO`) and show 'your account's quota for this model is 0' on the model catalog page. Add a `verificationStatus` next to agreement, authorization, entitlement and Region, so a new account does not have to hit `AccessDeniedException` on a real call to find out. Support replies should state the new applied quota per model and whether the Marketplace agreement is still needed separately. Question to document: what is the expected path from reduced quotas to normal limits for a new account?
-Time cost: Waiting time recorded: two Support cases opened about 28 Sep, replies 28 to 29 Sep; the account-verification gate had cleared at the retry on 29 Sep after 1:30 PM IST (Amazon's own estimate: under 2 hours). Hands-on time: not recorded.
+Time cost: Waiting time recorded: two Support cases opened about 28 Sep, replies 28 to 29 Sep; the account-verification gate had cleared at the retry on 29 Sep after 1:30 PM IST (Amazon's own estimate: under 2 hours). Hands-on time: about 30 minutes (the builder's statement).
 Reproduce: Commands are in `docs/AWS_SETUP.md` §5 and §5.1: `aws bedrock get-foundation-model-availability`; `aws service-quotas list-service-quotas` against `list-aws-default-service-quotas` for service code `bedrock`; the Converse call is in this entry's Steps. They reproduce only on a new account in the same state.
 Evidence: `docs/AWS_SETUP.md` §5, §5.1 and the verification retry notes; `docs/VERSIONS.md`.
 
@@ -391,7 +391,7 @@ Doc URL: not recorded (the page's URL is not in `docs/SOURCES.md`).
 
 ### FL-031: Nova 2 Lite calls through the server code path all returned ThrottlingException; every Nova 2 Lite requests-per-minute and tokens-per-day quota in the account is 0
 Date: 2026-10-17
-Tool / service: Amazon Bedrock Runtime `Converse` (`us.amazon.nova-2-lite-v1:0`, us-east-1); Service Quotas (`bedrock`); `aws login`.
+Tool / service: Amazon Bedrock Runtime `Converse` (`us.amazon.nova-2-lite-v1:0`, us-east-1); Service Quotas (`bedrock`); `aws login`. Recorded on the builder's newer AWS account, opened later because access to the older account (FL-014) was lost. New accounts start with Nova 2 Lite quotas at 0.
 Tag: [AWS/Bedrock/Nova]
 Task attempted: Run Nova 2 Lite once through CluckTalk's own server code path (triage and briefing agents, synthetic demo farm, local process, live Bedrock for that process only).
 Steps taken: `aws login --region us-east-1` (console sign-in by the owner, temporary credentials). Started the real server with MOCK_BEDROCK=false, 4 Converse calls (2 triage, 2 briefing), `maxTokens` clamped to 300, call cap 6. Then `aws service-quotas list-service-quotas` and `list-aws-default-service-quotas` for `bedrock`.
@@ -402,5 +402,22 @@ Workaround: None applied. A quota increase request is the owner's decision (Serv
 Actionable suggestion: Owner: Amazon Bedrock / Service Quotas team. Show a clear "quota is 0" message in the ThrottlingException text (it says only "Too many requests"), and say in the console why a new account's Nova quotas are 0 when the model is listed as available.
 Time cost: about 15 minutes
 Reproduce: `aws service-quotas list-service-quotas --service-code bedrock --region us-east-1 --query "Quotas[?contains(QuotaName,'Nova 2 Lite')]"`.
-Evidence: the server log lines "Bedrock ThrottlingException for agent triage / briefing"; 4 Bedrock request ids were captured locally (not committed). See also FL-014.
+Evidence: the server log lines "Bedrock ThrottlingException for agent triage / briefing"; 4 Bedrock request ids were captured locally (not committed). See also FL-014. FL-014 and FL-031 were recorded on two different AWS accounts: the nonzero Nova 2 Lite quota of FL-014 (20 requests per minute) belonged to the older account and was not reverted.
 Verified on: 2026-10-17
+
+### FL-032: With an `aws login` profile, building a real boto3 client needs `botocore[crt]` (awscrt); a unit test failed and the server needed temporary environment credentials
+Date: Detail not recorded (builder-reported; the `aws login` session of FL-031 was on 2026-10-17)
+Tool / service: AWS CLI `aws login` credentials; boto3 1.43.103 / botocore 1.43.104 (the pinned versions in `docs/VERSIONS.md`; the versions on the day are not recorded).
+Tag: [AWS/Bedrock/Nova]
+Task attempted: Use the credentials of an `aws login` profile with a real boto3 client, for CluckTalk's live Bedrock path and its tests.
+Steps taken: Detail not recorded.
+Expected vs actual: Expected a boto3 client to build from the `aws login` profile like from any other profile. Actual (builder-reported): botocore requires `botocore[crt]` (the `awscrt` package) when a real client is built with an `aws login` profile, which made a unit test fail on the builder's machine. The exact error text is not recorded.
+Severity: Medium
+Impact: A unit test failed on the builder's machine, and the live-path run had to use a different credential route. Time lost: Detail not recorded.
+Workaround: Temporary environment credentials for the server process only. How they were obtained and set is not recorded. `botocore[crt]` is not in `requirements.txt` and was not added.
+Actionable suggestion: Owner: AWS CLI and botocore (boto3) maintainers. State on the `aws login` documentation page that using the profile from boto3 requires `botocore[crt]`, and make the botocore error name that extra (the error text was not recorded, so whether it already does is not known).
+Time cost: not recorded
+Reproduce: Detail not recorded.
+Evidence: none in the repository (builder-reported).
+See also: FL-031.
+Verified on: Detail not recorded

@@ -210,3 +210,12 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 **Workaround:** None applied; a quota increase is the owner's decision.
 **Suggestion:** Bedrock / Service Quotas team: say "quota is 0" in the ThrottlingException text.
 **Reproduce:** aws service-quotas list-service-quotas --service-code bedrock --region us-east-1.
+
+## Entry 22 (FL-032): `aws login` profile needs botocore[crt] for a real boto3 client
+**Tag:** [AWS/Bedrock/Nova] · **Origin:** Amazon · **Severity:** Medium
+**Task:** Use an `aws login` profile with a real boto3 client for the Bedrock path and the tests.
+**Steps:** Detail not recorded.
+**Expected vs actual:** Expected the client to build. Builder-reported: botocore requires botocore[crt] (awscrt) for a real client with an `aws login` profile, and a unit test failed on the builder's machine.
+**Workaround:** Temporary environment credentials for the server process only.
+**Suggestion:** AWS CLI / botocore maintainers: document the extra on the `aws login` page and name it in the error.
+**Reproduce:** Detail not recorded.
