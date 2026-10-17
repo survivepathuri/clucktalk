@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from pathlib import Path
 
 import httpx2
@@ -53,10 +54,20 @@ def test_each_starter_is_answered_by_the_expected_tool_with_its_telugu(sim: Sim,
     assert sc["text_te"] and out["speech"]  # a Telugu answer and the English side it is shown over
 
 
-def test_the_health_chip_brings_the_vet_offer_and_the_yes_chip_takes_it_up(sim: Sim):  # noqa: F811
+def test_the_yes_no_taps_are_offered_exactly_when_the_host_takes_the_vet_offer_up(sim: Sim):  # noqa: F811
     health = next(s for s in STARTERS if s.text.en == "Health check")
-    first = sim.turn(health.say)
-    assert first["result"]["structuredContent"]["handoff_offered"] is True  # the page then shows the Yes / No chips
+    for _ in range(40):  # the first reply to a new check says "While I check" and carries no offer sentence
+        first = sim.turn(health.say)
+        sc = first["result"]["structuredContent"]
+        assert bool(first.get("vet_offer")) == (
+            sc["handoff_offered"] is True and "Shall I send a summary" in sc["text_en"]
+        )
+        if first.get("vet_offer"):
+            break
+        assert sim.turn(REPLIES[0].say)["kind"] == "fallback"  # a yes tap here would find nothing waiting
+        time.sleep(0.25)
+    else:
+        pytest.fail("the health check never produced the vet offer")
     yes = sim.turn(REPLIES[0].say)
     assert yes["intent"]["tool"] == "prepare_vet_handoff" and yes["awaiting_answer"] is True
     no = sim.turn(REPLIES[1].say)  # a no keeps the summary unsent

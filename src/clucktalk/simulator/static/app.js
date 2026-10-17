@@ -396,9 +396,9 @@ async function ask(utterance, via) {
   const te = teOf(body);
   record.te = !!te;
   sayAnswer(speaker, body.kind === "tool" ? "ct" : "host", body.speech, te);
-  // The vet-summary offer and any read-back wait for a yes or no: offer those two taps.
-  const sc = (body.result && body.result.structuredContent) || {};
-  showReplies(!!body.awaiting_answer || sc.handoff_offered === true);
+  // The vet-summary offer and any read-back wait for a yes or no: offer those two taps. Only when the host will take
+  // the yes up (vet_offer): the first reply to a new health check says "While I check", without the offer sentence.
+  showReplies(!!body.awaiting_answer || body.vet_offer === true);
   entry.line("kv", `spoken (${voice ? voice.name + ", " + voice.lang : "no voice"}): ${body.speech}`);
   $("dev-sum").textContent = `last turn ${turnMs} ms · MCP ${tm.mcp_ms ?? "–"} ms`;
   state.busy = false;

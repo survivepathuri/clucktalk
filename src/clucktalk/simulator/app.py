@@ -694,6 +694,7 @@ def build_app(
                         and this_turn == conv.turns
                     ):
                         conv.vet_offer.update(house=sc["house_id"])
+                        out["vet_offer"] = True  # the page may now offer a yes tap: the host will take it up
                     if (
                         sc.get("status") == "needs_confirmation"
                         and isinstance(sc.get("proposal_id"), str)
