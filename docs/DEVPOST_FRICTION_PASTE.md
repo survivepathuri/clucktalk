@@ -1,6 +1,6 @@
 # Friction log: submission copy (full)
 
-Every Alexa+, MCP, MCP Apps and AWS friction we hit while building CluckTalk, a voice farm manager for Indian poultry farmers. Entries are numbered in reading order: Amazon-owned entries first (Entries 1 to 5 are the ones we think Amazon's teams most need), then MCP and MCP Apps entries that matter to Alexa+ developers, then the ones least tied to Amazon. The FL number is the stable id used in `FRICTION_LOG.md`. **Origin** says whose product the friction is about: **Amazon** (Alexa+ docs, AWS and Bedrock), **MCP Apps SDK** (the MCP Apps spec and its reference host) or **third-party MCP SDK** (the Python `mcp` SDK, the MCP spec and the MCP Inspector). Our own tooling notes are not included. Severity is one word, rated from the owner's point of view: Critical (blocks work) · High (major workaround) · Medium (slows work) · Low (annoyance / doc nit).
+Every Alexa+, MCP, MCP Apps and AWS friction we hit while building CluckTalk, a Telugu-first MCP assistant for Indian broiler farmers. Entries are numbered in reading order: Amazon-owned entries first (Entries 1 to 5 are the ones we think Amazon's teams most need), then MCP and MCP Apps entries that matter to Alexa+ developers, then the ones least tied to Amazon. The FL number is the stable id used in `FRICTION_LOG.md`. **Origin** says whose product the friction is about: **Amazon** (Alexa+ docs, AWS and Bedrock), **MCP Apps SDK** (the MCP Apps spec and its reference host) or **third-party MCP SDK** (the Python `mcp` SDK, the MCP spec and the MCP Inspector). Our own tooling notes are not included. Severity is one word, rated from the owner's point of view: Critical (blocks work) · High (major workaround) · Medium (slows work) · Low (annoyance / doc nit).
 
 
 ## Entry 1 (FL-014): New account: Bedrock reports models "AVAILABLE" but every inference quota is 0; after quota cases, a Marketplace agreement and an "account verification" gate still blocked the first call
@@ -560,7 +560,7 @@ Merged from FL-010 (2026-10-01 audit).
 
 ## Entry 22 (FL-032): With an `aws login` profile, building a real boto3 client needs `botocore[crt]` (awscrt); a unit test failed and the server needed temporary environment credentials
 
-**Origin:** Amazon · **Tag:** [AWS/Bedrock/Nova] · **Severity:** Medium · **Date:** Detail not recorded (builder-reported; the `aws login` session of FL-031 was on 2026-10-17)
+**Origin:** Amazon · **Tag:** [AWS/Bedrock/Nova] · **Severity:** Medium · **Date:** 2026-10-17 (seen during the Nova server-path attempt and during `tasks.py check` on the builder's machine)
 
 **Impact:** A unit test failed on the builder's machine, and the live-path run had to use a different credential route. Time lost: Detail not recorded.
 

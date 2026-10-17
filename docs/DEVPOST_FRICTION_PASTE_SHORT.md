@@ -1,6 +1,6 @@
 # Friction log: submission copy (short)
 
-Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm manager for Indian poultry farmers. Amazon-owned entries first (Entries 1 to 5 are the ones Amazon's teams most need), then MCP and MCP Apps entries that matter to Alexa+ developers, then the least Amazon-related. Severity is one word, rated for the owner of the criticised tool. The FL number is the stable id used in `FRICTION_LOG.md`; the full version is `DEVPOST_FRICTION_PASTE.md`.
+Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first MCP assistant for Indian broiler farmers. Amazon-owned entries first (Entries 1 to 5 are the ones Amazon's teams most need), then MCP and MCP Apps entries that matter to Alexa+ developers, then the least Amazon-related. Severity is one word, rated for the owner of the criticised tool. The FL number is the stable id used in `FRICTION_LOG.md`; the full version is `DEVPOST_FRICTION_PASTE.md`.
 
 
 ## Entry 1 (FL-014): New-account Bedrock access has three hidden gates
@@ -213,8 +213,8 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a voice farm man
 
 ## Entry 22 (FL-032): `aws login` profile needs botocore[crt] for a real boto3 client
 **Tag:** [AWS/Bedrock/Nova] · **Origin:** Amazon · **Severity:** Medium
-**Task:** Use an `aws login` profile with a real boto3 client for the Bedrock path and the tests.
-**Steps:** Detail not recorded.
+**Task:** Use an `aws login` profile with a real boto3 client (Bedrock path, tests).
+**Date:** 2026-10-17, seen during the Nova server-path attempt and during tasks.py check (builder's machine).
 **Expected vs actual:** Expected the client to build. Builder-reported: botocore requires botocore[crt] (awscrt) for a real client with an `aws login` profile, and a unit test failed on the builder's machine.
 **Workaround:** Temporary environment credentials for the server process only.
 **Suggestion:** AWS CLI / botocore maintainers: document the extra on the `aws login` page and name it in the error.

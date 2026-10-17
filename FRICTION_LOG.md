@@ -406,7 +406,7 @@ Evidence: the server log lines "Bedrock ThrottlingException for agent triage / b
 Verified on: 2026-10-17
 
 ### FL-032: With an `aws login` profile, building a real boto3 client needs `botocore[crt]` (awscrt); a unit test failed and the server needed temporary environment credentials
-Date: Detail not recorded (builder-reported; the `aws login` session of FL-031 was on 2026-10-17)
+Date: 2026-10-17 (seen during the Nova server-path attempt and during `tasks.py check` on the builder's machine)
 Tool / service: AWS CLI `aws login` credentials; boto3 1.43.103 / botocore 1.43.104 (the pinned versions in `docs/VERSIONS.md`; the versions on the day are not recorded).
 Tag: [AWS/Bedrock/Nova]
 Task attempted: Use the credentials of an `aws login` profile with a real boto3 client, for CluckTalk's live Bedrock path and its tests.
