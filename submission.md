@@ -91,9 +91,7 @@ The first commit is dated 2026-09-27 (`git log --reverse`). The commit counts pe
 
 Pre-existing projects: none found. The first commit (`d1d1662`, 2026-09-27) holds only build scaffolding (task runner, secret and cost checks, version pins, license); the product code follows in later commits. The GitHub repository was created on 2026-09-30. A check on 2026-10-18 (`gh repo list`, and folder names on my machine) found no earlier repository and no earlier project folder for it. Commit titles use plan-day labels; the dates are the commit dates. It was built with Claude Code. I cannot say what code I wrote outside this history.
 
-## What's next
-
-Run the real farmer pilot, enter the farmer's own rules in the app, get the Telugu strings reviewed by someone besides me, run the live AI path through the server, and run Amazon's validation if access opens.
+**What's next.** Run the real farmer pilot, enter the farmer's own rules in the app, get the Telugu strings reviewed by someone besides me, run the live AI path through the server, and run Amazon's validation if access opens.
 
 Built with a broiler farmer. The schedule, safety and language layers are not poultry-specific, so the next step is other livestock and aquaculture, each with its own vet-reviewed content.
 

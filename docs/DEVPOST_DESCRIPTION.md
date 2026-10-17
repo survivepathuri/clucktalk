@@ -42,7 +42,7 @@ The cloud pilot runs on one AWS Lightsail server in Mumbai, with the sample farm
 
 ## Accomplishments
 
-14 tools, four MCP Apps cards, 3,454 automated tests (collected by `python tasks.py results`, see `docs/RESULTS.md` section 1; all passed in `python tasks.py check` on 2026-10-18), and 88 of 88 golden eval cases passing in mock mode on 2026-10-16. A safety matrix ties each rule to its source and tests. My friction log has 30 live entries (FL-001 to FL-033; three more numbers are merged stubs), and I wrote product feedback for the Amazon teams.
+14 tools, four MCP Apps cards, 3,473 automated tests (collected by `python tasks.py results`, see `docs/RESULTS.md` section 1; all passed in `python tasks.py check` on 2026-10-18), and 88 of 88 golden eval cases passing in mock mode on 2026-10-16. A safety matrix ties each rule to its source and tests. My friction log has 30 live entries (FL-001 to FL-033; three more numbers are merged stubs), and I wrote product feedback for the Amazon teams.
 
 ## What I learned
 
