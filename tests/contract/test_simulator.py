@@ -416,3 +416,11 @@ def test_a_dose_question_gets_the_vet_referral_not_a_treatment_record(sim_fresh,
     assert "Your vet decides any treatment" in got["speech"]
     assert not got.get("awaiting_answer")  # nothing is proposed as a record
     assert " ml" not in got["speech"] and "litre" not in got["speech"]
+
+
+def test_a_no_to_the_vet_summary_read_back_sends_nothing(sim_fresh):
+    _offered(sim_fresh)
+    sim_fresh.turn("yes")  # takes up the offer: the tool reads the summary back
+    kept = sim_fresh.turn("no")
+    assert kept["intent"]["tool"] == "prepare_vet_handoff"
+    assert kept["result"]["structuredContent"]["status"] != "changed"
