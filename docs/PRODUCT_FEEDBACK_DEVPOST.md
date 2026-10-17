@@ -8,11 +8,11 @@ Amazon Bedrock and the Nova 2 Lite model. Used for: the optional AI triage step.
 
 ## 2. AWS CLI and boto3 on Windows
 
-AWS CLI and boto3 on Windows. Used for: model-access checks and the few Nova calls. Worked well: the Converse toolChoice and image formats could be read in the installed botocore service model before any paid call. Needs work: the AWS CLI crashed on Windows while writing a reply that contained an emoji to a file, and left a truncated file (FL-019). Onboarding: the CLI installs without admin rights, and sign-in used IAM Identity Center, so no access keys. Build again: yes.
+AWS CLI and boto3 on Windows. Used for: model-access checks and the few Nova calls. Worked well: the Converse toolChoice and image formats could be read in the installed botocore service model before any paid call. Needs work: the AWS CLI crashed on Windows while writing a reply that contained an emoji to a file, and left a truncated file (FL-019). Onboarding: the CLI installs without admin rights; sign-in used IAM Identity Center, so no access keys. Build again: yes, because the crash had a workaround (PYTHONIOENCODING and PYTHONUTF8) and I could check calls before paying.
 
 ## 3. AWS console, accounts, credits and hosting options
 
-AWS console, accounts, credits and hosting options. Used for: billing and credits; since 13 October the pilot runs on one Lightsail server in Mumbai (about $7 a month). Worked well: a server, static IP and firewall were enough. Needs work: port 443 closed by default; instance name cannot be changed; account plan not visible on an India account (FL-013, FR-007); App Runner closed to new customers 30 April 2026 (FL-027). Onboarding: new account plus credit about 1 hour; earlier sign-in problems on 7 October, on a previous account, were a separate issue (time not measured). Build again: yes (AWS, Lightsail). Builder-reported, 13 October.)
+AWS console, accounts, credits and hosting options. Used for: billing and credits; since 13 October the pilot runs on one Lightsail server in Mumbai (about $7 a month). Worked well: a server, static IP and firewall were enough. Needs work: port 443 closed by default; instance name cannot be changed; account plan not visible on an India account (FL-013, FR-007); App Runner closed to new customers 30 April 2026 (FL-027). Onboarding: new account plus credit about 1 hour; earlier sign-in problems on 7 October, on a previous account, were a separate issue (time not measured). Build again: yes (AWS, Lightsail), because the price is fixed. Builder-reported, 13 October.
 
 ## 4. Alexa+ MCP documentation (QuickStart and Local Inspector)
 
@@ -24,7 +24,7 @@ MCP Python SDK. Used for: the server, 14 tools, Streamable HTTP and sessions. Wo
 
 ## 6. MCP Apps (ext-apps) and the basic host
 
-MCP Apps (ext-apps) and the basic host. Used for: four HTML cards shown by the host (status, health check, sale plan, briefing). Worked well: the ui:// resource and _meta.ui.resourceUri model is clear. Needs work: the default CSP has no font-src, which blocks even an inlined Telugu font (FL-007); Alexa+ documents no card container size (FL-009); the Python SDK dropped extensions on 2025-11-25 (FL-008); the basic-host build needed bun and its install script (FL-021). Onboarding: the examples helped; Windows setup took extra steps, about 20 minutes (FL-021). Build again: yes.
+MCP Apps (ext-apps) and the basic host. Used for: four HTML cards shown by the host (status, health check, sale plan, briefing). Worked well: the ui:// resource and _meta.ui.resourceUri model is clear. Needs work: the default CSP has no font-src, which blocks even an inlined Telugu font (FL-007); Alexa+ documents no card container size (FL-009); the Python SDK dropped extensions on 2025-11-25 (FL-008); the basic-host build needed bun (FL-021). Onboarding: the examples helped; Windows setup took about 20 minutes (FL-021). Build again: yes, because a view needs no SDK, so the cards have no Node build and no npm dependency.
 
 ## 7. Claude Code and the Claude models
 

@@ -55,7 +55,7 @@ This matches `submission.md` ("How we built it") and `docs/AWS_SETUP.md` section
    - With an `aws login` profile, building a real boto3 client needs `botocore[crt]` (the `awscrt` package). Builder-reported, seen on 2026-10-17 during the Nova server-path attempt and during `python tasks.py check` on the builder's machine: a unit test failed, and the server run used temporary environment credentials. The exact error text and the steps are not recorded ("Detail not recorded"). Suggestion: the `aws login` documentation should say that boto3 needs `botocore[crt]`, and the botocore error should name that extra (FL-032).
    - `billing:GetSellerOfRecord` has no CLI command in 2.37.4 (`docs/AWS_SETUP.md` sections 5 and 5.3).
 4. **Onboarding:** the CLI installs for the current user without admin rights from `AWSCLIV2-User.msi`, and sign-in used IAM Identity Center, so no access keys; at the end of `aws configure sso` CLI 2.37.4 also asked whether to configure AWS skills and the AWS MCP server for coding agents (answered no) (`docs/AWS_SETUP.md` section 4).
-5. **Build again:** yes.
+5. **Build again:** yes. Reason: sign-in needed no access keys, and the installed botocore service model let me check request shapes before any paid call; the Windows crash had a workaround (FL-019).
 
 ## 3. AWS console, accounts, credits and hosting options (Lightsail, App Runner, Free Tier credits)
 
@@ -105,7 +105,7 @@ This matches `submission.md` ("How we built it") and `docs/AWS_SETUP.md` section
 2. **What worked well:** the spec says a view needs no SDK, and the cards speak the protocol directly, so the card side has no Node build and no npm dependency (`docs/VERSIONS.md`); after the workaround in FL-021 the basic-host was built and started and its HTTP-level checks were done, although the four cards have not yet been looked at in a browser through it (`docs/evidence/2026-10-01_basic_host/README.md`).
 3. **What needs work:** the spec's example sends `clientInfo` while the schema requires `appInfo` in `ui/initialize` (FL-006); the default CSP has no `font-src`, so even an inlined `data:` font is blocked, while the reference host allows it, and the spec does not say whether a CSP-blocked font source falls through (FL-007, FR-003); the Alexa+ documentation gives no card container size (FL-009); the basic-host cannot be built from its README, because the repo root must be built first and bun is needed (FL-021).
 4. **Onboarding:** the examples helped; Windows setup took extra steps: building the basic-host took about 20 minutes (FL-021).
-5. **Build again:** yes.
+5. **Build again:** yes. Reason: the spec says a view needs no SDK, so the cards speak the protocol directly and have no Node build and no npm dependency (`docs/VERSIONS.md`).
 
 ## 7. Claude Code and the Claude models (building and the independent reviews)
 
