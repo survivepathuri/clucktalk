@@ -32,7 +32,7 @@ The cloud pilot runs on one AWS Lightsail server in Mumbai, with the sample farm
 - Claude models stayed blocked by a missing Anthropic Marketplace agreement and, for Sonnet 5, a quota of 0, so Nova 2 Lite is the only model I ran.
 - I could not get Amazon's Local Inspector, so I wrote my own replay of the documented flow and said so (FL-024). I did not run the Local Inspector.
 - Writing triage wording that is never a diagnosis and that no model can talk down.
-- Telugu wording: 470 of 476 strings were reviewed by me, a native Telugu speaker (single reviewer, not independent); 6 are pending, because the farmer-preferred wording for follow-up is still to be confirmed.
+- Telugu wording: 470 of 476 strings were reviewed by me, a native Telugu speaker (single reviewer, not independent); 6 are pending, because the farmer-preferred wording for follow-up is still to be confirmed. On 2026-10-16 I personally read the 390 strings that were still pending and found them correct (single-reviewer self-review as a native Telugu speaker); I approved 384 and kept 6 follow-up strings pending until the farmer confirms his word. The counts: 470 approved + 6 pending = 476 strings, counted wherever they appear in the code (86 approved on 2026-09-27, 384 on 2026-10-16); the approvals file `data/i18n/telugu_approvals.json` holds 433 entries (80 + 353) because a repeated English+Telugu pair shares one approval.
 
 ## Accomplishments
 
