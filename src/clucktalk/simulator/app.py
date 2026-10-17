@@ -1,6 +1,6 @@
 """CluckTalk Simulator: a local web app that plays the Alexa+ client role (docs/DESIGN.md §2, §15).
 
-The browser page is the device (Echo Show with a screen, or Echo Dot voice-only): speech in, speech out, and the
+The browser page is the device (a smart display with a screen, or a voice-only speaker): speech in, speech out, and the
 MCP App card on screen. This backend is the host's cloud side: it understands the utterance (mock mode: a visible
 rule-based matcher, clucktalk.simulator.intents), calls the CluckTalk MCP server over Streamable HTTP, and returns
 the spoken answer, the tool result and the exact JSON-RPC exchanges for the developer panel.
@@ -62,6 +62,7 @@ from clucktalk.simulator import questions as farmer_questions
 from clucktalk.simulator.intents import Intent, is_weak_yes, match, normalise, yes_no
 from clucktalk.simulator.intents_te import chip_intent, choice_te, match_te, yes_no_te
 from clucktalk.simulator.mcp_client import Exchange, McpClient, McpUnavailable
+from clucktalk.simulator.starters import REPLIES, STARTERS, as_json
 from clucktalk.usage import UsageCounters
 
 logger = logging.getLogger("clucktalk.simulator")
@@ -499,6 +500,8 @@ def build_app(
                 "server_info": mcp.server_info,
                 "tools": tools,
                 "interim_after_ms": settings.interim_after_ms,
+                "starters": as_json(STARTERS),
+                "replies": as_json(REPLIES),
             }
         )
 

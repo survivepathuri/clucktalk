@@ -1,6 +1,6 @@
 // CluckTalk Simulator page: the device side of the Alexa+ client role.
 // Voice in (browser speech recognition, en-IN) or text -> /api/turn (mock host: rules + MCP tools/call) ->
-// spoken answer (browser speech synthesis) + on Echo Show the MCP App card, hosted per the MCP Apps spec 2026-01-26.
+// spoken answer (browser speech synthesis) + on the smart display the MCP App card, hosted per the MCP Apps spec 2026-01-26.
 "use strict";
 
 const SPEC_VERSION = "2026-01-26";
@@ -13,7 +13,7 @@ const PRESETS = {
 const $ = (id) => document.getElementById(id);
 const state = {
   device: "show", preset: "show-1024x600", theme: "dark", sound: true, delay: 0, photo: "", strictCsp: false, busy: false,
-  interimAfter: 1000, turnNo: 0, card: null, server: null,
+  interimAfter: 1000, turnNo: 0, card: null, server: null, judge: true,
 };
 window.__clucktalk = { turns: [] };   // read-only record of turns (for automated end-to-end checks)
 
@@ -107,6 +107,26 @@ function say(who, cls, text) {
   const p = document.createElement("p"); p.className = cls;
   const b = document.createElement("span"); b.className = "who"; b.textContent = who;
   p.append(b, document.createTextNode(text)); t.append(p); t.scrollTop = t.scrollHeight;
+}
+
+// A tool answer with its Telugu: the Telugu is the answer (larger), its English side sits under it in smaller text and
+// is the "judge view" (switchable). No Telugu, no gloss: the English line is then the answer itself.
+function sayAnswer(who, cls, en, te) {
+  if (!te) return say(who, cls, en);
+  const t = $("transcript");
+  const empty = t.querySelector(".empty"); if (empty) empty.remove();
+  const p = document.createElement("p"); p.className = cls;
+  const b = document.createElement("span"); b.className = "who"; b.textContent = who;
+  const tl = document.createElement("span"); tl.className = "te"; tl.lang = "te"; tl.textContent = te;
+  p.append(b, tl);
+  if (en) { const g = document.createElement("small"); g.className = "gloss"; g.textContent = en; p.append(g); }
+  t.append(p); t.scrollTop = t.scrollHeight;
+}
+// The Telugu of a result: its text_te, or the Telugu of its error message and next step. Empty when there is none.
+function teOf(body) {
+  const sc = body.result && body.result.structuredContent;
+  const meta = body.result && body.result._meta && body.result._meta["clucktalk/error"];
+  return (sc && sc.text_te) || (meta && [meta.message_te, meta.next_step_te].filter(Boolean).join(" ")) || "";
 }
 
 // ------------------------------------------------------------------ cross-modal check (docs/DESIGN.md §6)
@@ -307,10 +327,11 @@ function trimHtml(k, v) { return k === "text" && typeof v === "string" && v.leng
 async function ask(utterance, via) {
   if (state.busy || !utterance.trim()) return;
   state.busy = true; state.turnNo += 1;
+  showReplies(false);
   if (window.speechSynthesis) speechSynthesis.cancel();
   say("You: ", "you", utterance);
   $("text").value = "";
-  const entry = startEntry(`#${state.turnNo} “${utterance}” (${via}, ${state.device === "show" ? "Echo Show" : "Echo Dot"})`);
+  const entry = startEntry(`#${state.turnNo} “${utterance}” (${via}, ${state.device === "show" ? "smart display" : "speaker"})`);
   const record = { n: state.turnNo, utterance, device: state.device, via };
   window.__clucktalk.turns.push(record);
 
@@ -372,7 +393,12 @@ async function ask(utterance, via) {
     }
   }
   const speaker = body.kind === "tool" ? "CluckTalk: " : "Alexa: ";
-  say(speaker, body.kind === "tool" ? "ct" : "host", body.speech);
+  const te = teOf(body);
+  record.te = !!te;
+  sayAnswer(speaker, body.kind === "tool" ? "ct" : "host", body.speech, te);
+  // The vet-summary offer and any read-back wait for a yes or no: offer those two taps.
+  const sc = (body.result && body.result.structuredContent) || {};
+  showReplies(!!body.awaiting_answer || sc.handoff_offered === true);
   entry.line("kv", `spoken (${voice ? voice.name + ", " + voice.lang : "no voice"}): ${body.speech}`);
   $("dev-sum").textContent = `last turn ${turnMs} ms · MCP ${tm.mcp_ms ?? "–"} ms`;
   state.busy = false;
@@ -384,10 +410,11 @@ function showNative(body, cardFailed) {
   $("native-note").textContent = cardFailed
     ? "text answer · the card could not be shown (see developer panel)"
     : "text answer · this answer has no card";
+  const te = teOf(body);
   $("native-en").textContent = body.speech;
-  const sc = body.result && body.result.structuredContent;
-  const meta = body.result && body.result._meta && body.result._meta["clucktalk/error"];
-  $("native-te").textContent = (sc && sc.text_te) || (meta && [meta.message_te, meta.next_step_te].join(" ")) || "";
+  $("native-en").className = te ? "native-en gloss" : "native-en";   // under the Telugu: the judge view
+  $("native-te").textContent = te;
+  $("native-te").hidden = !te;
   showView("native");
 }
 
@@ -407,7 +434,35 @@ $("sound").addEventListener("click", () => {
   if (!state.sound && window.speechSynthesis) speechSynthesis.cancel();
 });
 $("ask").addEventListener("submit", (e) => { e.preventDefault(); ask($("text").value, "typed"); });
-document.querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => ask(c.textContent, "typed")));
+
+// ------------------------------------------------------------------ starter chips and judge view
+function chipButton(item, cls) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = cls;
+  const q = document.createElement("span"); q.className = "q"; q.lang = "te"; q.textContent = item.te;
+  const g = document.createElement("small"); g.className = "gloss"; g.textContent = item.en;
+  b.append(q, g);
+  if (item.say !== item.en) b.title = "Asks: “" + item.say + "”";
+  b.addEventListener("click", () => ask(item.say, "chip"));
+  return b;
+}
+function renderChips() {
+  const items = (state.server && state.server.starters) || [];
+  $("home-chips").replaceChildren(...items.map((i) => chipButton(i, "starter")));
+  $("chips").replaceChildren(...items.map((i) => chipButton(i, "chip")));
+  $("replies").replaceChildren(...((state.server && state.server.replies) || []).map((i) => chipButton(i, "chip reply")));
+}
+function showReplies(on) { $("replies").hidden = !on || !$("replies").childElementCount; }
+function setJudge(on) {
+  state.judge = on;
+  document.body.classList.toggle("judge-off", !on);
+  $("judge").setAttribute("aria-pressed", String(on));
+  $("judge").textContent = on ? "Judge view: on" : "Judge view: off";
+}
+$("judge").addEventListener("click", () => {
+  setJudge(!state.judge);
+  try { localStorage.setItem("ct_judge", state.judge ? "1" : "0"); } catch (e) { /* the choice lasts for this page only */ }
+});
 $("dev-toggle").addEventListener("click", () => {
   const open = $("dev").dataset.open !== "true";
   $("dev").dataset.open = String(open); $("dev-body").hidden = !open; $("dev-toggle").setAttribute("aria-expanded", String(open));
@@ -430,6 +485,7 @@ function applyQuery() {
   if (q.get("sound") === "0") $("sound").click();
   if (q.get("csp") === "strict") { state.strictCsp = true; $("csp").value = "strict"; }
   if (q.get("dev") === "1") $("dev-toggle").click();
+  if (q.get("judge") === "0") setJudge(false);
 }
 
 function tick() {
@@ -442,6 +498,7 @@ async function connect() {
     const r = await fetch("/api/state");
     const s = await r.json();
     state.server = s; state.interimAfter = s.interim_after_ms;
+    renderChips();
     const tools = s.tools.map((t) => `  ${t.name}${t.resourceUri ? "  → card " + t.resourceUri : ""}`).join("\n");
     $("conn").textContent = s.connected
       ? `MCP server: ${s.server_info.name} ${s.server_info.version} at ${s.mcp_url}\nProtocol 2025-11-25 · MCP Apps ${SPEC_VERSION} · mode: ${s.mode}\nTools:\n${tools}`
@@ -451,4 +508,5 @@ async function connect() {
   }
 }
 
+try { if (localStorage.getItem("ct_judge") === "0") setJudge(false); } catch (e) { /* default: on */ }
 setupMic(); applyQuery(); applyPreset(); showView("home"); tick(); setInterval(tick, 10000); connect();

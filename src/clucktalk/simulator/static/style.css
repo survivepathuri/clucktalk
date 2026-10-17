@@ -1,5 +1,6 @@
 :root {
   --page: #eceae4; --panel: #ffffff; --ink: #1c1f24; --muted: #5b626b; --line: #d7d3ca; --accent: #0b6bcb;
+  --te-font: "Noto Sans Telugu", "Nirmala UI", "Gautami", "Vani", "Lohit Telugu", "Noto Sans", "Segoe UI", system-ui, sans-serif;
   --badge: #7a4f00; --badge-bg: #ffe7a8; --bezel: #15181c; --listen: #19b4f0;
 }
 * { box-sizing: border-box; }
@@ -10,8 +11,11 @@ body { background: radial-gradient(1200px 600px at 50% -10%, #f7f6f2, var(--page
 button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
+/* honest banner: this page is a simulation, the backend is real */
+.banner { margin: 0; padding: 6px 20px; background: #12324d; color: #eaf3fb; font-size: 14px; text-align: center; }
+
 /* top bar */
-.bar { display: flex; align-items: center; gap: 16px; padding: 10px 20px; background: var(--panel);
+.bar { display: flex; align-items: center; gap: 12px; padding: 8px 16px; background: var(--panel);
   border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
 .brand strong { font-size: 19px; display: block; line-height: 1.1; }
@@ -38,19 +42,28 @@ button, input, select { font: inherit; color: inherit; }
 .bezel.phone .screen { border-radius: 32px; }
 .screen[data-theme="light"] { background: #f6f4ef; color: #17191c; }
 .view { position: absolute; inset: 0; }
-.home { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+.home { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 44px; gap: 12px;
   background: radial-gradient(800px 400px at 30% 20%, #1d3b52, #0f1317); color: #fff; }
-.clock { font-size: 96px; font-weight: 300; letter-spacing: -2px; }
-.try { font-size: 26px; color: #cfd8e3; text-align: center; padding: 0 24px; }
+.clock { font-size: 56px; font-weight: 300; letter-spacing: -2px; line-height: 1; }
+.try { font-size: 22px; color: #cfd8e3; text-align: center; padding: 0 24px; }
+/* starter questions on the device's first screen: the Telugu question, its English gloss under it */
+.starters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 32px; width: 100%; margin-top: 6px; }
+.starter { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 96px;
+  padding: 10px 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.1);
+  color: #fff; cursor: pointer; text-align: center; }
+.starter:hover { background: rgba(255,255,255,.2); }
+.starter .q { font-family: var(--te-font); font-size: 26px; line-height: 1.3; font-weight: 600; }
+.starter .gloss { font-size: 18px; color: #cfd8e3; }
 .asked { display: flex; align-items: center; justify-content: center; padding: 40px; }
 .asked-text { font-size: 34px; color: #cfd8e3; text-align: center; font-style: italic; }
 .screen[data-theme="light"] .asked-text { color: #4a5058; }
-.native { padding: 28px 36px; overflow: auto; }
+.native { padding: 28px 36px; overflow: auto; display: flex; flex-direction: column; }
 .native-head { display: flex; justify-content: space-between; gap: 12px; font-size: 16px; color: #b9c1cb; margin-bottom: 14px; flex-wrap: wrap; }
 .native-head span:first-child { font-weight: 700; }
 .native-en { font-size: 28px; margin: 0 0 14px; line-height: 1.35; }
-.native-te { font-size: 24px; margin: 0; color: #b9c1cb; line-height: 1.5; font-family: "Nirmala UI", "Gautami", "Noto Sans Telugu", sans-serif; }
-.screen[data-theme="light"] .native-head, .screen[data-theme="light"] .native-te { color: #4a5058; }
+.native-en.gloss { font-size: 18px; color: #b9c1cb; margin: 0; }   /* judge view: the English side under the Telugu */
+.native-te { font-size: 32px; margin: 0 0 12px; line-height: 1.55; font-family: var(--te-font); }
+.screen[data-theme="light"] .native-head, .screen[data-theme="light"] .native-en.gloss { color: #4a5058; }
 .cardhost iframe { width: 100%; height: 100%; border: 0; display: block; background: transparent; }
 .interim { position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); background: rgba(12,16,20,.92);
   color: #fff; padding: 12px 22px; border-radius: 999px; font-size: 22px; display: flex; gap: 12px; align-items: center; }
@@ -62,7 +75,7 @@ button, input, select { font: inherit; color: inherit; }
 .listenbar.on { opacity: 1; animation: sweep 1.2s linear infinite; }
 @keyframes sweep { to { background-position: -200% 0; } }
 
-/* Echo Dot */
+/* speaker (voice only) */
 .dot-wrap { display: flex; flex-direction: column; align-items: center; gap: 22px; padding: 20px 0 10px; }
 .puck { position: relative; width: 260px; height: 110px; border-radius: 130px / 55px;
   background: linear-gradient(#3b4148, #1f2327); box-shadow: 0 24px 40px -16px rgba(0,0,0,.5); }
@@ -83,6 +96,9 @@ button, input, select { font: inherit; color: inherit; }
 .transcript p { margin: 6px 0; font-size: 17px; }
 .transcript .empty { color: var(--muted); }
 .transcript .who { font-weight: 700; margin-right: 6px; }
+.transcript .te { font-family: var(--te-font); font-size: 21px; line-height: 1.55; }
+.gloss { display: block; font-size: 14px; color: var(--muted); }
+body.judge-off .transcript .gloss, body.judge-off .native-en.gloss { display: none; }   /* the chips keep their gloss */
 .transcript .you .who { color: var(--accent); }
 .transcript .ct .who { color: #a05a00; }
 .transcript .host .who { color: var(--muted); }
@@ -94,7 +110,12 @@ button, input, select { font: inherit; color: inherit; }
 .ask input { flex: 1; min-width: 0; height: 56px; border-radius: 14px; border: 1px solid var(--line); padding: 0 16px; font-size: 18px; background: var(--panel); }
 .send { height: 56px; padding: 0 22px; border-radius: 14px; border: 0; background: var(--ink); color: #fff; font-weight: 700; cursor: pointer; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 8px 14px; cursor: pointer; min-height: 40px; }
+.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 16px; padding: 6px 14px; cursor: pointer; min-height: 52px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.chip .q { font-family: var(--te-font); font-size: 18px; line-height: 1.3; }
+.chip .gloss { font-size: 13px; }
+.replies { display: flex; gap: 8px; }
+.chip.reply { min-width: 110px; border-color: var(--accent); }
 .chip:hover { border-color: var(--accent); }
 .note { margin: 0; color: #9a3412; font-size: 15px; min-height: 1em; }
 
@@ -122,6 +143,7 @@ button, input, select { font: inherit; color: inherit; }
 .log pre { white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow: auto; background: #0c0f13; padding: 8px; border-radius: 8px; margin: 4px 0; }
 .foot { text-align: center; color: var(--muted); font-size: 13px; padding: 0 16px 18px; }
 
+@media (max-width: 1100px) { .seg button .hint { display: none; } .brand .sub { display: none; } }
 @media (max-width: 700px) {
   .bar { padding: 10px 12px; gap: 10px; }
   .seg button { padding: 6px 10px; } .seg button .hint { display: none; }

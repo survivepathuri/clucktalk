@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+<p class="banner" id="banner" role="note">Simulated Alexa+ screen. The backend is a real MCP server (Streamable HTTP).</p>
 <header class="bar">
   <div class="brand">
     <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#f2a623"/><path d="M10 20c0-5 3-9 7-9 3 0 5 2 5 5h3l-3 2c0 4-3 6-6 6-4 0-6-1-6-4z" fill="#fff"/><circle cx="19" cy="15" r="1.3" fill="#1b1b1b"/><path d="M15 9c1-2 3-2 4 0" stroke="#c0392b" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
@@ -16,11 +17,12 @@
   <div class="seg" role="radiogroup" aria-label="Device">
     <button type="button" role="radio" aria-checked="true" data-device="show">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 21h10l-2-4H9z" fill="currentColor"/></svg>
-      Echo Show <span class="hint">screen</span></button>
+      Smart display <span class="hint">screen</span></button>
     <button type="button" role="radio" aria-checked="false" data-device="dot">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><ellipse cx="12" cy="14" rx="10" ry="5" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="12" cy="11" rx="10" ry="5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-      Echo Dot <span class="hint">voice only</span></button>
+      Speaker <span class="hint">voice only</span></button>
   </div>
+  <button type="button" class="sound" id="judge" aria-pressed="true" title="Show the English side of each Telugu answer in smaller text under it">Judge view: on</button>
   <button type="button" class="sound" id="sound" aria-pressed="true" title="Spoken answers on/off">🔊 Sound on</button>
 </header>
 
@@ -32,13 +34,14 @@
           <div class="screen" id="screen" data-theme="dark">
             <div class="home view" id="home">
               <div class="clock" id="clock">--:--</div>
-              <div class="try">Try <q>How is shed two doing?</q></div>
+              <div class="try">Tap a question, or ask by voice or typing</div>
+              <div class="starters" id="home-chips"></div>
             </div>
             <div class="asked view" id="asked" hidden><div class="asked-text" id="asked-text"></div></div>
             <div class="native view" id="native" hidden>
               <div class="native-head"><span>CluckTalk</span><span class="native-note" id="native-note">text answer · this answer has no card</span></div>
-              <p class="native-en" id="native-en"></p>
               <p class="native-te" id="native-te" lang="te"></p>
+              <p class="native-en" id="native-en"></p>
             </div>
             <div class="cardhost view" id="cardhost" hidden></div>
             <div class="interim" id="interim-show" hidden><span class="spinner" aria-hidden="true"></span>Still working…</div>
@@ -60,7 +63,7 @@
 
   <section class="talk" aria-label="Conversation">
     <div class="transcript" id="transcript" aria-live="polite">
-      <p class="empty">Ask by voice or type below. Answers are spoken; on Echo Show the card appears on screen.</p>
+      <p class="empty">Ask by voice or type below. Answers are spoken; on the smart display the card appears on screen.</p>
     </div>
     <form class="ask" id="ask" autocomplete="off">
       <button type="button" class="mic" id="mic" aria-label="Speak (English, India)">
@@ -69,13 +72,8 @@
       <input id="text" name="text" type="text" placeholder="Type what you'd say, e.g. How is shed two doing?" aria-label="What you would say">
       <button type="submit" class="send">Ask</button>
     </form>
-    <div class="chips" id="chips">
-      <button type="button" class="chip">How is shed two doing?</button>
-      <button type="button" class="chip">How's the farm today?</button>
-      <button type="button" class="chip">Kotam teen kaisa hai?</button>
-      <button type="button" class="chip">Feed plan for shed two</button>
-      <button type="button" class="chip">What can you do?</button>
-    </div>
+    <div class="replies" id="replies" hidden></div>
+    <div class="chips" id="chips"></div>
     <p class="note" id="voice-note" role="status"></p>
   </section>
 </main>
