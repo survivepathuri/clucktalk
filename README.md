@@ -50,7 +50,7 @@ python3 tasks.py readiness
 python3 tasks.py serve
 ```
 
-What each one does: `setup` creates `.venv` and installs the pinned dependencies. `verify` prints one table of what a judge can check (not the full test suites). In one independent clean-clone run on Windows 11 with Python 3.13, setup took 1 min 16 s and verify took 45 s. It starts its own temporary server, so it needs neither Node.js nor a running server. `readiness` is our own self-check of the locally checkable Alexa+ requirements (not an Amazon verdict). `serve` starts the MCP server on http://127.0.0.1:8765/mcp with fictional demo data; leave it running. If port 8765 is busy, `serve` says so and starts nothing; see "Ports and browser" in `docs/JUDGES.md`.
+What each one does: `setup` creates `.venv` and installs the pinned dependencies. `verify` prints one table of what a judge can check (not the full test suites). In one clean-clone run on Windows 11 with Python 3.13, made by an independent audit run in a fresh context (same vendor model), setup took 1 min 16 s and verify took 45 s. It starts its own temporary server, so it needs neither Node.js nor a running server. `readiness` is our own self-check of the locally checkable Alexa+ requirements (not an Amazon verdict). `serve` starts the MCP server on http://127.0.0.1:8765/mcp with fictional demo data; leave it running. If port 8765 is busy, `serve` says so and starts nothing; see "Ports and browser" in `docs/JUDGES.md`.
 
 With `serve` running, in a second window, the MCP Inspector command line needs Node.js (`@modelcontextprotocol/inspector` 2.8.0; our evidence in `docs/evidence/2026-09-27_farm_status_and_feed.md` used its installed `mcp-inspector --cli`, and the `npx` form below is the same package but was not run in exactly this form). Without Node.js, `python tasks.py inspector-replay` (`python3` on macOS and Linux) replays Amazon's documented Local Inspector flow against a temporary copy of the server and needs neither Node.js nor `serve`.
 
@@ -85,7 +85,7 @@ seeded, clearly fictional data in mock mode.
 - **Nothing here has run on an Alexa+ device**, through Alexa's own speech, or through Amazon's review. The Local
   Inspector itself was not run (its guide is behind a Developer Console login, FL-024); `inspector-replay` is our replay of
   the documented flow.
-- **Known limitation: dose questions.** The product never says it cannot give a medicine dose. A plain dose question may be misread by the matcher as a daily-record proposal, which is saved only if the farmer says yes. It never gives a dose or a treatment (`docs/SAFETY_MATRIX.md`, "What happens when a farmer asks for a dose").
+- **Known limitation: dose questions.** The product has no sentence that says it cannot give a medicine dose. In the Simulator, a dose question that names a shed goes to the health check, whose reply says the vet decides any treatment; one with no shed named gets the host's "can't help with that yet". It never gives a dose or a treatment (`docs/SAFETY_MATRIX.md`, "What happens when a farmer asks for a dose").
 - **Alexa composes its own speech** from a tool's result and description, so what it says can differ from our sentences.
   The card shows our sentence.
 - **Not built:** OAuth 2.1 with PKCE, Protected Resource Metadata, a remote HTTPS URL, security and data policies. The
@@ -214,7 +214,7 @@ Everything runs on seeded, clearly fictional demo data (`MOCK_BEDROCK=true`, sho
   voice it reads the top 3 and offers "more" (5 items at most). Health alerts always come first, decided by code; an
   AI model, only when live AI is switched on, may re-order the other items from a fixed list and can write no text.
   A death spike logged a few days ago still shows. A sale-window item is a simulated estimate and shows no rupees.
-- **Voice record book** (`log_daily_record`, `get_record_book`): the farmer says deaths, feed, a weight sample or a
+- **Record book** (`log_daily_record`, `get_record_book`): the farmer says deaths, feed, a weight sample or a
   treatment name; it is read back and saved only after an explicit "yes". No medicine advice and no doses.
 - **Health triage** (`start_health_check`, `get_health_check`, `prepare_vet_handoff`): guidance, never a diagnosis.
   Code decides the urgency from the signs and the record book (a model can raise it, never lower it); a suspected

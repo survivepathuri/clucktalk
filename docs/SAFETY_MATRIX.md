@@ -26,7 +26,7 @@ One row per safety rule: what it says in plain words, where the rule came from, 
 
 ## What happens when a farmer asks for a dose (current behavior)
 
-Tried on 2026-10-17 on the demo Simulator (English, mock mode, demo data), by sending three dose questions to its `/api/turn` endpoint. This is a manual check of what the product answered, not an automated test. Telugu input is only available in pilot mode, so a Telugu dose question was not tried.
+The table below is the check of 2026-10-17, before the dose-question rule was added. Tried on 2026-10-17 on the demo Simulator (English, mock mode, demo data), by sending three dose questions to its `/api/turn` endpoint. This is a manual check of what the product answered, not an automated test. Telugu input is only available in pilot mode, so a Telugu dose question was not tried.
 
 | Question asked | Tool the rule-based matcher chose | What it said (shortened) |
 |---|---|---|
@@ -37,8 +37,8 @@ Tried on 2026-10-17 on the demo Simulator (English, mock mode, demo data), by se
 What this shows:
 
 - **No reply named a medicine, a dose or an amount.** The health-check replies give the fixed first steps (call the vet, separate sick birds, ventilation, dry litter) and say that the vet decides any treatment.
-- **Known limitation: the product does not say "I cannot give a dose".** The matcher looks for sheds and signs, not for dose questions, so the dose part of the question is ignored and the farmer is not told why it was not answered. Only the second and third replies say "Your vet decides any treatment".
-- **Known limitation: a plain dose question can be taken as a treatment record.** "how much medicine should I give for shed two" was read as "medicine given" with the made-up name "How Much" and proposed as a daily record (`src/clucktalk/simulator/intents.py`, treatment rule). The farmer is asked to say yes or no, so nothing is saved by mistake, but the proposal is wrong and a farmer who says yes would store a nonsense treatment name.
+- **Known limitation: the product does not say "I cannot give a dose".** There is no such sentence. A dose or medicine-amount question that names a shed now goes to `start_health_check` (rule in `src/clucktalk/simulator/intents.py`, `DOSE_QUESTION`), whose reply is the existing one with "Your vet decides any treatment"; this is pinned by Simulator tests in `tests/contract/test_simulator.py` and `tests/unit/test_simulator_host.py`. A dose question with no shed named gets the host's "can't help with that yet" reply (it is no longer answered with a farm status), because the health check needs a shed and no new farmer-facing sentence was added.
+- **Fixed after this check: a plain dose question was taken as a treatment record.** On 2026-10-17 "how much medicine should I give for shed two" was read as "medicine given" with the made-up name "How Much" and proposed as a daily record. It now takes the health-check path above and is no longer proposed as a record (test: `test_a_dose_question_gets_the_vet_referral_not_a_treatment_record`).
 - **The fixed first steps are builder-written text, not model output.** The health-check reply's steps (`call your vet today`, `separate the sick birds`, `check ventilation and any ammonia smell`, `check that the litter is dry`) are the `CHECK_TEXT` entries in `src/clucktalk/domain/triage.py`, and `Your vet decides any treatment.` is the fixed `DISCLAIMER` in `src/clucktalk/server/tools/health.py`. What pins them: `tests/unit/test_triage_rules.py::test_every_code_has_bilingual_text_and_no_treatment_words` (every step has English and Telugu text and none contains a treatment word); the golden case `triage-dose-question-gets-vet-referral` (`data/eval/golden_cases.json`) pins the sentence "decides any treatment" in the reply to a dose question. No test pins the exact English wording of each step.
 - No code was changed for this section.
 
