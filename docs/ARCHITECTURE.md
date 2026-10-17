@@ -74,7 +74,7 @@ flowchart LR
 | Market prices, sensors, supplier, SMS, payments, the vet message | **SIMULATED** | Labelled "Simulated" in the text and the tool descriptions. No SMS is ever sent. |
 | Amazon Bedrock Nova 2 Lite | Mock by default; a few one-off live calls were made outside the server | The server's live-AI path was not verified end to end here (`docs/AWS_SETUP.md`, FL-014). |
 | Weather forecast | Off by default; simulated curve in the demo | The live Open-Meteo adapter was tested only with a fake transport (`docs/SOURCES.md`). |
-| Voice | The phone keyboard's own voice typing, in Telugu | No Telugu audio output exists; no Telugu voice was tested through Alexa+. |
+| Voice | The phone keyboard's dictation, outside CluckTalk; CluckTalk has no Telugu speech recognition | No Telugu audio output exists; no Telugu voice was tested through Alexa+. |
 | Telugu wording | Reviewed by one person (the builder) | 470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed. (`docs/TELUGU_REVIEW.md`) |
 
 ## 2. The pilot deployment (the PC pilot; the Lightsail cloud pilot since 2026-10-13 is in `docs/CLOUD_PILOT.md`)

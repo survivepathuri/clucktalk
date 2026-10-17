@@ -9,7 +9,7 @@ CluckTalk (Telugu subtitle "కోడి మిత్ర") is an Alexa+ add-on f
 first build and the demo target broiler farmers only. The domain layer still supports layer flocks generically
 (§13.1's `HouseKind.LAYER`, egg-production status and feed planning), and nothing here removes that code, but the
 seeded demo farm, `get_help`, and the video use broiler houses only. Layer farming is a README roadmap item.
-The farmer speaks English or Hinglish, often with busy hands. CluckTalk answers by voice (complete on a screenless device) and shows bilingual Telugu + English cards (MCP Apps) on screen devices.
+The farmer speaks English or Hinglish, often with busy hands. CluckTalk writes its answers to be read aloud by a voice assistant such as Alexa+ (complete on a screenless device; CluckTalk itself does not speak) and shows bilingual Telugu + English cards (MCP Apps) on screen devices.
 
 Planned tool intents (one intent per tool, see §5): farm status per house, health triage (async), vet handoff, feed planning, sell-day plan, farm memory, daily briefing, feed orders with confirmation, and "what can you do?".
 Planned next (§13): farm profile (contract or independent, **built**), voice record book, contract earnings tracker (**terms storage built**, the full tracker with sensitivity/what-if is later), vaccination planner and vaccine-day coach.
