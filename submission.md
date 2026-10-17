@@ -56,7 +56,7 @@ The safety rules, where each came from and which tests pin it: `docs/SAFETY_MATR
 ## How we trust it
 
 - **A safety matrix**, one row per rule with its source, code location, tests and a before and after example, and a plain mark for thresholds that are only general guidance: `docs/SAFETY_MATRIX.md`.
-- **How long a judge's run takes:** In one independent clean-clone run on Windows 11 with Python 3.13, setup took 1 min 16 s and verify took 45 s. (the audit log is not in the repository; the machine and the run are the independent auditor's.)
+- **How long a judge's run takes:** In one clean-clone run on Windows 11 with Python 3.13, made by an independent audit run in a fresh context (same vendor model, not a third party), setup took 1 min 16 s and verify took 45 s. (the audit log is not in the repository; the machine and the run belong to that audit.)
 - **Generated results** (test counts, golden evals, mutation checks, protocol conformance, latency, readiness), and saved outputs of the self-check commands with their date and commit: `docs/RESULTS.md`, `docs/proof/`.
 - **Independent reviews** by fresh agents after each main feature, and what they found and how it was fixed: `docs/INDEPENDENT_REVIEW.md`. They are not human audits (`SECURITY.md`).
 - **A claims table** that marks each claim verified, simulated, unverified or not built, with the file or command that shows it: the README, section "What is verified, unverified and simulated".
@@ -88,6 +88,8 @@ The first commit is dated 2026-09-27 (`git log --reverse`). The commit counts pe
 - **30 September to 1 October:** the daily briefing; fixes from independent reviews; a CI workflow; the follow-up agent and the demo clock; the Agent Skill; a rewrite of the friction log.
 - **3 to 4 October:** the structured safety field; protocol-conformance, property, fuzz and concurrency tests; `reset-demo`, `NOTICE`, `inspector-replay`, `readiness` and `verify`; weather reminders.
 - **6 to 7 October:** the pilot mode, the farmer's own deaths rule, the Telugu page, hardening, the add-or-replace question, fixes from a review of the pilot, the Windows launcher and runbook, and this documentation set.
+
+Pre-existing projects: none found. The first commit (`d1d1662`, 2026-09-27) holds only build scaffolding (task runner, secret and cost checks, version pins, license); the product code follows in later commits. The GitHub repository was created on 2026-09-30. A check on 2026-10-18 (`gh repo list`, and folder names on my machine) found no earlier repository and no earlier project folder for it. Commit titles use plan-day labels; the dates are the commit dates. It was built with Claude Code. I cannot say what code I wrote outside this history.
 
 ## Built with
 

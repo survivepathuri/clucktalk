@@ -62,7 +62,7 @@ Python 3.13, `mcp` 2.2.0, Model Context Protocol 2025-11-25 over Streamable HTTP
 
 ## What I built during the submission window vs before
 
-Pre-existing projects: none for this repository. The submission window runs from 2026-08-31 to 2026-10-23. The first commit is dated 2026-09-27 (`git log --reverse`, commit `d1d1662`), so everything in the repository's history falls inside the window. I did not find an earlier repository, and I cannot say what code I wrote outside this history.
+Pre-existing projects: none found. The first commit (`d1d1662`, 2026-09-27) holds only build scaffolding (task runner, secret and cost checks, version pins, license); the product code follows in later commits. The GitHub repository was created on 2026-09-30. A check on 2026-10-18 (`gh repo list`, and folder names on my machine) found no earlier repository and no earlier project folder for it. Commit titles use plan-day labels; the dates are the commit dates. It was built with Claude Code. I cannot say what code I wrote outside this history.
 
 ## Track and mini challenges
 
