@@ -47,6 +47,6 @@ Reported and left as they are, because they are SDK behaviors (pinned by tests, 
 
 ## Reporting an issue
 
-[SECURITY CONTACT: to be added before the repository is made public]
+To report a vulnerability, use the repository's Security tab > Report a vulnerability.
 
-Until a contact is added, open an issue in the repository and leave out any real farm data, token or address. Please do not post a working exploit in public; describe the problem and the steps to see it.
+Please leave out any real farm data, token or address. Do not post a working exploit in public; describe the problem and the steps to see it.

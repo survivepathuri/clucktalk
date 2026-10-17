@@ -246,7 +246,7 @@ def test_security_has_a_threat_table_the_reviews_what_is_not_protected_and_a_pla
         "## Reporting an issue",
     ):
         assert heading in text, heading
-    assert "[SECURITY CONTACT: to be added before the repository is made public]" in text
+    assert "To report a vulnerability, use the repository's Security tab > Report a vulnerability." in text
     for needle in ("personal Windows PC", "no OAuth", "No human security audit", "policies were not published"):
         assert needle.lower() in text.lower(), needle
 
