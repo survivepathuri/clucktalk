@@ -8,11 +8,7 @@ CluckTalk (కోడి మిత్ర; Kodi Mitra, 'Chicken Friend')
 
 ## Tagline options (60 characters or fewer)
 
-Locked tagline, use this one: **Telugu-first MCP assistant for broiler farmers** (45 characters). It is option 1 below.
-
-1. Telugu-first MCP assistant for broiler farmers
-2. Poultry records by voice, read back and saved on a yes
-3. Telugu and English farm help, safety decided in code
+Locked tagline, the only one to use: **Telugu-first MCP assistant for broiler farmers** (45 characters).
 
 ## Opening sentence
 
@@ -20,18 +16,24 @@ CluckTalk is a self-hosted MCP server (spec 2025-11-25, Streamable HTTP), shown 
 
 ## Inspiration
 
-A broiler farmer counts the dead birds each morning with busy hands, often with no screen in reach. The numbers that matter, a sudden spike, the total losses so far and the moment to call the vet, are easy to miss on a busy morning, and most farm tools expect typing in English. CluckTalk is an attempt at something a farmer can tell in their own language, that reads every number back before saving it, and that never pretends to be a vet.
+India has a very large number of broiler farmers, and many of them run their sheds from memory, a notebook or a phone gallery. The numbers they need every day are scattered: how many birds died today, how old each shed is, how much feed is left, when to sell. When a farmer has several sheds, a small problem in one of them is easy to miss until it becomes an expensive one.
+
+I have worked on broiler farms before, so I have seen this up close.
+
+I built CluckTalk to put every shed in one place and make it easy to ask about. A farmer asks in Telugu, and the answer comes from his own records and his own declared schedule, not from a generic guess. The goal is fewer surprises, less guesswork on sale day, and more transparency in a business that runs on trust and memory.
+
+I built it with input from a real broiler farmer. His feedback was clear: he wants to ask by speaking and to hear the answer back in Telugu. Today CluckTalk answers in written Telugu, and the Simulator has a microphone button for English questions. Asking by speaking in Telugu and hearing spoken Telugu replies are the next steps on the roadmap.
 
 ## What it does
 
 - **Farm status and the daily briefing** (`get_farm_status`, `get_daily_briefing`): per shed, what needs attention first, health items always ahead of the rest, decided by code. A death spike from earlier in the week still shows.
-- **A voice record book** (`log_daily_record`, `get_record_book`): the farmer says deaths, feed, a weight sample or a treatment name; it is read back and saved only after an explicit yes. No medicine advice and no doses. In the pilot, a second number for the same day asks "add or replace" and never assumes.
+- **A record book** (`log_daily_record`, `get_record_book`): the farmer gives deaths, feed, a weight sample or a treatment name; it is read back and saved only after an explicit yes. No medicine advice and no doses. In the pilot, a second number for the same day asks "add or replace" and never assumes.
 - **Health triage and a vet handoff** (`start_health_check`, `get_health_check`, `prepare_vet_handoff`): guidance, never a diagnosis. Code sets the minimum urgency from the signs and the record book; a model can raise it and never lower it. A suspected reportable disease gets the fixed steps (isolate, stop bird movement, report). The vet message is a **simulated SMS**.
 - **Follow-up** (`report_health_follow_up`): days after a flagged check, the next briefing asks how the shed is now. Anything other than "better" ends with "To be safe, contact your vet or doctor."
 - **Feed and sale plans** (`plan_feed`, `plan_sale`): feed per shed; the best day to sell, with the price **simulated**. Not available for pilot houses, which have no cited growth curve.
 - **Farm profile and contract terms** (`get_farm_profile`, `set_farm_mode`, `set_contract_terms`) and **help** (`get_help`).
 - **The farmer's own rules.** An optional file holds a daily-deaths number and an outdoor-temperature reminder. They are the farmer's, written into the file by the builder from what the farmer said; entering them in the app is a roadmap item. Both only add reminders, and neither can lower an alert.
-- **A Telugu phone page for a farmer pilot** (typed or voice-typed Telugu, big yes and no buttons). A prototype, not Alexa+, not a veterinary service.
+- **A Telugu phone page for a farmer pilot** (Telugu text, big yes and no buttons; there is no Telugu speech recognition and no spoken reply yet). A prototype, not Alexa+, not a veterinary service.
 
 The safety rules, where each came from and which tests pin it: `docs/SAFETY_MATRIX.md`.
 
@@ -61,7 +63,7 @@ The safety rules, where each came from and which tests pin it: `docs/SAFETY_MATR
 
 ## The farmer pilot
 
-No farmer has used the pilot yet. The cloud pilot has been deployed since 13 October 2026 on one AWS Lightsail server in Mumbai (`docs/CLOUD_PILOT.md`), with the sample farm file; the real farm is not switched in. Results will be added after the pilot [PILOT NUMBERS: to be filled on <date> from python tasks.py pilot-stats].
+No farmer has used the pilot yet. The cloud pilot has been deployed since 13 October 2026 on one AWS Lightsail server in Mumbai (`docs/CLOUD_PILOT.md`), with the sample farm file; the real farm is not switched in. No pilot usage numbers recorded yet.
 
 Honest limits. The AI on the pilot server is the rule-based stand-in (no Bedrock calls). The PC pilot through a free tunnel (`docs/PILOT_RUNBOOK_WINDOWS.md`) stays as a fallback, and its availability would depend on that PC and its internet. The farmer's rules (a daily-deaths number) are the farmer's, written into the file by the builder from what the farmer said, and not yet confirmed in writing; entering them in the app is a roadmap item. Telugu: 470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed. Nothing about uptime, speed or reliability has been measured. The plan: `docs/PILOT_RUNBOOK_WINDOWS.md`; the architecture and its limits: `docs/ARCHITECTURE.md`.
 

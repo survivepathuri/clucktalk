@@ -36,7 +36,7 @@ DOCS = {
 }
 TOOLS = sorted(t.name for t in asyncio.run(build_mcp_server().list_tools()))
 ALL_TEXT = "\n".join(DOCS.values())
-PLACEHOLDER = "[PILOT NUMBERS: to be filled on <date> from python tasks.py pilot-stats]"
+PLACEHOLDER = "No pilot usage numbers recorded yet."
 FORBIDDEN = ("production-ready", "production ready", "enterprise-grade", "enterprise grade", "guaranteed", "certified")
 
 
@@ -105,13 +105,13 @@ def test_no_private_path_host_name_token_account_id_or_email_is_in_any_new_docum
 
 
 def test_the_pilot_placeholder_is_used_exactly_and_no_pilot_number_is_invented():
-    assert PLACEHOLDER in DOCS["submission.md"] and "No pilot usage numbers recorded yet." in DOCS["docs/RESULTS.md"]
+    assert PLACEHOLDER in DOCS["submission.md"] and PLACEHOLDER in DOCS["docs/RESULTS.md"]
     pilot = DOCS["submission.md"].split("## The farmer pilot")[1].split("## Challenges")[0]
     assert not re.search(r"\b\d+ (days|records|alerts|farmers)\b", pilot), pilot
     # Updated 2026-10-13 (owner-authorised): no farmer has used the pilot yet; the cloud pilot runs with the sample farm.
     assert "No farmer has used the pilot yet." in pilot
     assert "deployed since 13 October 2026" in pilot and "with the sample farm file" in pilot
-    assert f"Results will be added after the pilot {PLACEHOLDER}." in pilot
+    assert PLACEHOLDER in pilot and "[PILOT NUMBERS" not in pilot
     assert "shared with one farmer" not in pilot
     assert "Nothing about uptime, speed or reliability has been measured." in pilot
     assert not re.search(r"\b(uses it|used it daily|every day|reliabl[ey] (ran|runs))\b", pilot), pilot
@@ -157,10 +157,11 @@ def test_the_doing_well_wording_is_scoped_to_demo_mode_and_row_seven_makes_no_fi
 
 
 # -- submission.md --------------------------------------------------------------------------------------------
-def test_the_taglines_are_three_and_at_most_sixty_characters():
+def test_the_submission_pins_the_one_locked_tagline_at_most_sixty_characters():
+    tagline = "Telugu-first MCP assistant for broiler farmers"
     section = DOCS["submission.md"].split("## Tagline options")[1].split("## Opening sentence")[0]
-    lines = re.findall(r"^\d\. (.+)$", section, re.M)
-    assert len(lines) == 3 and all(len(s) <= 60 for s in lines), [(s, len(s)) for s in lines]
+    assert f"**{tagline}**" in section and len(tagline) <= 60
+    assert not re.search(r"^\d\. ", section, re.M)
 
 
 def test_the_opening_sentence_names_the_track_technology():
@@ -175,10 +176,10 @@ def test_the_opening_sentence_names_the_track_technology():
         assert needle in section, needle
 
 
-def test_the_inspiration_is_three_sentences_with_no_identity():
+def test_the_inspiration_is_three_to_twelve_sentences_with_no_identity():
     section = DOCS["submission.md"].split("## Inspiration")[1].split("## What it does")[0].strip()
     sentences = [s for s in re.split(r"(?<=[.!?])\s+", section) if s]
-    assert len(sentences) == 3, sentences
+    assert 3 <= len(sentences) <= 12, sentences
 
 
 def test_the_first_commit_date_in_the_submission_is_the_one_git_reports():

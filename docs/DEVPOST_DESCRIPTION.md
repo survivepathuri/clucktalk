@@ -12,13 +12,13 @@ I have worked on broiler farms before, so I have seen this up close.
 
 I built CluckTalk to put every shed in one place and make it easy to ask about. A farmer asks in Telugu, and the answer comes from his own records and his own declared schedule, not from a generic guess. The goal is fewer surprises, less guesswork on sale day, and more transparency in a business that runs on trust and memory.
 
-I built it with input from a real broiler farmer. His feedback was clear: he wants to ask by speaking and to hear the answer back in Telugu. Today a farmer can speak his question to CluckTalk and the answer comes back as written Telugu. Spoken Telugu replies are the next step on the roadmap.
+I built it with input from a real broiler farmer. His feedback was clear: he wants to ask by speaking and to hear the answer back in Telugu. Today CluckTalk answers in written Telugu, and the Simulator has a microphone button for English questions. Asking by speaking in Telugu and hearing spoken Telugu replies are the next steps on the roadmap.
 
 ## What it does
 
 CluckTalk is a self-hosted MCP server (spec 2025-11-25, Streamable HTTP), shown through a simulated Alexa+ web app and the MCP Inspector. The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend'). It is entered on the Alexa+ track and uses the official `mcp` Python SDK and 14 tools. My Simulator is a web app: browser UI plus a backend MCP client that sends initialize (protocolVersion 2025-11-25), tools/list and tools/call to the MCP server over Streamable HTTP.
 
-It gives a daily briefing that puts health items first, a voice record book (deaths, feed, weights, treatments) that is saved only after a spoken yes, health triage with a vet handoff (guidance, never a diagnosis or a dose; the vet message is a simulated SMS), a follow-up question days later, and feed and sale plans (the price is simulated). Each tool returns English text, Telugu text and structured data.
+It gives a daily briefing that puts health items first, a record book (deaths, feed, weights, treatments) that is saved only after an explicit yes, health triage with a vet handoff (guidance, never a diagnosis or a dose; the vet message is a simulated SMS), a follow-up question days later, and feed and sale plans (the price is simulated). Each tool returns English text, Telugu text and structured data.
 
 I have not run it on real Alexa+. The Alexa+ developer tools are preview for select partners and I found no way to apply. As I read the Devpost FAQ (https://amazonappdev2026.devpost.com/details/faqs), testing on real Alexa+ is not required, and a web simulator that I build myself and that acts as an MCP client meets the requirement. So I tested it through my own Simulator. The browser page itself only calls the Simulator's own backend; the backend is the MCP client (see "How the Simulator speaks MCP" in the README, with file and line references and a captured exchange). The Simulator picks tools with rule-based matchers.
 
