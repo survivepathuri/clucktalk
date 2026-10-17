@@ -1,0 +1,31 @@
+# Video claims: what the demo video says or shows, and where each claim is backed
+
+Hand-written. Each row is a sentence spoken or a thing shown in the demo video (English narration with English captions, about 2:40, no music). The evidence is a test, a document, a commit or "builder's manual test, shown in the video". Where the evidence is weak the row says so. The video makes none of the claims listed under "Not claimed" at the end.
+
+| # | Claim in the video | Evidence | Strength |
+|---|---|---|---|
+| 1 | The tagline "Telugu-first MCP assistant for broiler farmers" is on screen. | `README.md`, `submission.md`; pinned by `tests/harness/test_submission_docs.py::test_the_submission_pins_the_one_locked_tagline_at_most_sixty_characters`. | Strong |
+| 2 | This is a simulated Alexa+ screen; it has never run on a device. | `README.md` ("Known limitations"), `docs/ALEXA_READINESS.md`, `docs/JUDGES.md`. | Strong |
+| 3 | The developer panel shows a real MCP `tools/call` going to my server. | `tests/contract/test_simulator.py::test_developer_panel_gets_the_exact_wire_exchange`; `docs/SIMULATOR_MCP.md` (a captured exchange); shown live in the video. | Strong |
+| 4 | The farm is fictional ("Demo data" badge). | `README.md`, `docs/JUDGES.md`; the badge is in the Simulator page. | Strong |
+| 5 | The answer comes from stored records, with health items first. | `docs/SAFETY_MATRIX.md`; `tests/contract/test_farm_tools.py`, `tests/contract/test_briefing_tools.py`. | Medium: the test files were not re-read for this table |
+| 6 | The alert comes from plain code and an example daily limit relayed by one farmer, not from a model. | `docs/SAFETY_MATRIX.md` (row 11); `docs/JUDGES.md` ("The demo farm is fictional, and its example limit is not a recommendation"); `tests/contract/test_daily_limit_display.py`. | Strong |
+| 7 | A record is read back and saved only after a yes; the second `tools/call` carries the proposal id and the answer. | `tests/contract/test_record_tools.py::test_a_new_day_needs_a_yes_before_anything_is_saved`; builder's manual run of the Simulator, shown in the video. | Strong |
+| 8 | The microphone uses the browser's speech recognition set to English (India). | `src/clucktalk/simulator/static/app.js` lines 62 to 69; `README.md` ("Voice input"). Builder's manual test, shown in the video; not covered by automated tests. | Weak: no automated test, and recognition accuracy depends on the browser |
+| 9 | Code sets the urgency ("your vet today"); the reply is guidance, never a diagnosis. | `docs/SAFETY_MATRIX.md` (rows 5 and 6); `tests/contract/test_safety_field.py::test_an_urgent_check_advises_the_vet_and_is_never_lower_than_alert`; `tests/unit/test_triage_rules.py`. | Strong |
+| 10 | Asked for a dose, the reply names no medicine and no dose; the vet decides any treatment. | `docs/SAFETY_MATRIX.md` ("What happens when a farmer asks for a dose": a manual check of 2026-10-17, not an automated test); golden case `triage-dose-question-gets-vet-referral` in `data/eval/golden_cases.json`; `tests/unit/test_triage_rules.py::test_every_code_has_bilingual_text_and_no_treatment_words`. The product does not say that it cannot give a dose (`README.md`, "Known limitations"); the video does not claim it does. | Medium: manual check plus one golden case |
+| 11 | Sending the vet a summary is read back first, and the SMS is simulated. | `tests/contract/test_health_tools.py::test_vet_handoff_confirmation_flow`, `::test_vet_handoff_no_sends_nothing`. | Strong |
+| 12 | The farmer's phone page is in Telugu and takes Telugu text and taps; there is no Telugu speech recognition. | `README.md` ("Voice input"); `src/clucktalk/simulator/static/pilot.js`; `tests/contract/test_pilot_telugu_turns.py`. | Medium: the absence of Telugu recognition is shown by the code, not by a test |
+| 13 | A tapped question is answered from the farmer's own declared schedule. | `tests/contract/test_farmer_questions_route.py::test_a_tapped_question_is_answered_from_his_schedule_with_no_tool_call`. | Strong |
+| 14 | The page in the video runs on the sample farm, not a real farmer's data. | `docs/pilot_farm.example.json`; `docs/CLOUD_PILOT.md`. The builder starts that instance from the example file before recording. | Strong |
+| 15 | The replay of Amazon's documented Local Inspector flow is ours, not Amazon's tool, and every step took under 30 ms at p95 on localhost. | `python tasks.py inspector-replay` (shown in the video); `docs/RESULTS.md` section 5 (highest p95 in the table: 25.6 ms for `initialize`); `FRICTION_LOG.md` FL-024. | Strong for localhost; says nothing about a network |
+| 16 | Latency is measured on localhost, not Amazon's 500 ms round trip. | `docs/RESULTS.md` section 5; `docs/JUDGES.md` ("Known limits"). | Strong |
+| 17 | Nova 2 Lite is wired but off by default; zero quotas blocked a run through the server. | `submission.md` ("How we built it"); `src/clucktalk/agents/bedrock.py`; `tests/unit/test_agents.py`; `FRICTION_LOG.md` FL-031; `docs/AWS_SETUP.md` sections 5.2 and 5.3. | Strong |
+| 18 | 470 Telugu strings were approved by me alone, a single reviewer; six are pending. | `docs/TELUGU_REVIEW.md`; `data/i18n/telugu_approvals.json`; `tests/harness/test_submission_docs.py::test_one_telugu_sentence_with_generated_numbers_in_every_judge_facing_document`. | Strong for the count; the review itself is a self-review and is said to be |
+| 19 | There are no farmer usage numbers yet. | `docs/RESULTS.md` section 9; `submission.md` ("The farmer pilot"). | Strong |
+| 20 | Next: Telugu speech in and out, an independent Telugu review. | `README.md` ("Roadmap"); `docs/DEVPOST_DESCRIPTION.md` ("What's next"). Plans, not features. | Plans only |
+| 21 | (If Sound is on in the Simulator) the English answer is read aloud by the browser's speech synthesis. | `src/clucktalk/simulator/static/app.js` lines 41 to 60. Builder's manual test, shown in the video; not covered by automated tests. Spoken Telugu replies do not exist. | Weak: no automated test |
+
+## Not claimed in the video
+
+Alexa+ running on a device; Nova in the server's path; Nova writing any farmer-facing wording; daily or pilot use by the farmer; Telugu reviewed by anyone but me; Telugu speech recognition; spoken Telugu replies; "voice-first"; production readiness; latency over a network; veterinary or agronomic review.
