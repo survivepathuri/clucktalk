@@ -282,7 +282,7 @@ def render(
         "",
         "## 9. What this file does not show",
         "",
-        "- Pilot numbers do not exist yet: [PILOT NUMBERS: to be filled on <date> from python tasks.py pilot-stats].",
+        "- No pilot usage numbers recorded yet.",
         "- No live AWS or model result: the evals and the latency run in mock mode.",
         "- No Alexa+ device and no Telugu voice through Alexa+.",
         f"- Telugu: {telugu} Details: `docs/TELUGU_REVIEW.md`.",

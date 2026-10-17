@@ -105,7 +105,7 @@ def test_no_private_path_host_name_token_account_id_or_email_is_in_any_new_docum
 
 
 def test_the_pilot_placeholder_is_used_exactly_and_no_pilot_number_is_invented():
-    assert PLACEHOLDER in DOCS["submission.md"] and PLACEHOLDER in DOCS["docs/RESULTS.md"]
+    assert PLACEHOLDER in DOCS["submission.md"] and "No pilot usage numbers recorded yet." in DOCS["docs/RESULTS.md"]
     pilot = DOCS["submission.md"].split("## The farmer pilot")[1].split("## Challenges")[0]
     assert not re.search(r"\b\d+ (days|records|alerts|farmers)\b", pilot), pilot
     # Updated 2026-10-13 (owner-authorised): no farmer has used the pilot yet; the cloud pilot runs with the sample farm.

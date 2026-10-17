@@ -120,7 +120,7 @@ def test_the_rendered_results_label_the_latency_and_the_readiness_and_keep_the_p
     text = _render([])
     assert "server time on localhost, mock mode, not Amazon's 500 ms round trip" in text
     assert "not an Amazon verdict" in text
-    assert "[PILOT NUMBERS: to be filled on <date> from python tasks.py pilot-stats]" in text
+    assert "No pilot usage numbers recorded yet." in text
     assert "| `tests/contract` | not recorded |" in text  # a missing count is said, never invented
     assert "**3**" in text  # the total adds the counts that exist
     assert "Failing cases: `b-case`." in text and "2 of 3 cases passed" in text
