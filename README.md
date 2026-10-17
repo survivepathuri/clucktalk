@@ -226,13 +226,13 @@ Everything runs on seeded, clearly fictional demo data (`MOCK_BEDROCK=true`, sho
   (the briefing's separate "N birds died yesterday" item still shows it).
 - **What can you do?** (`get_help`).
 - A local **Alexa+ Simulator**: a web app, a browser UI plus a backend MCP client that sends `initialize` (protocolVersion
-  2025-11-25), `tools/list` and `tools/call` to the MCP server over Streamable HTTP (Echo Show / Echo Dot device modes,
+  2025-11-25), `tools/list` and `tools/call` to the MCP server over Streamable HTTP (smart display and speaker device modes,
   voice and text, a developer panel showing the exact MCP wire). The browser page calls only the Simulator's own backend;
   see "How the Simulator speaks MCP" below.
 
 ## How the Simulator speaks MCP
 
-The Simulator is a web app in two parts. The **browser page** (`src/clucktalk/simulator/static/app.js`) never speaks MCP: it posts the farmer's words to the Simulator's own backend (`app.js:333`, `fetch("/api/turn", ...)`). The **backend** is the MCP client. It sends `initialize` with protocolVersion 2025-11-25, then `notifications/initialized` and `tools/list` (`src/clucktalk/simulator/mcp_client.py:84-122`, class `McpClient.connect`), and a `tools/call` for each turn (`src/clucktalk/simulator/app.py:652`), as raw JSON-RPC over Streamable HTTP to `/mcp`. It stops with an error if the server negotiates any other version (`mcp_client.py:108`). The Simulator's developer panel shows the same wire.
+The Simulator is a web app in two parts. The **browser page** (`src/clucktalk/simulator/static/app.js`) never speaks MCP: it posts the farmer's words to the Simulator's own backend (`app.js:354`, `fetch("/api/turn", ...)`). The **backend** is the MCP client. It sends `initialize` with protocolVersion 2025-11-25, then `notifications/initialized` and `tools/list` (`src/clucktalk/simulator/mcp_client.py:84-122`, class `McpClient.connect`), and a `tools/call` for each turn (`src/clucktalk/simulator/app.py:665`), as raw JSON-RPC over Streamable HTTP to `/mcp`. It stops with an error if the server negotiates any other version (`mcp_client.py:108`). The Simulator's developer panel shows the same wire.
 
 Captured on 2026-10-17 on Windows by running `McpClient` (the Simulator's own client class) against `python tasks.py serve` in demo mode. Lines are shortened with `...`; the server also returned an `mcp-session-id` header on `initialize`, which the client sends on every later call.
 

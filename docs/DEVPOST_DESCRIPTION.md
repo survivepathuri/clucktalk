@@ -42,7 +42,7 @@ The cloud pilot runs on one AWS Lightsail server in Mumbai, with the sample farm
 
 ## Accomplishments
 
-14 tools, four MCP Apps cards, 3,454 automated tests (collected by `python tasks.py results`, see `docs/RESULTS.md` section 1; all passed in `python tasks.py check` on 2026-10-18), and 88 of 88 golden eval cases passing in mock mode on 2026-10-16. A safety matrix ties each rule to its source and tests. My friction log has 29 live entries (FL-001 to FL-032; three more numbers are merged stubs), and I wrote product feedback for the Amazon teams.
+14 tools, four MCP Apps cards, 3,454 automated tests (collected by `python tasks.py results`, see `docs/RESULTS.md` section 1; all passed in `python tasks.py check` on 2026-10-18), and 88 of 88 golden eval cases passing in mock mode on 2026-10-16. A safety matrix ties each rule to its source and tests. My friction log has 30 live entries (FL-001 to FL-033; three more numbers are merged stubs), and I wrote product feedback for the Amazon teams.
 
 ## What I learned
 
@@ -51,6 +51,8 @@ Put the safety rules in code and let a model only raise an alert. Label every si
 ## What's next
 
 Run the real farmer pilot, enter the farmer's own rules in the app, get the Telugu strings reviewed by someone besides me, run the live AI path through the server, and run Amazon's validation if access opens.
+
+Built with a broiler farmer. The schedule, safety and language layers are not poultry-specific, so the next step is other livestock and aquaculture, each with its own vet-reviewed content.
 
 > **PILOT RESULTS: TO FILL AFTER THE PILOT**
 > Days: `[FILL]` · Records logged: `[FILL]` · Questions asked: `[FILL]` · One honest quote: `[FILL]` · What broke: `[FILL]`
