@@ -8,7 +8,7 @@ If you do not have Python 3.12 or 3.13 (these install lines are the ones in the 
 - macOS: `brew install python@3.13`
 - Ubuntu: `sudo apt install python3 python3-venv` (Ubuntu 24.04 ships Python 3.12). On an older Ubuntu, use the deadsnakes PPA or `pyenv install 3.13`.
 
-CluckTalk (కోడి మిత్ర) is a self-hosted **MCP server** (Streamable HTTP, spec 2025-11-25) for Alexa+, with a simulated Alexa+ web experience, for Indian broiler farmers. It tracks a shed's deaths, feed and health checks, and tells the farmer in English and Telugu what needs attention first. Nothing here has run on an Alexa+ device; the Simulator plays the client role. The Simulator is a web app: browser UI plus a backend MCP client that sends initialize (protocolVersion 2025-11-25), tools/list and tools/call to the MCP server over Streamable HTTP; the browser page itself only calls the Simulator's own backend (README, "How the Simulator speaks MCP").
+CluckTalk (కోడి మిత్ర) is a self-hosted **MCP server** (Streamable HTTP, spec 2025-11-25) for Alexa+, with a simulated Alexa+ web experience, for Indian broiler farmers. It tracks a shed's deaths, feed and health checks, and tells the farmer in English and Telugu what needs attention first. Nothing here has run on an Alexa+ device; the Simulator plays the client role. The Simulator is a web app: browser UI plus a backend MCP client that sends initialize (protocolVersion 2025-11-25), tools/list and tools/call to the MCP server over Streamable HTTP; the browser page itself only calls the Simulator's own backend (README, "How the Simulator speaks MCP"; also in `docs/SIMULATOR_MCP.md`, with file and line references and a captured exchange).
 
 ## Run it: three commands
 

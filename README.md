@@ -252,7 +252,9 @@ POST /mcp  -> 200, 53 ms
  "isError":false,"structuredContent":{"text_en":"...","text_te":"...",...}}}
 ```
 
-The timings are one localhost run in demo mode, not a measurement; the latency figures are in `docs/RESULTS.md`, section 5.
+The timings are one localhost run in demo mode, not a measurement; the latency figures are in `docs/RESULTS.md`, section 5. The same text is in `docs/SIMULATOR_MCP.md`.
+
+**Voice input.** The Simulator's microphone button uses the browser's built-in Web Speech API with the recognition language set to `en-IN` (`src/clucktalk/simulator/static/app.js:62-69`; the code does not request Telugu recognition). Builder-tested manually, not covered by automated tests.
 
 ## Voice versus cards, and what is not verified
 
