@@ -17,7 +17,7 @@ spec.loader.exec_module(ev)  # type: ignore[union-attr]
 def test_a_step_with_say_uses_the_host_rules_to_pick_tool_and_arguments():
     tool, args, problem = ev._plan_step({"say": "kotam one is better now", "tool": "report_health_follow_up"}, {})
     assert (tool, problem) == ("report_health_follow_up", "")
-    assert args == {"house": "kotam one", "outcome": "better"}
+    assert args == {"house": "kotam 1", "outcome": "better"}
 
 
 def test_say_that_picks_another_tool_than_the_case_expects_is_a_problem():

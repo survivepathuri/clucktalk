@@ -31,7 +31,7 @@ TOOL = "report_health_follow_up"
         ("shed 2 bigad gaya", "shed 2", "worse"),
         ("shed 1 not sure", "shed 1", "not_sure"),
         ("shed 1 I can't tell", "shed 1", "not_sure"),
-        ("shed one pata nahi", "shed one", "not_sure"),
+        ("shed one pata nahi", "shed 1", "not_sure"),
         ("shed 4 maloom nahi", "shed 4", "not_sure"),
         ("shed 2 is not worse", "shed 2", "not_sure"),
     ],

@@ -73,7 +73,7 @@ def test_invocation_example_reaches_the_tool_and_returns_speech_and_card(sim):
     out = sim.turn("Alexa, ask CluckTalk how shed two is doing")
     assert out["kind"] == "tool"
     assert out["intent"]["tool"] == "get_farm_status"
-    assert out["intent"]["arguments"] == {"house": "shed two"}
+    assert out["intent"]["arguments"] == {"house": "shed 2"}
     result = out["result"]
     assert result["isError"] is False
     # What the device speaks is exactly the tool's content text (no host rewording of numbers).
@@ -87,7 +87,7 @@ def test_developer_panel_gets_the_exact_wire_exchange(sim):
     out = sim.turn("How is shed two doing?")
     call = out["exchanges"][-1]
     assert call["request"]["method"] == "tools/call"
-    assert call["request"]["params"] == {"name": "get_farm_status", "arguments": {"house": "shed two"}}
+    assert call["request"]["params"] == {"name": "get_farm_status", "arguments": {"house": "shed 2"}}
     assert call["http_status"] == 200 and call["response"]["result"] == out["result"]
     assert out["timing"]["mcp_ms"] > 0
 
@@ -103,7 +103,7 @@ def test_echo_dot_gets_the_same_answer_and_no_card(sim):
 def test_unknown_shed_is_spoken_safely(sim):
     out = sim.turn("How is shed nine doing?")
     assert out["kind"] == "tool" and out["is_error"] is True
-    assert "shed nine" in out["speech"] and "House 1" in out["speech"]
+    assert "shed 9" in out["speech"] and "House 1" in out["speech"]
     for leak in ("get_farm_status", "Error", "{", "house_id"):
         assert leak not in out["speech"], leak
 
@@ -362,3 +362,57 @@ def test_the_vet_offer_lapses_when_the_farmer_moves_on(sim_fresh):
 def test_a_bare_yes_without_an_offer_still_answers_nothing(sim_fresh):
     late = sim_fresh.turn("okay")
     assert late["intent"] is None and late["result"] is None
+
+
+# -- ok / okay / sure / please do only take up the vet offer; a record save or an SMS send needs yes / yeah / yep ------
+@pytest.mark.parametrize("word", ["ok", "okay", "sure", "please do"])
+def test_a_mild_acceptance_never_saves_a_record(sim_fresh, word):
+    proposed = sim_fresh.turn("5 birds died in shed 1")
+    assert proposed["awaiting_answer"] is True
+    got = sim_fresh.turn(word)
+    assert got["intent"] is None and got["result"] is None  # nothing was saved, and the read-back lapsed
+    late = sim_fresh.turn("yes")
+    assert late["intent"] is None and late["result"] is None
+
+
+@pytest.mark.parametrize("word", ["yes", "yeah", "yep"])
+def test_an_explicit_yes_still_saves_a_record(sim_fresh, word):
+    assert sim_fresh.turn("5 birds died in shed 1")["awaiting_answer"] is True
+    saved = sim_fresh.turn(word)
+    assert saved["intent"]["tool"] == "log_daily_record"
+    assert saved["result"]["structuredContent"]["status"] == "changed"
+
+
+@pytest.mark.parametrize("word", ["ok", "okay", "sure", "please do"])
+def test_a_mild_acceptance_never_sends_the_vet_sms(sim_fresh, word):
+    _offered(sim_fresh)
+    assert (
+        sim_fresh.turn(word)["result"]["structuredContent"]["status"] == "needs_confirmation"
+    )  # the offer is taken up
+    again = sim_fresh.turn(word)  # but the read-back itself needs a yes
+    assert again["intent"] is None and again["result"] is None
+
+
+def test_number_words_from_the_microphone_reach_the_tool_as_digits(sim_fresh):
+    got = sim_fresh.turn("five birds died in shed one")
+    assert got["normalised"] == "5 birds died in shed 1"
+    assert got["intent"]["tool"] == "log_daily_record"
+    assert got["intent"]["arguments"] == {"house": "shed 1", "deaths": 5}
+    assert got["awaiting_answer"] is True
+
+
+# -- a dose or medicine-amount question goes to the existing health-check path, which says the vet decides -----------
+@pytest.mark.parametrize(
+    "said",
+    [
+        "how much medicine for shed 2",
+        "what dose of antibiotic should I give shed two",
+        "how much medicine should I give for shed two",
+    ],
+)
+def test_a_dose_question_gets_the_vet_referral_not_a_treatment_record(sim_fresh, said):
+    got = sim_fresh.turn(said)
+    assert got["intent"]["tool"] == "start_health_check" and got["intent"]["arguments"]["signs"] == []
+    assert "Your vet decides any treatment" in got["speech"]
+    assert not got.get("awaiting_answer")  # nothing is proposed as a record
+    assert " ml" not in got["speech"] and "litre" not in got["speech"]

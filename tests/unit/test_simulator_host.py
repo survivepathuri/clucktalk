@@ -9,14 +9,14 @@ import pytest
 from clucktalk.config import ConfigError
 from clucktalk.simulator.__main__ import load_simulator_settings
 from clucktalk.simulator.app import sandbox_csp
-from clucktalk.simulator.intents import match, yes_no
+from clucktalk.simulator.intents import is_weak_yes, match, normalise, yes_no
 
 
 @pytest.mark.parametrize(
     ("utterance", "tool", "args"),
     [
         # Invocation examples and farmer phrasing (docs/DESIGN.md §5 rule 6: shed/house/kotam, Hinglish numbers)
-        ("Alexa, ask CluckTalk how shed two is doing", "get_farm_status", {"house": "shed two"}),
+        ("Alexa, ask CluckTalk how shed two is doing", "get_farm_status", {"house": "shed 2"}),
         ("Alexa, ask Cluck Talk how shed 2 is doing?", "get_farm_status", {"house": "shed 2"}),
         ("How's the farm today?", "get_farm_status", {}),
         ("How are all sheds doing", "get_farm_status", {}),
@@ -24,9 +24,9 @@ from clucktalk.simulator.intents import match, yes_no
         ("how is the second shed", "get_farm_status", {"house": "second shed"}),
         ("do number shed ka haal", "get_farm_status", {"house": "do number shed"}),
         ("house number 3 status", "get_farm_status", {"house": "house number 3"}),
-        ("How is shade two doing", "get_farm_status", {"house": "shed two"}),  # common mishearing
-        ("How is shed nine doing?", "get_farm_status", {"house": "shed nine"}),  # the server decides it's unknown
-        ("Feed plan for shed two", "plan_feed", {"house": "shed two"}),
+        ("How is shade two doing", "get_farm_status", {"house": "shed 2"}),  # common mishearing
+        ("How is shed nine doing?", "get_farm_status", {"house": "shed 9"}),  # the server decides it's unknown
+        ("Feed plan for shed two", "plan_feed", {"house": "shed 2"}),
         ("how much dana do I need", "plan_feed", {}),
         ("What can you do?", "get_help", {}),
         ("help", "get_help", {}),
@@ -43,7 +43,7 @@ from clucktalk.simulator.intents import match, yes_no
         # Voice record book (docs/DESIGN.md §13.2): a stated number is what makes it a report, not a question.
         ("House 2, 3 birds died today", "log_daily_record", {"house": "house 2", "deaths": 3}),
         ("3 birds died in house 2", "log_daily_record", {"house": "house 2", "deaths": 3}),
-        ("house two mar gaye 3", "log_daily_record", {"house": "house two", "deaths": 3}),
+        ("house two mar gaye 3", "log_daily_record", {"house": "house 2", "deaths": 3}),
         ("shed 1 no deaths today", "log_daily_record", {"house": "shed 1", "deaths": 0}),
         ("gave 2 bags of feed to house 1", "log_daily_record", {"house": "house 1", "feed_bags": 2.0}),
         ("fed 2 bags to shed 1 today", "log_daily_record", {"house": "shed 1", "feed_bags": 2.0}),
@@ -237,9 +237,9 @@ def test_a_weight_without_a_bird_count_still_reaches_the_tools_own_clarifying_er
         ("kotam do mein khansi aur dast", {"house": "kotam do", "signs": ["coughing", "diarrhoea"]}),
         (
             "house two swollen heads and blue combs, birds dying suddenly",
-            {"house": "house two", "signs": ["swollen_head", "discoloured_comb", "sudden_deaths"]},
+            {"house": "house 2", "signs": ["swollen_head", "discoloured_comb", "sudden_deaths"]},
         ),
-        ("shed one birds panting a lot", {"house": "shed one", "signs": ["panting"]}),
+        ("shed one birds panting a lot", {"house": "shed 1", "signs": ["panting"]}),
         ("shed 3 twisted neck and drooping wings", {"house": "shed 3", "signs": ["twisted_neck", "paralysis"]}),
     ],
 )
@@ -254,9 +254,9 @@ def test_signs_of_illness_start_a_health_check(utterance, args):
     ("utterance", "tool", "args"),
     [
         ("is the shed 2 health check ready", "get_health_check", {"house": "shed 2"}),
-        ("what did the health check find for house two", "get_health_check", {"house": "house two"}),
+        ("what did the health check find for house two", "get_health_check", {"house": "house 2"}),
         ("send the shed 2 health check to my vet", "prepare_vet_handoff", {"house": "shed 2"}),
-        ("shed two report vet ko bhej do", "prepare_vet_handoff", {"house": "shed two"}),
+        ("shed two report vet ko bhej do", "prepare_vet_handoff", {"house": "shed 2"}),
     ],
 )
 def test_health_check_follow_ups(utterance, tool, args):
@@ -327,3 +327,59 @@ def test_briefing_intents(utterance, args):
 def test_briefing_words_do_not_steal_other_intents(utterance):
     intent = match(utterance)
     assert intent is None or intent.tool != "get_daily_briefing"
+
+
+@pytest.mark.parametrize(
+    ("said", "normalised"),
+    [
+        ("five birds died in shed one", "5 birds died in shed 1"),
+        ("Shed Two", "shed 2"),
+        ("twenty birds died in house ten", "20 birds died in house 10"),
+        ("twenty five birds died in shed three", "25 birds died in shed 3"),
+        ("thirty-two bags of feed for shed four", "32 bags of feed for shed 4"),
+        ("nineteen birds dead shed nine", "19 birds dead shed 9"),
+        ("kotam do", "kotam do"),  # Hindi words stay for the house rules
+    ],
+)
+def test_english_number_words_become_digits(said, normalised):
+    assert normalise(said) == normalised
+
+
+def test_a_spoken_record_matches_the_typed_one():
+    spoken, typed = match("five birds died in shed one"), match("5 birds died in shed 1")
+    assert spoken is not None and typed is not None
+    assert (
+        (spoken.tool, spoken.arguments)
+        == (typed.tool, typed.arguments)
+        == ("log_daily_record", {"house": "shed 1", "deaths": 5})
+    )
+
+
+@pytest.mark.parametrize(
+    "said",
+    [
+        "how much medicine for shed 2",
+        "what dose of antibiotic should I give shed two",
+        "how many ml per litre for shed 1",
+    ],
+)
+def test_dose_questions_go_to_the_health_check_with_no_guessed_signs(said):
+    intent = match(said)
+    assert intent is not None and intent.tool == "start_health_check"
+    assert intent.arguments["signs"] == [] and intent.arguments["symptoms"] == said
+
+
+def test_a_dose_question_is_not_read_as_a_treatment_record():
+    intent = match("how much medicine should I give for shed two")
+    assert intent is not None and intent.tool != "log_daily_record"
+    assert match("gave newcastle vaccine in shed 2").tool == "log_daily_record"  # a real report still records
+
+
+@pytest.mark.parametrize("said", ["ok", "okay", "sure", "please do"])
+def test_mild_acceptance_words_are_weak(said):
+    assert is_weak_yes(said) and yes_no(said) == "yes"
+
+
+@pytest.mark.parametrize("said", ["yes", "yeah", "yep", "yes please", "haan", "confirm"])
+def test_explicit_yes_words_are_not_weak(said):
+    assert not is_weak_yes(said) and yes_no(said) == "yes"

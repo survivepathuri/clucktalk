@@ -13,7 +13,7 @@ import pytest
 
 from clucktalk.config import REPO_ROOT
 from clucktalk.server.app import build_mcp_server
-from clucktalk.simulator.intents import match, yes_no
+from clucktalk.simulator.intents import match, normalise, yes_no
 
 SKILL_DIR = REPO_ROOT / "skills" / "clucktalk"
 FILES = {
@@ -191,7 +191,8 @@ def test_each_example_phrase_routes_to_the_stated_tool_with_the_stated_arguments
     assert intent.tool == stated, f"{phrase!r} routes to {intent.tool}, the skill says {stated}"
     for key, value in ARG.findall(args):
         actual = intent.arguments.get(key)
-        assert str(actual).lower() == value.lower(), f"{phrase!r}: {key}={actual!r}, the skill says {value}"
+        expected = normalise(value) if key == "house" else value.lower()  # "shed one" is sent as "shed 1"
+        assert str(actual).lower() == expected, f"{phrase!r}: {key}={actual!r}, the skill says {value}"
 
 
 @pytest.mark.parametrize(("phrase", "what", "args"), ANSWER_ROUTES)

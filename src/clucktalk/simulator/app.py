@@ -59,7 +59,7 @@ from clucktalk.pilot import load_pilot_farm_file
 from clucktalk.server.farm_state import today_ist
 from clucktalk.server.tools.health import HANDOFF_TOOL, OFFER
 from clucktalk.simulator import questions as farmer_questions
-from clucktalk.simulator.intents import Intent, match, normalise, yes_no
+from clucktalk.simulator.intents import Intent, is_weak_yes, match, normalise, yes_no
 from clucktalk.simulator.intents_te import chip_intent, choice_te, match_te, yes_no_te
 from clucktalk.simulator.mcp_client import Exchange, McpClient, McpUnavailable
 from clucktalk.usage import UsageCounters
@@ -583,6 +583,8 @@ def build_app(
         awaiting, host_awaiting = dict(conv.pending), dict(conv.host_pending)
         vet_offered = dict(conv.vet_offer)  # lapses with this turn, like a read-back
         conv.vet_offer.clear()
+        if answer == "yes" and chip is None and not te and is_weak_yes(utterance) and (awaiting or not vet_offered):
+            answer = None  # ok / okay / sure / please do only take up the vet offer; a save or an SMS needs yes
         conv.pending.clear()
         conv.host_pending.clear()
         conv.turns += 1

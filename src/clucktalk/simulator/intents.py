@@ -52,6 +52,9 @@ PROFILE = re.compile(
 YES = re.compile(
     r"^(?:yes|yeah|yep|yes please|ok|okay|sure|please do|haan|haan ji|ji haan|han ji|avunu|confirm|yes confirm)$"
 )
+# Mild acceptance: enough to take up an offer ("Shall I send a summary to your vet?"), not to save a record or send
+# an SMS. Those writes need an explicit yes / yeah / yep (the app demotes these words when no offer is waiting).
+WEAK_YES = re.compile(r"^(?:ok|okay|sure|please do)$")
 NO = re.compile(r"^(?:no|nope|no thanks|not now|nahi|nahin|na|vaddu|cancel|don't|do not)$")
 FEED = re.compile(r"\b(?:feed|dana|daana|bags?|bori|stock|reorder)\b")
 # Sale-day plan (docs/DESIGN.md §12.4). "rate is 95" carries a farmer-given live price to plan_sale.
@@ -174,6 +177,14 @@ SIGN_WORDS: tuple[tuple[str, re.Pattern[str]], ...] = (
 HEALTH_RESULT = re.compile(
     r"\b(?:health check|check (?:is )?ready|what did (?:the|my) (?:health )?check|triage result|jaanch)\b"
 )
+# A question about a dose or an amount of medicine. It goes to the health-check tool, whose reply says that the vet
+# decides any treatment; the simulator never answers it and never reads it as a treatment record.
+DOSE_QUESTION = re.compile(
+    r"\b(?:dose|doses|dosage|dosing)\b"
+    r"|\bhow (?:much|many)\b.*\b(?:medicines?|medication|antibiotics?|drugs?|tablets?|ml|mg|grams?)\b"
+    r"|\b(?:what|which)\b.*\b(?:medicines?|medication|antibiotics?|drugs?)\b.*\b(?:give|use|put)\b"
+    r"|\bml (?:per|for)\b"
+)
 VET_HANDOFF = re.compile(r"\b(?:send|bhej\w*)\b.*\b(?:vet|doctor|daktar)\b|\b(?:vet|doctor)\b.*\bbhej\w*\b")
 
 
@@ -234,10 +245,30 @@ class Intent:
     rule: str = ""  # which rule matched; shown in the developer panel
 
 
+# A speech recogniser may write "five birds died in shed one": English number words become digits so the rules
+# below see "5 birds died in shed 1". "do" and "teen" stay as they are (Hindi words that the house rules read).
+UNITS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
+TEENS = {
+    "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
+    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19,
+}  # fmt: skip
+TENS = {"twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90}
+_SMALL = {**UNITS, **TEENS}
+_UNIT_WORD = "|".join(k for k, v in UNITS.items() if v < 10)
+NUMBER_WORDS = re.compile(rf"\b(?:({'|'.join(TENS)})(?:[\s-]+({_UNIT_WORD}))?|{'|'.join(_SMALL)})\b")
+
+
+def _number_word(m: re.Match[str]) -> str:
+    if m.group(1):
+        return str(TENS[m.group(1)] + (UNITS[m.group(2)] if m.group(2) else 0))
+    return str(_SMALL[m.group(0)])
+
+
 def normalise(utterance: str) -> str:
     text = utterance.lower().replace("cluck talk", "clucktalk").replace("click talk", "clucktalk")
     text = re.sub(r"[^\w\s'\u0c00-\u0c7f]", " ", text)  # Telugu vowel signs are kept (they used to be stripped)
     text = " ".join(MISHEARD.get(w, w) for w in text.split())
+    text = NUMBER_WORDS.sub(_number_word, text)
     return WAKE.sub("", text).strip()
 
 
@@ -257,6 +288,11 @@ def yes_no(utterance: str) -> str | None:
     if NO.match(text):
         return "no"
     return None
+
+
+def is_weak_yes(utterance: str) -> bool:
+    """True for ok / okay / sure / please do: these accept an offer but never confirm a read-back."""
+    return WEAK_YES.match(normalise(utterance)) is not None
 
 
 def match(utterance: str) -> Intent | None:
@@ -289,6 +325,13 @@ def match(utterance: str) -> Intent | None:
         # vet send without its check (Rule 11 review 2026-09-29).
         rule = "health: signs (" + ", ".join(signs) + ") + shed"
         return Intent("start_health_check", {**args, "signs": signs, "symptoms": utterance.strip()[:300]}, rule)
+    if house and DOSE_QUESTION.search(text):
+        # No signs are guessed: the farmer's words go along as they are and the tool answers with its fixed text.
+        return Intent(
+            "start_health_check",
+            {**args, "signs": [], "symptoms": utterance.strip()[:300]},
+            "health: dose / medicine amount question + shed (the vet decides any treatment)",
+        )
     if house and VET_HANDOFF.search(text):
         return Intent("prepare_vet_handoff", args, "vet handoff: 'send ... vet' / 'vet ko bhej' + shed")
     if house and HEALTH_RESULT.search(text):
