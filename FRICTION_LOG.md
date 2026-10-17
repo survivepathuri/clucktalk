@@ -11,7 +11,7 @@ Only real experiences. Never batched, never invented.
 
 Every entry uses the six official fields (task attempted, steps taken, expected vs actual, severity, workaround, actionable suggestion) plus date, tag, `Time cost:` (only what was recorded in the sessions, otherwise "not recorded"), `Reproduce:` (a real command or the exact test name, otherwise "documentation-based, no command") and `Evidence:` (only files that exist in this repo). Every suggestion names the owner, the page or mechanism and the concrete change; open points are phrased as questions to the owner.
 
-**Counts:** 30 FL numbers (FL-001 to FL-030): 27 live entries (20 in this file, 7 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
+**Counts:** 31 FL numbers (FL-001 to FL-031): 28 live entries (21 in this file, 7 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
 
 **FL numbers are stable ids.** They are never reused or renumbered, so every reference in the code, the docs and the submission copies stays valid. FL-010, FL-016 and FL-018 were merged into FL-007 and FL-014 (2026-10-01 audit); their numbers remain as short stubs.
 
@@ -37,6 +37,7 @@ Audit of 2026-10-01: three pairs of entries that describe one problem were merge
 | FL-026 | [Alexa+/MCP] | this file |
 | FL-027 | [AWS App Runner docs] | this file (builder-reported) |
 | FL-028 to FL-030 | [Dev] | `docs/DEV_NOTES.md` |
+| FL-031 | [Bedrock quotas] [AWS CLI login] | this file |
 
 ---
 
@@ -381,3 +382,19 @@ Reproduce: documentation-based, no command.
 Evidence: none in the repository (builder-reported, 7 October 2026).
 Verified on: 2026-10-07
 Doc URL: not recorded (the page's URL is not in `docs/SOURCES.md`).
+
+### FL-031: Nova 2 Lite calls through the server code path all returned ThrottlingException; every Nova 2 Lite requests-per-minute and tokens-per-day quota in the account is 0
+Date: 2026-10-17
+Tool / service: Amazon Bedrock Runtime `Converse` (`us.amazon.nova-2-lite-v1:0`, us-east-1); Service Quotas (`bedrock`); `aws login`.
+Tag: [Bedrock quotas] [AWS CLI login]
+Task attempted: Run Nova 2 Lite once through CluckTalk's own server code path (triage and briefing agents, synthetic demo farm, local process, live Bedrock for that process only).
+Steps taken: `aws login --region us-east-1` (console sign-in by the owner, temporary credentials). Started the real server with MOCK_BEDROCK=false, 4 Converse calls (2 triage, 2 briefing), `maxTokens` clamped to 300, call cap 6. Then `aws service-quotas list-service-quotas` and `list-aws-default-service-quotas` for `bedrock`.
+Expected vs actual: Expected a tool-call reply as on 2026-09-29 (docs/AWS_SETUP.md §5.2, §5.3). Actual: all 4 calls returned `ThrottlingException` (no usage returned); the server surfaced "no AI answer" for the check and "AI ordering didn't finish" for the briefing, as designed. Service Quotas for this account: Nova 2 Lite "Cross-region model inference requests per minute" 0, "tokens per minute" 0, "Global cross-region ... requests per minute" 0, "Model invocation max tokens per day" 0; the AWS defaults are 2,000 requests per minute and 5,760,000,000 tokens per day.
+Severity: Medium
+Impact: No live Nova 2 Lite evidence could be produced on 2026-10-17; the earlier 2026-09-29 calls are the only recorded live calls.
+Workaround: None applied. A quota increase request is the owner's decision (Service Quotas console, Amazon Bedrock, us-east-1).
+Actionable suggestion: Owner: Amazon Bedrock / Service Quotas team. Show a clear "quota is 0" message in the ThrottlingException text (it says only "Too many requests"), and say in the console why a new account's Nova quotas are 0 when the model is listed as available.
+Time cost: about 15 minutes
+Reproduce: `aws service-quotas list-service-quotas --service-code bedrock --region us-east-1 --query "Quotas[?contains(QuotaName,'Nova 2 Lite')]"`.
+Evidence: the server log lines "Bedrock ThrottlingException for agent triage / briefing"; 4 Bedrock request ids were captured locally (not committed). See also FL-014.
+Verified on: 2026-10-17

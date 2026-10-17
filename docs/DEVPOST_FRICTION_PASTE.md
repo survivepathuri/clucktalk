@@ -519,3 +519,27 @@ Merged from FL-010 (2026-10-01 audit).
 **Evidence in the repo:** `docs/evidence/2026-10-01_basic_host/README.md`.
 
 **Why this matters to Alexa+ developers:** The reference MCP Apps host cannot be built from its README alone, which slows testing a card in a real host.
+
+## Entry 21 (FL-031): Nova 2 Lite calls through the server code path all returned ThrottlingException; every Nova 2 Lite requests-per-minute and tokens-per-day quota in the account is 0
+
+**Origin:** Amazon · **Tag:** [Bedrock quotas] [AWS CLI login] · **Severity:** Medium · **Date:** 2026-10-17
+
+**Impact:** No live Nova 2 Lite evidence could be produced on 2026-10-17; the earlier 2026-09-29 calls are the only recorded live calls.
+
+**Tool / service:** Amazon Bedrock Runtime `Converse` (`us.amazon.nova-2-lite-v1:0`, us-east-1); Service Quotas (`bedrock`); `aws login`.
+
+**Task attempted:** Run Nova 2 Lite once through CluckTalk's own server code path (triage and briefing agents, synthetic demo farm, local process, live Bedrock for that process only).
+
+**Steps taken:** `aws login --region us-east-1` (console sign-in by the owner, temporary credentials). Started the real server with MOCK_BEDROCK=false, 4 Converse calls (2 triage, 2 briefing), `maxTokens` clamped to 300, call cap 6. Then `aws service-quotas list-service-quotas` and `list-aws-default-service-quotas` for `bedrock`.
+
+**Expected vs actual:** Expected a tool-call reply as on 2026-09-29 (docs/AWS_SETUP.md §5.2, §5.3). Actual: all 4 calls returned `ThrottlingException` (no usage returned); the server surfaced "no AI answer" for the check and "AI ordering didn't finish" for the briefing, as designed. Service Quotas for this account: Nova 2 Lite "Cross-region model inference requests per minute" 0, "tokens per minute" 0, "Global cross-region ... requests per minute" 0, "Model invocation max tokens per day" 0; the AWS defaults are 2,000 requests per minute and 5,760,000,000 tokens per day.
+
+**Workaround:** None applied. A quota increase request is the owner's decision (Service Quotas console, Amazon Bedrock, us-east-1).
+
+**Actionable suggestion:** Owner: Amazon Bedrock / Service Quotas team. Show a clear "quota is 0" message in the ThrottlingException text (it says only "Too many requests"), and say in the console why a new account's Nova quotas are 0 when the model is listed as available.
+
+**Time cost:** about 15 minutes
+
+**Reproduce:** `aws service-quotas list-service-quotas --service-code bedrock --region us-east-1 --query "Quotas[?contains(QuotaName,'Nova 2 Lite')]"`.
+
+**Evidence in the repo:** the server log lines "Bedrock ThrottlingException for agent triage / briefing"; 4 Bedrock request ids were captured locally (not committed). See also FL-014.
