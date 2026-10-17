@@ -41,7 +41,7 @@ python3 tasks.py verify
 python3 tasks.py serve
 ```
 
-`setup` creates `.venv` and installs the pinned dependencies. `verify` prints one table of what you can check, in about 30 seconds. `serve` starts the MCP server at http://127.0.0.1:8765/mcp with a fictional demo farm; leave it running.
+`setup` creates `.venv` and installs the pinned dependencies. `verify` prints one table of what you can check. In one independent clean-clone run on Windows 11 with Python 3.13, setup took 1 min 16 s and verify took 45 s. `serve` starts the MCP server at http://127.0.0.1:8765/mcp with a fictional demo farm; leave it running.
 
 `verify` starts its own temporary server, so it does not need `serve`. `serve` is needed only to call the tools yourself (minute 2). For the Simulator in a browser (Echo Show and Echo Dot modes, cards, a panel showing the exact MCP calls), run `python tasks.py run` instead of `serve`; it opens http://127.0.0.1:8766/. Everything runs on seeded, fictional data in mock mode and shows a "Demo data" badge.
 

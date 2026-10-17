@@ -50,7 +50,7 @@ python3 tasks.py readiness
 python3 tasks.py serve
 ```
 
-What each one does: `setup` creates `.venv` and installs the pinned dependencies. `verify` prints one table of what a judge can check in about 30 seconds (not the full test suites); it starts its own temporary server, so it needs neither Node.js nor a running server. `readiness` is our own self-check of the locally checkable Alexa+ requirements (not an Amazon verdict). `serve` starts the MCP server on http://127.0.0.1:8765/mcp with fictional demo data; leave it running. If port 8765 is busy, `serve` says so and starts nothing; see "Ports and browser" in `docs/JUDGES.md`.
+What each one does: `setup` creates `.venv` and installs the pinned dependencies. `verify` prints one table of what a judge can check (not the full test suites). In one independent clean-clone run on Windows 11 with Python 3.13, setup took 1 min 16 s and verify took 45 s. It starts its own temporary server, so it needs neither Node.js nor a running server. `readiness` is our own self-check of the locally checkable Alexa+ requirements (not an Amazon verdict). `serve` starts the MCP server on http://127.0.0.1:8765/mcp with fictional demo data; leave it running. If port 8765 is busy, `serve` says so and starts nothing; see "Ports and browser" in `docs/JUDGES.md`.
 
 With `serve` running, in a second window, the MCP Inspector command line needs Node.js (`@modelcontextprotocol/inspector` 2.8.0; our evidence in `docs/evidence/2026-09-27_farm_status_and_feed.md` used its installed `mcp-inspector --cli`, and the `npx` form below is the same package but was not run in exactly this form). Without Node.js, `python tasks.py inspector-replay` (`python3` on macOS and Linux) replays Amazon's documented Local Inspector flow against a temporary copy of the server and needs neither Node.js nor `serve`.
 
@@ -260,6 +260,8 @@ POST /mcp  -> 200, 53 ms
 The timings are one localhost run in demo mode, not a measurement; the latency figures are in `docs/RESULTS.md`, section 5. The same text is in `docs/SIMULATOR_MCP.md`.
 
 **Voice input.** The Simulator's microphone button uses the browser's built-in Web Speech API with the recognition language set to `en-IN` (`src/clucktalk/simulator/static/app.js:62-69`; the code does not request Telugu recognition). Builder-tested manually, not covered by automated tests.
+
+Some server strings still describe CluckTalk as a voice farm manager: that is its intended role behind a voice assistant such as Alexa+, not a claim that CluckTalk itself speaks Telugu.
 
 ## Voice versus cards, and what is not verified
 

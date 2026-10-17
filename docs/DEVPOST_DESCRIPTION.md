@@ -12,7 +12,7 @@ I have worked on broiler farms before, so I have seen this up close.
 
 I built CluckTalk to put every shed in one place and make it easy to ask about. A farmer asks in Telugu, and the answer comes from his own records and his own declared schedule, not from a generic guess. The goal is fewer surprises, less guesswork on sale day, and more transparency in a business that runs on trust and memory.
 
-I built it with input from a real broiler farmer. His feedback was clear: he wants to ask by speaking and to hear the answer back in Telugu. Today CluckTalk answers in written Telugu, and the Simulator has a microphone button for English questions. Asking by speaking in Telugu and hearing spoken Telugu replies are the next steps on the roadmap.
+I built it with input from a real broiler farmer. His feedback was clear: he wants to ask by speaking and to hear the answer back in Telugu. Today CluckTalk answers in written Telugu; the Simulator has a microphone button for English questions and reads English answers aloud when Sound is on. Asking by speaking in Telugu and hearing spoken Telugu replies are the next steps on the roadmap.
 
 ## What it does
 

@@ -22,7 +22,7 @@ I have worked on broiler farms before, so I have seen this up close.
 
 I built CluckTalk to put every shed in one place and make it easy to ask about. A farmer asks in Telugu, and the answer comes from his own records and his own declared schedule, not from a generic guess. The goal is fewer surprises, less guesswork on sale day, and more transparency in a business that runs on trust and memory.
 
-I built it with input from a real broiler farmer. His feedback was clear: he wants to ask by speaking and to hear the answer back in Telugu. Today CluckTalk answers in written Telugu, and the Simulator has a microphone button for English questions. Asking by speaking in Telugu and hearing spoken Telugu replies are the next steps on the roadmap.
+I built it with input from a real broiler farmer. His feedback was clear: he wants to ask by speaking and to hear the answer back in Telugu. Today CluckTalk answers in written Telugu; the Simulator has a microphone button for English questions and reads English answers aloud when Sound is on. Asking by speaking in Telugu and hearing spoken Telugu replies are the next steps on the roadmap.
 
 ## What it does
 
@@ -56,6 +56,7 @@ The safety rules, where each came from and which tests pin it: `docs/SAFETY_MATR
 ## How we trust it
 
 - **A safety matrix**, one row per rule with its source, code location, tests and a before and after example, and a plain mark for thresholds that are only general guidance: `docs/SAFETY_MATRIX.md`.
+- **How long a judge's run takes:** In one independent clean-clone run on Windows 11 with Python 3.13, setup took 1 min 16 s and verify took 45 s. (the audit log is not in the repository; the machine and the run are the independent auditor's.)
 - **Generated results** (test counts, golden evals, mutation checks, protocol conformance, latency, readiness), and saved outputs of the self-check commands with their date and commit: `docs/RESULTS.md`, `docs/proof/`.
 - **Independent reviews** by fresh agents after each main feature, and what they found and how it was fixed: `docs/INDEPENDENT_REVIEW.md`. They are not human audits (`SECURITY.md`).
 - **A claims table** that marks each claim verified, simulated, unverified or not built, with the file or command that shows it: the README, section "What is verified, unverified and simulated".
