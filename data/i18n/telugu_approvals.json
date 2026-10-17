@@ -1,5 +1,5 @@
 {
-  "note": "Per-string Telugu review approvals. Written by scripts/telugu_review.py --approve-pending; each entry covers one exact English + Telugu pair (key = sha256 of both). Do not edit keys by hand.",
+  "note": "Per-string Telugu review approvals. Written by scripts/telugu_review.py --approve-pending (2026-09-27 batch) and by a scoped approval of 2026-10-16; each entry covers one exact English + Telugu pair (key = sha256 of both). Do not edit keys by hand. Every entry is a single-reviewer self-review by the builder, a native Telugu speaker: not an independent review and not a farmer review. Strings containing the Telugu word for follow-up (ఫాలో-అప్) are deliberately left pending until the farmer confirms the wording.",
   "approvals": [
     {
       "key": "916fe4adb2030d80",
@@ -560,6 +560,2830 @@
       "te": "స్టార్టర్",
       "reviewer": "builder, native Telugu speaker",
       "date": "2026-09-27"
+    },
+    {
+      "key": "032e98c4ec7d1e4d",
+      "en": ", with a note",
+      "te": ", ఒక గమనికతో",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "833b5cfd08d15abe",
+      "en": "On day 40, above {kg} kg is good.",
+      "te": "40వ రోజున {kg} కిలోల కంటే ఎక్కువ ఉంటే బాగుంది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0dd1c5dd38cc2b3c",
+      "en": "When is day 45?",
+      "te": "45వ రోజు ఎప్పుడు?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e30f815be1513257",
+      "en": "What weight on day 45?",
+      "te": "45వ రోజు బరువు ఎంత ఉండాలి?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "1164b77b36147aa6",
+      "en": "On day 45 the weight should be about {kg} kg.",
+      "te": "45వ రోజున బరువు సుమారు {kg} కిలోలు ఉండాలి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "434600212ccf634c",
+      "en": "AI ordering is still preparing; showing the rules order for now.",
+      "te": "AI క్రమం ఇంకా సిద్ధమవుతోంది; ప్రస్తుతం నియమాల క్రమం చూపిస్తున్నాను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "2fbd2f7664f69c29",
+      "en": "AI ordering didn't finish, so the items are in the rules order.",
+      "te": "AI క్రమం పూర్తి కాలేదు, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "778ade59e32135cf",
+      "en": "No AI answer: the check couldn't finish",
+      "te": "AI సమాధానం రాలేదు: తనిఖీ పూర్తి కాలేదు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "32b010eb35e8e89f",
+      "en": "AI: Amazon Nova on Bedrock",
+      "te": "AI: బెడ్‌రాక్‌పై Amazon Nova",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "12faf291f6a0134f",
+      "en": "CluckTalk case summary (Simulated SMS, demo farm). {summary.en}",
+      "te": "CluckTalk కేసు సారాంశం (సిమ్యులేటెడ్ SMS, డెమో ఫారం). {summary.te}",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "44385e0d3c654293",
+      "en": "The CluckTalk check is still running; level from the signs and records so far: {u.en} (not a diagnosis).",
+      "te": "CluckTalk తనిఖీ ఇంకా జరుగుతోంది; ఇప్పటివరకు లక్షణాలు, రికార్డుల ప్రకారం స్థాయి: {u.te} (రోగ నిర్ధారణ కాదు).",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "42f34f0dedc99add",
+      "en": "The CluckTalk check could not finish; level from the signs and records: {u.en} (not a diagnosis).",
+      "te": "CluckTalk తనిఖీ పూర్తి కాలేదు; లక్షణాలు, రికార్డుల ప్రకారం స్థాయి: {u.te} (రోగ నిర్ధారణ కాదు).",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a80def0bb68971b8",
+      "en": "CluckTalk triage: {u.en} (guidance, not a diagnosis).",
+      "te": "CluckTalk తనిఖీ: {u.te} (సలహా మాత్రమే, రోగ నిర్ధారణ కాదు).",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "13008cabb791bb68",
+      "en": "I'll send {RECIPIENT.en} this summary by simulated SMS: {summary.en} Say yes to send it, or no to keep it.",
+      "te": "{RECIPIENT.te} కి ఈ సారాంశాన్ని సిమ్యులేటెడ్ SMS ద్వారా పంపుతాను: {summary.te} పంపాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "46590f178de3d13d",
+      "en": "Sent to {RECIPIENT.en} as a simulated SMS.",
+      "te": "{RECIPIENT.te} కి సిమ్యులేటెడ్ SMS గా పంపాను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "71151102df660fb2",
+      "en": "{b} {plural(int(feed_bags), 'bag', 'bags')} of feed",
+      "te": "{b} బస్తాల ఫీడ్",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "3dcb6ff90b75f734",
+      "en": "{d.weekday_en} ({d.in_days} days from now)",
+      "te": "{d.weekday_te} ({d.in_days} రోజుల్లో)",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "91f052dfc6319ebd",
+      "en": "{days_ago} {plural(days_ago, 'day', 'days')} ago",
+      "te": "{days_ago} రోజుల క్రితం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f83cdfee5fc03087",
+      "en": "Weigh the birds from day {day}.",
+      "te": "{day}వ రోజు నుంచి కోళ్లను తూకం వేయండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "dda5270ef4ce4006",
+      "en": "{head.en} From {lab.en}, one more day starts to cost more feed than the weight it adds.",
+      "te": "{head.te} {lab.te} నుండి, ఒక్క రోజు ఎక్కువగా ఉంచితే అది జోడించే బరువు కంటే ఫీడ్ ఖర్చు ఎక్కువవుతుంది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "65613cc50571570c",
+      "en": "{head.en} Ask your supervisor for {b} {plural(b, 'bag', 'bags')} now.",
+      "te": "{head.te} ఇప్పుడే సూపర్‌వైజర్‌ని {b} బస్తాలు అడగండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "54ac45479dcb75ab",
+      "en": "{house.label_en} logged: {summary.en}.",
+      "te": "{house.label_te}: {summary.te} నమోదు అయింది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "bfa80ff164ba20d4",
+      "en": "{house.label_en} already has that recorded for {when.en}, so nothing changed.",
+      "te": "{house.label_te}కి {when.te} అది ఇప్పటికే రికార్డ్ అయింది, కాబట్టి ఏమీ మారలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a897f8ec711a48da",
+      "en": "{house.label_en} already has a record for {when.en}; I'll add this to it.",
+      "te": "{house.label_te}కి {when.te} రికార్డ్ ఇప్పటికే ఉంది; దీన్ని దానికి జోడిస్తాను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "91e7f44970868db7",
+      "en": "No entry yet for {house.label_en} today.",
+      "te": "{house.label_te}కి ఈరోజు ఇంకా నమోదు కాలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b2d66b64af0d292e",
+      "en": "For {house.label_en}, {when.en}: {given.en}. Say yes to save, or no to keep it as it is.",
+      "te": "{house.label_te}కి, {when.te}: {given.te}. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "cfb04c722e2eb122",
+      "en": "{h} needs your vet today.",
+      "te": "{h} కి ఈరోజే మీ డాక్టర్ అవసరం.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f0ed5278de42d89d",
+      "en": "{h}: these signs together can mean a serious bird disease that must be reported.",
+      "te": "{h}: ఈ లక్షణాలు కలిసి ఉంటే, తప్పనిసరిగా తెలియజేయాల్సిన తీవ్రమైన కోళ్ల వ్యాధి కావచ్చు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f3c9a1022779407b",
+      "en": "{h}: keep a close watch on the birds today.",
+      "te": "{h}: ఈరోజు కోళ్లను దగ్గరగా గమనించండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "8ba15cbbb876d2ab",
+      "en": "{h}: this doesn't look urgent right now; keep an eye on the birds.",
+      "te": "{h}: ప్రస్తుతం ఇది అత్యవసరంగా కనిపించడం లేదు; కోళ్లను గమనిస్తూ ఉండండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "6a8de9a9506badac",
+      "en": "in {index} days",
+      "te": "{index} రోజుల్లో",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "15f1be9d724ddc22",
+      "en": "I couldn't finish the health check for {inp.label_en}.",
+      "te": "{inp.label_te} ఆరోగ్య తనిఖీని పూర్తి చేయలేకపోయాను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b0e5c847b82988b0",
+      "en": "Still checking {inp.label_en}. Ask me again in a few seconds.",
+      "te": "{inp.label_te} ని ఇంకా తనిఖీ చేస్తున్నాను. కొన్ని సెకన్ల తర్వాత మళ్ళీ అడగండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "82f40b56636d981d",
+      "en": "I'm checking {inp.label_en} now. Ask me in a few seconds if the health check is ready.",
+      "te": "{inp.label_te} ని ఇప్పుడు తనిఖీ చేస్తున్నాను. కొన్ని సెకన్లలో ఆరోగ్య తనిఖీ సిద్ధమైందా అని అడగండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "3e2d2406b499bf38",
+      "en": "{lab.en}: {num(d.weight_g)} g, net {rupees(d.net_vs_today_inr)} vs today",
+      "te": "{lab.te}: {num(d.weight_g)} గ్రా., ఈరోజుతో పోలిస్తే నికరం {rupees(d.net_vs_today_inr)}",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "aabb0607281a4c6b",
+      "en": "I'll note this for {label.en}: the birds are the same. Say yes to save it, or no to keep things as they are.",
+      "te": "{label.te} కోసం ఇది నమోదు చేస్తాను: కోళ్లు అలాగే ఉన్నాయి. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "19500ac68d843723",
+      "en": "I'll note this for {label.en}: you're not sure how the birds are. Say yes to save it, or no to keep things as they are.",
+      "te": "{label.te} కోసం ఇది నమోదు చేస్తాను: కోళ్లు ఎలా ఉన్నాయో మీకు తెలియడం లేదు. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "039f107e08317ce1",
+      "en": "I'll note this for {label.en}: the birds are worse. Say yes to save it, or no to keep things as they are.",
+      "te": "{label.te} కోసం ఇది నమోదు చేస్తాను: కోళ్లు మరింత అధ్వాన్నంగా ఉన్నాయి. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a964e03d15643967",
+      "en": "I'll note this for {label.en}: the birds are better. Say yes to save it, or no to keep things as they are.",
+      "te": "{label.te} కోసం ఇది నమోదు చేస్తాను: కోళ్లు మెరుగ్గా ఉన్నాయి. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "9c030951de0fd87c",
+      "en": "I don't have a health check for {label_en} yet.",
+      "te": "{label_te} కి ఇంకా ఆరోగ్య తనిఖీ లేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "881fff873047b6d0",
+      "en": "I can't log a record for {label_en} in the future.",
+      "te": "{label_te} కి భవిష్యత్తు రోజుకు రికార్డ్ నమోదు చేయలేను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "7f0acfc88355df0a",
+      "en": "I didn't catch any sign of illness to check for {label_en}.",
+      "te": "{label_te} కోసం తనిఖీ చేయడానికి జబ్బు లక్షణం ఏదీ అందలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "92274e1a8314cd4e",
+      "en": "I only record the name of a medicine or vaccine for {label_en}, never a dose.",
+      "te": "{label_te} కోసం మందు లేదా వ్యాక్సిన్ పేరు మాత్రమే నమోదు చేస్తాను, డోస్ కాదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "982fb4af358d4e2e",
+      "en": "I didn't catch anything to record for {label_en}.",
+      "te": "{label_te} కోసం రికార్డ్ చేయడానికి ఏమీ అందలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "66dcdad4ffd78d70",
+      "en": "{label_en} is a layer flock, so sell-day planning by live weight doesn't apply to it.",
+      "te": "{label_te} గుడ్ల మంద, కాబట్టి బరువు ఆధారంగా అమ్మకం రోజు ప్రణాళిక దీనికి వర్తించదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "32d02d2513b44369",
+      "en": "I have an average weight for {label_en} but not how many birds were weighed.",
+      "te": "{label_te} సగటు బరువు నాకు వచ్చింది, కానీ ఎన్ని కోళ్లను తూచారో తెలియలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "850c94709de4117a",
+      "en": "{label}: {existing} died {when} so far. Add {new} to make {total}, or replace {existing} with {new}?",
+      "te": "{label}కి {when} ఇప్పటికే {existing} కోళ్లు చనిపోయాయి. {new} కలిపి {total} చేయాలా, లేక {existing}ని {new}తో మార్చాలా?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "2b25db80d8ab647f",
+      "en": "{label} has no alert from the checks I can make.",
+      "te": "{label}కి నేను చేయగల పరీక్షలలో ఎలాంటి హెచ్చరిక లేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ea2719a9c35177ae",
+      "en": "{num(deaths)} died",
+      "te": "{num(deaths)} కోళ్లు చనిపోయాయి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a4aa52b58c8d8549",
+      "en": "day {num(inp.age_days)}",
+      "te": "{num(inp.age_days)}వ రోజు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "23ee67a4e4a3d925",
+      "en": "{num(inp.live_birds)} birds alive",
+      "te": "{num(inp.live_birds)} కోళ్లు బతికి ఉన్నాయి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ab167bf8c723f176",
+      "en": "average weight {num(avg_weight_g)} grams from {num(weight_sample_birds)} birds weighed",
+      "te": "{num(weight_sample_birds)} కోళ్లను తూచగా సగటు బరువు {num(avg_weight_g)} గ్రాములు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "1d1e69bf7b605afe",
+      "en": "You said {n} birds show the signs, but {inp.label_en} has {live} birds alive, so I left that number out.",
+      "te": "{n} కోళ్లలో లక్షణాలు ఉన్నాయని చెప్పారు, కానీ {inp.label_te} లో {live} కోళ్లే బతికి ఉన్నాయి, కాబట్టి ఆ సంఖ్యను వదిలేశాను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "fbaeac80b279aba6",
+      "en": "{n} birds",
+      "te": "{n} కోళ్లు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "d3083a869c43a770",
+      "en": "{n} g",
+      "te": "{n} గ్రా.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "2596e069c921f1e8",
+      "en": "{n} day",
+      "te": "{n} రోజు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0e995423889c2934",
+      "en": "{n} days",
+      "te": "{n} రోజులు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ad99dab1513ba5b4",
+      "en": "Day {n}",
+      "te": "{n}వ రోజు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "1075d14aaa927e4c",
+      "en": "{out.label_en}: best to sell {lab.en}, about {rupees(diff)} more than selling today.",
+      "te": "{out.label_te}: {lab.te} అమ్మడం మంచిది, ఈరోజు అమ్మడం కంటే సుమారు {rupees(diff)} ఎక్కువ.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "1b3a673547885bc7",
+      "en": "{out.label_en}: FCR is about {today.fcr} today; keeping the birds longer raises it (about {later.fcr} by {_day_label(later).en}).",
+      "te": "{out.label_te}: ఈరోజు FCR సుమారు {today.fcr}; కోళ్లను ఎక్కువ రోజులు ఉంచితే అది పెరుగుతుంది ({_day_label(later).te} నాటికి సుమారు {later.fcr}).",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b37a5aa9e2e285ba",
+      "en": "{out.label_en}: selling today is best. Each extra day would lose value.",
+      "te": "{out.label_te}: ఈరోజే అమ్మడం మంచిది. ప్రతి అదనపు రోజు నష్టమే.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b8fcf8947cbb6c24",
+      "en": "Start a health check for {shed} with these signs: {signs}?",
+      "te": "{shed} కి ఈ లక్షణాలతో ఆరోగ్య పరీక్ష మొదలుపెట్టమంటారా: {signs}?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "1d3d0db5afb158f4",
+      "en": "{shed}: day 45 is on {date}.",
+      "te": "{shed}: 45వ రోజు {date} నాడు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "083ff344d70902c1",
+      "en": "{shed}: day {day}.",
+      "te": "{shed}: {day}వ రోజు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b77ead3bf877f87e",
+      "en": "{shed}: yes, vaccination today, day {day}.",
+      "te": "{shed}: అవును, ఈరోజు టీకా ఉంది, {day}వ రోజు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "cc8a3a2e4d001b21",
+      "en": "{shed}: next vaccination on day {day}, in {left} days.",
+      "te": "{shed}: తదుపరి టీకా {day}వ రోజున, {left} రోజుల్లో.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "9c495a54f0401473",
+      "en": "{shed}: next vaccination is today, day {day}.",
+      "te": "{shed}: తదుపరి టీకా ఈరోజే, {day}వ రోజు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "4fbff5150769f936",
+      "en": "{shed}: the vaccination days you told us are all over.",
+      "te": "{shed}: మీరు చెప్పిన టీకా రోజులన్నీ అయిపోయాయి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "63ce39f7a3056c2e",
+      "en": "{shed}: heat lights were for the first {days} days; now day {day}, those days are over.",
+      "te": "{shed}: మొదటి {days} రోజులు వేడి లైట్లు; ఇప్పుడు {day}వ రోజు, ఆ రోజులు అయిపోయాయి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "abab5e93a657ce08",
+      "en": "{shed}: heat lights for the first {days} days; now day {day}, keep them on.",
+      "te": "{shed}: మొదటి {days} రోజులు వేడి లైట్లు; ఇప్పుడు {day}వ రోజు, ఇంకా ఉంచాలి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "3fca257380f19a12",
+      "en": "{shed}: no vaccination today, day {day}.",
+      "te": "{shed}: లేదు, ఈరోజు టీకా లేదు, {day}వ రోజు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "c43e9b64f1c758d5",
+      "en": "{t.name} {label.en} given{with_note.en}",
+      "te": "{t.name} {label.te} ఇచ్చారు{with_note.te}",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "82246e872dcb3880",
+      "en": "on {weekday_en(day)}",
+      "te": "{weekday_te(day)} రోజు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a6db054127994365",
+      "en": "{num(deaths)} birds died {when.en}, more than your own limit of {num(limit)} a day at this age. By your own rule, take the birds to the vet today; do not wait for the next visit.",
+      "te": "{when.te} {num(deaths)} కోళ్లు చనిపోయాయి, ఈ వయసులో మీరు పెట్టిన రోజువారీ హద్దు {num(limit)} కంటే ఎక్కువ. మీ నియమం ప్రకారం, ఈరోజే కోళ్లను డాక్టర్ దగ్గరికి తీసుకెళ్లండి; తదుపరి సందర్శన వరకు ఆగకండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "be07b767ee938885",
+      "en": "{num(deaths)} birds died {when.en}, after hardly any deaths the week before.",
+      "te": "{when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం దాదాపు ఏవీ చనిపోలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "9ab072f44b69cacc",
+      "en": "{num(deaths)} birds died {when.en}, against about {num(base)} a day the week before.",
+      "te": "{when.te} {num(deaths)} కోళ్లు చనిపోయాయి; అంతకు ముందు వారం రోజుకు సుమారు {num(base)}.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e4fa31faebdbce51",
+      "en": "your health check {when.en} is not finished; from the signs so far: {short.en}.",
+      "te": "{when.te} మీ ఆరోగ్య తనిఖీ ఇంకా పూర్తి కాలేదు; ఇప్పటివరకు లక్షణాల ప్రకారం: {short.te}.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ae30e553376c6cb7",
+      "en": "your health check {when.en} said: {short.en}.",
+      "te": "{when.te} మీ ఆరోగ్య తనిఖీ ఫలితం: {short.te}.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "327b91313fc1c1b8",
+      "en": "{deaths} birds died {when}, that is {rate} for every 1000 birds, more than your own limit of {limit}.",
+      "te": "{when} {deaths} కోళ్లు చనిపోయాయి, అంటే ప్రతి 1000 కోళ్లకు {rate}, మీరు పెట్టిన హద్దు {limit} కంటే ఎక్కువ.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "eb4e1af4e503fe14",
+      "en": "Forecast (hourly, outdoors at your farm's location, source: {source}; not real-time; fetched at {time}): {stat} is {value} degrees, {comparator} the number you set ({threshold}).",
+      "te": "అంచనా (గంటవారీ, మీ ఫారం ప్రాంతంలో బయట, మూలం: {source}; ప్రస్తుత కొలత కాదు; {time} కి తెచ్చినది): {stat} {value} డిగ్రీలు, మీరు పెట్టిన సంఖ్య ({threshold}) కంటే {comparator}.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b0f9ea04f8c37e63",
+      "en": "simulated estimate",
+      "te": "అంచనా (డెమో)",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "99ad0e65c11a689a",
+      "en": "Simulated price",
+      "te": "అంచనా ధర (డెమో)",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "3a995f60aa0ce094",
+      "en": "Simulated price {rupees(out.live_price_per_kg_inr)} per kg; say today's rate to use it instead.",
+      "te": "అంచనా ధర (డెమో) కిలోకు {rupees(out.live_price_per_kg_inr)}; బదులుగా ఈరోజు రేటు చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a291ab1615540d42",
+      "en": "sudden deaths",
+      "te": "అకస్మాత్తుగా చనిపోవడం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "42843e81aae4ed55",
+      "en": "the highest temperature",
+      "te": "అత్యధిక ఉష్ణోగ్రత",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "977378f3214981ca",
+      "en": "the lowest temperature",
+      "te": "అత్యల్ప ఉష్ణోగ్రత",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "40f355f23aaccbf8",
+      "en": "not urgent",
+      "te": "అత్యవసరం కాదు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "33768efeea380463",
+      "en": "I didn't catch whether that was a yes or a no, so nothing changed.",
+      "te": "అది 'అవును'నా 'వద్దు'నా అని నాకు అర్థం కాలేదు, కాబట్టి ఏమీ మారలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "43d03fd0c0fbc5b3",
+      "en": "That's different from what I read back, so nothing was sent yet.",
+      "te": "అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ పంపలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "02eb4b356bcb445d",
+      "en": "That's different from what I read back, so nothing changed yet.",
+      "te": "అది నేను చదివి వినిపించిన దానికి భిన్నంగా ఉంది, కాబట్టి ఇంకా ఏమీ మారలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "9f4ee13e7fbe3f25",
+      "en": "Worse",
+      "te": "అధ్వాన్నంగా ఉంది",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ce2cafd00860308a",
+      "en": "(the ending that asks you to say yes or no)",
+      "te": "అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a3e60215ede19258",
+      "en": "All sheds",
+      "te": "అన్ని షెడ్లు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "4df8f0428114206a",
+      "en": "Sell-day plan",
+      "te": "అమ్మకం రోజు ప్రణాళిక",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "037cc8c12071ed3c",
+      "en": "Ask me for the sell-day plan.",
+      "te": "అమ్మకం రోజు ప్రణాళిక కోసం నన్ను అడగండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "63d52246a70b3182",
+      "en": "may be near its best time to sell: the best day looks like {when.en} ({SIMULATED.en}).",
+      "te": "అమ్మడానికి మంచి సమయం దగ్గరలో ఉండవచ్చు: మంచి రోజు {when.te} ({SIMULATED.te}).",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "521a4c7e587ea65b",
+      "en": "I understand",
+      "te": "అర్థమైంది",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "6a907a88fb2dd220",
+      "en": "The same",
+      "te": "అలాగే ఉంది",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0369332e294daaf0",
+      "en": "Yes",
+      "te": "అవును",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "60c771fd8aec1348",
+      "en": "There is nothing waiting for a yes or no. Tap one of these.",
+      "te": "అవును లేదా వద్దు కోసం ఏమీ వేచి లేదు. వీటిలో ఒకటి నొక్కండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e2ee40dc2d709936",
+      "en": "That request was already cancelled, so nothing was sent.",
+      "te": "ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ పంపలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "979efdf6dd3ac45f",
+      "en": "That request was already cancelled, so nothing changed.",
+      "te": "ఆ అభ్యర్థన ఇప్పటికే రద్దయింది, కాబట్టి ఏమీ మారలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "13998735235813fb",
+      "en": "I couldn't find that request, so nothing was sent.",
+      "te": "ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ పంపలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e266e791a2c64809",
+      "en": "I couldn't find that request, so nothing changed.",
+      "te": "ఆ అభ్యర్థన నాకు కనబడలేదు, కాబట్టి ఏమీ మారలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5579df7da70e7a0d",
+      "en": "That request timed out, so nothing was sent.",
+      "te": "ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ పంపలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ddcd5e3f797ba72c",
+      "en": "That request timed out, so nothing changed.",
+      "te": "ఆ అభ్యర్థన సమయం ముగిసింది, కాబట్టి ఏమీ మారలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "8e35c7afdc116c1d",
+      "en": "That request was replaced by a newer one, so nothing was sent.",
+      "te": "ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ పంపలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "43bfe285bd601f55",
+      "en": "That request was replaced by a newer one, so nothing changed.",
+      "te": "ఆ అభ్యర్థన స్థానంలో కొత్తది వచ్చింది, కాబట్టి ఏమీ మారలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "05b29b8d7fb1a39f",
+      "en": "Those terms were already saved earlier, so saying no now doesn't undo it.",
+      "te": "ఆ నిబంధనలు ఇంతకుముందే సేవ్ అయ్యాయి, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f98bf94601f15bcb",
+      "en": "That paper rate does not look right. Tell me today's paper rate in rupees per kg, like: paper rate 160.",
+      "te": "ఆ పేపర్ రేటు సరిగా లేదు. ఈరోజు పేపర్ రేటు కిలోకు రూపాయలలో చెప్పండి, ఉదాహరణకు: ఈరోజు పేపర్ రేటు 160.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "7db1a1d43107deaf",
+      "en": "That change was made earlier and has been changed again since.",
+      "te": "ఆ మార్పు ఇంతకుముందే జరిగింది, తర్వాత మళ్ళీ మార్చబడింది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "6755181413436da4",
+      "en": "That change was already made earlier, so saying no now doesn't undo it.",
+      "te": "ఆ మార్పు ఇంతకుముందే జరిగిపోయింది, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "40ec2636618d2390",
+      "en": "That record was already saved earlier, so saying no now doesn't undo it.",
+      "te": "ఆ రికార్డ్ ఇంతకుముందే సేవ్ అయింది, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0b37927555a4d21b",
+      "en": "{label_en} wasn't placed yet on that day, so I can't log a record for it.",
+      "te": "ఆ రోజుకి {label_te} ఇంకా వేయలేదు, కాబట్టి రికార్డ్ నమోదు చేయలేను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e3f4ad8a7c98cf15",
+      "en": "that shed",
+      "te": "ఆ షెడ్",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "43f1fe7ec68e23ff",
+      "en": "Tell me what signs you see in that shed, and I'll check it.",
+      "te": "ఆ షెడ్‌లో మీరు చూస్తున్న లక్షణాలు చెప్పండి, నేను తనిఖీ చేస్తాను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "d57ccc01bcdc74cf",
+      "en": "Tell me how many birds you weighed to get that average.",
+      "te": "ఆ సగటు కోసం ఎన్ని కోళ్లను తూచారో చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "424a0fcbd5466954",
+      "en": "That summary was already sent, so saying no now doesn't unsend it.",
+      "te": "ఆ సారాంశం ఇప్పటికే పంపబడింది, కాబట్టి ఇప్పుడు 'వద్దు' అన్నా అది వెనక్కి రాదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5ae10e36efbe891d",
+      "en": "Health items come first by safety rules; AI (Amazon Nova on Bedrock) orders the other items in the first three.",
+      "te": "ఆరోగ్య అంశాలు భద్రతా నియమాల ప్రకారం ముందుంటాయి; మొదటి మూడింటిలో మిగిలిన అంశాల క్రమాన్ని AI (బెడ్‌రాక్‌పై Amazon Nova) నిర్ణయించింది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "2767b8624b1e1b61",
+      "en": "Health check",
+      "te": "ఆరోగ్య తనిఖీ",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "65e1a4e264a6a883",
+      "en": "The record book shows a death spike of {n} deaths since the health check, so I'll record this as not better.",
+      "te": "ఆరోగ్య తనిఖీ తర్వాత రికార్డ్ బుక్‌లో {n} మరణాల పెరుగుదల కనిపిస్తోంది, కాబట్టి దీన్ని 'మెరుగ్గా లేదు' అని నమోదు చేస్తాను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e799f321e6edd3a4",
+      "en": "Ask me for the health check result.",
+      "te": "ఆరోగ్య తనిఖీ ఫలితం కోసం నన్ను అడగండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5f3b7109eb9acf2c",
+      "en": "Health check",
+      "te": "ఆరోగ్య పరీక్ష",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ae0dd01d80283a60",
+      "en": "Health first",
+      "te": "ఆరోగ్యం ముందు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "bde34bafceed3013",
+      "en": "Still checking",
+      "te": "ఇంకా తనిఖీ చేస్తున్నాను",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "95906d74c6f0861a",
+      "en": "There are more things; ask about one shed for details.",
+      "te": "ఇంకా విషయాలు ఉన్నాయి; వివరాల కోసం ఒక షెడ్ గురించి అడగండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "1c7b359c8a0e3855",
+      "en": "No need to ask your supervisor for feed yet.",
+      "te": "ఇంకా సూపర్‌వైజర్‌ని ఫీడ్ అడగాల్సిన అవసరం లేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "cc568b60279446ab",
+      "en": "Tell me about a day on or after the house started.",
+      "te": "ఇంటి ప్రారంభమైన రోజు లేదా తర్వాతి రోజు గురించి చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "8288e0b9cd86a414",
+      "en": "Write here",
+      "te": "ఇక్కడ రాయండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ccc7550d67dec822",
+      "en": "This is a test. It is not a veterinary service.",
+      "te": "ఇది ఒక పరీక్ష మాత్రమే. ఇది పశువైద్య సేవ కాదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "330f2ae2f96a0dd0",
+      "en": "Is this right?",
+      "te": "ఇది సరైనదేనా?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b703424699c83c96",
+      "en": "This is guidance, not a diagnosis. Your vet decides any treatment.",
+      "te": "ఇది సలహా మాత్రమే, రోగ నిర్ధారణ కాదు. ఏ చికిత్స అయినా మీ డాక్టరే నిర్ణయిస్తారు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a3df388f033f0925",
+      "en": "No shed has birds now.",
+      "te": "ఇప్పుడు ఏ షెడ్ లోనూ కోళ్లు లేవు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "c97acf7232490937",
+      "en": "There's nothing waiting for your yes or no right now, so nothing changed.",
+      "te": "ఇప్పుడు మీ 'అవును' లేదా 'వద్దు' కోసం ఏదీ ఎదురుచూడటం లేదు, కాబట్టి ఏమీ మారలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "9786450449230ed6",
+      "en": "I couldn't get the weather forecast just now, so there is no weather reminder.",
+      "te": "ఇప్పుడు వాతావరణ అంచనా దొరకలేదు, కాబట్టి వాతావరణ గుర్తు లేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e7c8f5a6c9156cb2",
+      "en": "Ask your supervisor for {b} {plural(b, 'bag', 'bags')} of {p.bag_kg} kg now.",
+      "te": "ఇప్పుడే మీ సూపర్‌వైజర్‌ని {p.bag_kg} కిలోల {b} బస్తాలు అడగండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0abae05538fbbe0e",
+      "en": "Now: {steps.en}.",
+      "te": "ఇప్పుడే: {steps.te}.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f23434ad57c4f20f",
+      "en": "Those are already your saved contract terms, so nothing changed.",
+      "te": "ఇవి ఇప్పటికే మీ సేవ్ చేసిన కాంట్రాక్ట్ నిబంధనలు, కాబట్టి ఏమీ మారలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "241a206cdc4baa09",
+      "en": "Your vet already has the summary for this {house.label_en} check (simulated SMS).",
+      "te": "ఈ {house.label_te} తనిఖీ సారాంశం ఇప్పటికే మీ డాక్టర్‌కి పంపబడింది (సిమ్యులేటెడ్ SMS).",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "bdc49354f7b63a51",
+      "en": "Sale planning is not part of this pilot yet.",
+      "te": "ఈ పైలట్ లో అమ్మకం లెక్క ఇంకా లేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "120fc6619fd59ab2",
+      "en": "Feed planning is not part of this pilot yet.",
+      "te": "ఈ పైలట్ లో ఫీడ్ లెక్క ఇంకా లేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "42a4aaa57711dce5",
+      "en": "I couldn't use this shed's records, so this check is on the signs alone.",
+      "te": "ఈ షెడ్ రికార్డులను ఉపయోగించలేకపోయాను, కాబట్టి ఈ తనిఖీ లక్షణాల ఆధారంగా మాత్రమే.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "c172edfba479c4a7",
+      "en": "Today",
+      "te": "ఈరోజు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0b8d60632e9a1490",
+      "en": "Today's AI limit is reached, so the items are in the rules order.",
+      "te": "ఈరోజు AI పరిమితి అయిపోయింది, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "20d45d07e357e2e3",
+      "en": "Today's AI limit is reached, so this check used the demo rules.",
+      "te": "ఈరోజు AI పరిమితి అయిపోయింది, కాబట్టి ఈ తనిఖీకి డెమో నియమాలు వాడాను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "eea60938751523f2",
+      "en": "{num(logged)} of {num(len(entries))} houses logged today.",
+      "te": "ఈరోజు {num(len(entries))} షెడ్లలో {num(logged)} నమోదు అయ్యాయి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "355eba4739db697b",
+      "en": "No entry yet today for {listed.en}.",
+      "te": "ఈరోజు ఇంకా నమోదు కాలేదు: {listed.te}.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "22303ec061faafa8",
+      "en": "What day is it today?",
+      "te": "ఈరోజు ఎన్నో రోజు?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "c66a774ea45a8f6f",
+      "en": "Is there a vaccination today?",
+      "te": "ఈరోజు టీకా ఉందా?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "d6d7ddd061f14489",
+      "en": "watch closely today",
+      "te": "ఈరోజు దగ్గరగా గమనించాలి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "bb43f032d188baaf",
+      "en": "today's paper rate",
+      "te": "ఈరోజు పేపర్ రేటు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "c5420dafc6878060",
+      "en": "Tell me today's paper rate",
+      "te": "ఈరోజు పేపర్ రేటు చెప్పండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f3c4f33cf6186bf4",
+      "en": "Tell me today's paper rate, like: paper rate 160, and I will work out your price.",
+      "te": "ఈరోజు పేపర్ రేటు చెప్పండి, ఉదాహరణకు: ఈరోజు పేపర్ రేటు 160, మీ ధర నేను లెక్కిస్తాను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "1b62ad5868df5fd6",
+      "en": "Today's briefing",
+      "te": "ఈరోజు బ్రీఫింగ్",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ec4514092dbaf4d2",
+      "en": "Deaths today",
+      "te": "ఈరోజు మరణాలు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0b6bbeddd28b882e",
+      "en": "No deaths today",
+      "te": "ఈరోజు మరణాలు లేవు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "2a140eff48e3e07e",
+      "en": "Your growing charge today is about {rupees(charge_today)}; by {_day_label(later).en} it would be about {rupees(charge_later)}, based on your own terms.",
+      "te": "ఈరోజు మీ గ్రోయింగ్ ఛార్జ్ సుమారు {rupees(charge_today)}; {_day_label(later).te} నాటికి మీ నిబంధనల ప్రకారం సుమారు {rupees(charge_later)} అవుతుంది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "966aabd3953c73eb",
+      "en": "Here's your briefing for today.",
+      "te": "ఈరోజు మీ బ్రీఫింగ్ ఇది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "46865eea4538cb5c",
+      "en": "Nothing needs your attention today.",
+      "te": "ఈరోజు మీ శ్రద్ధ అవసరమయ్యేది ఏమీ లేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "1427123f017a011d",
+      "en": "earlier today",
+      "te": "ఈరోజు ముందు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "c0dafe538fa5d827",
+      "en": "Log today's record",
+      "te": "ఈరోజు రికార్డ్ నమోదు చేయండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a969fc6f8bc8220c",
+      "en": "Today's record book",
+      "te": "ఈరోజు రికార్డ్ బుక్",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "33332d52173775e3",
+      "en": "Tell me about today or an earlier day.",
+      "te": "ఈరోజు లేదా అంతకుముందు రోజు గురించి చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0d0f1e409639a3b3",
+      "en": "That's everything for today.",
+      "te": "ఈరోజుకు ఇంతే.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "897ddb7c771b72af",
+      "en": "Net vs today",
+      "te": "ఈరోజుతో పోలిస్తే నికరం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0fa9b504aa71d31a",
+      "en": "Take the birds to the vet today",
+      "te": "ఈరోజే కోళ్లను డాక్టర్ దగ్గరికి తీసుకెళ్లండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e47d5b7b7316ff62",
+      "en": "needs a vet today",
+      "te": "ఈరోజే డాక్టర్ అవసరం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ac8e13271058527c",
+      "en": "call your vet today",
+      "te": "ఈరోజే మీ డాక్టర్‌కి ఫోన్ చేయండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "3b4594b09adba6e1",
+      "en": "report it today to your vet or the nearest government veterinary centre",
+      "te": "ఈరోజే మీ డాక్టర్‌కి లేదా దగ్గరలోని ప్రభుత్వ పశు వైద్యశాలకు తెలియజేయండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "07fbacd38b204a5c",
+      "en": "gasping for air",
+      "te": "ఊపిరి కోసం ఆయాసం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ef7df652f9d4030e",
+      "en": "above",
+      "te": "ఎక్కువ",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "cb35868b505cd42c",
+      "en": "high confidence",
+      "te": "ఎక్కువ నమ్మకం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "27b14925a2c3e059",
+      "en": "From when should I weigh the birds?",
+      "te": "ఎప్పటి నుంచి బరువు చూడాలి?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e5ca39b2e0d8e029",
+      "en": "When to sell?",
+      "te": "ఎప్పుడు అమ్మాలి?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "9d0ccd66200f8b50",
+      "en": "When to sell",
+      "te": "ఎప్పుడు అమ్మాలో",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "493ab05cebe9234a",
+      "en": "I need to know which shed's health check you mean.",
+      "te": "ఏ షెడ్ ఆరోగ్య తనిఖీ గురించి అడుగుతున్నారో తెలియాలి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "09a430321d0b553e",
+      "en": "none named",
+      "te": "ఏవీ చెప్పలేదు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5da32fc98daa348a",
+      "en": "One bird eats about {kg} kg of feed in all by day 45.",
+      "te": "ఒక కోడికి 45వ రోజు వరకు మొత్తం సుమారు {kg} కిలోల దాణా.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ac69b0611ae21aec",
+      "en": "How much feed in all for one bird?",
+      "te": "ఒక కోడికి మొత్తం దాణా ఎంత?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "96ae09977aecd6b1",
+      "en": "A placeholder photo is attached. It was not analyzed, and it did not change the result.",
+      "te": "ఒక ప్లేస్‌హోల్డర్ ఫోటో జత చేయబడింది. దాన్ని విశ్లేషించలేదు, ఫలితాన్ని అది మార్చలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "2a3302a09013b1c9",
+      "en": "at least {n} days",
+      "te": "కనీసం {n} రోజులు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e34025117e61791d",
+      "en": "Add",
+      "te": "కలపండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "1d1acaa71be0820b",
+      "en": "Contract or independent farm",
+      "te": "కాంట్రాక్ట్ లేదా సొంత ఫారం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f8214ecd9c0bede4",
+      "en": "paralysed legs or drooping wings",
+      "te": "కాళ్ళు చచ్చుబడటం లేదా రెక్కలు వాలిపోవడం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5775770f2c824d3c",
+      "en": "a leg or movement problem",
+      "te": "కాళ్ళు లేదా కదలిక సమస్య",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "239f3003453997c3",
+      "en": "lameness",
+      "te": "కుంటడం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "2a15ae2b56c260e5",
+      "en": "For a sick bird, call your vet.",
+      "te": "కోడి అనారోగ్యంగా ఉంటే మీ డాక్టర్‌కి ఫోన్ చేయండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "adfadb79a9592807",
+      "en": "Show this to your supervisor to ask for the birds to be lifted on time.",
+      "te": "కోళ్లను సకాలంలో తీసుకెళ్లమని మీ సూపర్‌వైజర్‌ని అడగడానికి ఇది చూపించండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5f335fe7337bbeff",
+      "en": "Birds ate {drop}% less than expected.",
+      "te": "కోళ్లు అంచనా కంటే {drop}% తక్కువ తిన్నాయి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "4f3a3a6b03c186f1",
+      "en": "Sorry",
+      "te": "క్షమించండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "32b321260dd4dbff",
+      "en": "WATCH",
+      "te": "గమనించాలి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0fc11be64d8dc1a3",
+      "en": "Note",
+      "te": "గమనిక",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "c32eef0bf3860baa",
+      "en": "check ventilation and any ammonia smell",
+      "te": "గాలి ప్రసరణ, అమ్మోనియా వాసన సరిచూడండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "4ad2a67dde7f2f11",
+      "en": "Laying",
+      "te": "గుడ్ల ఉత్పత్తి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "60ec153855e56c7b",
+      "en": "REMINDER",
+      "te": "గుర్తుచేత",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5cd5212fd66b2f14",
+      "en": "Growing charge",
+      "te": "గ్రోయింగ్ ఛార్జ్",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "05970cbb84c428f2",
+      "en": "Save your contract terms to see the growing charge",
+      "te": "గ్రోయింగ్ ఛార్జ్ చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "7657f7ae8e52d247",
+      "en": "do not cut open dead birds",
+      "te": "చనిపోయిన కోళ్లను కోసి తెరవకండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5747d8d9251e8a5e",
+      "en": "remove dead birds quickly and bury them properly",
+      "te": "చనిపోయిన కోళ్లను వెంటనే తీసి సరిగా పూడ్చండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "44df2e0e54721983",
+      "en": "Signs reported",
+      "te": "చెప్పిన లక్షణాలు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "6c5490a028c902c4",
+      "en": "Signs reported: {signs.en}.",
+      "te": "చెప్పిన లక్షణాలు: {signs.te}.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "14ea32ea9bb45bd7",
+      "en": "Check sick birds",
+      "te": "జబ్బు పడిన కోళ్ల తనిఖీ",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "6f66519ac31caf6e",
+      "en": "separate the sick birds",
+      "te": "జబ్బు పడిన కోళ్లను వేరు చేయండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e047368d58be5362",
+      "en": "To be safe, contact your vet or doctor.",
+      "te": "జాగ్రత్త కోసం, మీ డాక్టర్‌కి ఫోన్ చేయండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "06abd5c3eb9f22fd",
+      "en": "a gut problem",
+      "te": "జీర్ణ సమస్య",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0fa9533c468f7cf3",
+      "en": "The doctor comes every {days} days.",
+      "te": "డాక్టర్ {days} రోజులకు ఒకసారి వస్తారు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0df38b21d49b7995",
+      "en": "When does the doctor come?",
+      "te": "డాక్టర్ ఎప్పుడు వస్తారు?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e52044d3be77aa72",
+      "en": "The doctor comes every day.",
+      "te": "డాక్టర్ రోజూ వస్తారు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "adbae1ff8b1585e5",
+      "en": "Simulated",
+      "te": "డెమో అంచనా",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "9338e7f23b787df4",
+      "en": "label_te",
+      "te": "డెమో గడియారం: +{days} రోజులు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ea982187a26ec70c",
+      "en": "Demo data",
+      "te": "డెమో డేటా",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "77bbdf2fd2a0b8eb",
+      "en": "Demo rules (no AI model)",
+      "te": "డెమో నియమాలు (AI మోడల్ లేదు)",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e3e9b511d2d203db",
+      "en": "Follow the label or your vet/company for the dose; tell me just the name.",
+      "te": "డోస్ కోసం లేబుల్ లేదా మీ వెట్/కంపెనీని అనుసరించండి; పేరు మాత్రమే చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "85262e0221669816",
+      "en": "below",
+      "te": "తక్కువ",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f2c1b9c6fce0620b",
+      "en": "low confidence",
+      "te": "తక్కువ నమ్మకం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "626f6e3144624c51",
+      "en": "When is the next vaccination?",
+      "te": "తదుపరి టీకా ఎప్పుడు?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b6175fb6b02c4b53",
+      "en": "The next briefing, in about {d} {unit}, will ask how {inp.label_en} is doing.",
+      "te": "తదుపరి బ్రీఫింగ్‌లో, సుమారు {d} రోజుల్లో, {inp.label_te} ఎలా ఉందో అడుగుతాను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b6c5836b88798bd4",
+      "en": "No broiler sheds to check.",
+      "te": "తనిఖీ చేయడానికి బ్రాయిలర్ షెడ్లు లేవు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "2e1d239b3290faa7",
+      "en": "Could not check",
+      "te": "తనిఖీ చేయలేకపోయాను",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e1bfe4936f058d7c",
+      "en": "While I check:",
+      "te": "తనిఖీ చేస్తుండగానే:",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e9c2a5a1123480b6",
+      "en": "Next",
+      "te": "తర్వాత",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a2cfeeacee148d7c",
+      "en": "swelling of the head, eyes or neck",
+      "te": "తల, కళ్ళు లేదా మెడ వాపు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "cd37672a1af2bbed",
+      "en": "check the drinkers and water supply",
+      "te": "తాగే నీరు, డ్రింకర్లు సరిచూడండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "6af950a61084772e",
+      "en": "Latest readings: {d}",
+      "te": "తాజా రీడింగులు: {d}",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "10b443e57c37add4",
+      "en": "{d} birds died in the latest count, against about {b} a day before.",
+      "te": "తాజా లెక్కలో {d} కోళ్లు చనిపోయాయి, అంతకుముందు రోజుకు సుమారు {b}.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b4afbac1f89aff7b",
+      "en": "Deaths, latest count",
+      "te": "తాజా లెక్కలో మరణాలు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "79dd51f437be506d",
+      "en": "sneezing",
+      "te": "తుమ్ములు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f9e5ed9fb2bc14b7",
+      "en": "blue or purple comb, wattles or legs",
+      "te": "తురాయి, గంగడోలు లేదా కాళ్ళు నీలం/ఊదా రంగు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b136478ca82c9ec3",
+      "en": "signs of a possible reportable disease",
+      "te": "తెలియజేయాల్సిన వ్యాధి లక్షణాలు కావచ్చు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "2023084a92cd2fe5",
+      "en": "UNKNOWN",
+      "te": "తెలియదు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ae350602534c9752",
+      "en": "not known",
+      "te": "తెలియదు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "053fdc6d4a29b175",
+      "en": "coughing",
+      "te": "దగ్గు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "cf40eab3d25b380c",
+      "en": "Please say yes or no.",
+      "te": "దయచేసి 'అవును' లేదా 'వద్దు' అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "29deb5fa56ce0dcb",
+      "en": "Please ask me again in a minute, and call your vet today if birds get worse.",
+      "te": "దయచేసి ఒక నిమిషం తర్వాత మళ్ళీ అడగండి; కోళ్ల పరిస్థితి దిగజారితే ఈరోజే డాక్టర్‌కి ఫోన్ చేయండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "245f4d4cb0d9d8f1",
+      "en": "a nervous-system problem",
+      "te": "నరాల సమస్య",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "68b7a7a50858c4eb",
+      "en": "I did not understand. Tap one of these.",
+      "te": "నాకు అర్థం కాలేదు. వీటిలో ఒకటి నొక్కండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "bce6e7e8583e0340",
+      "en": "yesterday",
+      "te": "నిన్న",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0efef78494b9f137",
+      "en": "dull or huddled birds",
+      "te": "నీరసంగా ముడుచుకుని ఉండటం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f7e93a20cc17174d",
+      "en": "a water or feed problem",
+      "te": "నీరు లేదా మేత సమస్య",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ab0f7f4b619d1261",
+      "en": "When should I spray water?",
+      "te": "నీళ్లు ఎప్పుడు చల్లాలి?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "d8665300950283d5",
+      "en": "(the ending that asks you to tap yes or no)",
+      "te": "నొక్కండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5f1cc1a1c7e970e3",
+      "en": "panting",
+      "te": "నోరు తెరిచి ఆయాసపడటం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "dcb94c37f0dcff35",
+      "en": "Send",
+      "te": "పంపండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "25d3760169e864b9",
+      "en": "Birds after the check",
+      "te": "పరీక్ష తర్వాత కోళ్లు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f70edfef0ed152d0",
+      "en": "Test model",
+      "te": "పరీక్ష మోడల్",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f0ac6e8e5ff0c47b",
+      "en": "Could not finish",
+      "te": "పూర్తి చేయలేకపోయాను",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "d22c844618228b43",
+      "en": "Say a shed number to hear its full feed plan.",
+      "te": "పూర్తి ఫీడ్ ప్లాన్ కోసం షెడ్ నంబర్ చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f2fbfe6f41acc73b",
+      "en": "Pilot (real farm, prototype)",
+      "te": "పైలట్ (నిజమైన ఫారం, ప్రోటోటైప్)",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "7d586b42b1fcfea2",
+      "en": "{label_en} only has room for {max_possible} more deaths that day once every other day is counted, so {deaths} can't be right.",
+      "te": "ప్రతి ఇతర రోజునూ లెక్కిస్తే, ఆ రోజు {label_te}కి గరిష్టంగా {max_possible} మరణాలకే చోటుంది, కాబట్టి {deaths} సరైనవి కావు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "7bdb8403e588c77d",
+      "en": "Questions",
+      "te": "ప్రశ్నలు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "976720f4ddb78c39",
+      "en": "PLACEHOLDER - not a real photo",
+      "te": "ప్లేస్‌హోల్డర్ - నిజమైన ఫోటో కాదు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "35d79cbcf5ba277d",
+      "en": "How is the farm?",
+      "te": "ఫారం ఎలా ఉంది?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "656d452dac7ca0ee",
+      "en": "Farm status",
+      "te": "ఫారం స్థితి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "104fcc659814c7b4",
+      "en": "Feed stock",
+      "te": "ఫీడ్ నిల్వ",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "7332f684b99bda60",
+      "en": "Feed stock, days",
+      "te": "ఫీడ్ నిల్వ, రోజులు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "313fb4e87f5f753d",
+      "en": "Photo input (placeholder, not yet validated on real photos)",
+      "te": "ఫోటో ఇన్‌పుట్ (ప్లేస్‌హోల్డర్, నిజమైన ఫోటోలపై ఇంకా పరీక్షించలేదు)",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "34493631d725314b",
+      "en": "Ask me about its egg production or feed instead.",
+      "te": "బదులుగా గుడ్ల ఉత్పత్తి లేదా ఫీడ్ గురించి అడగండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a838266a83408d53",
+      "en": "Weight",
+      "te": "బరువు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0fe1f7d2eadefe36",
+      "en": "The weight and total-deaths targets are general numbers. They may not fit your birds.",
+      "te": "బరువు, మొత్తం మరణాల లక్ష్యాలు సాధారణ సంఖ్యలు. అవి మీ కోళ్లకు సరిపోకపోవచ్చు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "efae27eeb380d538",
+      "en": "Better",
+      "te": "బాగుంది",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "65ba8aaf34a6fea6",
+      "en": "OK",
+      "te": "బాగుంది",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "00f8e3cc7b250899",
+      "en": "Break-even",
+      "te": "బ్రేక్-ఈవెన్",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "afb9803cb294b3b7",
+      "en": "Safety rules only (no AI needed)",
+      "te": "భద్రతా నియమాలు మాత్రమే (AI అవసరం లేదు)",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "844a2ea8214a9871",
+      "en": "Best day",
+      "te": "మంచి రోజు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "47747dac1c9d7e6b",
+      "en": "medicine",
+      "te": "మందు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "30343e18dd573072",
+      "en": "medium confidence",
+      "te": "మధ్యస్థ నమ్మకం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0ba87c5040b12b4a",
+      "en": "Log deaths",
+      "te": "మరణాలు నమోదు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "eae37a2941d2288c",
+      "en": "no deaths",
+      "te": "మరణాలు లేవు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ef9ed8fdf73c6b4f",
+      "en": "Tell me deaths, feed bags, a weight sample, or a medicine or vaccine given.",
+      "te": "మరణాలు, ఫీడ్ బస్తాలు, బరువు నమూనా, లేదా ఇచ్చిన మందు లేదా వ్యాక్సిన్ చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "8568d02cbfa2b049",
+      "en": "and",
+      "te": "మరియు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "cd76e576576f31f7",
+      "en": "Check again",
+      "te": "మళ్ళీ చూడండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "523de4e7168afa0b",
+      "en": "Replace",
+      "te": "మార్చండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b544abe1eb209583",
+      "en": "To change it, say: switch to contract farming.",
+      "te": "మార్చాలంటే 'switch to contract farming' అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "4b9530fc4e85cfe5",
+      "en": "To change it, say: switch to independent farming.",
+      "te": "మార్చాలంటే 'switch to independent farming' అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "be9101a48c59b806",
+      "en": "Here's the rest.",
+      "te": "మిగిలినవి ఇవి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "6907c9f55b010969",
+      "en": "Say 'more' to hear the rest.",
+      "te": "మిగిలినవి వినాలంటే 'మరిన్ని' అనండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "7e1f33d3d07340ea",
+      "en": "Open your original link.",
+      "te": "మీ అసలు లింక్‌ను తెరవండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "87921ced25732670",
+      "en": "Your price today: {rupees(paper - delta)} per kg (paper rate {rupees(paper)} minus {rupees(delta)}, your own rule).",
+      "te": "మీ ఈరోజు ధర: కిలోకు {rupees(paper - delta)} (పేపర్ రేటు {rupees(paper)} నుండి {rupees(delta)} తగ్గింపు, మీ సొంత నియమం).",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "9fd672c496ec239a",
+      "en": "Your contract terms are saved, so plan_sale can show the growing charge.",
+      "te": "మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ అయ్యాయి, కాబట్టి ప్లాన్ సేల్ గ్రోయింగ్ ఛార్జ్ చూపగలదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "8a90112d34299bab",
+      "en": "Save your contract terms",
+      "te": "మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "2acd2ad5daf5d657",
+      "en": "Save your contract terms: {rupees(base)} per kg at FCR {fcr}, {rupees(inc)} more per kg for every 0.1 better FCR, {rupees(ded)} less per kg for every 0.1 worse FCR. Say yes to confirm, or no to keep it as it is.",
+      "te": "మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ చేయాలా: FCR {fcr} వద్ద కిలోకు {rupees(base)}, ప్రతి 0.1 మెరుగైన FCRకి కిలోకు {rupees(inc)} ఎక్కువ, ప్రతి 0.1 తక్కువ FCRకి కిలోకు {rupees(ded)} తక్కువ. సేవ్ చేయాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "6749fcdf58abb914",
+      "en": "Your keyboard's voice typing sends what you say to its own speech service. CluckTalk never hears your voice.",
+      "te": "మీ కీబోర్డ్ వాయిస్ టైపింగ్ మీరు చెప్పింది దాని స్పీచ్ సేవకు పంపుతుంది. కోడి మిత్రకు మీ గొంతు వినిపించదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "d4b0c14ed4eb08ef",
+      "en": "I don't have a verified growth standard for your birds yet, so I can't compare weight or feed to target.",
+      "te": "మీ కోళ్లకు ధృవీకరించిన పెరుగుదల ప్రమాణం నా దగ్గర ఇంకా లేదు, కాబట్టి బరువు లేదా ఫీడ్‌ను లక్ష్యంతో పోల్చలేను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "33cd55643f7c2b71",
+      "en": "Your note: {note}.",
+      "te": "మీ గమనిక: {note}.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "3d4007aabaa6bf56",
+      "en": "Say set_contract_terms with your rate to see how this changes your growing charge.",
+      "te": "మీ గ్రోయింగ్ ఛార్జ్ ఎలా మారుతుందో చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "4842521923d547a4",
+      "en": "your vet (demo contact)",
+      "te": "మీ డాక్టర్ (డెమో కాంటాక్ట్)",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "3bc35a19ef9ff32a",
+      "en": "Send a health summary to your vet",
+      "te": "మీ డాక్టర్‌కి ఆరోగ్య సారాంశం పంపండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a7436591b4e68801",
+      "en": "Shall I send a summary to your vet?",
+      "te": "మీ డాక్టర్‌కి సారాంశం పంపమంటారా?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "6cd2b863c708a47d",
+      "en": "Your farm is already set up as a contract farm, so nothing changed.",
+      "te": "మీ ఫారం ఇప్పటికే కాంట్రాక్ట్ ఫారంగా ఉంది, కాబట్టి ఏమీ మారలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "05bdcdb0ac3d979a",
+      "en": "Your farm is already set up as an independent farm, so nothing changed.",
+      "te": "మీ ఫారం ఇప్పటికే సొంత ఫారంగా ఉంది, కాబట్టి ఏమీ మారలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "8ff7ae16e4e1ac97",
+      "en": "Your farm is now set up as a contract farm.",
+      "te": "మీ ఫారం ఇప్పుడు కాంట్రాక్ట్ ఫారంగా సెట్ అయింది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "794c1569ebd5bdaa",
+      "en": "Your farm is now set up as an independent farm.",
+      "te": "మీ ఫారం ఇప్పుడు సొంత ఫారంగా సెట్ అయింది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "463c7687b3c6ff13",
+      "en": "Your farm is set up as a contract farm: your company supplies the feed, so feed plans tell you how many bags to ask your supervisor for, without prices.",
+      "te": "మీ ఫారం కాంట్రాక్ట్ ఫారంగా సెట్ అయి ఉంది: ఫీడ్ మీ కంపెనీ ఇస్తుంది, కాబట్టి ఫీడ్ ప్లాన్ ధరలు లేకుండా, సూపర్‌వైజర్‌ని ఎన్ని బస్తాలు అడగాలో చెబుతుంది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5c1b5714877ed3fc",
+      "en": "Your farm stays a contract farm.",
+      "te": "మీ ఫారం కాంట్రాక్ట్ ఫారంగానే ఉంటుంది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "d8f476669a895594",
+      "en": "Your farm is set up as an independent farm: you buy your own feed, so feed plans include a simulated price.",
+      "te": "మీ ఫారం సొంత ఫారంగా సెట్ అయి ఉంది: ఫీడ్ మీరే కొంటారు, కాబట్టి ఫీడ్ ప్లాన్‌లో అంచనా ధర (డెమో) కూడా ఉంటుంది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0215f288a18ed7ec",
+      "en": "Your farm stays an independent farm.",
+      "te": "మీ ఫారం సొంత ఫారంగానే ఉంటుంది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "8b9d7d14a8f2d13e",
+      "en": "Switch your farm to contract farming? Then I'll stop suggesting feed purchases and prices, and tell you how many bags to ask your supervisor for. Say yes to confirm, or no to keep it as it is.",
+      "te": "మీ ఫారంను కాంట్రాక్ట్ ఫారంగా మార్చాలా? అప్పుడు ఫీడ్ కొనుగోలు, ధరలు చెప్పను; సూపర్‌వైజర్‌ని ఎన్ని బస్తాలు అడగాలో చెబుతాను. మార్చాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "19fb70621267d498",
+      "en": "Switch your farm to independent farming? Then I'll plan feed purchases with a simulated price. Say yes to confirm, or no to keep it as it is.",
+      "te": "మీ ఫారంను సొంత ఫారంగా మార్చాలా? అప్పుడు అంచనా ధర (డెమో)తో ఫీడ్ కొనుగోలు ప్లాన్ చెబుతాను. మార్చాలంటే 'అవును', వద్దంటే 'వద్దు' అని చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "1edf80a8ec381fc1",
+      "en": "Sell-day check for your broiler sheds.",
+      "te": "మీ బ్రాయిలర్ షెడ్ల అమ్మకం రోజు తనిఖీ.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f27bcb30abfe3451",
+      "en": "You can ask me at any time to delete it. I will delete everything and tell you when it is done.",
+      "te": "మీరు ఎప్పుడైనా తొలగించమని అడగవచ్చు. అంతా తొలగించి, పూర్తయినప్పుడు మీకు చెబుతాను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0458ba05f9840a16",
+      "en": "Tell me what you see, for example coughing, swelling of the head, or birds not eating.",
+      "te": "మీరు ఏమి చూస్తున్నారో చెప్పండి, ఉదాహరణకు దగ్గు, తల వాపు, లేదా కోళ్లు మేత తినకపోవడం.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b7411dfd201da3ec",
+      "en": "Tell me again what you'd like to change.",
+      "te": "మీరు ఏమి మార్చాలనుకుంటున్నారో మళ్ళీ చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "4631724debdf20ce",
+      "en": "As you told us:",
+      "te": "మీరు చెప్పినట్లు:",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b8bbc0586d543070",
+      "en": "I couldn't match what you told me to a sign I know, so to be safe:",
+      "te": "మీరు చెప్పినదాన్ని నాకు తెలిసిన ఏ లక్షణంతోనూ సరిపోల్చలేకపోయాను, కాబట్టి జాగ్రత్త కోసం:",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "22e75ad78a3c9c66",
+      "en": "I couldn't read your own daily deaths rule, so it was not used.",
+      "te": "మీరు పెట్టిన రోజువారీ మరణాల నియమం చదవలేకపోయాను, కాబట్టి దాన్ని ఉపయోగించలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b3e88e10c5dd87c6",
+      "en": "Check first",
+      "te": "ముందుగా చూడండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "2374d9eb5f39bae5",
+      "en": "First, {first.en}.",
+      "te": "ముందుగా, {first.te}.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "c90723bfd786c9b0",
+      "en": "runny nose",
+      "te": "ముక్కు కారడం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f74d7e301c51a9ee",
+      "en": "Sources",
+      "te": "మూలాలు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "d01c9ce60e0d5476",
+      "en": "twisted neck",
+      "te": "మెడ వంకర తిరగడం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "daaebbe0891871df",
+      "en": "not eating",
+      "te": "మేత తినకపోవడం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5903039f4db7f6dd",
+      "en": "Feed eaten is {p}% below its recent level.",
+      "te": "మేత తినడం ఇటీవలి స్థాయి కంటే {p}% తక్కువగా ఉంది.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "9665faf314da66bd",
+      "en": "check the feed for mould or a recent change",
+      "te": "మేతలో బూజు లేదా ఇటీవలి మార్పు ఉందో సరిచూడండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "aacdc61b78bb3575",
+      "en": "We keep your houses, the deaths and feed you log, and your yes and no answers with their dates. We do not keep your voice, your name or where you live. I (the builder) can read all of it on my server. Nobody else can unless I give them access.",
+      "te": "మేము మీ షెడ్లు, మీరు నమోదు చేసే మరణాలు, మేత వివరాలు, మరియు మీ అవును/వద్దు సమాధానాలను తేదీలతో ఉంచుతాము. మీ గొంతు, మీ పేరు, మీరు ఉండే చోటు మేము ఉంచము. ఇవన్నీ నేను (తయారుచేసినవాడిని) నా సర్వర్‌లో చూడగలను. నేను అనుమతి ఇస్తే తప్ప ఇంకెవరూ చూడలేరు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e0f8bea10e126c12",
+      "en": "Before you start",
+      "te": "మొదలుపెట్టే ముందు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "ad55fecd0076426b",
+      "en": "tomorrow",
+      "te": "రేపు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "241270a4d2ebfbca",
+      "en": "The farmer asks you to call back.",
+      "te": "రైతు మిమ్మల్ని తిరిగి ఫోన్ చేయమని కోరుతున్నారు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "8abb2881d7648da5",
+      "en": "Daily briefing",
+      "te": "రోజువారీ బ్రీఫింగ్",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f8b2778ae9225ec1",
+      "en": "The signs fit {fits.en}.",
+      "te": "లక్షణాలు {fits.te} కి సరిపోతున్నాయి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e4cf4718122834d9",
+      "en": "The signs fit",
+      "te": "లక్షణాలు సరిపోతున్నవి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "96cb1b28ca9c3c4f",
+      "en": "target {n} g",
+      "te": "లక్ష్యం {n} గ్రా.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "3410947b0d8056d7",
+      "en": "check that the litter is dry",
+      "te": "లిట్టర్ పొడిగా ఉందో సరిచూడండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5893dd2d237842ee",
+      "en": "or",
+      "te": "లేదా",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "d121ff1ef793026c",
+      "en": "Loading",
+      "te": "లోడ్ అవుతోంది",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f1944d763bcffa49",
+      "en": "No",
+      "te": "వద్దు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "f1babc305d95ea53",
+      "en": "diarrhoea",
+      "te": "విరేచనాలు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a0cc3e17ae0989e0",
+      "en": "Tap a shed for details",
+      "te": "వివరాల కోసం షెడ్‌ను తాకండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "59c0df307c58d9b5",
+      "en": "Previous",
+      "te": "వెనుకకు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "603385a998dbe24e",
+      "en": "Spray water when it is hotter than {degrees} degrees.",
+      "te": "వేడి {degrees} డిగ్రీల కంటే ఎక్కువ ఉన్నప్పుడు నీళ్లు చల్లండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "9d6380e4e943dfd0",
+      "en": "heat stress",
+      "te": "వేడి ఒత్తిడి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "9b65eedb78140d1d",
+      "en": "For how many days the heat lights?",
+      "te": "వేడి లైట్లు ఎన్ని రోజులు?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "a6e85dbbdeed515b",
+      "en": "vaccine",
+      "te": "వ్యాక్సిన్",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b15985e5ae78da35",
+      "en": "ALERT",
+      "te": "శ్రద్ధ అవసరం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "c47acab5d7e8feab",
+      "en": "a breathing problem",
+      "te": "శ్వాస సమస్య",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "1747d7d71103e8f6",
+      "en": "shed {number}",
+      "te": "షెడ్ {number}",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "43bf42bb11f93e23",
+      "en": "House {n}",
+      "te": "షెడ్ {n}",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "38743084ee309f1b",
+      "en": "Tell how a shed is now",
+      "te": "షెడ్ ఇప్పుడు ఎలా ఉందో చెప్పండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "317d7ca9a9ca2ee9",
+      "en": "check the shed temperature",
+      "te": "షెడ్ ఉష్ణోగ్రత సరిచూడండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "1881faba13a9ae5a",
+      "en": "Tell me the shed, for example: is shed 2's health check ready?",
+      "te": "షెడ్ చెప్పండి, ఉదాహరణకు: షెడ్ 2 ఆరోగ్య తనిఖీ సిద్ధమైందా?",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b75c3a4024bfa675",
+      "en": "stop all movement of birds, eggs, litter, vehicles and visitors in or out of the shed",
+      "te": "షెడ్ లోపలికి, బయటికి కోళ్లు, గుడ్లు, లిట్టర్, వాహనాలు, సందర్శకుల రాకపోకలు ఆపండి",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "51534c448680af80",
+      "en": "Check the number and try again.",
+      "te": "సంఖ్యను సరిచూసి మళ్ళీ చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "cd61f7c68aa9d5ed",
+      "en": "Average weight",
+      "te": "సగటు బరువు",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "364bb77adc48e60d",
+      "en": "Okay, nothing was sent.",
+      "te": "సరే, ఏమీ పంపలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "cc5c181028ed3e82",
+      "en": "Okay, nothing changed.",
+      "te": "సరే, ఏమీ మారలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "0f3caf8bf48c22dc",
+      "en": "OK, I did not start it.",
+      "te": "సరే, మొదలుపెట్టలేదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "19a2ad7adc6529fb",
+      "en": "Done.",
+      "te": "సరే.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "c2fd162349bf3410",
+      "en": "Done. Saved for {house.label_en}, {when.en}.",
+      "te": "సరే. {house.label_te}కి, {when.te} సేవ్ చేశాను.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "e132d6e0e7db4170",
+      "en": "Done. Your contract terms are saved.",
+      "te": "సరే. మీ కాంట్రాక్ట్ నిబంధనలు సేవ్ అయ్యాయి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "80cd843ae62df468",
+      "en": "Help",
+      "te": "సహాయం",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "5dc9a92ebeb34629",
+      "en": "Ask me for a feed plan to hear how much feed to ask your supervisor for.",
+      "te": "సూపర్‌వైజర్‌ని ఎంత ఫీడ్ అడగాలో తెలుసుకోవడానికి నన్ను ఫీడ్ ప్లాన్ అడగండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "21538a44ffc4a4e1",
+      "en": "Say your contract terms to see the growing charge in the sale plan.",
+      "te": "సేల్ ప్లాన్‌లో గ్రోయింగ్ ఛార్జ్ చూడాలంటే మీ కాంట్రాక్ట్ నిబంధనలు చెప్పండి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "006c16b494528b75",
+      "en": "The saved AI ordering was unreadable, so the items are in the rules order.",
+      "te": "సేవ్ చేసిన AI క్రమం చదవడానికి వీలుకాలేదు, కాబట్టి అంశాలు నియమాల క్రమంలో ఉన్నాయి.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
+    },
+    {
+      "key": "b49fb78adf389a27",
+      "en": "An alert is a reminder to go and look at the birds. It is not a diagnosis.",
+      "te": "హెచ్చరిక అంటే కోళ్లను వెళ్లి చూడమని గుర్తు చేయడం మాత్రమే. అది రోగ నిర్ధారణ కాదు.",
+      "reviewer": "builder (native Telugu speaker)",
+      "date": "2026-10-16",
+      "review_type": "single-reviewer self-review by the builder; not independent, not a farmer review"
     }
   ]
 }

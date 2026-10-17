@@ -60,7 +60,7 @@ Tested on:
 | Platform | Status |
 |---|---|
 | Windows 11 | local runs, Python 3.13.15 (the harness tests also ran on 3.14.5), `docs/VERSIONS.md` |
-| Linux (ubuntu, CI) | last recorded green run: commit `023a90d`, 2026-10-04, Python 3.12 and 3.13; later commits: not recorded (pushed with `[skip ci]`, or not checked) |
+| Linux (ubuntu, CI) | last recorded green run: commit `ae926ec`, 2026-10-16, Python 3.12 and 3.13 (the Windows jobs on 3.12 and 3.13 were green too); the commit that records it, and later commits, are not covered by this line |
 | macOS | not yet run; a manual CI job exists (`workflow_dispatch`, `include_macos`), and its result will be recorded here |
 
 To see how a follow-up looks three days after a health check (the demo clock shifts follow-up and briefing dates only,
@@ -84,7 +84,7 @@ seeded, clearly fictional data in mock mode.
 - **Not built:** OAuth 2.1 with PKCE, Protected Resource Metadata, a remote HTTPS URL, security and data policies. The
   server is for local use; off localhost it needs a bearer token, which is not Amazon's account linking.
 - **Prices, sensors, the supplier, SMS and payments are simulated** and labelled Simulated. The demo farm is fictional.
-- **Telugu:** 86 of 476 strings reviewed by the builder, a native Telugu speaker; 390 pending (including the pilot page); no independent review. `docs/TELUGU_REVIEW.md` lists each string. No Telugu voice has been tested through Alexa+.
+- **Telugu:** 470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed. `docs/TELUGU_REVIEW.md` lists each string. No Telugu voice has been tested through Alexa+.
 - **In demo mode a shed with no alert is still described as doing well; pilot mode says: no alert from the checks I can make.**
 - **The cards were tested at sizes of 10 inches and below only**; nothing was tested at 11 inches and above.
 - **The sale-window hint** (`plan_sale`'s "best day to sell is within 3 days", simulated) shows on the daily briefing
@@ -129,7 +129,7 @@ this repository, not that Alexa+ has seen it.
 | The pilot runs on the builder's own PC through a Tailscale Funnel, and the farmer can use it | UNVERIFIED (no farmer has used the pilot yet, so usage numbers are pending; the Lightsail cloud pilot with the sample farm has been deployed since 2026-10-13; availability of the PC pilot depends on that PC and its internet) | none; `docs/PILOT_RUNBOOK_WINDOWS.md` |
 | The server runs on an Alexa+ device, or passes Amazon's review | UNVERIFIED | none; see "Known limitations" |
 | The Local Inspector itself accepts the server | UNVERIFIED | none; `FRICTION_LOG.md` FL-024 |
-| Telugu wording is natural and correct | UNVERIFIED (86 of 476 strings reviewed by the builder, a native Telugu speaker; 390 pending (including the pilot page); no independent review.) | `docs/TELUGU_REVIEW.md` |
+| Telugu wording is natural and correct | UNVERIFIED (470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed.) | `docs/TELUGU_REVIEW.md` |
 | Telugu voice works through Alexa+ | UNVERIFIED | none |
 | The cards work at 11 inches and above | UNVERIFIED | `docs/DESIGN.md` (screen size classes) |
 | Live AI (Amazon Bedrock) end to end | UNVERIFIED here | `docs/AWS_SETUP.md`; `FRICTION_LOG.md` FL-014 |

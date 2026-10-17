@@ -32,6 +32,7 @@ The cloud pilot runs on one AWS Lightsail server in Mumbai, with the sample farm
 - Claude models stayed blocked by a missing Anthropic Marketplace agreement and, for Sonnet 5, a quota of 0, so Nova 2 Lite is the only model I ran.
 - I could not get Amazon's Local Inspector, so I wrote my own replay of the documented flow and said so (FL-024). I did not run the Local Inspector.
 - Writing triage wording that is never a diagnosis and that no model can talk down.
+- Telugu wording: 470 of 476 strings were reviewed by me, a native Telugu speaker (single reviewer, not independent); 6 are pending, because the farmer-preferred wording for follow-up is still to be confirmed.
 
 ## Accomplishments
 

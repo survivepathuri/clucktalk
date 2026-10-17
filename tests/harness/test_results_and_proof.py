@@ -144,8 +144,8 @@ def test_only_the_generated_files_are_ignored_when_judging_the_tree():
 
 def test_the_telugu_sentence_takes_its_numbers_from_the_review_file():
     assert results.telugu_sentence("**Pending: 3** · Approved: 2") == (
-        "2 of 5 strings reviewed by the builder, a native Telugu speaker; 3 pending (including the pilot page); "
-        "no independent review."
+        "2 of 5 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); "
+        "3 pending; the farmer-preferred wording for follow-up is still to be confirmed."
     )
     assert "not recorded" in results.telugu_sentence("no counts here")
     assert "- Telugu: 2 of 5 strings reviewed by the builder" in _render([])

@@ -160,4 +160,4 @@ The count does not include the commit that saves this page.
 - Pilot numbers do not exist yet: [PILOT NUMBERS: to be filled on <date> from python tasks.py pilot-stats].
 - No live AWS or model result: the evals and the latency run in mock mode.
 - No Alexa+ device and no Telugu voice through Alexa+.
-- Telugu: 86 of 476 strings reviewed by the builder, a native Telugu speaker; 390 pending (including the pilot page); no independent review. Details: `docs/TELUGU_REVIEW.md`.
+- Telugu: 470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed. Details: `docs/TELUGU_REVIEW.md`.

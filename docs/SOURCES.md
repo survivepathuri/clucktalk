@@ -66,11 +66,12 @@ Nothing below is used in code yet. When it is, the exact passage and the file th
 Sources disagree on water withholding (about 1 h to 3 h) and the drinking window (1–2 h to 2–3 h). CluckTalk will present these as ranges with sources and defer to the vaccine label and the farmer's vet or company.
 
 ## Telugu wording review
-The builder, a native Telugu speaker, reviewed the Telugu strings that existed on 2026-09-27; nobody else has reviewed any Telugu string (no independent review). Status is tracked **per string** in `data/i18n/telugu_approvals.json` and shown in `docs/TELUGU_REVIEW.md` (pending strings first). An approval covers one exact English + Telugu pair; any new or changed string, in either language, is pending until reviewed again. Word choices follow the glossary in `docs/DESIGN.md` §8.1.
+The builder, a native Telugu speaker, reviewed the Telugu strings in two passes (2026-09-27 and 2026-10-16). This is a single-reviewer self-review: nobody else has reviewed any Telugu string (no independent review, no farmer review). The Telugu word for "follow-up" (ఫాలో-అప్) is left pending until the farmer confirms the wording. Status is tracked **per string** in `data/i18n/telugu_approvals.json` and shown in `docs/TELUGU_REVIEW.md` (pending strings first). An approval covers one exact English + Telugu pair; any new or changed string, in either language, is pending until reviewed again. Word choices follow the glossary in `docs/DESIGN.md` §8.1.
 
 | Date | Reviewer | Scope |
 |---|---|---|
 | 2026-09-27 | The builder (a native Telugu speaker) | All 82 Telugu strings in the code at that date (80 unique English + Telugu pairs), after applying the reviewer's corrections and glossary |
+| 2026-10-16 | The builder (a native Telugu speaker), single-reviewer self-review | The 384 strings added after 2026-09-27 (including the pilot page), read by the builder and confirmed correct. The 6 strings containing ఫాలో-అప్ were not approved: the farmer-preferred wording is still to be confirmed. Not an independent or farmer review |
 
 ## Alexa+ add-on pages read by the project owner (recorded 2026-10-04, Step 49b)
 These two pages were read by the project owner; the tool that wrote this repository's code could not see them. What is taken from each is as the owner relayed it, so check it against the page before relying on it.

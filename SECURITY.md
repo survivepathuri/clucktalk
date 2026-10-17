@@ -43,7 +43,7 @@ Reported and left as they are, because they are SDK behaviors (pinned by tests, 
 - **No human security audit and no penetration test.** The reviews were done by AI agents, and the fuzz, property and mutation tests are the builder's own.
 - **No privacy or data-law review** (for example, how long to keep records, or consent wording beyond the one-screen notice in the pilot).
 - **Backups and the state file are not encrypted by this project.**
-- **Telugu:** 86 of 476 strings reviewed by the builder, a native Telugu speaker; 390 pending (including the pilot page); no independent review. The pilot's notice is among the pending strings, so it could be misread.
+- **Telugu:** 470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed. The pilot's notice was read by the same single reviewer, so a wording slip could still be misread.
 
 ## Reporting an issue
 

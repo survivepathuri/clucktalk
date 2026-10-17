@@ -64,8 +64,8 @@ def telugu_sentence(review_text: str) -> str:
         return f"Telugu review counts: {NOT_RECORDED}."
     pending, approved = int(m.group(1)), int(m.group(2))
     return (
-        f"{approved} of {approved + pending} strings reviewed by the builder, a native Telugu speaker; {pending} pending "
-        "(including the pilot page); no independent review."
+        f"{approved} of {approved + pending} strings reviewed by the builder, a native Telugu speaker (single reviewer, "
+        f"not independent); {pending} pending; the farmer-preferred wording for follow-up is still to be confirmed."
     )
 
 

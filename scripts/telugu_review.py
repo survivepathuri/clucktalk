@@ -218,6 +218,10 @@ def render(approvals: dict[str, dict] | None = None) -> str:
         "",
         f"**Pending: {len(pending)}** · Approved: {len(approved)}",
         "",
+        "Every approval is a single-reviewer self-review by the builder, a native Telugu speaker: not an independent",
+        "review and not a farmer review. The Telugu word for follow-up (ఫాలో-అప్) stays pending until the farmer",
+        "confirms it.",
+        "",
         f"## 1. Pending review ({len(pending)})",
         "",
     ]
