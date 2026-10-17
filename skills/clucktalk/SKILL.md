@@ -1,6 +1,6 @@
 ---
 name: clucktalk
-description: "How an AI agent should operate the CluckTalk MCP server, a voice farm manager for Indian poultry farmers (Telugu subtitle: kodi mitra). Use when a farmer asks, by voice or text, how a shed is doing, about a daily briefing, feed stock, the best day to sell broilers, a record-book entry, signs of illness in a shed, sending a health check to the vet, or how a shed is now after a check, or when you must call, test or review CluckTalk tools. Covers tool routing, the propose, read-back, yes protocol, the safety rules, voice-only versus card behaviour, and the rule that spoken numbers equal card numbers."
+description: "How an AI agent should operate the CluckTalk MCP server, a farm assistant for Indian poultry farmers (Telugu subtitle: kodi mitra). Use when a farmer asks, by voice or text, how a shed is doing, about a daily briefing, feed stock, the best day to sell broilers, a record-book entry, signs of illness in a shed, sending a health check to the vet, or how a shed is now after a check, or when you must call, test or review CluckTalk tools. Covers tool routing, the propose, read-back, yes protocol, the safety rules, voice-only versus card behaviour, and the rule that spoken numbers equal card numbers."
 license: MIT
 ---
 
