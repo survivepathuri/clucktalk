@@ -4,10 +4,10 @@
 
 The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend').
 
-The voice farm manager for India's **broiler** poultry farmers. A self-hosted MCP server (implements MCP 2025-11-25 over
+A Telugu-first assistant for India's **broiler** poultry farmers. A self-hosted MCP server (implements MCP 2025-11-25 over
 Streamable HTTP) plus an Agent Skill, built for the Alexa+ add-on program.
 
-A broiler farmer counts the dead birds each morning with busy hands, often with no screen in reach, and the number that matters (a sudden spike, the total so far, the moment to call the vet) is easy to miss. CluckTalk answers by voice and by card, reads every number back before saving it, and never gives a diagnosis or a dose.
+A broiler farmer counts the dead birds each morning with busy hands, often with no screen in reach, and the number that matters (a sudden spike, the total so far, the moment to call the vet) is easy to miss. CluckTalk answers in text and on a card, reads every number back before saving it, and never gives a diagnosis or a dose.
 
 > **Status**: in development. Nothing below is claimed working unless it has evidence in `docs/evidence/` or a
 > passing check in `python tasks.py check` / `python tasks.py eval-fast`. See `docs/DESIGN.md` for the full design
@@ -85,6 +85,7 @@ seeded, clearly fictional data in mock mode.
 - **Nothing here has run on an Alexa+ device**, through Alexa's own speech, or through Amazon's review. The Local
   Inspector itself was not run (its guide is behind a Developer Console login, FL-024); `inspector-replay` is our replay of
   the documented flow.
+- **Known limitation: dose questions.** The product never says it cannot give a medicine dose. A plain dose question may be misread by the matcher as a daily-record proposal, which is saved only if the farmer says yes. It never gives a dose or a treatment (`docs/SAFETY_MATRIX.md`, "What happens when a farmer asks for a dose").
 - **Alexa composes its own speech** from a tool's result and description, so what it says can differ from our sentences.
   The card shows our sentence.
 - **Not built:** OAuth 2.1 with PKCE, Protected Resource Metadata, a remote HTTPS URL, security and data policies. The
