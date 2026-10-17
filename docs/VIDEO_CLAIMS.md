@@ -23,8 +23,10 @@ Hand-written. Each row is a sentence spoken or a thing shown in the demo video (
 | 17 | Nova 2 Lite is wired but off by default; zero quotas blocked a run through the server. | `submission.md` ("How we built it"); `src/clucktalk/agents/bedrock.py`; `tests/unit/test_agents.py`; `FRICTION_LOG.md` FL-031; `docs/AWS_SETUP.md` sections 5.2 and 5.3. | Strong |
 | 18 | 470 Telugu strings were approved by me alone, a single reviewer; six are pending. | `docs/TELUGU_REVIEW.md`; `data/i18n/telugu_approvals.json`; `tests/harness/test_submission_docs.py::test_one_telugu_sentence_with_generated_numbers_in_every_judge_facing_document`. | Strong for the count; the review itself is a self-review and is said to be |
 | 19 | There are no farmer usage numbers yet. | `docs/RESULTS.md` section 9; `submission.md` ("The farmer pilot"). | Strong |
-| 20 | Next: Telugu speech in and out, an independent Telugu review. | `README.md` ("Roadmap"); `docs/DEVPOST_DESCRIPTION.md` ("What's next"). Plans, not features. | Plans only |
+| 20 | Closing line on screen: built with a broiler farmer; the schedule, safety and language layers are not poultry-specific, so the next step is other livestock and aquaculture, each with its own vet-reviewed content. | `docs/DEVPOST_DESCRIPTION.md` ("What's next"). A plan, not a feature: nothing was built or tested for other species. | Plans only |
 | 21 | (If Sound is on in the Simulator) the English answer is read aloud by the browser's speech synthesis. | Builder's manual test, shown in the video; not covered by automated tests. Code: `src/clucktalk/simulator/static/app.js` lines 41 to 60. Spoken Telugu replies do not exist. | Weak: no automated test |
+| 22 | The first screen has five starter questions, each a Telugu question with its English gloss; a tap asks the English sentence (the demo host reads English only). | `tests/contract/test_simulator_starters.py` (each chip is an approved catalog pair and is answered by the expected tool); `docs/evidence/2026-10-18_judge_view/`. | Strong for the answers; the layout is shown by screenshots only |
+| 23 | The judge view puts the English side under each Telugu answer, and can be switched off. | `tests/contract/test_simulator_starters.py` (page files); screenshots `02_` and `03_` in `docs/evidence/2026-10-18_judge_view/`. | Medium: no browser test |
 
 ## Not claimed in the video
 
