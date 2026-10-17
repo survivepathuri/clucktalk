@@ -11,7 +11,7 @@ Only real experiences. Never batched, never invented.
 
 Every entry uses the six official fields (task attempted, steps taken, expected vs actual, severity, workaround, actionable suggestion) plus date, tag, `Time cost:` (only what was recorded in the sessions, otherwise "not recorded"), `Reproduce:` (a real command or the exact test name, otherwise "documentation-based, no command") and `Evidence:` (only files that exist in this repo). Every suggestion names the owner, the page or mechanism and the concrete change; open points are phrased as questions to the owner.
 
-**Counts:** 32 FL numbers (FL-001 to FL-032): 29 live entries (22 in this file, 7 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
+**Counts:** 33 FL numbers (FL-001 to FL-033): 30 live entries (23 in this file, 7 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
 
 **FL numbers are stable ids.** They are never reused or renumbered, so every reference in the code, the docs and the submission copies stays valid. FL-010, FL-016 and FL-018 were merged into FL-007 and FL-014 (2026-10-01 audit); their numbers remain as short stubs.
 
@@ -38,6 +38,7 @@ Audit of 2026-10-01: three pairs of entries that describe one problem were merge
 | FL-027 | [AWS App Runner docs] | this file (builder-reported) |
 | FL-028 to FL-030 | [Dev] | `docs/DEV_NOTES.md` |
 | FL-031, FL-032 | [AWS/Bedrock/Nova] | this file |
+| FL-033 | [Alexa+/MCP] | this file (press-reported, not verified with Amazon) |
 
 ---
 
@@ -421,3 +422,19 @@ Reproduce: Detail not recorded.
 Evidence: none in the repository (builder-reported).
 See also: FL-031.
 Verified on: Detail not recorded
+
+### FL-033: Alexa+ in India is press-reported to support English, Hindi and Hinglish; Telugu is not listed and no timeline for more languages was given, so a Telugu-first add-on cannot be tested by voice on the platform
+Date: 2026-10-18
+Tool / service: Alexa+ launch in India, as described in launch coverage (Medianama and Business Standard, September 2026). Press-reported, not verified with Amazon.
+Tag: [Alexa+/MCP]
+Task attempted: Find out whether a Telugu-first add-on can be tested by voice on Alexa+.
+Steps taken: Read the launch coverage of Alexa+ in India. The article URLs are not recorded here.
+Expected vs actual: Expected a published list of the languages and locales an add-on can use. Actual (as reported): Alexa+ in India supports English, Hindi and Hinglish; Telugu is not listed, and no timeline for more languages was given.
+Severity: Medium
+Impact: A Telugu-first add-on cannot be tested by voice on the platform.
+Workaround: CluckTalk uses written Telugu, the Simulator and the MCP Inspector instead. The Simulator's microphone is the browser's English speech recognition; there is no Telugu speech recognition and no spoken Telugu reply.
+Actionable suggestion: Owner: the Alexa+ product and documentation teams. Publish the supported-locale list for add-ons and a roadmap for regional languages.
+Time cost: not recorded
+Reproduce: documentation-based (press coverage), no command.
+Evidence: none in the repository (press-reported; not verified with Amazon).
+Verified on: not verified with Amazon

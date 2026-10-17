@@ -302,7 +302,34 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 **Why this matters to Alexa+ developers:** An Alexa+ add-on needs a reachable HTTPS endpoint (`docs/PRODUCTION_PATH.md`, item 3), and App Runner, one of the AWS hosting options a builder may look at first, no longer takes new customers.
 
 
-## Entry 12 (FL-007): MCP Apps default CSP has no `font-src`, so even an inlined (data:) font is blocked; the reference host allows it; the spec does not say whether a CSP-blocked `@font-face` source falls through
+## Entry 12 (FL-033): Alexa+ in India is press-reported to support English, Hindi and Hinglish; Telugu is not listed and no timeline for more languages was given, so a Telugu-first add-on cannot be tested by voice on the platform
+
+**Origin:** Amazon · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-10-18
+
+**Impact:** A Telugu-first add-on cannot be tested by voice on the platform.
+
+**Tool / service:** Alexa+ launch in India, as described in launch coverage (Medianama and Business Standard, September 2026). Press-reported, not verified with Amazon.
+
+**Task attempted:** Find out whether a Telugu-first add-on can be tested by voice on Alexa+.
+
+**Steps taken:** Read the launch coverage of Alexa+ in India. The article URLs are not recorded here.
+
+**Expected vs actual:** Expected a published list of the languages and locales an add-on can use. Actual (as reported): Alexa+ in India supports English, Hindi and Hinglish; Telugu is not listed, and no timeline for more languages was given.
+
+**Workaround:** CluckTalk uses written Telugu, the Simulator and the MCP Inspector instead. The Simulator's microphone is the browser's English speech recognition; there is no Telugu speech recognition and no spoken Telugu reply.
+
+**Actionable suggestion:** Owner: the Alexa+ product and documentation teams. Publish the supported-locale list for add-ons and a roadmap for regional languages.
+
+**Time cost:** not recorded
+
+**Reproduce:** documentation-based (press coverage), no command.
+
+**Evidence in the repo:** none (press-reported; not verified with Amazon).
+
+**Why this matters to Alexa+ developers:** A builder for a regional language cannot tell from the documentation whether the add-on can be spoken to on Alexa+ at all.
+
+
+## Entry 13 (FL-007): MCP Apps default CSP has no `font-src`, so even an inlined (data:) font is blocked; the reference host allows it; the spec does not say whether a CSP-blocked `@font-face` source falls through
 
 **Origin:** MCP Apps SDK · **Tag:** [MCP Apps] · **Severity:** Medium · **Date:** 2026-09-27
 
@@ -331,7 +358,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** A card that bundles a Telugu font works on the reference host but may silently lose it on a host that applies the spec's default CSP, and Alexa+ font availability is not published (FL-009).
 
 
-## Entry 13 (FL-002): Default tool error text includes the tool name and validation details
+## Entry 14 (FL-002): Default tool error text includes the tool name and validation details
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-27
 
@@ -356,7 +383,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** Alexa+ guidance says tool errors must be customer-safe, but the SDK default puts the tool name and validation details in error text that a voice host may read aloud.
 
 
-## Entry 14 (FL-004): Unclear whether `outputSchema` applies to `isError` results; SDK and Inspector disagree
+## Entry 15 (FL-004): Unclear whether `outputSchema` applies to `isError` results; SDK and Inspector disagree
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-27
 
@@ -381,7 +408,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** The SDK client and the Inspector disagree on whether an error result must match the tool's output schema, so a structured error can be rejected by one and accepted by the other.
 
 
-## Entry 15 (FL-001): Middleware results skip per-version shaping, so `resultType` leaks onto the 2025-11-25 wire
+## Entry 16 (FL-001): Middleware results skip per-version shaping, so `resultType` leaks onto the 2025-11-25 wire
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-27
 
@@ -406,7 +433,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** A customer-safe error returned from server middleware carries a 2026-07-28 field onto the 2025-11-25 wire unless the server strips it itself.
 
 
-## Entry 16 (FL-008): On a 2025-11-25 connection, SDK 2.2.0 drops the server's `capabilities.extensions`, so the Apps extension is invisible in `initialize`
+## Entry 17 (FL-008): On a 2025-11-25 connection, SDK 2.2.0 drops the server's `capabilities.extensions`, so the Apps extension is invisible in `initialize`
 
 **Origin:** third-party MCP SDK · **Tag:** [MCP Apps] · **Severity:** Low · **Date:** 2026-09-27
 
@@ -431,7 +458,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** On a 2025-11-25 connection a server cannot declare the Apps extension in its initialize result; hosts must discover cards through the tool's _meta.ui.resourceUri.
 
 
-## Entry 17 (FL-003): Localhost default Origin allow-list accepts every localhost port
+## Entry 18 (FL-003): Localhost default Origin allow-list accepts every localhost port
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Low · **Date:** 2026-09-27
 
@@ -456,7 +483,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** On a local MCP server, a page served from any local port passes the SDK's default Origin check.
 
 
-## Entry 18 (FL-006): MCP Apps spec example sends `clientInfo` in `ui/initialize`, but the schema requires `appInfo`
+## Entry 19 (FL-006): MCP Apps spec example sends `clientInfo` in `ui/initialize`, but the schema requires `appInfo`
 
 **Origin:** MCP Apps SDK · **Tag:** [MCP Apps] · **Severity:** Low · **Date:** 2026-09-27
 
@@ -479,7 +506,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** A card written from the spec's own example would be rejected by a host that validates against the schema.
 
 
-## Entry 19 (FL-011): Two in-flight requests with the same JSON-RPC id on one session: the SDK silently never answers one
+## Entry 20 (FL-011): Two in-flight requests with the same JSON-RPC id on one session: the SDK silently never answers one
 
 **Origin:** third-party MCP SDK · **Tag:** [Alexa+/MCP] · **Severity:** Medium · **Date:** 2026-09-28
 
@@ -506,7 +533,7 @@ Merged from FL-010 (2026-10-01 audit).
 **Why this matters to Alexa+ developers:** A retrying host that reuses a JSON-RPC id on one session can leave requests unanswered with no server log line.
 
 
-## Entry 20 (FL-021): ext-apps basic-host cannot be built with `npm ci --ignore-scripts`: it needs the unbuilt repo root, bun, and bun's postinstall
+## Entry 21 (FL-021): ext-apps basic-host cannot be built with `npm ci --ignore-scripts`: it needs the unbuilt repo root, bun, and bun's postinstall
 
 **Origin:** MCP Apps SDK · **Tag:** [MCP Apps] · **Severity:** Low · **Date:** 2026-10-01
 
@@ -532,7 +559,7 @@ Merged from FL-010 (2026-10-01 audit).
 
 **Why this matters to Alexa+ developers:** The reference MCP Apps host cannot be built from its README alone, which slows testing a card in a real host.
 
-## Entry 21 (FL-031): Nova 2 Lite calls through the server code path all returned ThrottlingException; every Nova 2 Lite requests-per-minute and tokens-per-day quota in the account is 0
+## Entry 22 (FL-031): Nova 2 Lite calls through the server code path all returned ThrottlingException; every Nova 2 Lite requests-per-minute and tokens-per-day quota in the account is 0
 
 **Origin:** Amazon · **Tag:** [AWS/Bedrock/Nova] · **Severity:** Medium · **Date:** 2026-10-17
 
@@ -558,7 +585,7 @@ Merged from FL-010 (2026-10-01 audit).
 
 **Why this matters to Alexa+ developers:** A new account can list a model as available and still answer every call with a ThrottlingException, with nothing in the error saying the quota is 0.
 
-## Entry 22 (FL-032): With an `aws login` profile, building a real boto3 client needs `botocore[crt]` (awscrt); a unit test failed and the server needed temporary environment credentials
+## Entry 23 (FL-032): With an `aws login` profile, building a real boto3 client needs `botocore[crt]` (awscrt); a unit test failed and the server needed temporary environment credentials
 
 **Origin:** Amazon · **Tag:** [AWS/Bedrock/Nova] · **Severity:** Medium · **Date:** 2026-10-17 (seen during the Nova server-path attempt and during `tasks.py check` on the builder's machine)
 

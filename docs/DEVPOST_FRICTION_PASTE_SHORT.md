@@ -113,7 +113,17 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 **Reproduce:** Documentation-based, no command.
 
 
-## Entry 12 (FL-007): MCP Apps default CSP blocks even inlined fonts
+## Entry 12 (FL-033): Alexa+ in India: Telugu is not a listed language
+**Tag:** [Alexa+/MCP] · **Origin:** Amazon · **Severity:** Medium
+**Task:** Find out whether a Telugu-first add-on can be tested by voice on Alexa+.
+**Steps:** Read launch coverage (Medianama, Business Standard, September 2026). Press-reported, not verified with Amazon.
+**Expected vs actual:** Expected a published list of supported add-on languages. As reported, Alexa+ in India supports English, Hindi and Hinglish; Telugu is not listed and no timeline for more languages was given.
+**Workaround:** Written Telugu, a Simulator and the MCP Inspector; no voice test on the platform.
+**Suggestion:** Alexa+ teams: publish the supported-locale list for add-ons and a roadmap for regional languages.
+**Reproduce:** Documentation-based (press coverage), no command.
+
+
+## Entry 13 (FL-007): MCP Apps default CSP blocks even inlined fonts
 **Tag:** [MCP Apps] · **Origin:** MCP Apps SDK · **Severity:** Medium
 **Task:** Bundle a Telugu font in a card under the MCP Apps default CSP.
 **Steps:** Read the spec CSP and the reference host; built a strict-CSP mode; probed in Chrome.
@@ -123,7 +133,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 **Reproduce:** font_probe.py in docs/evidence/2026-09-28_strict_csp/.
 
 
-## Entry 13 (FL-002): Default tool errors name the tool and validation fields
+## Entry 14 (FL-002): Default tool errors name the tool and validation fields
 **Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Medium
 **Task:** Return customer-safe tool errors for a voice host.
 **Steps:** Read the SDK's tool error handling.
@@ -133,7 +143,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 **Reproduce:** Documentation-based, no command.
 
 
-## Entry 14 (FL-004): Does outputSchema apply to isError results?
+## Entry 15 (FL-004): Does outputSchema apply to isError results?
 **Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Medium
 **Task:** Return a structured error from a tool with an outputSchema.
 **Steps:** Called an unknown shed through the Python SDK client and the Inspector CLI.
@@ -143,7 +153,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 **Reproduce:** Documentation-based, no command.
 
 
-## Entry 15 (FL-001): Middleware results leak resultType onto the 2025-11-25 wire
+## Entry 16 (FL-001): Middleware results leak resultType onto the 2025-11-25 wire
 **Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Medium
 **Task:** Return a safe result from a server middleware.
 **Steps:** Returned a CallToolResult at protocol 2025-11-25 and called it with curl.
@@ -153,7 +163,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 **Reproduce:** pytest tests\contract\test_tools.py::test_no_2026_fields_on_the_2025_11_25_wire
 
 
-## Entry 16 (FL-008): SDK drops the server's extensions capability on 2025-11-25
+## Entry 17 (FL-008): SDK drops the server's extensions capability on 2025-11-25
 **Tag:** [MCP Apps] · **Origin:** third-party MCP SDK · **Severity:** Low
 **Task:** Serve the card through the SDK's Apps extension on 2025-11-25.
 **Steps:** Probed initialize, tools/list and resources over HTTP.
@@ -163,7 +173,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 **Reproduce:** Documentation-based, no command (probe not saved).
 
 
-## Entry 17 (FL-003): Localhost Origin allow-list accepts every port
+## Entry 18 (FL-003): Localhost Origin allow-list accepts every port
 **Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Low
 **Task:** Validate Origin on the local server.
 **Steps:** Read streamable_http_app.
@@ -173,7 +183,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 **Reproduce:** pytest tests\contract\test_transport.py::test_other_localhost_port_origin_is_403
 
 
-## Entry 18 (FL-006): MCP Apps spec example disagrees with its schema
+## Entry 19 (FL-006): MCP Apps spec example disagrees with its schema
 **Tag:** [MCP Apps] · **Origin:** MCP Apps SDK · **Severity:** Low
 **Task:** Write a card against the documented postMessage protocol.
 **Steps:** Followed the spec example and checked spec.types.ts.
@@ -183,7 +193,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 **Reproduce:** Documentation-based, no command.
 
 
-## Entry 19 (FL-011): Duplicate in-flight JSON-RPC id hangs silently
+## Entry 20 (FL-011): Duplicate in-flight JSON-RPC id hangs silently
 **Tag:** [Alexa+/MCP] · **Origin:** third-party MCP SDK · **Severity:** Medium
 **Task:** Test that a repeated confirmation applies once.
 **Steps:** Sent 5 concurrent tools/call requests with the same JSON-RPC id.
@@ -193,7 +203,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 **Reproduce:** `.venv\Scripts\python -m pytest -q tests\contract\test_concurrency.py::test_two_overlapping_requests_with_the_same_id_leave_one_unanswered_pinned_finding`
 
 
-## Entry 20 (FL-021): basic-host cannot be built from its README
+## Entry 21 (FL-021): basic-host cannot be built from its README
 **Tag:** [MCP Apps] · **Origin:** MCP Apps SDK · **Severity:** Low
 **Task:** Build the reference basic-host to test our cards.
 **Steps:** Ran npm ci --ignore-scripts, then npm run build in examples/basic-host.
@@ -202,7 +212,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 **Suggestion:** ext-apps maintainers: update the basic-host README or ship a prebuilt host.
 **Reproduce:** Commands in docs/evidence/2026-10-01_basic_host/README.md.
 
-## Entry 21 (FL-031): Nova 2 Lite calls all throttled; every Nova 2 Lite quota is 0
+## Entry 22 (FL-031): Nova 2 Lite calls all throttled; every Nova 2 Lite quota is 0
 **Tag:** [AWS/Bedrock/Nova] · **Origin:** Amazon · **Severity:** Medium
 **Task:** Run Nova 2 Lite once through CluckTalk's own server code path.
 **Steps:** aws login, 4 Converse calls, then list-service-quotas for bedrock.
@@ -211,7 +221,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 **Suggestion:** Bedrock / Service Quotas team: say "quota is 0" in the ThrottlingException text.
 **Reproduce:** aws service-quotas list-service-quotas --service-code bedrock --region us-east-1.
 
-## Entry 22 (FL-032): `aws login` profile needs botocore[crt] for a real boto3 client
+## Entry 23 (FL-032): `aws login` profile needs botocore[crt] for a real boto3 client
 **Tag:** [AWS/Bedrock/Nova] · **Origin:** Amazon · **Severity:** Medium
 **Task:** Use an `aws login` profile with a real boto3 client (Bedrock path, tests).
 **Date:** 2026-10-17, seen during the Nova server-path attempt and during tasks.py check (builder's machine).

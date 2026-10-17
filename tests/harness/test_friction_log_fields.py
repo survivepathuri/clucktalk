@@ -109,7 +109,7 @@ def test_the_header_counts_equal_the_entries_found():
     assert m, "the log header states the counts"
     numbers, live, here, dev = (int(x) for x in m.groups())
     found = [fl for _, fl, _ in ENTRIES]
-    assert numbers == len(set(found)) == 32
+    assert numbers == len(set(found)) == 33
     assert live == len(LIVE) == here + dev
     assert here == len([1 for n, _, _ in LIVE if n == "FRICTION_LOG.md"]) and dev == len(
         [1 for n, _, _ in LIVE if n == "docs/DEV_NOTES.md"]
