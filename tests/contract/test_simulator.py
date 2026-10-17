@@ -319,3 +319,46 @@ def test_an_unknown_photo_ref_is_refused_by_the_simulator(sim):
             timeout=15,
         )
         assert r.status_code == 400, bad
+
+
+# -- the vet-summary offer: a bare yes answers it (Simulator host; the summary still goes through the existing tool) --
+def _offered(sim_fresh):
+    sim_fresh.turn("shed 2 chickens are coughing and sneezing")
+    reply = sim_fresh.turn("is the health check ready for shed 2")
+    assert "Shall I send a summary to your vet?" in reply["speech"]
+    return reply
+
+
+@pytest.mark.parametrize("word", ["yes", "yeah", "yep", "ok", "okay", "sure", "please do"])
+def test_a_bare_yes_after_the_vet_offer_starts_the_vet_summary_read_back(sim_fresh, word):
+    _offered(sim_fresh)
+    got = sim_fresh.turn(word)
+    assert got["intent"]["tool"] == "prepare_vet_handoff"
+    assert "answer" not in got["intent"]["arguments"] and "proposal_id" not in got["intent"]["arguments"]
+    sc = got["result"]["structuredContent"]
+    assert sc["status"] == "needs_confirmation" and sc["number"] == 2 and got["awaiting_answer"] is True
+    sent = sim_fresh.turn("yes")  # the tool's own read-back still needs its own yes
+    assert sent["result"]["structuredContent"]["status"] == "changed"
+    assert sent["result"]["structuredContent"]["channel"] == "simulated_sms"
+
+
+def test_a_bare_no_after_the_vet_offer_sends_nothing_and_a_later_yes_answers_nothing(sim_fresh):
+    _offered(sim_fresh)
+    for word in ("no", "not now"):
+        again = _offered(sim_fresh)
+        declined = sim_fresh.turn(word)
+        assert declined["intent"] is None and declined["result"] is None, again
+        late = sim_fresh.turn("yes")
+        assert late["intent"] is None and late["result"] is None
+
+
+def test_the_vet_offer_lapses_when_the_farmer_moves_on(sim_fresh):
+    _offered(sim_fresh)
+    sim_fresh.turn("how is shed one doing")
+    late = sim_fresh.turn("yes")
+    assert late["intent"] is None and late["result"] is None
+
+
+def test_a_bare_yes_without_an_offer_still_answers_nothing(sim_fresh):
+    late = sim_fresh.turn("okay")
+    assert late["intent"] is None and late["result"] is None

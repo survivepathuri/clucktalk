@@ -57,6 +57,7 @@ from clucktalk.i18n.pilot import (
 )
 from clucktalk.pilot import load_pilot_farm_file
 from clucktalk.server.farm_state import today_ist
+from clucktalk.server.tools.health import HANDOFF_TOOL, OFFER
 from clucktalk.simulator import questions as farmer_questions
 from clucktalk.simulator.intents import Intent, match, normalise, yes_no
 from clucktalk.simulator.intents_te import chip_intent, choice_te, match_te, yes_no_te
@@ -394,6 +395,7 @@ class Conversation:
     last_used: float = 0.0  # when the session was last used (for the cap and the idle clean-up)
     pending: dict[str, Any] = field(default_factory=dict)  # a server read-back: tool, arguments, proposal_id
     host_pending: dict[str, Any] = field(default_factory=dict)  # a host read-back (starting a health check)
+    vet_offer: dict[str, Any] = field(default_factory=dict)  # the last reply offered a vet summary: the house
     turns: int = 0
 
 
@@ -579,6 +581,8 @@ def build_app(
         elif chip is None:
             answer = yes_no(utterance)
         awaiting, host_awaiting = dict(conv.pending), dict(conv.host_pending)
+        vet_offered = dict(conv.vet_offer)  # lapses with this turn, like a read-back
+        conv.vet_offer.clear()
         conv.pending.clear()
         conv.host_pending.clear()
         conv.turns += 1
@@ -594,6 +598,10 @@ def build_app(
             intent = Intent(awaiting["tool"], args, f"answer '{answer}' to the pending read-back")
         elif answer == "yes" and host_awaiting and choice is None:
             intent = Intent(host_awaiting["tool"], host_awaiting["arguments"], "answer 'yes' to the host read-back")
+        elif answer == "yes" and vet_offered and not awaiting and not te and chip is None:
+            # The reply offered "Shall I send a summary to your vet?": a bare yes asks the existing tool for it. The
+            # tool still reads the summary back and sends only after its own yes (docs/DESIGN.md §5.1).
+            intent = Intent(HANDOFF_TOOL, {"house": vet_offered["house"]}, "answer 'yes' to the vet-summary offer")
         if photo_ref and intent is not None and intent.tool == "start_health_check":
             # The farmer attached a (placeholder) photo to this turn; only a new health check takes it.
             intent = Intent(
@@ -674,6 +682,13 @@ def build_app(
                     if te or chip is not None:
                         out["speech_te"] = _spoken_te(result)
                     sc = result.get("structuredContent") or {}
+                    if (
+                        sc.get("handoff_offered") is True
+                        and OFFER.en in str(sc.get("text_en"))
+                        and isinstance(sc.get("house_id"), str)
+                        and this_turn == conv.turns
+                    ):
+                        conv.vet_offer.update(house=sc["house_id"])
                     if (
                         sc.get("status") == "needs_confirmation"
                         and isinstance(sc.get("proposal_id"), str)

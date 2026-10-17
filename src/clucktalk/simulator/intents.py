@@ -49,8 +49,10 @@ PROFILE = re.compile(
     r"|am i (?:a |an )?(?:contract|independent)|is (?:my|this) farm (?:contract|independent)|farm profile)\b"
 )
 # A whole utterance that answers a read-back (docs/DESIGN.md §5.1). Only these words count as an explicit answer.
-YES = re.compile(r"^(?:yes|yeah|yep|yes please|haan|haan ji|ji haan|han ji|avunu|confirm|yes confirm)$")
-NO = re.compile(r"^(?:no|nope|no thanks|nahi|nahin|na|vaddu|cancel|don't|do not)$")
+YES = re.compile(
+    r"^(?:yes|yeah|yep|yes please|ok|okay|sure|please do|haan|haan ji|ji haan|han ji|avunu|confirm|yes confirm)$"
+)
+NO = re.compile(r"^(?:no|nope|no thanks|not now|nahi|nahin|na|vaddu|cancel|don't|do not)$")
 FEED = re.compile(r"\b(?:feed|dana|daana|bags?|bori|stock|reorder)\b")
 # Sale-day plan (docs/DESIGN.md §12.4). "rate is 95" carries a farmer-given live price to plan_sale.
 SELL = re.compile(r"\b(?:sell|selling|bech|bech do|bechna|bechu|kab bechun|kab bechu)\b")
