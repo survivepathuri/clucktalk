@@ -8,7 +8,7 @@ If you do not have Python 3.12 or 3.13 (these install lines are the ones in the 
 - macOS: `brew install python@3.13`
 - Ubuntu: `sudo apt install python3 python3-venv` (Ubuntu 24.04 ships Python 3.12). On an older Ubuntu, use the deadsnakes PPA or `pyenv install 3.13`.
 
-CluckTalk (కోడి మిత్ర) is a self-hosted **MCP server** (Streamable HTTP, spec 2025-11-25) for Alexa+, with a simulated Alexa+ web experience, for Indian broiler farmers. It tracks a shed's deaths, feed and health checks, and tells the farmer in English and Telugu what needs attention first. Nothing here has run on an Alexa+ device; the Simulator plays the client role.
+CluckTalk (కోడి మిత్ర) is a self-hosted **MCP server** (Streamable HTTP, spec 2025-11-25) for Alexa+, with a simulated Alexa+ web experience, for Indian broiler farmers. It tracks a shed's deaths, feed and health checks, and tells the farmer in English and Telugu what needs attention first. Nothing here has run on an Alexa+ device; the Simulator plays the client role. The Simulator is a web app: browser UI plus a backend MCP client that sends initialize (protocolVersion 2025-11-25), tools/list and tools/call to the MCP server over Streamable HTTP; the browser page itself only calls the Simulator's own backend (README, "How the Simulator speaks MCP").
 
 ## Run it: three commands
 
@@ -68,7 +68,7 @@ The same syntax sets `CLUCKTALK_SIMULATOR_PORT` (default 8766) and `CLUCKTALK_NO
 | What | Where |
 |---|---|
 | The 14 MCP tools | `src/clucktalk/server/tools/` (one file per feature; registered in `src/clucktalk/server/app.py`) |
-| The Alexa+ Simulator (simulation source) | `src/clucktalk/simulator/` (the page is in `src/clucktalk/simulator/static/`) |
+| The Alexa+ Simulator (simulation source) | `src/clucktalk/simulator/` (the MCP client is `mcp_client.py`; the page is in `src/clucktalk/simulator/static/` and calls only the Simulator's own backend) |
 | Safety rules in code | `src/clucktalk/domain/` (`status.py`, `triage.py`, `follow_up.py`, `thresholds.py`) |
 | Golden evals | `data/eval/golden_cases.json`, results in `docs/EVALS.md` |
 | The architecture | `docs/ARCHITECTURE.md`; the full design is `docs/DESIGN.md` |
@@ -86,5 +86,6 @@ The same syntax sets `CLUCKTALK_SIMULATOR_PORT` (default 8766) and `CLUCKTALK_NO
 - **No veterinary or agronomic review.** The thresholds are general guidance or the builder's heuristics (`docs/SAFETY_MATRIX.md`). No tool gives a medicine or a dose.
 - **Telugu:** 470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed. No Telugu voice was tested through Alexa+ (`docs/TELUGU_REVIEW.md`).
 - **In demo mode a shed with no alert is still described as doing well;** pilot mode says "no alert from the checks I can make".
-- **Live AI** (Amazon Bedrock Nova 2 Lite) is off by default; the server's live path was not verified end to end here.
+- **Live AI** (Amazon Nova 2 Lite through Amazon Bedrock) is integrated in the code and off by default. It was called live four times on 2026-09-29, outside the server. A live run through the server is blocked: on the newer AWS account every Nova 2 Lite quota is 0 (`FRICTION_LOG.md` FL-031). Amazon Lightsail in Mumbai hosts the farmer pilot. Nova makes closed-list decisions and never writes farmer-facing wording. The pilot makes no Bedrock calls.
+- **The demo farm is fictional, and its example limit is not a recommendation.** The example daily-deaths limit that demo mode uses (`docs/daily_deaths_limit.example.json`: 6 deaths a day up to age 29 days, 3 a day from age 30 days, the same for every shed) comes from figures relayed by one broiler farmer. That is why demo answers can say "your own limit".
 - **The farmer pilot** has a PC version (the builder's own PC through a free tunnel) and a Lightsail cloud version. No farmer has used the pilot yet, so usage numbers are pending (`docs/RESULTS.md`, section 9). The Lightsail cloud pilot with the sample farm has been deployed since 2026-10-13; results will be added after the pilot.

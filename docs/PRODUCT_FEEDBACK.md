@@ -18,10 +18,10 @@ The five questions:
 This matches `submission.md` ("How we built it") and `docs/AWS_SETUP.md` sections 5.2 and 5.3.
 
 - **Live:** Amazon Bedrock Runtime `converse` with Amazon Nova 2 Lite (`us.amazon.nova-2-lite-v1:0`) in us-east-1, a handful of one-off calls from the AWS CLI and boto3: a hello call (run twice, because the AWS CLI truncated the first capture, FL-019), then two forced-tool-choice spike calls on text and a tiny synthetic image (the second one misread a colour, FL-020). Their cost in `docs/AWS_SETUP.md` is under two tenths of a cent at third-party prices that were not confirmed on AWS's own price page. Also used: AWS Service Quotas and AWS Support cases, because the new account's Bedrock inference quotas were all 0 (FL-014), and an IAM Identity Center role for the CLI (FL-015).
-- **Mocked:** every AI answer in the demo, in the golden evals and in the tests (`MOCK_BEDROCK=true`, shown by a "Demo data" badge). The server's live-AI path (the triage and briefing agents on a live model) was **not** verified end to end. Only the Lightsail cloud pilot was deployed to AWS (since 13 October 2026, with the sample farm file and the rule-based test model, no Bedrock calls); no Lambda, no Polly, no Knowledge Base. OpenSearch Serverless is never used, and a script checks that (`scripts/check_no_aoss.py`). This sentence is the one in `submission.md` (next bullet: the Lightsail pilot).
+- **Mocked:** every AI answer in the demo, in the golden evals and in the tests (`MOCK_BEDROCK=true`, shown by a "Demo data" badge). The server's live-AI path (the triage and briefing agents on a live model) was **not** verified end to end: four attempts through the server on 2026-10-17 were all throttled, because every Nova 2 Lite quota on the newer AWS account is 0 (FL-031). Only the Lightsail cloud pilot was deployed to AWS (since 13 October 2026, with the sample farm file and the rule-based test model, no Bedrock calls); no Lambda, no Polly, no Knowledge Base. OpenSearch Serverless is never used, and a script checks that (`scripts/check_no_aoss.py`). This sentence is the one in `submission.md` (next bullet: the Lightsail pilot).
 - **Live since 13 October 2026, Amazon Lightsail (cloud pilot):** one Lightsail instance in Mumbai (ap-south-1) with a static IP and the Lightsail firewall runs the pilot page and the MCP server with the sample farm file; the AI there is the rule-based test model (`MOCK_BEDROCK=true`, no Bedrock calls). Section 3 has the details. No farmer has used it yet (`docs/CLOUD_PILOT.md`). The PC pilot with a free Tailscale Funnel (section 9) stays as the fallback.
 - **Read, not used (builder-reported, 7 October 2026):** the AWS App Runner documentation (FL-027).
-- **AWS Builder summary:** Bedrock Runtime (Nova 2 Lite, a handful of calls), Service Quotas and AWS Support cases (quotas were 0, FL-014), IAM Identity Center for CLI sign-in (FL-012, FL-015), the Billing console and the Free Tier plan API (FL-013), and Lightsail for the pilot host. Monthly cost model, builder-reported: one Lightsail plan of about $7 a month, paid from the hackathon credit per the Devpost mail; the credit amount of the account is not stated here. Bedrock cost so far: under two tenths of a cent (`docs/AWS_SETUP.md` section 5.2). Not used: Lambda, Polly, Knowledge Bases, AgentCore, S3 Vectors, OpenSearch Serverless.
+- **AWS services summary:** Amazon Nova 2 Lite through Bedrock is integrated in the code and off by default; four live calls on 2026-09-29 outside the server; a server-path live run is blocked by zero Nova quotas on the newer account (FL-031); Lightsail in Mumbai hosts the farmer pilot; Nova makes closed-list decisions and never writes farmer-facing wording; the pilot makes no Bedrock calls. The services: Bedrock Runtime (Nova 2 Lite, four live calls), Service Quotas and AWS Support cases (quotas were 0, FL-014), IAM Identity Center for CLI sign-in (FL-012, FL-015), the Billing console and the Free Tier plan API (FL-013), and Lightsail for the pilot host. Monthly cost model, builder-reported: one Lightsail plan of about $7 a month, paid from the hackathon credit per the Devpost mail; the credit amount of the account is not stated here. Bedrock cost so far: under two tenths of a cent (`docs/AWS_SETUP.md` section 5.2). Not used: Lambda, Polly, Knowledge Bases, AgentCore, S3 Vectors, OpenSearch Serverless.
 
 ---
 
@@ -29,7 +29,7 @@ This matches `submission.md` ("How we built it") and `docs/AWS_SETUP.md` section
 
 ## 1. Amazon Bedrock and Amazon Nova 2 Lite
 
-1. **Used for:** the live AI mode of the health-triage and briefing agents (`src/clucktalk/agents/bedrock.py`, boto3 `converse`), which is off by default. In practice: a handful of one-off calls (a hello call, run twice because of FL-019, then a two-call spike on forced tool choice and image input), all with Nova 2 Lite in us-east-1 (`docs/AWS_SETUP.md` sections 5.2 and 5.3). Bedrock was also used read-only to check model availability, inference profiles and quotas (`docs/AWS_SETUP.md` section 5).
+1. **Used for:** the live AI mode of the health-triage and briefing agents (`src/clucktalk/agents/bedrock.py`, boto3 `converse`), which is off by default. In practice: four live calls on 2026-09-29 (a hello call, run twice because of FL-019, then a two-call spike on forced tool choice and image input), all with Nova 2 Lite in us-east-1 and all outside the server (`docs/AWS_SETUP.md` sections 5.2 and 5.3). A later attempt through the server's own code path, on 2026-10-17 on a newer AWS account, was throttled on all four calls (FL-031). Bedrock was also used read-only to check model availability, inference profiles and quotas (`docs/AWS_SETUP.md` section 5).
 2. **What worked well:** once the account gates cleared, the first Nova 2 Lite call answered in `latencyMs` 450 with 57 input and 14 output tokens (`docs/AWS_SETUP.md` section 5.2). A forced `toolChoice` worked with text and with an image: a well-formed `toolUse` both times (FL-020). Amazon's own models such as Nova are not sold through AWS Marketplace, so Nova stayed callable on the AWS India account while the Anthropic models were blocked by their Marketplace agreement (`docs/AWS_SETUP.md`, "Accounts sold by AWS India").
 3. **What needs work:**
    - A new account showed Nova 2 Lite and the Claude models as `AVAILABLE` and `AUTHORIZED` while every inference quota was 0; nothing in `get-foundation-model-availability` said so, and only a quota-by-quota comparison showed it (FL-014, FR-006).
@@ -38,10 +38,11 @@ This matches `submission.md` ("How we built it") and `docs/AWS_SETUP.md` section
    - After the quota fix, Claude Haiku 4.5 and Claude Sonnet 5 were still blocked: the Anthropic Marketplace agreement stayed `NOT_AVAILABLE`, and Sonnet 5's cross-region tokens-per-minute quota stayed 0 against a default of 6,000,000 (`docs/AWS_SETUP.md` section 5.1).
    - On an AWS India (AISPL) account, a card as the default payment method can make the Marketplace subscription fail ("your Marketplace subscription can fail and model access isn't turned on"); this is only in the Bedrock-Anthropic article, and no page says whether promotional credits cover Marketplace-billed Bedrock models (FL-013, FR-007).
    - Nova 2 Lite read the blue half of a 64x64 synthetic image as "white" (one sample, an observation, not a benchmark), and the Converse reference documents `toolChoice` only as "if supported by model" (FL-020).
+   - On the newer AWS account (opened later because access to the first was lost), every Nova 2 Lite requests-per-minute and tokens-per-day quota was 0, so all four Converse calls through the server on 2026-10-17 returned `ThrottlingException`, whose text says only "Too many requests" (FL-031). New accounts start with Nova 2 Lite quotas at 0. The first account's quota of 20 requests per minute (FL-014) was not reverted; they are two different accounts.
    - The live triage path and the briefing path on a live model were not run end to end; mock mode is the default.
    - The official Bedrock price table could not be read by a plain fetch, so the cost was worked out from third-party prices (`docs/AWS_SETUP.md` section 5.2).
 4. **Onboarding:** **1 day** from the first recorded attempt (the read-only availability and quota check, 28 September) to the first successful call (29 September), after two quota cases. These are calendar dates from `docs/AWS_SETUP.md` sections 5 and 5.2 and FL-014 (the call was refused by account verification on 29 September and succeeded on the retry after 1:30 PM IST); hands-on time was not recorded.
-5. **Build again:** yes for Nova 2 Lite, if quotas and model access were visible up front.
+5. **Build again:** yes for Nova 2 Lite, if quotas and model access were visible up front. Reason: the one call that worked was simple, and every blocker was an account gate (FL-014, FL-031), not the model or the API.
 
 ## 2. AWS CLI v2 and boto3 on Windows
 
@@ -95,7 +96,7 @@ This matches `submission.md` ("How we built it") and `docs/AWS_SETUP.md` section
 2. **What worked well:** the 29 protocol tests in `tests/contract/test_protocol_conformance.py` pass against my server of 14 tools; SDK 2.2.0 ships MCP Apps server support in-core (`_meta.ui.resourceUri`, the `text/html;profile=mcp-app` resource) (`docs/VERSIONS.md`); tool meta, resources and the client's Apps capability work on 2025-11-25 (FL-008); the server answers `initialize` for 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05 (`docs/RESULTS.md` section 4).
 3. **What needs work:** middleware results skip per-version shaping, so `resultType` leaks onto the 2025-11-25 wire (FL-001); default tool error text names the tool and validation fields, with no hook to change it (FL-002, FR-001), and my own fuzz round found protocol errors that echoed input until `ProtocolErrorGate` replaced them (F1 and F2, `SECURITY.md`); the localhost Origin allow-list accepts every local port (FL-003); the client and the MCP Inspector disagree on whether `outputSchema` applies to `isError` results (FL-004); the server's `extensions` capability is dropped on 2025-11-25 (FL-008); two in-flight requests with the same JSON-RPC id leave one unanswered for at least 40 seconds, with no error (FL-011).
 4. **Onboarding:** straightforward from the documentation and examples; the server skeleton was built on the first day, 2026-09-27 (git history; `docs/evidence/2026-09-27_mcp_server_skeleton.md`).
-5. **Build again:** yes.
+5. **Build again:** yes. Reason: my 29 protocol tests pass against the server, and each problem listed above had a workaround (FL-011, FL-002).
 
 ## 6. MCP Apps (ext-apps, spec 2026-01-26) and its reference host (`basic-host`)
 
@@ -118,8 +119,8 @@ This matches `submission.md` ("How we built it") and `docs/AWS_SETUP.md` section
 1. **Used for:** `skills/clucktalk/`, a `SKILL.md` plus three reference files and an MIT license, which packages my tool-routing and safety rules and teaches a coding agent how to operate CluckTalk's 14 tools (README, "Agent Skill").
 2. **What worked well:** one folder matches the skills layout that Kiro's and Cursor's documentation describe (web search on 2026-10-01); tests keep the skill in step with the server (`tests/unit/test_skill.py`).
 3. **What needs work:** each agent uses a different install folder (`.claude/skills/`, `.kiro/skills/`, `.cursor/skills/`, `.github/skills/`), and the GitHub Copilot path was seen only on a third-party page; the skill was never loaded in any agent, so whether each one picks it is unverified (README, "Agent Skill").
-4. **Onboarding:** short.
-5. **Build again:** yes.
+4. **Onboarding:** short (builder's verdict; the time was not recorded).
+5. **Build again:** yes. Reason: the folder format is simple and tests keep the skill in step with the server.
 
 ## 9. Tailscale Funnel (the free hosting tunnel for the farmer pilot)
 1. **Used for:** a free HTTPS link from the builder's own Windows PC to one farmer's phone (builder-reported, 7 October 2026; `docs/PILOT_RUNBOOK_WINDOWS.md`). Only the page port is forwarded; the MCP port stays on the loopback (`docs/ARCHITECTURE.md`).
@@ -128,12 +129,12 @@ This matches `submission.md` ("How we built it") and `docs/AWS_SETUP.md` section
 4. **Onboarding:** short; builder-reported: first try, after the two admin-console settings above. Not in the repository's records, so not claimed: the free plan's bandwidth limit, what appears in public certificate logs, and whether the host name stays the same.
 5. **Build again:** yes for pilots.
 
-## 10. GitHub Actions (private repository)
+## 10. GitHub Actions
 1. **Used for:** `python tasks.py setup` and `python tasks.py check` on ubuntu and windows with Python 3.12 and 3.13 (`.github/workflows/ci.yml`).
 2. **What worked well:** CI caught two problems that the local Windows run did not: a Windows timer lower-bound failure (FL-023) and a card bundle built from a CRLF template (FL-025) (`docs/DEV_NOTES.md`).
-3. **What needs work:** the macOS job is manual-only because it uses about 50 quota minutes per run (`.github/workflows/ci.yml`); the repository is private until it is made public (`SECURITY.md`). Builder-reported: its free minutes ran out, and every commit from 7 October on (from `8850d2a`) ends with `[skip ci]`, so those commits were not CI-checked (git history). The reason Windows minutes cost more is not in the repository's records and is not claimed.
-4. **Onboarding:** easy.
-5. **Build again:** yes, with a public repository.
+3. **What needs work:** the macOS job is manual-only because it uses about 50 quota minutes per run (`.github/workflows/ci.yml`); the repository is now public (checked on GitHub on 2026-10-17). Builder-reported: the free minutes of the repository, while it was private, ran out, and every commit from 7 October on (from `8850d2a`) ends with `[skip ci]`, so those commits were not CI-checked (git history). The reason Windows minutes cost more is not in the repository's records and is not claimed.
+4. **Onboarding:** easy (builder's verdict; the time was not recorded).
+5. **Build again:** yes, now that the repository is public. Reason: it caught two problems the local Windows run missed (FL-023, FL-025).
 
 ## Also used (not in the ten paste-ready blocks)
 

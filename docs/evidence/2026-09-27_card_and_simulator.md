@@ -4,6 +4,8 @@ Everything below was run on Windows 11 Pro, Python 3.13.15, Chrome, demo data (`
 (MCP server on 127.0.0.1:8765, Simulator on 127.0.0.1:8766). The seeded demo farm is generated relative to "today",
 so dates on the screenshots read 27-09-2026.
 
+Captured on 2026-09-27. Later commits changed some answers (for example, the farm status text can now include a sentence about the farmer's own daily-deaths limit), so the current Simulator output can differ from these screenshots.
+
 ## 1. Wire transcript (curl, protocol 2025-11-25)
 
 ```

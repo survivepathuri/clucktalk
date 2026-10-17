@@ -31,8 +31,8 @@ marked `[FILL]` in the Devpost draft where Claude Code was not meant to write it
 ## Review gates
 
 1. **`python tasks.py check`** after every change: lint, format, the three test suites (harness, unit, contract), the
-   OpenSearch Serverless scan and the secret scan. On 2026-10-16 it passed with 3,403 tests.
-2. **`python tasks.py eval-fast`**: 88 golden cases against a real MCP server over HTTP in mock mode, run after any
+   OpenSearch Serverless scan and the secret scan. The test count and the last results are generated in `docs/RESULTS.md` (section 1).
+2. **`python tasks.py eval-fast`**: the golden cases (count and score in `docs/EVALS.md`) against a real MCP server over HTTP in mock mode, run after any
    tool, schema or prompt change (`docs/EVALS.md`). The score says nothing about live model answers.
 3. **Mutation checks** on newer test sets: a scratch script plants faults and the tests must catch them. The scripts are
    not in the repository, so the counts in `docs/RESULTS.md` are copied from the builder's log and cannot be reproduced

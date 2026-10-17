@@ -3,6 +3,8 @@
 The voice farm manager for India's **broiler** poultry farmers. A self-hosted MCP server (implements MCP 2025-11-25 over
 Streamable HTTP) plus an Agent Skill, built for the Alexa+ add-on program.
 
+A broiler farmer counts the dead birds each morning with busy hands, often with no screen in reach, and the number that matters (a sudden spike, the total so far, the moment to call the vet) is easy to miss. CluckTalk answers by voice and by card, reads every number back before saving it, and never gives a diagnosis or a dose.
+
 > **Status**: in development. Nothing below is claimed working unless it has evidence in `docs/evidence/` or a
 > passing check in `python tasks.py check` / `python tasks.py eval-fast`. See `docs/DESIGN.md` for the full design
 > and what is built vs planned, and `docs/EVALS.md` for the current golden-suite score.
@@ -60,7 +62,7 @@ Tested on:
 | Platform | Status |
 |---|---|
 | Windows 11 | local runs, Python 3.13.15 (the harness tests also ran on 3.14.5), `docs/VERSIONS.md` |
-| Linux (ubuntu, CI) | last recorded green run: commit `ae926ec`, 2026-10-16, Python 3.12 and 3.13 (the Windows jobs on 3.12 and 3.13 were green too); the commit that records it, and later commits, are not covered by this line |
+| Linux (ubuntu, CI) | last recorded green run: commit `fad8cc3`, 2026-10-17, Python 3.12 and 3.13 (the Windows jobs on 3.12 and 3.13 were green too); the commit that records it, and later commits, are not covered by this line |
 | macOS | not yet run; a manual CI job exists (`workflow_dispatch`, `include_macos`), and its result will be recorded here |
 
 To see how a follow-up looks three days after a health check (the demo clock shifts follow-up and briefing dates only,
@@ -132,7 +134,7 @@ this repository, not that Alexa+ has seen it.
 | Telugu wording is natural and correct | UNVERIFIED (470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed.) | `docs/TELUGU_REVIEW.md` |
 | Telugu voice works through Alexa+ | UNVERIFIED | none |
 | The cards work at 11 inches and above | UNVERIFIED | `docs/DESIGN.md` (screen size classes) |
-| Live AI (Amazon Bedrock) end to end | UNVERIFIED here | `docs/AWS_SETUP.md`; `FRICTION_LOG.md` FL-014 |
+| Live AI (Amazon Bedrock) end to end | UNVERIFIED here (a server-path attempt on 2026-10-17 was throttled: every Nova 2 Lite quota on that account is 0) | `docs/AWS_SETUP.md`; `FRICTION_LOG.md` FL-014, FL-031 |
 | Account linking, Protected Resource Metadata, a remote URL | NOT BUILT | `docs/ALEXA_READINESS.md` |
 | Market prices, sensors, supplier, SMS, payments, the vet message sending | SIMULATED | `tests/contract/test_tool_descriptions_simulated.py`; `docs/DESIGN.md` section 9 |
 | The demo farm and every farmer in it | SIMULATED (fictional) | `data/seed/demo_farm.json`; `tests/unit/test_seed.py` |
@@ -190,8 +192,11 @@ in `check` needs a git checkout; on a ZIP download it prints "SKIPPED" and the r
 Try asking (typed or, if your browser supports it, spoken): *"How is shed two doing?"*, *"When should I sell shed
 one?"*, *"How much feed does shed two need this week?"*, *"Switch my farm to contract farming"*.
 
-Everything runs on seeded, clearly fictional demo data (`MOCK_BEDROCK=true`, shown as a "Demo data" badge). Amazon
-Bedrock: Nova 2 Lite is wired for the triage and briefing agents but is off by default; it was called live only in four one-off calls outside the server (see `docs/AWS_SETUP.md`). The wiring is tested with a botocore Stubber, and the live path has never been run end to end through the server. The demo and the pilot use a rule-based stand-in. Live mode needs an AWS account; see `docs/AWS_SETUP.md`.
+Everything runs on seeded, clearly fictional demo data (`MOCK_BEDROCK=true`, shown as a "Demo data" badge).
+
+**AWS, in one paragraph.** Amazon Nova 2 Lite through Amazon Bedrock is integrated in the code and is off by default. It was called live four times on 2026-09-29, outside the server (`docs/AWS_SETUP.md`). A live run through the server is blocked: on the newer AWS account every Nova 2 Lite quota is 0, and all four calls attempted on 2026-10-17 were throttled (`FRICTION_LOG.md` FL-031). Amazon Lightsail in Mumbai hosts the farmer pilot. Nova makes closed-list decisions and never writes farmer-facing wording. The pilot makes no Bedrock calls. The wiring is tested with a botocore Stubber. The demo and the pilot use a rule-based stand-in. Live mode needs an AWS account; see `docs/AWS_SETUP.md`.
+
+**The demo farm and its example limit.** The demo farm is fictional. The example daily-deaths limit that demo mode uses (`docs/daily_deaths_limit.example.json`: 6 deaths a day up to age 29 days, 3 a day from age 30 days, the same for every shed) comes from figures relayed by one broiler farmer. They are examples, not recommendations, and that is why demo answers can say "your own limit".
 
 ## What it does today
 
@@ -215,8 +220,39 @@ Bedrock: Nova 2 Lite is wired for the triage and briefing agents but is off by d
   logged on the check's own day after the check; one logged after a same-day vet handoff is not caught by the follow-up
   (the briefing's separate "N birds died yesterday" item still shows it).
 - **What can you do?** (`get_help`).
-- A local **Alexa+ Simulator** (Echo Show / Echo Dot device modes, voice and text, a developer panel showing the
-  exact MCP wire).
+- A local **Alexa+ Simulator**: a web app, a browser UI plus a backend MCP client that sends `initialize` (protocolVersion
+  2025-11-25), `tools/list` and `tools/call` to the MCP server over Streamable HTTP (Echo Show / Echo Dot device modes,
+  voice and text, a developer panel showing the exact MCP wire). The browser page calls only the Simulator's own backend;
+  see "How the Simulator speaks MCP" below.
+
+## How the Simulator speaks MCP
+
+The Simulator is a web app in two parts. The **browser page** (`src/clucktalk/simulator/static/app.js`) never speaks MCP: it posts the farmer's words to the Simulator's own backend (`app.js:333`, `fetch("/api/turn", ...)`). The **backend** is the MCP client. It sends `initialize` with protocolVersion 2025-11-25, then `notifications/initialized` and `tools/list` (`src/clucktalk/simulator/mcp_client.py:84-122`, class `McpClient.connect`), and a `tools/call` for each turn (`src/clucktalk/simulator/app.py:652`), as raw JSON-RPC over Streamable HTTP to `/mcp`. It stops with an error if the server negotiates any other version (`mcp_client.py:108`). The Simulator's developer panel shows the same wire.
+
+Captured on 2026-10-17 on Windows by running `McpClient` (the Simulator's own client class) against `python tasks.py serve` in demo mode. Lines are shortened with `...`; the server also returned an `mcp-session-id` header on `initialize`, which the client sends on every later call.
+
+```
+POST /mcp  -> 200, 37 ms
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25",
+ "capabilities":{"extensions":{"io.modelcontextprotocol/ui":{"mimeTypes":["text/html;profile=mcp-app"]}}},
+ "clientInfo":{"name":"CluckTalk Simulator","version":"0.1.0"}}}
+<- {"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-11-25","capabilities":{"tools":{"listChanged":false},...},
+ "serverInfo":{"name":"CluckTalk","title":"CluckTalk","version":"0.1.0"},"instructions":"CluckTalk is a voice farm manager ..."}}
+
+POST /mcp  {"jsonrpc":"2.0","method":"notifications/initialized"}  -> 202
+
+POST /mcp  -> 200, 8 ms
+{"jsonrpc":"2.0","id":2,"method":"tools/list"}
+<- {"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"get_farm_status","title":"Farm status",
+ "_meta":{"ui":{"resourceUri":"ui://clucktalk/farm-status.html"}},...}, ...]}}      (14 tools)
+
+POST /mcp  -> 200, 53 ms
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_farm_status","arguments":{"house":"shed two"}}}
+<- {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"House 2 needs attention now. Day 23, 3,883 birds, ..."}],
+ "isError":false,"structuredContent":{"text_en":"...","text_te":"...",...}}}
+```
+
+The timings are one localhost run in demo mode, not a measurement; the latency figures are in `docs/RESULTS.md`, section 5.
 
 ## Voice versus cards, and what is not verified
 
