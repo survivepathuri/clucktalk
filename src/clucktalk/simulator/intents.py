@@ -345,6 +345,8 @@ def match(utterance: str) -> Intent | None:
         if outcome and not FEED.search(text) and not SELL.search(text):
             rule = f"follow-up: 'better / same / worse / not sure' ({outcome}) + shed"
             return Intent("report_health_follow_up", {**args, "outcome": outcome}, rule)
+    if DOSE_QUESTION.search(text):
+        return None  # no shed named: the health check needs one, so the host says it cannot help (never a farm status)
     if SELL.search(text) or RATE_VALUE.search(text):
         sale_args = dict(args)
         rate = RATE_VALUE.search(text)

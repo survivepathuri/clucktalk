@@ -383,3 +383,8 @@ def test_mild_acceptance_words_are_weak(said):
 @pytest.mark.parametrize("said", ["yes", "yeah", "yep", "yes please", "haan", "confirm"])
 def test_explicit_yes_words_are_not_weak(said):
     assert not is_weak_yes(said) and yes_no(said) == "yes"
+
+
+def test_a_dose_question_with_no_shed_is_not_answered_with_a_farm_status():
+    for said in ("how much medicine for 500 birds", "what is the dose for the birds"):
+        assert match(said) is None, said
