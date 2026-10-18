@@ -72,7 +72,7 @@ Tested on:
 | Platform | Status |
 |---|---|
 | Windows 11 | local runs, Python 3.13.15 (the harness tests also ran on 3.14.5), `docs/VERSIONS.md` |
-| Linux (ubuntu, CI) | last recorded green run: last code commit `da12609`, run 39077458444 (it ran on `9602033`, which differs from `da12609` only in documents), 2026-10-17 UTC, Python 3.12 and 3.13 (the Windows jobs on 3.12 and 3.13 were green too); the commit that records it, and later commits, are not covered by this line |
+| Linux (ubuntu, CI) | last recorded green run: last code commit `8028e3a`, run 39111301248 (it ran on `8b1789a`, which differs from `8028e3a` only in documents and screenshots), 2026-10-18 UTC, Python 3.12 and 3.13 (the Windows jobs on 3.12 and 3.13 were green too); the commit that records it, and later commits, are not covered by this line |
 | macOS | manual CI job (`workflow_dispatch`, `include_macos`): green on commit `fe56b7a`, run 39068604318, 2026-10-17 UTC, Python 3.13; later commits are not covered by this line |
 
 To see how a follow-up looks three days after a health check (the demo clock shifts follow-up and briefing dates only,
