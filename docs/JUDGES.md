@@ -2,7 +2,7 @@
 
 **Telugu-first MCP assistant for broiler farmers**
 
-**Python 3.12 or 3.13 is required.** Check it first: `python --version` on Windows, `python3 --version` on macOS and Linux. Use `python` on Windows and `python3` on macOS and Linux in every command below. No virtual-environment activation is needed: `tasks.py` creates and uses its own `.venv`. Nothing else is needed: no Docker, no AWS account, no Node.js (Node.js is optional, see minute 2).
+**Python 3.12 or 3.13 is required.** Check it first: `python --version` on Windows, `python3 --version` on macOS and Linux. Use `python` on Windows and `python3` on macOS and Linux in every command below. If your default `python` is another version (for example 3.11 or 3.14) but 3.12 or 3.13 is also installed, `setup` finds the installed one itself (it tries the Windows `py` launcher, then `python3.13` and `python3.12`), so the same commands work; on Windows you can also pin it with `py -3.12 tasks.py setup` or `py -3.13 tasks.py setup`, and then run `verify` and `run` as shown (they use the `.venv`). This is read from `tasks.py`; it was not run with a second Python installed. No virtual-environment activation is needed: `tasks.py` creates and uses its own `.venv`. Nothing else is needed: no Docker, no AWS account, no Node.js (Node.js is optional, see minute 2).
 
 If you do not have Python 3.12 or 3.13 (these install lines are the ones in the README; they were not run here):
 
@@ -12,7 +12,7 @@ If you do not have Python 3.12 or 3.13 (these install lines are the ones in the 
 
 CluckTalk is a self-hosted MCP server (spec 2025-11-25, Streamable HTTP), shown through a simulated Alexa+ web app and the MCP Inspector. The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend'). It is for Indian broiler farmers. It tracks a shed's deaths, feed and health checks, and tells the farmer in English and Telugu what needs attention first. Nothing here has run on an Alexa+ device; the Simulator plays the client role. The Simulator is a web app: browser UI plus a backend MCP client that sends initialize (protocolVersion 2025-11-25), tools/list and tools/call to the MCP server over Streamable HTTP; the browser page itself only calls the Simulator's own backend (README, "How the Simulator speaks MCP"; also in `docs/SIMULATOR_MCP.md`, with file and line references and a captured exchange).
 
-## Run it: three commands
+## Run it: three commands (setup, verify, run)
 
 Windows cmd:
 
@@ -20,7 +20,7 @@ Windows cmd:
 rem the three commands, one after the other
 python tasks.py setup
 python tasks.py verify
-python tasks.py serve
+python tasks.py run
 ```
 
 Windows PowerShell:
@@ -29,7 +29,7 @@ Windows PowerShell:
 # the three commands, one after the other
 python tasks.py setup
 python tasks.py verify
-python tasks.py serve
+python tasks.py run
 ```
 
 macOS or Linux (bash or zsh):
@@ -38,12 +38,17 @@ macOS or Linux (bash or zsh):
 # the three commands, one after the other
 python3 tasks.py setup
 python3 tasks.py verify
-python3 tasks.py serve
+python3 tasks.py run
 ```
 
-`setup` creates `.venv` and installs the pinned dependencies. `verify` prints one table of what you can check. In one clean-clone run on Windows 11 with Python 3.13, made by an independent audit run in a fresh context (same vendor model), setup took 1 min 16 s and verify took 45 s. `serve` starts the MCP server at http://127.0.0.1:8765/mcp with a fictional demo farm; leave it running.
+What each command does:
 
-`verify` starts its own temporary server, so it does not need `serve`. `serve` is needed only to call the tools yourself (minute 2). For the Simulator in a browser (smart display and speaker modes, starter questions with an English gloss under each Telugu question, a judge-view switch that shows the English side under each Telugu answer, cards, a panel showing the exact MCP calls), run `python tasks.py run` instead of `serve`; it opens http://127.0.0.1:8766/. Everything runs on seeded, fictional data in mock mode and shows a "Demo data" badge.
+- `python tasks.py setup` (about 1 minute) creates `.venv` and installs the pinned dependencies.
+- `python tasks.py verify` (about 45 seconds) prints one table of what you can check. It starts its own temporary server, so it does not need `run` or `serve`.
+- `python tasks.py run` starts the Simulator and the MCP server together and opens the Simulator at http://127.0.0.1:8766/ (smart display and speaker modes, starter questions with an English gloss under each Telugu question, a judge-view switch that shows the English side under each Telugu answer, cards, a developer panel showing each turn's MCP tools/call request and response). The MCP server is at http://127.0.0.1:8765/mcp. Leave it running; Ctrl+C stops it.
+- `python tasks.py serve` (optional) starts only the MCP server at http://127.0.0.1:8765/mcp, for calling the tools yourself with a client such as the Inspector (minute 2). You do not need it for the Simulator.
+
+The times are from one clean-clone run on Windows 11 with Python 3.13, made by an independent audit run in a fresh context (same vendor model): setup took 1 min 16 s and verify took 45 s. Everything runs on seeded, fictional data in mock mode and shows a "Demo data" badge.
 
 ## Ports and browser
 
