@@ -7,6 +7,12 @@ The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend
 A Telugu-first assistant for India's **broiler** poultry farmers. A self-hosted MCP server (implements MCP 2025-11-25 over
 Streamable HTTP) plus an Agent Skill, built for the Alexa+ add-on program.
 
+![Simulator first screen with five starter chips](docs/evidence/2026-10-18_judge_view/01_first-screen_chips_1024x600.png)
+*Simulator first screen: a simulated Alexa+ screen; the backend is a real MCP server.*
+
+![Telugu answer with the English judge view on](docs/evidence/2026-10-18_judge_view/02_telugu-answer_judge-view-on_1024x600.png)
+*Telugu answer with the English judge view on.*
+
 A broiler farmer counts the dead birds each morning with busy hands, often with no screen in reach, and the number that matters (a sudden spike, the total so far, the moment to call the vet) is easy to miss. CluckTalk answers in text and on a card, reads every number back before saving it, and never gives a diagnosis or a dose.
 
 > **Status**: in development. Nothing below is claimed working unless it has evidence in `docs/evidence/` or a

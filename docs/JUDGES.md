@@ -65,6 +65,10 @@ The same syntax sets `CLUCKTALK_SIMULATOR_PORT` (default 8766) and `CLUCKTALK_NO
 4. **Minute 4: the safety rules.** `docs/SAFETY_MATRIX.md` has one row per rule: where it came from, where it is in the code, which tests pin it, a before and after example, and which thresholds are general guidance that may not fit a given farm.
 5. **Minute 5: the limits.** The claims table in the README (section "What is verified, unverified and simulated") says for each claim whether it is verified, simulated, unverified or not built, with the file or command that shows it.
 
+The vet offer in the Simulator: the summary is read back first, and only a second yes sends the simulated SMS.
+
+![Vet offer with Yes and No taps](evidence/2026-10-18_judge_view/04_vet-offer_yes-no-taps_1024x600.png)
+
 ## Where things are
 
 | What | Where |
