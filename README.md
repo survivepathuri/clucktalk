@@ -233,7 +233,7 @@ Everything runs on seeded, clearly fictional demo data (`MOCK_BEDROCK=true`, sho
 - **What can you do?** (`get_help`).
 - A local **Alexa+ Simulator**: a web app, a browser UI plus a backend MCP client that sends `initialize` (protocolVersion
   2025-11-25), `tools/list` and `tools/call` to the MCP server over Streamable HTTP (smart display and speaker device modes,
-  voice and text, a developer panel showing the exact MCP wire). The browser page calls only the Simulator's own backend;
+  voice and text, a developer panel showing each turn's MCP tools/call request and response). The browser page calls only the Simulator's own backend;
   see "How the Simulator speaks MCP" below.
 
 ## How the Simulator speaks MCP
