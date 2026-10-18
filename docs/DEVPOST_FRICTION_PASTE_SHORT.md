@@ -116,7 +116,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 ## Entry 12 (FL-033): Alexa+ in India: Telugu is not a listed language
 **Tag:** [Alexa+/MCP] · **Origin:** Amazon · **Severity:** Medium
 **Task:** Find out whether a Telugu-first add-on can be tested by voice on Alexa+.
-**Steps:** Read launch coverage (Medianama, Business Standard, September 2026). Press-reported, not verified with Amazon.
+**Steps:** Launch coverage: https://www.medianama.com/2026/09/223-amazon-alexa-plus-launched-india/ and https://www.business-standard.com/technology/tech-news/amazon-alexa-plus-launch-india-hindi-hinglish-price-features-126091600575_1.html (press-reported, not verified with Amazon).
 **Expected vs actual:** Expected a published list of supported add-on languages. As reported, Alexa+ in India supports English, Hindi and Hinglish; Telugu is not listed and no timeline for more languages was given.
 **Workaround:** Written Telugu, a Simulator and the MCP Inspector; no voice test on the platform.
 **Suggestion:** Alexa+ teams: publish the supported-locale list for add-ons and a roadmap for regional languages.

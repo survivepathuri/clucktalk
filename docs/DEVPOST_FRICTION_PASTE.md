@@ -312,7 +312,7 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 
 **Task attempted:** Find out whether a Telugu-first add-on can be tested by voice on Alexa+.
 
-**Steps taken:** Read the launch coverage of Alexa+ in India. The article URLs are not recorded here.
+**Steps taken:** Read the launch coverage of Alexa+ in India: Medianama https://www.medianama.com/2026/09/223-amazon-alexa-plus-launched-india/ and Business Standard https://www.business-standard.com/technology/tech-news/amazon-alexa-plus-launch-india-hindi-hinglish-price-features-126091600575_1.html.
 
 **Expected vs actual:** Expected a published list of the languages and locales an add-on can use. Actual (as reported): Alexa+ in India supports English, Hindi and Hinglish; Telugu is not listed, and no timeline for more languages was given.
 
