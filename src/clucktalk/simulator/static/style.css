@@ -1,13 +1,13 @@
 :root {
   --page: #eceae4; --panel: #ffffff; --ink: #1c1f24; --muted: #5b626b; --line: #d7d3ca; --accent: #0b6bcb;
   --te-font: "Noto Sans Telugu", "Nirmala UI", "Gautami", "Vani", "Lohit Telugu", "Noto Sans", "Segoe UI", system-ui, sans-serif;
-  --badge: #7a4f00; --badge-bg: #ffe7a8; --bezel: #15181c; --listen: #19b4f0;
+  --yes: #1f7a3a; --badge: #7a4f00; --badge-bg: #ffe7a8; --bezel: #15181c; --drawer-w: min(400px, 100vw); --listen: #19b4f0;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { margin: 0; }
 body { background: radial-gradient(1200px 600px at 50% -10%, #f7f6f2, var(--page)); color: var(--ink);
-  font: 16px/1.4 system-ui, "Segoe UI", Roboto, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+  font: 16px/1.4 system-ui, "Segoe UI", Roboto, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; container-type: inline-size; }
 button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
@@ -30,6 +30,7 @@ button, input, select { font: inherit; color: inherit; }
 
 /* stage */
 .stage { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 22px 16px 90px; }
+
 .device-area { width: 100%; display: flex; justify-content: center; }
 .show-wrap { display: flex; flex-direction: column; align-items: center; max-width: 100%; }
 .scaler { position: relative; }
@@ -42,18 +43,28 @@ button, input, select { font: inherit; color: inherit; }
 .bezel.phone .screen { border-radius: 32px; }
 .screen[data-theme="light"] { background: #f6f4ef; color: #17191c; }
 .view { position: absolute; inset: 0; }
-.home { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 44px; gap: 12px;
+.home { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 30px; gap: 8px;
   background: radial-gradient(800px 400px at 30% 20%, #1d3b52, #0f1317); color: #fff; }
 .clock { font-size: 56px; font-weight: 300; letter-spacing: -2px; line-height: 1; }
 .try { font-size: 22px; color: #cfd8e3; text-align: center; padding: 0 24px; }
-/* starter questions on the device's first screen: the Telugu question, its English gloss under it */
-.starters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 32px; width: 100%; margin-top: 6px; }
-.starter { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 96px;
-  padding: 10px 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.1);
-  color: #fff; cursor: pointer; text-align: center; }
-.starter:hover { background: rgba(255,255,255,.2); }
-.starter .q { font-family: var(--te-font); font-size: 26px; line-height: 1.3; font-weight: 600; }
-.starter .gloss { font-size: 18px; color: #cfd8e3; }
+/* Tiles: the farmer's pilot page palette (its light tints), one hue per tile, hsl(hue, --ts, --tl), a same-hue border (--tbs, --tbl).
+   A tint is never the only signal: every tile keeps its Telugu label and its English gloss. */
+.home, .chips, .replies { --ts: 78%; --tl: 88%; --tlh: 94%; --tbs: 34%; --tbl: 38%; --tx: #1d1b16; --tg: #4a463e; }
+.home { --tbl: 70%; --tbs: 60%; }
+:is(.starter, .chip):nth-child(1) { --h: 192; }
+:is(.starter, .chip):nth-child(2) { --h: 280; }
+:is(.starter, .chip):nth-child(3) { --h: 170; }
+:is(.starter, .chip):nth-child(4) { --h: 62; }
+:is(.starter, .chip):nth-child(5) { --h: 38; }
+/* starter questions on the device's first screen: the Telugu question big, its English gloss under it, two columns */
+.starters { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 0 40px; width: 100%; max-width: 840px; margin-top: 8px; }
+.starter { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 104px;
+  padding: 10px 14px; border-radius: 20px; border: 2px solid hsl(var(--h) var(--tbs) var(--tbl)); background: hsl(var(--h) var(--ts) var(--tl));
+  color: var(--tx); cursor: pointer; text-align: center; }
+.starter:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.starter:hover { background: hsl(var(--h) var(--ts) var(--tlh)); }
+.starter .q { font-family: var(--te-font); font-size: 32px; line-height: 1.3; font-weight: 700; }
+.starter .gloss { font-size: 19px; color: var(--tg); }
 .asked { display: flex; align-items: center; justify-content: center; padding: 40px; }
 .asked-text { font-size: 34px; color: #cfd8e3; text-align: center; font-style: italic; }
 .screen[data-theme="light"] .asked-text { color: #4a5058; }
@@ -109,14 +120,20 @@ body.judge-off .transcript .gloss, body.judge-off .native-en.gloss { display: no
 .mic:disabled { background: #9aa3ad; cursor: not-allowed; box-shadow: none; }
 .ask input { flex: 1; min-width: 0; height: 56px; border-radius: 14px; border: 1px solid var(--line); padding: 0 16px; font-size: 18px; background: var(--panel); }
 .send { height: 56px; padding: 0 22px; border-radius: 14px; border: 0; background: var(--ink); color: #fff; font-weight: 700; cursor: pointer; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 16px; padding: 6px 14px; cursor: pointer; min-height: 52px;
+.chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.chip { border: 2px solid hsl(var(--h, 205) var(--tbs) var(--tbl)); background: hsl(var(--h, 205) var(--ts) var(--tl)); color: var(--tx);
+  border-radius: 18px; padding: 8px 14px; cursor: pointer; min-height: 72px; text-align: center;
   display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.chip .q { font-family: var(--te-font); font-size: 18px; line-height: 1.3; }
-.chip .gloss { font-size: 13px; }
-.replies { display: flex; gap: 8px; }
-.chip.reply { min-width: 110px; border-color: var(--accent); }
-.chip:hover { border-color: var(--accent); }
+.chip .q { font-family: var(--te-font); font-size: 22px; font-weight: 700; line-height: 1.3; }
+.chip .gloss { font-size: 15px; color: var(--tg); }
+.chip:hover { background: hsl(var(--h, 205) var(--ts) var(--tlh)); }
+/* Yes and No: big tiles that stay put under the transcript. Yes is the pilot's solid green, No its neutral slate (red is for warnings only). */
+.replies { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; position: sticky; bottom: 8px; z-index: 5; }
+.chip.reply { min-height: 80px; min-width: 0; }
+.chip.reply .q { font-size: 28px; }
+.chip.reply .gloss { font-size: 18px; font-weight: 700; }
+.chip.reply:nth-child(1), .chip.reply:nth-child(1):hover { background: var(--yes); border-color: var(--yes); color: #fff; --tg: #fff; }
+.chip.reply:nth-child(2) { --h: 205; --ts: 20%; }
 .note { margin: 0; color: #9a3412; font-size: 15px; min-height: 1em; }
 
 /* developer panel */
@@ -125,10 +142,15 @@ body.judge-off .transcript .gloss, body.judge-off .native-en.gloss { display: no
 .dev-toggle { width: 100%; display: flex; justify-content: space-between; gap: 12px; background: transparent; border: 0; color: inherit;
   padding: 10px 14px; min-height: 44px; cursor: pointer; font: 600 14px system-ui, sans-serif; }
 /* Closed, the panel is a small pill (it used to be 560 px wide over the device frame and the transcript). */
-.dev[data-open="false"] { width: auto; max-width: calc(100vw - 32px); }
+.dev[data-open="false"] { width: auto; max-width: calc(100vw - 32px); position: static; align-self: flex-end; margin: 0 16px 12px; }   /* one column: the pill sits after the page, never over the device */
 .dev[data-open="false"] .dev-toggle { width: auto; }
 .dev-sum { color: #9fb3c8; font-weight: 400; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
 .dev-body { max-height: 70vh; overflow: auto; padding: 0 14px 14px; border-top: 1px solid #2a3038; }
+/* Open, the panel is a right-hand drawer that pushes the page left (body gets the padding) instead of lying over the chips. */
+.dev[data-open="true"] { top: 0; right: 0; bottom: 0; width: var(--drawer-w); max-width: 100vw; border-radius: 0; display: flex; flex-direction: column; }
+.dev[data-open="true"] .dev-body { max-height: none; flex: 1; min-height: 0; }
+body.dev-open { padding-right: var(--drawer-w); }
+@media (max-width: 760px) { body.dev-open { padding-right: 0; } }
 .dev-grid { display: grid; gap: 8px; margin: 10px 0; font-family: system-ui, sans-serif; }
 .dev-grid label { display: grid; gap: 4px; color: #9fb3c8; }
 .dev-grid select { background: #1b2027; color: #e6e9ee; border: 1px solid #2f3742; border-radius: 8px; padding: 6px; }
@@ -148,4 +170,14 @@ body.judge-off .transcript .gloss, body.judge-off .native-en.gloss { display: no
   .bar { padding: 10px 12px; gap: 10px; }
   .seg button { padding: 6px 10px; } .seg button .hint { display: none; }
   .clock { font-size: 72px; }
+}
+
+/* Wide enough (the drawer open or not): the device on the left and the conversation beside it, so the transcript scrolls
+   inside its own column and the ask box, the Yes/No taps and the chips stay on screen. */
+@container (min-width: 1040px) {
+  .stage { flex-direction: row; align-items: flex-start; justify-content: center; gap: 24px; padding: 16px 16px 8px; }
+  .device-area { width: auto; flex: none; }
+  .talk { flex: none; width: clamp(340px, 30cqw, 520px); height: calc(100vh - 180px); min-height: 420px; }
+  .transcript { flex: 1 1 auto; min-height: 0; max-height: none; }
+  .dev[data-open="false"] { position: fixed; right: 16px; bottom: 16px; margin: 0; }   /* two columns: the bottom band below the columns is free for it */
 }

@@ -26,8 +26,11 @@ function applyPreset() {
   $("show-wrap").classList.toggle("phone", p.kind === "phone");
   const pad = p.kind === "phone" ? 14 : 22;
   const fullW = p.w + 2 * pad, fullH = p.h + 2 * pad;
-  const avail = Math.min(window.innerWidth - 32, 1180);
-  const scale = Math.min(1, avail / fullW);
+  // Two columns (device left, conversation right) when the stage is wide enough: see the @container rule in style.css.
+  const stage = $("stage"), two = getComputedStyle(stage).flexDirection === "row";
+  const avail = two ? stage.clientWidth - $("talk").offsetWidth - 24 - 32 : Math.min(stage.clientWidth - 32, 1180);
+  const fit = two ? (window.innerHeight - 100 - 24 - 56 - 26) / fullH : 1;   // the banner and bar above, the footer band below, the stand
+  const scale = Math.max(0.5, Math.min(1, avail / fullW, fit));
   bezel.style.transform = `scale(${scale})`;
   scaler.style.width = fullW * scale + "px"; scaler.style.height = fullH * scale + "px";
   if (state.card) state.card.sendContext({ containerDimensions: { width: p.w, height: p.h }, platform: p.platform });
@@ -466,6 +469,8 @@ $("judge").addEventListener("click", () => {
 $("dev-toggle").addEventListener("click", () => {
   const open = $("dev").dataset.open !== "true";
   $("dev").dataset.open = String(open); $("dev-body").hidden = !open; $("dev-toggle").setAttribute("aria-expanded", String(open));
+  document.body.classList.toggle("dev-open", open);   // the drawer pushes the page; the device is scaled to the room that is left
+  applyPreset();
 });
 $("preset").addEventListener("change", (e) => { state.preset = e.target.value; applyPreset(); });
 $("theme").addEventListener("change", (e) => {
