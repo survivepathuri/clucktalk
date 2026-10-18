@@ -1,6 +1,6 @@
 # Voice and cards
 
-CluckTalk answers by voice first. A card, where there is one, shows the same answer. `docs/DESIGN.md` sections 5, 6, 14 and 15 are the source.
+CluckTalk gives short answers that read well aloud. The Simulator reads English answers aloud; written Telugu is the main channel today. A card, where there is one, shows the same answer. `docs/DESIGN.md` sections 5, 6, 14 and 15 are the source.
 
 ## What every result carries
 
