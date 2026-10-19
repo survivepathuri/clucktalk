@@ -3,7 +3,7 @@
 An **additional** way to run the pilot: the same CluckTalk build on one small AWS Lightsail server, so the farmer can use the
 page from a phone while your PC is off. It does not change how CluckTalk runs locally. The local run (`python tasks.py run`,
 the judges' path in `docs/JUDGES.md`) and the PC pilot with Tailscale Funnel (`docs/PILOT_RUNBOOK_WINDOWS.md`) are untouched
-and stay the fallback.
+(the PC plan was written down but no farmer ever used it).
 
 **Status: deployed once on a real server (2026-10-13) with the sample farm file; no farmer has used it.** Every command for the
 server is in `deploy/cloud/RUNBOOK.md`. What was and was not tested is listed at the end of this page.

@@ -250,6 +250,7 @@ Actionable suggestion: Owners: Amazon Bedrock service team (`GetFoundationModelA
 Time cost: Waiting time recorded: two Support cases opened about 28 Sep, replies 28 to 29 Sep; the account-verification gate had cleared at the retry on 29 Sep after 1:30 PM IST (Amazon's own estimate: under 2 hours). Hands-on time: about 30 minutes (the builder's statement).
 Reproduce: Commands are in `docs/AWS_SETUP.md` §5 and §5.1: `aws bedrock get-foundation-model-availability`; `aws service-quotas list-service-quotas` against `list-aws-default-service-quotas` for service code `bedrock`; the Converse call is in this entry's Steps. They reproduce only on a new account in the same state.
 Evidence: `docs/AWS_SETUP.md` §5, §5.1 and the verification retry notes; `docs/VERSIONS.md`.
+Update 2026-10-19: this entry is from the builder's older AWS account, the one that made the four Converse calls of 2026-09-29. Sign-in access to it, lost for a while after that, was regained on 2026-10-19 through the root user, so "access to it was later lost" is no longer true. The builder's corrected estimate is about 2 hours to the first successful call, solved with Claude Code's help; the "about 30 minutes" hands-on figure above is withdrawn. Usage showed in Cost Explorer only about a day later, and no CloudWatch Bedrock metrics or invocation logging existed until enabled (builder-reported).
 
 ### FL-015: CLI billing call says "IAM user access not activated" to an IAM Identity Center role
 Date: 2026-09-28
@@ -389,6 +390,7 @@ Reproduce: documentation-based, no command.
 Evidence: none in the repository (builder-reported, 7 October 2026).
 Verified on: 2026-10-07
 Doc URL: not recorded (the page's URL is not in `docs/SOURCES.md`).
+Update 2026-10-19: the pilot is hosted on Amazon Lightsail (Mumbai) since 2026-10-13. No farmer ever used the pilot through the Tailscale Funnel, so the PC/Tailscale statement in the Workaround line above is stale.
 
 ### FL-031: Nova 2 Lite calls through the server code path all returned ThrottlingException; every Nova 2 Lite requests-per-minute and tokens-per-day quota in the account is 0
 Date: 2026-10-17
@@ -405,6 +407,7 @@ Time cost: about 15 minutes
 Reproduce: `aws service-quotas list-service-quotas --service-code bedrock --region us-east-1 --query "Quotas[?contains(QuotaName,'Nova 2 Lite')]"`.
 Evidence: the server log lines "Bedrock ThrottlingException for agent triage / briefing"; 4 Bedrock request ids were captured locally (not committed). See also FL-014. FL-014 and FL-031 were recorded on two different AWS accounts: the nonzero Nova 2 Lite quota of FL-014 (20 requests per minute) belonged to the older account and was not reverted.
 Verified on: 2026-10-17
+Update 2026-10-19: this entry was recorded in the account that hosts the Lightsail pilot, not in the older account of FL-014, FL-019 and FL-020 (whose access was regained on 2026-10-19). Tool / service and Steps above are unchanged.
 
 ### FL-032: With an `aws login` profile, building a real boto3 client needs `botocore[crt]` (awscrt); a unit test failed and the server needed temporary environment credentials
 Date: 2026-10-17 (seen during the Nova server-path attempt and during `tasks.py check` on the builder's machine)

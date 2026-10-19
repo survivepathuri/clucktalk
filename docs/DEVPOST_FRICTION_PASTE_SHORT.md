@@ -108,7 +108,7 @@ Alexa+, MCP, MCP Apps and AWS friction from building CluckTalk, a Telugu-first M
 **Task:** Choose hosting for the farmer pilot (builder-reported, 7 October 2026).
 **Steps:** Read the "AWS App Runner availability change" page.
 **Expected vs actual:** Expected App Runner to be open to a new customer. The page says it stopped accepting new customers on 30 April 2026 and recommends ECS Express Mode.
-**Workaround:** App Runner not used; the pilot is hosted on the builder's PC through a free Tailscale Funnel.
+**Workaround:** App Runner not used; the pilot is hosted on Amazon Lightsail (Mumbai) since 2026-10-13.
 **Suggestion:** App Runner docs team: is the change shown on every getting-started page, with the ECS Express Mode link?
 **Reproduce:** Documentation-based, no command.
 

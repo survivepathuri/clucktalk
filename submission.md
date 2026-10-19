@@ -66,14 +66,14 @@ The safety rules, where each came from and which tests pin it: `docs/SAFETY_MATR
 
 No farmer has used the pilot yet. The cloud pilot has been deployed since 13 October 2026 on one AWS Lightsail server in Mumbai (`docs/CLOUD_PILOT.md`), with the sample farm file; the real farm is not switched in. No pilot usage numbers recorded yet.
 
-Honest limits. The AI on the pilot server is the rule-based stand-in (no Bedrock calls). The PC pilot through a free tunnel (`docs/PILOT_RUNBOOK_WINDOWS.md`) stays as a fallback, and its availability would depend on that PC and its internet. The farmer's rules (a daily-deaths number) are the farmer's, written into the file by the builder from what the farmer said, and not yet confirmed in writing; entering them in the app is a roadmap item. Telugu: 470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed. Nothing about uptime, speed or reliability has been measured. The plan: `docs/PILOT_RUNBOOK_WINDOWS.md`; the architecture and its limits: `docs/ARCHITECTURE.md`.
+Honest limits. The AI on the pilot server is the rule-based stand-in (no Bedrock calls). A PC plan with a free tunnel (`docs/PILOT_RUNBOOK_WINDOWS.md`) was written down but no farmer ever used it; the pilot's availability depends on the Lightsail server. The farmer's rules (a daily-deaths number) are the farmer's, written into the file by the builder from what the farmer said, and not yet confirmed in writing; entering them in the app is a roadmap item. Telugu: 470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed. Nothing about uptime, speed or reliability has been measured. The plan: `docs/PILOT_RUNBOOK_WINDOWS.md`; the architecture and its limits: `docs/ARCHITECTURE.md`.
 
 ## Challenges
 
 All are entries in `FRICTION_LOG.md` (the rest of our own tooling notes are in `docs/DEV_NOTES.md`).
 
 - **No usable Bedrock quota on a new account.** Models reported AVAILABLE while every inference quota was 0, then a Marketplace agreement and an "account verification" gate blocked the first call, from 28 to 29 September (FL-014, FL-018).
-- **Zero Nova quotas on the newer account.** On the account opened after access to the first was lost, every Nova 2 Lite requests-per-minute and tokens-per-day quota was 0, so the four calls through the server on 2026-10-17 were all throttled (FL-031).
+- **Zero Nova quotas on the newer account.** On the account opened after access to the first was lost (regained on 2026-10-19 through the root user), every Nova 2 Lite requests-per-minute and tokens-per-day quota was 0, so the four calls through the server on 2026-10-17 were all throttled (FL-031).
 - **No self-serve path to Amazon's validation tool.** The Alexa AI CLI and Local Inspector need a prerequisite we could not get, so we built a replay of the documented flow and a readiness checklist and said plainly that they are ours (FL-024).
 - **Gaps in the Alexa+ docs.** No MCP App card size, supported messages, CSP or fonts (FL-009); no statement of which protocol version Alexa+ sends (FL-026); no word on proactive notifications (FL-017).
 - **SDK surprises.** A request id used twice on one session is silently never answered (FL-011); the SDK drops the Apps extension from `initialize` on 2025-11-25 (FL-008); the Apps default CSP blocks even an inlined font (FL-007).
@@ -97,7 +97,7 @@ Built with a broiler farmer. The schedule, safety and language layers are not po
 
 ## Built with
 
-Python 3.13, the MCP Python SDK (`mcp` 2.2.0), Model Context Protocol 2025-11-25 over Streamable HTTP, MCP Apps cards (vanilla HTML and JavaScript), Starlette, uvicorn, SQLite, Pydantic, Amazon Bedrock (Amazon Nova 2 Lite, four live calls on 2026-09-29, outside the server), the AWS CLI and boto3, Open-Meteo (optional, off by default), Noto Sans Telugu, Hypothesis, pytest, ruff, GitHub Actions, Claude Code. For the pilot: a free Tailscale Funnel.
+Python 3.13, the MCP Python SDK (`mcp` 2.2.0), Model Context Protocol 2025-11-25 over Streamable HTTP, MCP Apps cards (vanilla HTML and JavaScript), Starlette, uvicorn, SQLite, Pydantic, Amazon Bedrock (Amazon Nova 2 Lite, four live calls on 2026-09-29, outside the server), the AWS CLI and boto3, Open-Meteo (optional, off by default), Noto Sans Telugu, Hypothesis, pytest, ruff, GitHub Actions, Claude Code. For the pilot: Amazon Lightsail with Caddy and a Let's Encrypt certificate.
 
 ## Amazon requirements
 

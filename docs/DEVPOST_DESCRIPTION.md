@@ -34,7 +34,7 @@ The cloud pilot runs on one AWS Lightsail server in Mumbai, with the sample farm
 
 ## Challenges
 
-- A new AWS account showed Nova 2 Lite as available while every Bedrock quota was 0. After two Support cases, the first call was refused with "account is currently being verified", and it worked on retry about two hours later (FL-014). On my newer account, opened after I lost access to the first, every Nova 2 Lite quota was 0 again and all four server-path calls were throttled (FL-031).
+- A new AWS account showed Nova 2 Lite as available while every Bedrock quota was 0. After two Support cases, the first call was refused with "account is currently being verified", and it worked on retry about two hours later (FL-014). On my newer account, opened after I lost access to the first (I regained it on 2026-10-19 through the root user), every Nova 2 Lite quota was 0 again and all four server-path calls were throttled (FL-031).
 - Claude models stayed blocked by a missing Anthropic Marketplace agreement and, for Sonnet 5, a quota of 0, so Nova 2 Lite is the only model I ran.
 - I could not get Amazon's Local Inspector, so I wrote my own replay of the documented flow and said so (FL-024). I did not run the Local Inspector.
 - Writing triage wording that is never a diagnosis and that no model can talk down.

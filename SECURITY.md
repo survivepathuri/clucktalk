@@ -36,9 +36,9 @@ Reported and left as they are, because they are SDK behaviors (pinned by tests, 
 
 ## What is not protected
 
-- **The pilot runs on a personal Windows PC** (the builder's own, through a free tunnel; no farmer has used it yet, and a Lightsail cloud pilot with the sample farm has been deployed since 2026-10-13). Anyone with administrator access to it, anyone who takes the backup USB drive, and malware on it can read the farmer's records. The runbook recommends disk encryption; it does not check it. There is no hardened server, no firewall review and no intrusion monitoring.
+- **The pilot runs on one Amazon Lightsail server in Mumbai** (since 2026-10-13, with the sample farm file; no farmer has used it yet). SSH is key-only, `ufw` is on, and the Lightsail firewall opens ports 22, 80 and 443 (`deploy/cloud/RUNBOOK.md`, FL-029). Anyone with access to the server or its backups, and malware on it, can read the farmer's records. There is no firewall review beyond that and no intrusion monitoring. The earlier plan for a personal Windows PC (the builder's own, through a free tunnel) was written down but no farmer ever used it (`docs/PILOT_RUNBOOK_WINDOWS.md`).
 - **No account system and no OAuth.** Access is one bearer token in a link. The server does not implement OAuth 2.1 with PKCE, Protected Resource Metadata or account linking, which Alexa+ add-ons need. A lost phone or a shared link means making a new token by hand.
-- **The tunnel is a third party.** A free Tailscale Funnel relays the connection; what it can see was not examined here.
+- **The tunnel option is a third party.** The PC plan would use a free Tailscale Funnel to relay the connection; no farmer used it, and what it can see was not examined here.
 - **Alexa+ add-on security and data policies were not published to us**, so none were checked. We do not know what Amazon will require, and we make no claim about meeting it (`docs/ALEXA_READINESS.md`).
 - **No human security audit and no penetration test.** The reviews were done by AI agents, and the fuzz, property and mutation tests are the builder's own.
 - **No privacy or data-law review** (for example, how long to keep records, or consent wording beyond the one-screen notice in the pilot).

@@ -289,7 +289,7 @@ Merged from FL-016 and FL-018 (2026-10-01 audit). One story in three stages.
 
 **Expected vs actual:** Expected App Runner to be available to a new customer. Actual: the page states that App Runner stopped accepting new customers on 30 April 2026 and recommends ECS Express Mode.
 
-**Workaround:** App Runner was not used. The farmer pilot is hosted on the builder's own PC through a free Tailscale Funnel (builder-reported).
+**Workaround:** App Runner was not used. The farmer pilot is hosted on Amazon Lightsail (Mumbai) since 2026-10-13 (builder-reported).
 
 **Actionable suggestion:** Owner: the AWS App Runner documentation team. Question: is the 30 April 2026 change shown at the top of every App Runner getting-started page, with the link to ECS Express Mode?
 
