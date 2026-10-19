@@ -56,6 +56,7 @@ Built with a broiler farmer. The schedule, safety and language layers are not po
 
 > **Pilot facts**
 > One farmer used the cloud pilot with two sheds, with their consent: two records confirmed on one day (19 October). A short one-farmer pilot, not a study or trial. Counts as of 20 October 2026.
+> The cloud pilot link is not published, because it is the farmer's login to their real records. Judges can run the same app locally with synthetic demo data (see the judge path in the README, "Try it now").
 
 ## Built with
 

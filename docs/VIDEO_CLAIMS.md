@@ -31,3 +31,7 @@ Hand-written. Each row is a sentence spoken or a thing shown in the demo video (
 ## Not claimed in the video
 
 Alexa+ running on a device; Nova in the server's path; Nova writing any farmer-facing wording; daily or pilot use by the farmer; Telugu reviewed by anyone but me; Telugu speech recognition; spoken Telugu replies; "voice-first"; production readiness; latency over a network; veterinary or agronomic review.
+
+## Farmer-phone footage (rule)
+
+Show the app screen only. No farmer name, phone number, location, farm or shed names visible. No browser address bar, no link, no token and no QR code on screen. The consent record is kept privately by the builder and is never shown. Any number on screen must match "counts as of 20 October 2026".
