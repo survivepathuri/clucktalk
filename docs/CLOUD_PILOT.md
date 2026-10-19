@@ -5,7 +5,7 @@ page from a phone while your PC is off. It does not change how CluckTalk runs lo
 the judges' path in `docs/JUDGES.md`) and the PC pilot with Tailscale Funnel (`docs/PILOT_RUNBOOK_WINDOWS.md`) are untouched
 (the PC plan was written down but no farmer ever used it).
 
-**Status: deployed once on a real server (2026-10-13) with the sample farm file; no farmer has used it.** Every command for the
+**Status: deployed on a real server (2026-10-13); one farmer used it with two sheds on one day (counts as of 20 October 2026).** One farmer used the cloud pilot with two sheds, with their consent: two records confirmed on one day (19 October). A short one-farmer pilot, not a study or trial. Counts as of 20 October 2026. Every command for the
 server is in `deploy/cloud/RUNBOOK.md`. What was and was not tested is listed at the end of this page.
 
 ## What runs where

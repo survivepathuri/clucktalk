@@ -30,7 +30,7 @@ Amazon Nova 2 Lite through the Bedrock Converse API is integrated in the code fo
 
 The demo and the Lightsail pilot use a rule-based stand-in labelled "AI: off", and pilot mode forces `MOCK_BEDROCK=true`. The pilot makes no Bedrock calls. A live call is capped at 100 a day and one every 4 seconds, and every call is written to a ledger. A script fails the build if anything refers to OpenSearch Serverless, because it bills for always-on capacity.
 
-The cloud pilot runs on one AWS Lightsail server in Mumbai, with the sample farm until the real farm is switched in. The demo farm is fictional. The example daily-deaths limit that demo mode uses (6 deaths a day up to age 29 days, 3 a day from age 30 days) comes from figures relayed by one broiler farmer; they are examples, not recommendations.
+The cloud pilot runs on one AWS Lightsail server in Mumbai, with the sample farm for the demo; the farmer's own two sheds were loaded for the pilot. The demo farm is fictional. The example daily-deaths limit that demo mode uses (6 deaths a day up to age 29 days, 3 a day from age 30 days) comes from figures relayed by one broiler farmer; they are examples, not recommendations.
 
 ## Challenges
 
@@ -50,13 +50,12 @@ Put the safety rules in code and let a model only raise an alert. Label every si
 
 ## What's next
 
-Run the real farmer pilot, enter the farmer's own rules in the app, get the Telugu strings reviewed by someone besides me, run the live AI path through the server, and run Amazon's validation if access opens.
+Run a longer farmer pilot over more days, enter the farmer's own rules in the app, get the Telugu strings reviewed by someone besides me, run the live AI path through the server, and run Amazon's validation if access opens.
 
 Built with a broiler farmer. The schedule, safety and language layers are not poultry-specific, so the next step is other livestock and aquaculture, each with its own vet-reviewed content.
 
-> **PILOT RESULTS: TO FILL AFTER THE PILOT**
-> Days: `[FILL]` · Records logged: `[FILL]` · Questions asked: `[FILL]` · One honest quote: `[FILL]` · What broke: `[FILL]`
-> No farmer has used the pilot yet.
+> **Pilot facts**
+> One farmer used the cloud pilot with two sheds, with their consent: two records confirmed on one day (19 October). A short one-farmer pilot, not a study or trial. Counts as of 20 October 2026.
 
 ## Built with
 

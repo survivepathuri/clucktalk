@@ -66,7 +66,7 @@ def test_the_readme_limitations_carry_the_honest_paragraph_and_the_claims_table_
     assert len(rows) == 2
     launcher, running = rows
     assert "| VERIFIED (text checks" in launcher and "test_windows_launcher.py" in launcher
-    # Updated 2026-10-13 (owner-authorised): no farmer has used the pilot yet; the row stays UNVERIFIED, no usage claim.
-    shared = "| UNVERIFIED (no farmer has used the pilot yet, so usage numbers are pending"
+    # Updated 2026-10-20 (owner-authorised): one farmer used the pilot on one day; the row stays UNVERIFIED.
+    shared = "| UNVERIFIED (one farmer used it with two sheds on one day, counts as of 20 October 2026"
     assert shared in running
     assert "VERIFIED" not in running.replace("UNVERIFIED", "")

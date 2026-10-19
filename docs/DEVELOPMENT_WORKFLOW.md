@@ -50,7 +50,7 @@ marked `[FILL]` in the Devpost draft where Claude Code was not meant to write it
 
 - No human security audit, no privacy or data-law review, and no veterinary or agronomic review of the thresholds.
 - No Alexa+ device and no Amazon review: the Alexa+ Simulator in this repository plays the client role.
-- No farmer has used the pilot yet.
+- One farmer used the cloud pilot with two sheds, with their consent: two records confirmed on one day (19 October). A short one-farmer pilot, not a study or trial. Counts as of 20 October 2026.
 - The AI reviewers can miss what they were not pointed at, and the mutation counts are the builder's own record.
 - Claude Code's account of a session is not evidence by itself; the evidence is the saved command output, tests and
   screenshots in `docs/evidence/` and `docs/proof/`.

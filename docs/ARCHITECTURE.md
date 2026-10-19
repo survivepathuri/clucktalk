@@ -70,7 +70,7 @@ flowchart LR
 | The Simulator and the Telugu pilot page | Real code, run locally; **plays the Alexa+ client role** | Not Amazon's tool and not an Alexa+ device. The page's logic is tested in Node against a hand-made DOM, not in a phone browser. |
 | Alexa+ device, Alexa's own speech, Amazon's review | **SIMULATED / not done** | Nothing was loaded on an Alexa+ device. Alexa composes its own speech from a tool's result. |
 | Farm data in the demo | **SIMULATED** (fictional farm) | `data/seed/demo_farm.json`, "Demo data" badge. |
-| Farm data in the pilot | Real farmer's houses, entered by the builder from what the farmer said | No farmer has used the pilot yet, so usage numbers are pending (`docs/PILOT_RUNBOOK_WINDOWS.md`, `docs/CLOUD_PILOT.md`). |
+| Farm data in the pilot | Real farmer's houses, entered by the builder from what the farmer said | One farmer used the cloud pilot with two sheds, with their consent: two records confirmed on one day (19 October). A short one-farmer pilot, not a study or trial. Counts as of 20 October 2026. (`docs/CLOUD_PILOT.md`). |
 | Market prices, sensors, supplier, SMS, payments, the vet message | **SIMULATED** | Labelled "Simulated" in the text and the tool descriptions. No SMS is ever sent. |
 | Amazon Bedrock Nova 2 Lite | Mock by default; a few one-off live calls were made outside the server | The server's live-AI path was not verified end to end here (`docs/AWS_SETUP.md`, FL-014). |
 | Weather forecast | Off by default; simulated curve in the demo | The live Open-Meteo adapter was tested only with a fake transport (`docs/SOURCES.md`). |
@@ -104,7 +104,7 @@ flowchart LR
   ST --> BK
 ```
 
-The plan is `docs/PILOT_RUNBOOK_WINDOWS.md`; the launcher scripts are in `deploy/windows/`. **No farmer has used the pilot yet, so usage numbers are pending; the Lightsail cloud pilot with the sample farm has been deployed since 2026-10-13, and results will be added after the pilot.** This repository records no measurement of it: no usage numbers, no uptime and no speed.
+The plan is `docs/PILOT_RUNBOOK_WINDOWS.md`; the launcher scripts are in `deploy/windows/`. **One farmer used the cloud pilot with two sheds, with their consent: two records confirmed on one day (19 October). A short one-farmer pilot, not a study or trial. Counts as of 20 October 2026.** The Lightsail cloud pilot has been deployed since 2026-10-13. This repository records no uptime and no speed measurement of it.
 
 ### What is real and what is simulated, and the honest limits
 

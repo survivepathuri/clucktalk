@@ -64,7 +64,7 @@ The safety rules, where each came from and which tests pin it: `docs/SAFETY_MATR
 
 ## The farmer pilot
 
-No farmer has used the pilot yet. The cloud pilot has been deployed since 13 October 2026 on one AWS Lightsail server in Mumbai (`docs/CLOUD_PILOT.md`), with the sample farm file; the real farm is not switched in. No pilot usage numbers recorded yet.
+Pilot facts (counts as of 20 October 2026): one farmer used the cloud pilot with two sheds, with their consent. Records were entered on one day, 19 October. Two daily records were confirmed, one per shed; no read-back was cancelled. Six alerts were shown, four of them before the first record. The health check, follow-up questions and vet handoff were not used; no errors were logged since 19 October. A short one-farmer pilot, not a study or trial, with one day of data. Nova is off (mock mode). The cloud pilot has been deployed since 13 October 2026 on one AWS Lightsail server in Mumbai (`docs/CLOUD_PILOT.md`). Pilot counts: one farmer, two sheds, one day of records (counts as of 20 October 2026).
 
 Honest limits. The AI on the pilot server is the rule-based stand-in (no Bedrock calls). A PC plan with a free tunnel (`docs/PILOT_RUNBOOK_WINDOWS.md`) was written down but no farmer ever used it; the pilot's availability depends on the Lightsail server. The farmer's rules (a daily-deaths number) are the farmer's, written into the file by the builder from what the farmer said, and not yet confirmed in writing; entering them in the app is a roadmap item. Telugu: 470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed. Nothing about uptime, speed or reliability has been measured. The plan: `docs/PILOT_RUNBOOK_WINDOWS.md`; the architecture and its limits: `docs/ARCHITECTURE.md`.
 
@@ -91,7 +91,7 @@ The first commit is dated 2026-09-27 (`git log --reverse`). The commit counts pe
 
 Pre-existing projects: none found. The first commit (`d1d1662`, 2026-09-27) holds only build scaffolding (task runner, secret and cost checks, version pins, license); the product code follows in later commits. The GitHub repository was created on 2026-09-30. A check on 2026-10-18 (`gh repo list`, and folder names on my machine) found no earlier repository and no earlier project folder for it. Commit titles use plan-day labels; the dates are the commit dates. It was built with Claude Code. I cannot say what code I wrote outside this history.
 
-**What's next.** Run the real farmer pilot, enter the farmer's own rules in the app, get the Telugu strings reviewed by someone besides me, run the live AI path through the server, and run Amazon's validation if access opens.
+**What's next.** Run a longer farmer pilot over more days, enter the farmer's own rules in the app, get the Telugu strings reviewed by someone besides me, run the live AI path through the server, and run Amazon's validation if access opens.
 
 Built with a broiler farmer. The schedule, safety and language layers are not poultry-specific, so the next step is other livestock and aquaculture, each with its own vet-reviewed content.
 

@@ -36,7 +36,7 @@ DOCS = {
 }
 TOOLS = sorted(t.name for t in asyncio.run(build_mcp_server().list_tools()))
 ALL_TEXT = "\n".join(DOCS.values())
-PLACEHOLDER = "No pilot usage numbers recorded yet."
+PLACEHOLDER = "Pilot counts: one farmer, two sheds, one day of records (counts as of 20 October 2026)."
 FORBIDDEN = ("production-ready", "production ready", "enterprise-grade", "enterprise grade", "guaranteed", "certified")
 
 
@@ -67,7 +67,7 @@ def test_the_architecture_has_exactly_two_mermaid_diagrams_and_a_table_under_eac
     for section in sections:
         assert "### What is real and what is simulated" in section.split("```", 1)[1]
     assert "SIMULATED" in blocks[0] and "Funnel" in blocks[1]
-    assert "never forwarded" in blocks[1] and "usage numbers are pending" in text
+    assert "never forwarded" in blocks[1] and "not a study or trial" in text
 
 
 def test_every_path_the_documents_name_exists():
@@ -108,9 +108,10 @@ def test_the_pilot_placeholder_is_used_exactly_and_no_pilot_number_is_invented()
     assert PLACEHOLDER in DOCS["submission.md"] and PLACEHOLDER in DOCS["docs/RESULTS.md"]
     pilot = DOCS["submission.md"].split("## The farmer pilot")[1].split("## Challenges")[0]
     assert not re.search(r"\b\d+ (days|records|alerts|farmers)\b", pilot), pilot
-    # Updated 2026-10-13 (owner-authorised): no farmer has used the pilot yet; the cloud pilot runs with the sample farm.
-    assert "No farmer has used the pilot yet." in pilot
-    assert "deployed since 13 October 2026" in pilot and "with the sample farm file" in pilot
+    # Updated 2026-10-20 (owner-authorised): the stale "no farmer has used the pilot yet" sentence became the pilot facts.
+    assert "one farmer used the cloud pilot with two sheds, with their consent" in pilot
+    assert "not a study or trial" in pilot and "counts as of 20 October 2026" in pilot
+    assert "deployed since 13 October 2026" in pilot
     assert PLACEHOLDER in pilot and "[PILOT NUMBERS" not in pilot
     assert "shared with one farmer" not in pilot
     assert "Nothing about uptime, speed or reliability has been measured." in pilot

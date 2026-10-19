@@ -108,7 +108,7 @@ seeded, clearly fictional data in mock mode.
   may be listed there as not installed.
 - **Latency is not measured end to end.**[^latency]
 - **No agronomic or veterinary review.** Thresholds and the reference curve are cited in `docs/SOURCES.md`; they were not validated with a vet or a farmer, and no tool gives a medicine or a dose.
-- **The pilot is hosted on one Amazon Lightsail server in Mumbai (since 2026-10-13, with the sample farm file); availability depends on that server.** No farmer has used the pilot yet, so usage numbers are pending (`docs/CLOUD_PILOT.md`); results will be added after the pilot. A second plan, the builder's own PC, published through a free Tailscale Funnel; availability depends on that PC and its internet, was written down but no farmer ever used it (`docs/PILOT_RUNBOOK_WINDOWS.md`). Nothing about uptime, speed or reliability has been measured.
+- **The pilot is hosted on one Amazon Lightsail server in Mumbai (since 2026-10-13); availability depends on that server.** One farmer used the cloud pilot with two sheds, with their consent: two records confirmed on one day (19 October). A short one-farmer pilot, not a study or trial. Counts as of 20 October 2026. (`docs/CLOUD_PILOT.md`). A second plan, the builder's own PC, published through a free Tailscale Funnel; availability depends on that PC and its internet, was written down but no farmer ever used it (`docs/PILOT_RUNBOOK_WINDOWS.md`). Nothing about uptime, speed or reliability has been measured.
 - **Nova 2 Lite is integrated and tested with real calls but switched off in the pilot (mock mode).** Four real calls were made on 29 Sep 2026 outside the server; a live run through the server is not verified (FL-031).
 - **Odd behaviours of the MCP SDK and of our shed-name reader** are listed under "Known SDK behaviors" below.
 
@@ -140,7 +140,7 @@ this repository, not that Alexa+ has seen it.
 | The pilot page's access controls (a token on every call, exact host and origin, size and rate limits, a kill switch) work as the tests describe | VERIFIED (tests only; not checked on the shared pilot or on a phone) | `SECURITY.md`; `tests/contract/test_pilot_hardening.py` |
 | A human security audit, a privacy and data-law review, OAuth 2.1, remote hosting | NOT BUILT (every item is listed as not done) | `docs/PRODUCTION_PATH.md` |
 | The submission text is complete | UNVERIFIED (the demo video and the two mini-challenge URLs are pending; pilot numbers do not exist yet) | `submission.md` |
-| The pilot runs on Amazon Lightsail (not on the builder's own PC through a Tailscale Funnel), and the farmer can use it | UNVERIFIED (no farmer has used the pilot yet, so usage numbers are pending; the Lightsail cloud pilot with the sample farm has been deployed since 2026-10-13; availability depends on that server) | none; `docs/CLOUD_PILOT.md` |
+| The pilot runs on Amazon Lightsail (not on the builder's own PC through a Tailscale Funnel), and the farmer can use it | UNVERIFIED (one farmer used it with two sheds on one day, counts as of 20 October 2026; no uptime, speed or reliability was measured; availability depends on that server) | none; `docs/CLOUD_PILOT.md` |
 | The server runs on an Alexa+ device, or passes Amazon's review | UNVERIFIED | none; see "Known limitations" |
 | The Local Inspector itself accepts the server | UNVERIFIED | none; `FRICTION_LOG.md` FL-024 |
 | Telugu wording is natural and correct | UNVERIFIED (470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed.) | `docs/TELUGU_REVIEW.md` |
@@ -358,8 +358,7 @@ with the age of the birds?
 A separate mode (`CLUCKTALK_MODE=pilot`) lets one real farmer try CluckTalk on their phone in Telugu: their own houses
 from a farm file, no demo data, no bird weights, a Telugu page that reads every change back and waits for a tap. It is a
 prototype, **not Alexa+ and not a veterinary service** (see `docs/PILOT_RUNBOOK.md`). The pilot is hosted on one Amazon Lightsail
-server in Mumbai (`docs/CLOUD_PILOT.md`). No farmer has used the pilot yet, so usage numbers are
-pending. The Lightsail cloud pilot with the sample farm has been deployed since 2026-10-13; results will be added after the pilot.
+server in Mumbai (`docs/CLOUD_PILOT.md`). Pilot facts (counts as of 20 October 2026): one farmer used the cloud pilot with two sheds, with their consent. Records were entered on one day, 19 October. Two daily records were confirmed, one per shed; no read-back was cancelled. Six alerts were shown, four of them before the first record. The health check, follow-up questions and vet handoff were not used; no errors were logged since 19 October. A short one-farmer pilot, not a study or trial, with one day of data. Nova is off (mock mode).
 The PC version (`docs/PILOT_RUNBOOK_WINDOWS.md`, a free tunnel) was written down but no farmer ever used it.
 
 **When the count belongs to a day.** The farmer counts the deaths of the last 24 hours once each morning, and that count is

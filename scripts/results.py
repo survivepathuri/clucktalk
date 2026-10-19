@@ -282,7 +282,7 @@ def render(
         "",
         "## 9. What this file does not show",
         "",
-        "- No pilot usage numbers recorded yet.",
+        "- Pilot counts: one farmer, two sheds, one day of records (counts as of 20 October 2026).",
         "- No live AWS or model result: the evals and the latency run in mock mode.",
         "- No Alexa+ device and no Telugu voice through Alexa+.",
         f"- Telugu: {telugu} Details: `docs/TELUGU_REVIEW.md`.",

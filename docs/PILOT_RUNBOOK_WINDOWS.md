@@ -238,5 +238,5 @@ Once the pilot has really run on this PC (not before), say:
 > internet.
 
 Until then, the README says the same thing in the present tense ("is hosted on") with the date the pilot link was shared
-with the farmer and says that no farmer has used the pilot yet and that usage numbers are pending. Nothing more
+with the farmer and gives only the anonymous counts ("Pilot facts" in the README, counts as of 20 October 2026). Nothing more
 about uptime, speed or reliability may be said, because none of it has been measured.
