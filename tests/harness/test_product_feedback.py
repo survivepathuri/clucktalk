@@ -32,21 +32,23 @@ def _tool_sections() -> list[tuple[str, str]]:
 
 
 SECTIONS = _tool_sections()
+# Builder verdicts of 2026-10-19: "yes" for these five; the other five tools state facts only (no verdict recorded).
+YES_TOOLS = ("Amazon Bedrock", "Amazon Lightsail", "Alexa+ MCP", "MCP Apps", "Claude Code")
 
 
 def test_the_tools_are_in_the_requested_order():
     headings = [h for h, _ in SECTIONS]
     expected_starts = (
         "1. Amazon Bedrock",
-        "2. AWS CLI",
-        "3. AWS console, accounts, credits",
-        "4. Alexa+ MCP documentation",
+        "2. Amazon Lightsail",
+        "3. Alexa+ MCP documentation",
+        "4. AWS CLI and boto3",
         "5. MCP Python SDK",
         "6. MCP Apps",
-        "7. Claude Code",
-        "8. The Agent Skills format",
-        "9. Tailscale Funnel",
-        "10. GitHub Actions",
+        "7. Agent Skill",
+        "8. GitHub Actions",
+        "9. Claude Code",
+        "10. Caddy, Let's Encrypt and sslip.io",
     )
     assert len(headings) == len(expected_starts)
     for heading, start in zip(headings, expected_starts, strict=True):
@@ -61,7 +63,9 @@ def test_every_tool_section_answers_the_five_questions_in_order(heading, body):
     assert all(p >= 0 for p in positions), (heading, [f for f, p in zip(FIELDS, positions, strict=True) if p < 0])
     assert positions == sorted(positions), heading
     again = body.split("**Build again:**")[1].strip().splitlines()[0].strip().lower()
-    assert again.startswith("yes"), (heading, again)  # the builder's approved verdict, never a guess
+    assert again, heading  # present and non-empty; a verdict only where the builder gave one, else the facts say so
+    if heading.split(". ", 1)[1].startswith(YES_TOOLS):
+        assert again.startswith("yes"), (heading, again)  # the builder's approved verdict, never a guess
 
 
 def test_no_placeholder_is_left_and_the_two_computed_answers_are_filled_in():
@@ -70,9 +74,16 @@ def test_no_placeholder_is_left_and_the_two_computed_answers_are_filled_in():
     # first recorded attempt 2026-09-28 (FL-014, AWS_SETUP section 5), first successful call 2026-09-29 (section 5.2)
     setup = (ROOT / "docs" / "AWS_SETUP.md").read_text(encoding="utf-8")
     assert "Results 2026-09-28" in setup and "First live Converse call: Nova 2 Lite (2026-09-29" in setup
-    assert "Onboarding: 1 day from first attempt to first successful call (28 to 29 September)" in DEVPOST
-    sentence = "earlier sign-in problems on 7 October, on a previous account, were a separate issue (time not measured)"
-    assert sentence in FEEDBACK and sentence in DEVPOST
+    onboarding = (
+        "Onboarding: about 2 hours of work to unblock the first call (quota and account verification, solved with "
+        "Claude Code's help); the account was created on 28 September and the first successful calls were on "
+        "29 September."
+    )
+    assert onboarding in DEVPOST
+    sentence = (
+        "Later we lost sign-in access to that account for a while and regained it on 2026-10-19 through the root user."
+    )
+    assert sentence in FEEDBACK
     gone = ("authenticator", "codes were rejected", "sign-in failed", "aws access was unavailable", "recovery")
     for text in (FEEDBACK, DEVPOST, SUMMARY):  # the sign-in mix-up was ours; it is not described as AWS friction
         assert not [g for g in gone if g in text.lower()]
@@ -92,22 +103,24 @@ def test_every_fl_and_fr_number_named_exists():
 def test_each_block_names_the_entries_the_records_support():
     blocks = dict(re.findall(r"(?ms)^## (\d+)\. [^\n]*\n\n(.+?)(?=^## |\Z)", DEVPOST))
     expect = {
-        "1": ("FL-014", "FL-015"),
-        "2": ("FL-019",),
-        "3": ("FL-013", "FR-007", "FL-027"),
-        "4": ("FL-026", "FL-024", "FR-004", "FR-008"),
-        "5": ("FL-011", "FL-004", "FL-002"),
-        "6": ("FL-007", "FL-009", "FL-008", "FL-021"),
-        "7": ("FL-022", "FL-025"),
-        "10": ("FL-023", "FL-025"),
+        "1": ("FL-014", "FL-031"),
+        "2": ("FL-030",),
+        "3": ("FL-024", "FL-026", "FL-009"),
+        "4": ("FL-019", "FL-015", "FL-032"),
+        "5": ("FL-011", "FL-002", "FL-001"),
+        "6": ("FL-006", "FL-007", "FL-021"),
+        "8": ("FL-023", "FL-025"),
+        "9": ("FL-022",),
     }
     for n, ids in expect.items():
         for entry in ids:
             assert entry in blocks[n], (n, entry)
     log = (ROOT / "FRICTION_LOG.md").read_text(encoding="utf-8")
     fl27 = log.split("### FL-027:")[1]
-    assert "App Runner" in fl27 and "30 April 2026" in fl27  # block 3 says only this about FL-027
-    assert "India" in log.split("### FL-013:")[1].split("\n### ")[0]  # block 3: account plan on an India account
+    for entry in ("FL-013", "FL-027", "FR-004"):  # the long form (no longer the paste blocks) names these three
+        assert entry in FEEDBACK, entry
+    assert "App Runner" in fl27 and "30 April 2026" in fl27 and "ECS Express Mode" in fl27  # the long form says this
+    assert "India" in log.split("### FL-013:")[1].split("\n### ")[0]  # FL-013: account plan on an India account
 
 
 def test_the_counts_in_the_blocks_match_the_tests():
@@ -119,7 +132,7 @@ def test_the_counts_in_the_blocks_match_the_tests():
         check=False,
     ).stdout
     collected = int(re.search(r"(\d+) tests? collected", out).group(1))
-    assert f"my {collected} protocol tests pass" in DEVPOST and f"the {collected} protocol tests" in FEEDBACK
+    assert f"our {collected} protocol tests pass" in DEVPOST and f"Our {collected} protocol tests pass" in FEEDBACK
     assert "14 tools" in DEVPOST and "14 tools" in FEEDBACK
 
 
@@ -157,16 +170,16 @@ def test_the_aws_live_and_mocked_section_agrees_with_the_submission():
         assert needle in submission, needle
     assert "**not** verified end to end" in section and "**not** verified end to end" in submission
     # Updated 2026-10-13 (owner-authorised): Lightsail now hosts the cloud pilot, App Runner was only read about.
-    assert "Lightsail has run the cloud pilot since 13 October 2026" in FEEDBACK and "builder-reported" in section
-    assert "read about" in FEEDBACK and "not used in production" not in FEEDBACK
+    assert "Live since 13 October 2026, Amazon Lightsail (cloud pilot)" in FEEDBACK and "builder-reported" in section
+    assert "Read, not used" in FEEDBACK and "not used in production" not in FEEDBACK
 
 
 def test_builder_reported_facts_are_marked_and_the_inspector_was_not_used():
-    facts = ("App Runner", "ECS Express Mode", "30 April 2026", "Mumbai", "Google Form", "Tailscale admin console")
+    facts = ("App Runner", "ECS Express Mode", "30 April 2026", "Mumbai", "0.00 USD credits", "paid by card")
     for needle in facts:
         assert needle in FEEDBACK, needle
     assert FEEDBACK.count("builder-reported") >= 8
-    assert "The Amazon Devices Builder Tools and the Local Inspector were **not** used" in FEEDBACK
+    assert "The Local Inspector and the Alexa AI CLI were not used (FL-024)" in FEEDBACK
 
 
 SUMMARY_ENTRIES = ("FL-014", "FL-024", "FL-009", "FL-017", "FL-013", "FL-007", "FL-027")
