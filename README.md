@@ -6,6 +6,8 @@ The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend
 
 MIT licensed · Built for the Alexa+ track of the Build, Ship, Shape hackathon · Judges: start at "Try it now" below, or `docs/JUDGES.md`.
 
+Automated tests: 3481 (519 harness, 1757 unit, 1205 contract), CI green on d167410.
+
 A Telugu-first assistant for India's **broiler** poultry farmers. A self-hosted MCP server (implements MCP 2025-11-25 over
 Streamable HTTP) plus an Agent Skill, built for the Alexa+ add-on program.
 
