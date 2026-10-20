@@ -2,14 +2,21 @@
 
 **Telugu-first MCP assistant for broiler farmers**
 
+[![CI](https://github.com/survivepathuri/clucktalk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/survivepathuri/clucktalk/actions/workflows/ci.yml)
+
 The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend').
 
-MIT licensed · Built for the Alexa+ track of the Build, Ship, Shape hackathon · Judges: start at "Try it now" below, or `docs/JUDGES.md`.
+MIT licensed · Built for the Alexa+ track of the Build, Ship, Shape hackathon · Judges: start at "Try the live demo" below, or `docs/JUDGES.md`.
 
-Automated tests: 3481 (519 harness, 1757 unit, 1205 contract), CI green on d167410.
+Automated tests: 3481 (519 harness, 1757 unit, 1205 contract), CI green on 764fa80.
 
-A Telugu-first assistant for India's **broiler** poultry farmers. A self-hosted MCP server (implements MCP 2025-11-25 over
-Streamable HTTP) plus an Agent Skill, built for the Alexa+ add-on program.
+That line is true for commit 764fa80. One harness test was added after it, so `python tasks.py verify` on the newest commit counts one more than the line above.
+
+A broiler farmer counts the dead birds each morning with busy hands, often with no screen in reach, and the number that matters (a sudden spike, the total so far, the moment to call the vet) is easy to miss.
+CluckTalk is an MCP server with 14 tools: it keeps each shed's daily records, ranks what needs attention today, and answers in Telugu and English, in text and on a card.
+It reads every number back before saving it, and never gives a diagnosis or a dose.
+
+**Scope:** a hackathon prototype. The Alexa+ screen is a simulation; the MCP server behind it is real (MCP 2025-11-25 over Streamable HTTP, plus an Agent Skill). Nothing here has run on an Alexa+ device.
 
 ![Simulator first screen with five starter chips](docs/evidence/2026-10-18_judge_view/01_first-screen_chips_1024x600.png)
 *Simulator first screen: a simulated Alexa+ screen; the backend is a real MCP server.*
@@ -17,11 +24,63 @@ Streamable HTTP) plus an Agent Skill, built for the Alexa+ add-on program.
 ![Telugu answer with the English judge view on](docs/evidence/2026-10-18_judge_view/02_telugu-answer_judge-view-on_1024x600.png)
 *Telugu answer with the English judge view on.*
 
-A broiler farmer counts the dead birds each morning with busy hands, often with no screen in reach, and the number that matters (a sudden spike, the total so far, the moment to call the vet) is easy to miss. CluckTalk answers in text and on a card, reads every number back before saving it, and never gives a diagnosis or a dose.
+## Status: real, simulated, not yet
 
-> **Status**: in development. Nothing below is claimed working unless it has evidence in `docs/evidence/` or a
-> passing check in `python tasks.py check` / `python tasks.py eval-fast`. See `docs/DESIGN.md` for the full design
-> and what is built vs planned, and `docs/EVALS.md` for the current golden-suite score.
+| Part | Status | What that means |
+|---|---|---|
+| MCP server and its 14 tools | **Real** | Runs on the public demo and locally; tests and protocol checks in `docs/RESULTS.md`. Not run on an Alexa+ device. |
+| Alexa+ screen (the Simulator) | **Simulated** | Our web app plays the Alexa+ client and speaks MCP to the real server. Its banner says so. |
+| Prices, sensors, supplier, SMS, payments | **Simulated** | Labelled "Simulated" in every answer. The demo farm is fictional. |
+| Amazon Nova 2 Lite (Bedrock) | **Integrated, switched off** | In code (`src/clucktalk/agents/bedrock.py`). Four real calls on 2026-09-29, outside the server, in a separate AWS account. The server-path run of 17 October failed (throttled, quotas 0, FL-031). The demo and the pilot use rules ("Demo rules (no AI model)"). |
+| Farmer pilot | **Real, very small** | One farmer (anonymous), two sheds, two records confirmed on 19 October. The pilot link is not public. |
+| Large-farm scale | **Not yet** | The demo farm has 3 houses, the pilot 2 sheds. Not tested on large farms. |
+| Other species | **Not yet** | Dairy, sheep and fish are planned, not built. |
+
+## Try the live demo in 60 seconds
+
+Open **https://demo.13-127-66-28.sslip.io/** in a desktop browser. No sign-in. It was tested in Chromium-based browsers (Chrome); Firefox and Safari (WebKit) were not tested. The Telugu farmer phone page is not on the public demo.
+
+1. Read the banner, "Simulated Alexa+ screen. The backend is a real MCP server (Streamable HTTP)." and the badge "Demo data · mock host": the farm is fictional.
+2. Tap one of the five starter tiles (farm status, when to sell, health check, daily briefing, help). A card and the answer appear.
+3. Or type a question, for example *"How is shed two doing?"*.
+4. "Judge view" (on by default) shows the English under each Telugu answer; the button switches it off.
+5. Open "Developer panel" to see the MCP `tools/call` request and response behind each answer.
+
+## Impact: measured and not yet measured
+
+- **Measured:** 3,481 automated tests (the line above, `docs/RESULTS.md`); p95 about 25 ms (docs/RESULTS.md) for the slowest step of the server, on localhost in mock mode (section 5; not Amazon's 500 ms round trip); in the pilot, two daily records confirmed by one farmer on 19 October.
+- **Not yet measured:** yield, mortality, time saved, adoption. One day of pilot data cannot show any of them.
+
+**Scale, honestly:** records are kept per house (shed), not per bird. The demo farm has 3 houses and the pilot has 2 sheds; nothing has been tested on a large farm.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  F["Farmer<br/>voice or typing"] --> S["Simulated Alexa+ screen<br/>(web app, plays the Alexa+ client)"]
+  S -->|"MCP 2025-11-25<br/>Streamable HTTP"| M["MCP server"]
+  M --> T["14 tools<br/>Telugu + English text + structured result"]
+  T --> D[("Farm data store<br/>SQLite")]
+  S -.-|"cards in a sandboxed iframe<br/>on a second origin"| C["Cards"]
+  T -.->|"optional, off in the demo and the pilot"| N["Amazon Nova 2 Lite<br/>(Bedrock)"]
+```
+
+An image version for slides is `docs/img/architecture.png`; the detailed diagrams, with what is real and what is simulated, are in `docs/ARCHITECTURE.md`.
+
+## Limits and what's next
+
+- Nothing has run on an Alexa+ device, through Alexa's own speech, or through Amazon's review.
+- Telugu is written only: the Simulator's microphone is English (en-IN), and there is no Telugu speech recognition or spoken Telugu reply.
+- The Telugu wording was reviewed by one person (the builder, a native speaker), not independently.
+- No vet or agronomy review of the thresholds; no tool gives a diagnosis or a dose.
+- The full list is under "Known limitations" below.
+- **Next:** dairy, sheep and fish, each needing its own vet-reviewed content (not started); Telugu speech in and out.
+
+## Links
+
+- Code: https://github.com/survivepathuri/clucktalk (MIT, `LICENSE`)
+- Live demo: https://demo.13-127-66-28.sslip.io/
+- Results: `docs/RESULTS.md` · Judges' guide: `docs/JUDGES.md` · Friction log: `FRICTION_LOG.md`
 
 ## Try it now
 
@@ -408,6 +467,7 @@ do not move.
 
 ## Roadmap
 
+- **Other species.** Dairy, sheep and fish farming are the planned next species, each needing its own vet-reviewed content. Not started.
 - **Layer farming.** The domain layer already models egg-laying flocks (status, feed planning), but the current
   build, demo data and video target **broiler** farms only. Extending the voice/card experience to layer flocks
   the way broilers are covered today is future work.
