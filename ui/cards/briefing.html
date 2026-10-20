@@ -231,7 +231,7 @@ function briefingView(sc) {
   const root = el("main", { id: "root", class: "briefing" });
   root.append(header(sc));
   root.append(el("div", { class: "titlerow" }, el("h1", {}, bi(L.briefing_title)),
-    el("span", { class: "meta" }, dateText(sc.as_of))));
+    el("span", { class: "meta", "data-xm-skip": true }, dateText(sc.as_of))));
   if (!sc.items.length) {
     root.append(stacked({ en: sc.text_en, te: sc.text_te }, "say"));
   } else {
