@@ -49,6 +49,7 @@ NOT_LISTED = {
     "CLUCKTALK_AI_MAX_CALLS_PER_DAY": "live AI is off in the pilot",
     "CLUCKTALK_MCP_URL": "the default (loopback and the MCP port) is right",
     "CLUCKTALK_DISABLED": "the kill switch is the file, set by CLUCKTALK_DISABLED_FILE",
+    "CLUCKTALK_SANDBOX_ORIGIN": "the farmer's phone page shows no cards; only the judges' demo host sets it",
 }
 
 
@@ -263,3 +264,30 @@ def test_the_documented_state_and_farm_paths_are_outside_the_repository_and_not_
     assert PureWindowsPath(values["CLUCKTALK_STATE_PATH"]).suffix == ".sqlite3"
     assert PureWindowsPath(values["CLUCKTALK_PILOT_FARM_PATH"]).name != "pilot_farm.example.json"
     assert not str(ROOT).lower().startswith("c:\\clucktalk-pilot")
+
+
+def test_card_sandbox_origin_is_the_loopback_swap_unless_a_sibling_host_is_set():
+    """The card proxy needs an origin that differs from the page. Behind https on port 443 the loopback swap builds
+    "https://localhost:" and no card renders, so a public host names ``https://sandbox.<its host>`` (found on the
+    public demo). Unset: nothing changes for a local run or the pilot."""
+    from dataclasses import replace
+
+    from clucktalk.simulator.app import sandbox_origin_from_env
+
+    public = "https://demo.example.org"
+    good = {"CLUCKTALK_SANDBOX_ORIGIN": "https://sandbox.demo.example.org"}
+    assert sandbox_origin_from_env({}, public) is None and sandbox_origin_from_env({}, None) is None
+    assert sandbox_origin_from_env(good, public) == "https://sandbox.demo.example.org"
+    for bad_env, bad_public in (
+        (good, None),  # no public host to be a sibling of
+        ({"CLUCKTALK_SANDBOX_ORIGIN": "https://sandbox.other.example.org"}, public),  # not its sibling
+        ({"CLUCKTALK_SANDBOX_ORIGIN": "http://sandbox.demo.example.org"}, public),  # not https
+        ({"CLUCKTALK_SANDBOX_ORIGIN": "https://demo.example.org"}, public),  # the same origin as the page
+    ):
+        with pytest.raises(ConfigError, match="CLUCKTALK_SANDBOX_ORIGIN"):
+            sandbox_origin_from_env(bad_env, bad_public)
+    s = load_simulator_settings({"MOCK_BEDROCK": "true", "CLUCKTALK_PUBLIC_ORIGIN": public})
+    with_sandbox = replace(s, sandbox_origin="https://sandbox.demo.example.org")
+    assert s.sandbox_host is None and "sandbox.demo.example.org" not in s.hosts
+    assert with_sandbox.sandbox_host == "sandbox.demo.example.org" and "sandbox.demo.example.org" in with_sandbox.hosts
+    assert public in with_sandbox.allowed_origins  # the page that may embed the proxy (frame-ancestors)

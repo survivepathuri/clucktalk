@@ -179,6 +179,8 @@ function crossModal(result, cardText, fields) {
 
 // ------------------------------------------------------------------ MCP Apps host bridge (one per card)
 function sandboxOrigin() {
+  const configured = state.server && state.server.sandbox_origin;   // a public https host serves the proxy on its own name
+  if (configured) return configured;
   const other = location.hostname === "localhost" ? "127.0.0.1" : "localhost";
   return `${location.protocol}//${other}:${location.port}`;
 }

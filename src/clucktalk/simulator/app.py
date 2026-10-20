@@ -27,7 +27,7 @@ import time
 from collections import deque
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -38,7 +38,7 @@ from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from clucktalk.config import APP_NAME, APP_NAME_TE
+from clucktalk.config import APP_NAME, APP_NAME_TE, ConfigError
 from clucktalk.domain.photos import PHOTO_REFS
 from clucktalk.domain.triage import SIGN_TEXT, Sign
 from clucktalk.i18n import GENERIC_ERROR, GENERIC_NEXT_STEP, PILOT_BADGE
@@ -98,6 +98,7 @@ class SimulatorSettings:
     disabled_file: Path | None = None  # the kill switch: this file existing pauses the Simulator
     usage_path: Path | None = None  # anonymous usage counters (pilot)
     farm_path: Path | None = None  # the pilot farm file: the Questions button reads the farmer's own schedule from it
+    sandbox_origin: str | None = None  # the card proxy's own https origin on a public host; None: the loopback swap
 
     @property
     def origins(self) -> set[str]:
@@ -113,9 +114,14 @@ class SimulatorSettings:
         return self.origins | ({self.public_origin} if self.public_origin else set())
 
     @property
+    def sandbox_host(self) -> str | None:
+        return None if self.sandbox_origin is None else self.sandbox_origin.removeprefix("https://")
+
+    @property
     def hosts(self) -> set[str]:
         public = {self.public_host} if self.public_host else set()
-        return {f"{n}:{self.port}" for n in LOOPBACK_NAMES} | public  # type: ignore[misc]
+        sandbox = {self.sandbox_host} if self.sandbox_host else set()
+        return {f"{n}:{self.port}" for n in LOOPBACK_NAMES} | public | sandbox  # type: ignore[misc]
 
     @property
     def hardened(self) -> bool:
@@ -177,6 +183,27 @@ def sandbox_csp(declared: dict[str, Any] | None, ancestors: tuple[str, ...] = ()
     return "; ".join(directives)
 
 
+_SANDBOX_ORIGIN = re.compile(r"https://sandbox\.[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?")
+
+
+def sandbox_origin_from_env(env: dict[str, str] | None = None, public_origin: str | None = None) -> str | None:
+    """CLUCKTALK_SANDBOX_ORIGIN: where a public https host serves the card proxy (a different origin from the page).
+
+    Unset: None, and the page uses the loopback swap (127.0.0.1 <-> localhost on one port), which cannot work behind
+    https on port 443. Set: it must be exactly ``https://sandbox.<public host>``, the sibling name of the page's own
+    CLUCKTALK_PUBLIC_ORIGIN, so the proxy can tell which page may embed it."""
+    raw = (os.environ if env is None else env).get("CLUCKTALK_SANDBOX_ORIGIN", "").strip()
+    if not raw:
+        return None
+    expected = None if public_origin is None else "https://sandbox." + public_origin.removeprefix("https://")
+    if expected is None or not _SANDBOX_ORIGIN.fullmatch(raw) or raw != expected:
+        raise ConfigError(
+            f"CLUCKTALK_SANDBOX_ORIGIN={raw!r} must be https://sandbox.<host> for the host in CLUCKTALK_PUBLIC_ORIGIN "
+            f"({public_origin!r}); unset it for a local run."
+        )
+    return raw
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # Request guard: loopback Host names only, and API calls only from the Simulator's own page
 # ---------------------------------------------------------------------------------------------------------------
@@ -192,6 +219,13 @@ class LocalOnly:
             headers = {k.decode("latin-1"): v.decode("latin-1") for k, v in scope["headers"]}
             if headers.get("host") not in self.settings.hosts:
                 await JSONResponse({"error": "unknown host"}, status_code=421)(scope, receive, send)
+                return
+            path = scope["path"]
+            if headers.get("host") == self.settings.sandbox_host and not (
+                path == "/sandbox" or path.startswith("/static/")
+            ):
+                # the card proxy's own name serves nothing else
+                await JSONResponse({"error": "not available"}, status_code=404)(scope, receive, send)
                 return
             if scope["path"].startswith("/api/") and scope["method"] != "GET":
                 # Only the Simulator page itself: same origin as the requested host (the card's sandbox origin
@@ -425,6 +459,9 @@ def _mcp_ms(exchanges: list[Exchange]) -> float:
 def build_app(
     settings: SimulatorSettings, client: McpClient | None = None, clock: Callable[[], float] = time.monotonic
 ) -> ASGIApp:
+    if settings.sandbox_origin is None:  # a public host sets CLUCKTALK_SANDBOX_ORIGIN; a local run leaves it unset
+        from_env = sandbox_origin_from_env(None, settings.public_origin)
+        settings = replace(settings, sandbox_origin=from_env) if from_env else settings
     mcp = client or McpClient(settings.mcp_url, settings.auth_token)
     lock = asyncio.Lock()  # one call to the MCP server at a time (its session is shared by every browser)
     conversations: dict[str, Conversation] = {}  # per browser session: never shared between two browsers
@@ -473,7 +510,9 @@ def build_app(
             STATIC / "sandbox.html",
             headers={
                 "content-security-policy": sandbox_csp(
-                    declared, tuple(sorted(settings.origins)), strict=request.query_params.get("strict") == "1"
+                    declared,
+                    tuple(sorted(settings.allowed_origins if settings.sandbox_origin else settings.origins)),
+                    strict=request.query_params.get("strict") == "1",
                 ),
                 "cache-control": "no-store",
             },
@@ -496,6 +535,7 @@ def build_app(
                 "app_name": APP_NAME,
                 "mode": settings.mode,
                 "mcp_url": settings.mcp_url,
+                "sandbox_origin": settings.sandbox_origin,
                 "connected": bool(mcp.tools),
                 "server_info": mcp.server_info,
                 "tools": tools,

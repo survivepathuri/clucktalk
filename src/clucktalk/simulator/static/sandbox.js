@@ -4,12 +4,18 @@
 (function () {
   const HOST_PATTERN = /^http:\/\/(127\.0\.0\.1|localhost):\d+$/;
   if (window.self === window.top) throw new Error("The card sandbox only runs inside the Simulator.");
-  const hostOrigin = document.referrer ? new URL(document.referrer).origin : "";
-  if (!HOST_PATTERN.test(hostOrigin)) throw new Error("Embedding page not allowed: " + hostOrigin);
+  const referrer = document.referrer ? new URL(document.referrer).origin : "";
+  // Public https host: this proxy is served on "sandbox.<page host>" (CLUCKTALK_SANDBOX_ORIGIN). That page may send no
+  // referrer (Referrer-Policy: no-referrer), so its origin is taken from our own name; the frame-ancestors header of
+  // this response names the only page the browser lets embed us.
+  const publicPage = window.location.protocol === "https:" && /^sandbox\.[a-z0-9][a-z0-9.-]*[a-z0-9]$/.test(window.location.hostname)
+    ? "https://" + window.location.hostname.slice("sandbox.".length) : "";
+  const hostOrigin = HOST_PATTERN.test(referrer) ? referrer : (publicPage || referrer);
+  if (!HOST_PATTERN.test(hostOrigin) && hostOrigin !== publicPage) throw new Error("Embedding page not allowed: " + hostOrigin);
   const ownOrigin = window.location.origin;
   if (ownOrigin === hostOrigin) throw new Error("Spec: host and sandbox MUST have different origins.");
-  // Only the Simulator page that serves this proxy (same port, the other loopback name) may drive it.
-  if (new URL(hostOrigin).port !== window.location.port) throw new Error("Embedding page not allowed: " + hostOrigin);
+  // Local: only the Simulator page that serves this proxy (same port, the other loopback name) may drive it.
+  if (HOST_PATTERN.test(hostOrigin) && new URL(hostOrigin).port !== window.location.port) throw new Error("Embedding page not allowed: " + hostOrigin);
 
   // Self-test: reaching into the host page must fail. If it works, isolation is broken; stop here.
   let isolated = false;
