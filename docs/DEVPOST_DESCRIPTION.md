@@ -80,6 +80,7 @@ Dairy, sheep and fish farming are planned, each needing its own vet-reviewed con
 | Claim | Where to check it |
 |---|---|
 | Demo video (2:03) | https://youtu.be/wB2TxMqiE_U |
+| Farmer pilot | Link private (real farm records). Screenshots: gallery images 10-11. Available to judges on request via a Devpost message. |
 | 14 tools, MCP 2025-11-25 | `docs/RESULTS.md` sections 1 and 4; `python tasks.py verify` |
 | 3,486 tests (524, 1,757, 1,205) | `docs/RESULTS.md` section 1; the line at the top of `README.md` |
 | CI is green | The CI badge at the top of `README.md`; the GitHub Actions page |
@@ -105,7 +106,7 @@ Python 3.13, `mcp` 2.2.0, Model Context Protocol 2025-11-25 over Streamable HTTP
 
 ## 14. Testing instructions
 
-Open https://demo.13-127-66-28.sslip.io/ in a desktop browser. No sign-in. Tap one of the five starter tiles (farm status, when to sell, health check, daily briefing, help) and read the card. The health check tile sends one sentence and shows "Still checking", then the result. Judge view is on by default and shows the English under each Telugu answer. Type a question, for example "How is shed two doing?". Open "Developer panel" to see the MCP request and response. The farm is fictional demo data. I tested only in Chromium-based browsers; Firefox and Safari (WebKit) were not tested. The farmer's Telugu phone page is not on the public demo. Nova is off ("Demo rules (no AI model)").
+Open https://demo.13-127-66-28.sslip.io/ in a desktop browser. No sign-in. Tap a starter tile (farm status, when to sell, health check, daily briefing, help) and read the card. The health check shows "Still checking", then the result. Judge view shows the English under each Telugu answer. Type a question, for example "How is shed two doing?". Open "Developer panel" to see the MCP request and response. The farm is fictional demo data. I tested only in Chromium-based browsers. Nova is off ("Demo rules (no AI model)"). The farmer's pilot link is not public: it opens real farm records and runs on a small server. If you need it for testing, message me on Devpost and I will email it to you. Screenshots are in the gallery.
 
 ## 15. Product feedback
 
