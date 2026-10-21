@@ -27,6 +27,7 @@ Hand-written. Each row is a sentence spoken or a thing shown in the demo video (
 | 21 | (If Sound is on in the Simulator) the English answer is read aloud by the browser's speech synthesis. | Builder's manual test, shown in the video; not covered by automated tests. Code: `src/clucktalk/simulator/static/app.js` lines 41 to 60. Spoken Telugu replies do not exist. | Weak: no automated test |
 | 22 | The first screen has five starter questions, each a Telugu question with its English gloss; a tap asks the English sentence (the demo host reads English only). | `tests/contract/test_simulator_starters.py` (each chip is an approved catalog pair and is answered by the expected tool); `docs/evidence/2026-10-18_judge_view/`. | Strong for the answers; the layout is shown by screenshots only |
 | 23 | The judge view puts the English side under each Telugu answer, and can be switched off. | `tests/contract/test_simulator_starters.py` (page files); screenshots `02_` and `03_` in `docs/evidence/2026-10-18_judge_view/`. | Medium: no browser test |
+| 24 | India's poultry market is worth about 2.6 lakh crore rupees. | IMARC Group, "India Poultry Market", https://www.imarcgroup.com/indian-poultry-market : INR 2,636 billion in 2025 (about 2.6 lakh crore rupees), forecast INR 8,433 billion by 2034; the page says "Last Updated: July 07, 2026". Figure supplied by the builder from that page. | Third-party market-research estimate, not our measurement |
 
 ## Not claimed in the video
 

@@ -24,7 +24,7 @@ A farmer can do five things.
 
 1. Ask how each shed is doing. A card shows the status, with health items first.
 2. Get a daily briefing: what needs attention today, in order.
-3. Check sick birds. CluckTalk asks short questions and sets the urgency in code. It gives guidance for the vet, never a diagnosis or a dose. The vet summary is read back first, and the SMS is simulated.
+3. Check sick birds. The farmer says what they see in one sentence, for example coughing and not eating. CluckTalk starts a check, shows "Still checking", then gives the result. Code sets the urgency. It gives guidance for the vet, never a diagnosis or a dose. The vet summary is read back first, and the SMS is simulated. It does not ask the farmer questions. A follow-up about the shed comes with the briefing days later (`report_health_follow_up`, tested in `tests/contract/test_follow_up_tools.py`; not shown in a short demo).
 4. Record the day: deaths, feed, weights, treatments. The record is read back and saved only after the farmer says yes.
 5. Plan a sale or a feed order. The price is simulated.
 
@@ -71,7 +71,7 @@ Dairy, sheep and fish farming are planned, each needing its own vet-reviewed con
 
 **Design.** The first screen has five starter tiles. Each answer comes in Telugu with the English under it ("Judge view"). Nothing is saved before a read-back and a yes, and every simulated number is labelled. Limit: no Telugu speech, and the layout is shown by screenshots only. Evidence: `docs/evidence/2026-10-18_judge_view/`; `tests/contract/test_simulator_starters.py`.
 
-**Potential Impact.** The target is a broiler farmer who tracks several sheds by memory or notebook. One farmer used the pilot with two sheds and confirmed two records on 19 October. The next pilot would measure the time spent on daily records and whether deaths are noticed earlier; that is a plan, not a result. Yield, mortality, time saved and adoption are not measured. Evidence: `README.md` (Impact); `docs/JUDGES.md`.
+**Potential Impact.** India's poultry market is estimated at about 2.6 lakh crore rupees (INR 2,636 billion in 2025, IMARC Group); this is a third-party market estimate, not my measurement. The target is a broiler farmer who tracks several sheds by memory or notebook. One farmer used the pilot with two sheds and confirmed two records on 19 October. The next pilot would measure the time spent on daily records and whether deaths are noticed earlier; that is a plan, not a result. Yield, mortality, time saved and adoption are not measured. Evidence: `README.md` (Impact); `docs/JUDGES.md`.
 
 **Quality of the Idea.** The idea is a helper a farmer can ask in Telugu that answers from the farmer's own records and does not diagnose. Code sets the urgency, and the reply is guidance for the vet. The schedule, safety and language layers are not poultry-specific, but other species are only planned. Evidence: `docs/SAFETY_MATRIX.md`; `tests/unit/test_triage_rules.py`.
 
@@ -85,6 +85,7 @@ Dairy, sheep and fish farming are planned, each needing its own vet-reviewed con
 | 88 of 88 golden cases | `docs/EVALS.md`; `docs/RESULTS.md` section 2 |
 | p95 about 25 ms, localhost, mock mode | `docs/RESULTS.md` section 5 |
 | Nova integrated, four calls on 2026-09-29, off in demo and pilot | `src/clucktalk/agents/bedrock.py`; `docs/AWS_SETUP.md` sections 5.2 and 5.3; `FRICTION_LOG.md` FL-031 |
+| India's poultry market, about 2.6 lakh crore rupees | IMARC Group, "India Poultry Market", https://www.imarcgroup.com/indian-poultry-market; `docs/VIDEO_CLAIMS.md` row 24. Third-party estimate, not my measurement. |
 | Pilot: two sheds, two records, 19 October | `docs/RESULTS.md` section 9; `submission.md` |
 | No diagnosis or dose | `docs/SAFETY_MATRIX.md`; `tests/unit/test_triage_rules.py` |
 | Friction entries FL-034 to FL-037 | `docs/DEV_NOTES.md`; `FRICTION_LOG.md` |
@@ -103,7 +104,7 @@ Python 3.13, `mcp` 2.2.0, Model Context Protocol 2025-11-25 over Streamable HTTP
 
 ## 14. Testing instructions
 
-Open https://demo.13-127-66-28.sslip.io/ in a desktop browser. No sign-in. Tap one of the five starter tiles (farm status, when to sell, health check, daily briefing, help) and read the card. Judge view is on by default and shows the English under each Telugu answer. Type a question, for example "How is shed two doing?". Open "Developer panel" to see the MCP request and response. The farm is fictional demo data. I tested only in Chromium-based browsers; Firefox and Safari (WebKit) were not tested. The farmer's Telugu phone page is not on the public demo. Nova is off ("Demo rules (no AI model)").
+Open https://demo.13-127-66-28.sslip.io/ in a desktop browser. No sign-in. Tap one of the five starter tiles (farm status, when to sell, health check, daily briefing, help) and read the card. The health check tile sends one sentence and shows "Still checking", then the result. Judge view is on by default and shows the English under each Telugu answer. Type a question, for example "How is shed two doing?". Open "Developer panel" to see the MCP request and response. The farm is fictional demo data. I tested only in Chromium-based browsers; Firefox and Safari (WebKit) were not tested. The farmer's Telugu phone page is not on the public demo. Nova is off ("Demo rules (no AI model)").
 
 ## 15. Product feedback
 
