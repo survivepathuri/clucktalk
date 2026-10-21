@@ -11,7 +11,7 @@ Only real experiences. Never batched, never invented.
 
 Every entry uses the six official fields (task attempted, steps taken, expected vs actual, severity, workaround, actionable suggestion) plus date, tag, `Time cost:` (only what was recorded in the sessions, otherwise "not recorded"), `Reproduce:` (a real command or the exact test name, otherwise "documentation-based, no command") and `Evidence:` (only files that exist in this repo). Every suggestion names the owner, the page or mechanism and the concrete change; open points are phrased as questions to the owner.
 
-**Counts:** 33 FL numbers (FL-001 to FL-033): 30 live entries (23 in this file, 7 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
+**Counts:** 37 FL numbers (FL-001 to FL-037): 34 live entries (23 in this file, 11 in `docs/DEV_NOTES.md`) and 3 merged stubs (FL-010, FL-016, FL-018).
 
 **FL numbers are stable ids.** They are never reused or renumbered, so every reference in the code, the docs and the submission copies stays valid. FL-010, FL-016 and FL-018 were merged into FL-007 and FL-014 (2026-10-01 audit); their numbers remain as short stubs.
 
@@ -39,6 +39,7 @@ Audit of 2026-10-01: three pairs of entries that describe one problem were merge
 | FL-028 to FL-030 | [Dev] | `docs/DEV_NOTES.md` |
 | FL-031, FL-032 | [AWS/Bedrock/Nova] | this file |
 | FL-033 | [Alexa+/MCP] | this file (press-reported, not verified with Amazon) |
+| FL-034 to FL-037 | [Dev] | `docs/DEV_NOTES.md` (FL-034, FL-035, FL-037 fixed; FL-036 open) |
 
 ---
 

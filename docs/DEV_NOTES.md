@@ -107,3 +107,63 @@ Actionable suggestion: Owner: our runbook and any task template. Give a key by p
 Time cost: not recorded
 Reproduce: follow RUNBOOK section 11 on any instance; check with `grep -c "^ssh-"` on the `authorized_keys` files.
 Evidence: login with the old key after the change printed "Permission denied (publickey)"; the new key logged in; `verify.ps1` passed with the new key (2026-10-13).
+
+## FL-034: On the public demo the cards did not render: the card sandbox origin was built as `https://localhost:` (empty port)
+Date: 2026-10-21 (fixed in commit a04e8e5)
+Tool / service: CluckTalk Simulator (`src/clucktalk/simulator/static/app.js`, `sandbox.js`, `simulator/app.py`) served over https on the public demo host; the MCP Apps rule that the card proxy ("sandbox") and the host page must have different origins
+Tag: [Dev]
+Task attempted: Show the cards in the Simulator on the public demo host (https, port 443) for judges.
+Steps taken: Opened the public demo and asked for a card answer. The exact click path was not recorded.
+Expected vs actual: Expected the card to render as it does locally. Actual (found on the public demo, per the test docstring in `tests/harness/test_windows_launcher.py`): the page chose the card proxy's origin by swapping `127.0.0.1` and `localhost` on the same port (the local way to get a second origin). Behind https on port 443 `location.port` is empty, so the result was `https://localhost:` and no card rendered.
+Severity: Medium
+Impact: Cards did not render on the public demo until the fix; a local run and the pilot were not affected.
+Workaround: Fixed in code (status: FIXED; CI green on a04e8e5, run 39497290345). A public host now sets `CLUCKTALK_SANDBOX_ORIGIN=https://sandbox.<public host>`. The page uses it as the proxy origin; on that name the server answers only `/sandbox` and `/static/` (anything else is 404); the proxy's `frame-ancestors` names the page origin; `sandbox.js` takes the embedding page's origin from its own host name, because that page may send no referrer. Unset, nothing changes (the loopback swap). The DNS and web-server side of the `sandbox.` name is outside this repository and is not recorded here.
+Actionable suggestion: Owner: CluckTalk (ours). A host page that must put the sandbox on a different origin needs a second host name when it is served on the default https port; say so wherever the second-origin rule is explained. Our own test now pins the origin choice.
+Time cost: not recorded
+Reproduce: `tests/harness/test_windows_launcher.py::test_card_sandbox_origin_is_the_loopback_swap_unless_a_sibling_host_is_set` pins the new rule. The original failure was seen on the public demo only and is not reproduced locally.
+Evidence: commit a04e8e5; CI run 39497290345 (success, all four jobs). That cards render on the public demo after the fix is owner-reported (handoff), not re-checked in this entry.
+
+## FL-035: The briefing card's date text was not excluded from the cross-modal number check, which could report a false mismatch
+Date: 2026-10-21 (fixed in commit 764fa80)
+Tool / service: CluckTalk briefing card (`src/clucktalk/server/cards/briefing.html`, `ui/cards/briefing.html`) and the Simulator's cross-modal check (`crossModal` in `src/clucktalk/simulator/static/app.js`)
+Tag: [Dev]
+Task attempted: Keep "spoken numbers equal card numbers" checked in the Simulator for every card.
+Steps taken: Detail not recorded (the failing check output was not saved).
+Expected vs actual: Expected the check to compare only the numbers of the answer. Actual: the farm-status card already marked its display-only date spans with `data-xm-skip` (the card removes those nodes before the check reads its text); the briefing card's date span had no such mark, so its digits were part of the checked text. The commit message calls this a false cross-modal failure.
+Severity: Low
+Impact: A false failure on a display-only date, not a wrong number on the card.
+Workaround: Fixed (status: FIXED; CI green on 764fa80, run 39486708012 on its second attempt, see FL-036): `data-xm-skip` added to the briefing date span in both card copies.
+Actionable suggestion: Owner: CluckTalk (ours). Give every card the same list of display-only elements, and test the check on each card that shows a date.
+Time cost: not recorded
+Reproduce: Detail not recorded.
+Evidence: commit 764fa80 (two lines, one per card copy).
+
+## FL-036: One Windows 3.12 CI job failed on a contract test about overlapping request ids; a single re-run passed and the cause was not investigated
+Date: 2026-10-20 (GitHub Actions log time, UTC)
+Tool / service: GitHub Actions windows-latest, Python 3.12; `tests/contract/test_concurrency.py::test_two_overlapping_requests_with_the_same_id_leave_one_unanswered_pinned_finding`
+Tag: [Dev]
+Task attempted: Run `python tasks.py check` on the CI matrix for commit 764fa80.
+Steps taken: Pushed 764fa80; the windows / 3.12 job failed; the run was re-run once (attempt 2) and all jobs passed.
+Expected vs actual: Expected one of the two pinned outcomes (`["200", "unanswered"]` or `["200", "500"]`, see FL-011). Actual in attempt 1: `["200", "200"]` (both requests answered); 1 failed, 1204 passed in 358.62 s. The other three jobs passed in the same attempt.
+Severity: Low
+Impact: One red CI job and one re-run; no product change.
+Workaround: A single re-run (status: OPEN). Not investigated: it is not known whether the SDK's behaviour or the test's timing produced the third outcome, and the test was not changed.
+Actionable suggestion: Owner: CluckTalk tests (ours). If it recurs, record the outcomes of each run and decide whether `["200", "200"]` is a third valid outcome of the SDK finding in FL-011 or a timing artefact; do not loosen the test before that.
+Time cost: not recorded
+Reproduce: not reproduced; see the failed log of run 39486708012, attempt 1 (`gh run view 39486708012 --attempt 1 --log-failed`).
+Evidence: run 39486708012: attempt 1 failure, attempt 2 success.
+
+## FL-037: `CLUCKTALK_SANDBOX_ORIGIN` is a new deployment setting, so it refuses any value except the sibling name of the public origin
+Date: 2026-10-21 (added with the fix in commit a04e8e5)
+Tool / service: CluckTalk Simulator settings (`sandbox_origin_from_env` in `src/clucktalk/simulator/app.py`)
+Tag: [Dev]
+Task attempted: Let the public demo host name its card proxy origin without letting a wrong value change which page may embed the proxy.
+Steps taken: The setting is read at start-up; the code compares it with `CLUCKTALK_PUBLIC_ORIGIN`.
+Expected vs actual: Expected a plain environment variable to be enough. Actual (a design finding, not an outage): the value decides which page the proxy's `frame-ancestors` allows, so the code raises a configuration error unless the value is exactly `https://sandbox.<host of CLUCKTALK_PUBLIC_ORIGIN>`. A test pins four wrong cases: no public origin, a different host, `http`, and the page's own origin. The Windows pilot launcher does not list it ("the farmer's phone page shows no cards; only the judges' demo host sets it").
+Severity: Low
+Impact: A wrong value stops the Simulator at start-up with a message instead of serving a proxy that the wrong page could embed.
+Workaround: None needed (status: FIXED by the guard; unset means no change).
+Actionable suggestion: Owner: CluckTalk (ours). Keep the setting out of the pilot launcher's list, and keep the four refusals in the test.
+Time cost: not recorded
+Reproduce: `tests/harness/test_windows_launcher.py::test_card_sandbox_origin_is_the_loopback_swap_unless_a_sibling_host_is_set`.
+Evidence: commit a04e8e5.
