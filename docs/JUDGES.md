@@ -2,6 +2,16 @@
 
 **Telugu-first MCP assistant for broiler farmers**
 
+## Live demo (nothing to install)
+
+Open https://demo.13-127-66-28.sslip.io/ in a desktop browser. It is the same Simulator as below, with the same fictional farm, running against a real MCP server. What to click:
+
+1. Tap one of the five starter tiles (farm status, when to sell, health check, daily briefing, help) and read the card.
+2. Keep "Judge view" on to see the English under each Telugu answer, and type your own question (for example, "How is shed two doing?").
+3. Open "Developer panel" to see the MCP `tools/call` request and response behind that answer.
+
+Tested in Chromium-based browsers only; Firefox and Safari (WebKit) were not tested. The Telugu farmer phone page is not on the public demo, and Amazon Nova is switched off there ("Demo rules (no AI model)").
+
 **Python 3.12 or 3.13 is required.** Check it first: `python --version` on Windows, `python3 --version` on macOS and Linux. Use `python` on Windows and `python3` on macOS and Linux in every command below. If your default `python` is another version (for example 3.11 or 3.14) but 3.12 or 3.13 is also installed, `setup` finds the installed one itself (it tries the Windows `py` launcher, then `python3.13` and `python3.12`), so the same commands work; on Windows you can also pin it with `py -3.12 tasks.py setup` or `py -3.13 tasks.py setup`, and then run `verify` and `run` as shown (they use the `.venv`). This is read from `tasks.py`; it was not run with a second Python installed. No virtual-environment activation is needed: `tasks.py` creates and uses its own `.venv`. Nothing else is needed: no Docker, no AWS account, no Node.js (Node.js is optional, see minute 2).
 
 If you do not have Python 3.12 or 3.13 (these install lines are the ones in the README; they were not run here):
@@ -93,6 +103,7 @@ The vet offer in the Simulator: the summary is read back first, and only a secon
 - **Not on an Alexa+ device.** No Alexa+ device, Alexa speech or Amazon review was involved. Alexa composes its own speech, so what it says can differ from our sentences.
 - **Not built:** OAuth 2.1 with PKCE, Protected Resource Metadata, a remote HTTPS URL for the Alexa+ add-on, security and data policies (`docs/ALEXA_READINESS.md`, `docs/PRODUCTION_PATH.md`).
 - **Latency numbers** are server times on localhost in mock mode. Amazon's 500 ms is a round trip including the network, so we do not claim to meet it end to end.
+- **One unit test is environment-sensitive.** On a PC whose AWS config has an `aws login` profile, `tests/unit/test_agents.py::test_live_client_makes_one_attempt_per_call_with_a_short_timeout` needs `botocore[crt]` and fails (FL-032). With no such profile it passes. CI is unaffected.
 - **Simulated:** prices, sensors, the supplier, SMS and payments, and the whole demo farm.
 - **No veterinary or agronomic review.** The thresholds are general guidance or the builder's heuristics (`docs/SAFETY_MATRIX.md`). No tool gives a medicine or a dose.
 - **Telugu:** 470 of 476 strings reviewed by the builder, a native Telugu speaker (single reviewer, not independent); 6 pending; the farmer-preferred wording for follow-up is still to be confirmed. On 2026-10-16 I personally read the 390 strings that were still pending and found them correct (single-reviewer self-review as a native Telugu speaker); I approved 384 and kept 6 follow-up strings pending until the farmer confirms his word. The counts: 470 approved + 6 pending = 476 strings, counted wherever they appear in the code (86 approved on 2026-09-27, 384 on 2026-10-16); the approvals file `data/i18n/telugu_approvals.json` holds 433 entries (80 + 353) because a repeated English+Telugu pair shares one approval. No Telugu voice was tested through Alexa+ (`docs/TELUGU_REVIEW.md`).
