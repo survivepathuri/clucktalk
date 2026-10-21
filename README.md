@@ -6,7 +6,15 @@
 
 The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend').
 
+[
+
+![Watch the 2-minute demo video](docs/img/demo_video_thumbnail.jpg)
+
+](https://youtu.be/wB2TxMqiE_U)
+
 Watch the 2-minute demo: https://youtu.be/wB2TxMqiE_U
+
+Try the live demo (no sign-in, desktop browser): https://demo.13-127-66-28.sslip.io/
 
 MIT licensed · Built for the Alexa+ track of the Build, Ship, Shape hackathon · Judges: start at "Try the live demo" below, or `docs/JUDGES.md`.
 
@@ -23,6 +31,21 @@ It reads every number back before saving it, and never gives a diagnosis or a do
 
 ![Telugu answer with the English judge view on](docs/evidence/2026-10-18_judge_view/02_telugu-answer_judge-view-on_1024x600.png)
 *Telugu answer with the English judge view on.*
+
+![Pilot build on a phone: red doctor alert and a plain-Telugu briefing](docs/gallery/11_pilot-phone-alert-briefing.png)
+
+*Pilot build opened on a phone: a doctor alert and the Telugu briefing. The farmer is anonymous and the pilot link is private (available to judges on request via a Devpost message).*
+
+## For judges: where each criterion is shown
+
+| Criterion | Where to see it |
+|---|---|
+| Technical Implementation | A real MCP server (2025-11-25, Streamable HTTP) with 14 tools; 3,486 automated tests; docs/RESULTS.md, docs/ARCHITECTURE.md. Limits are in the Status table below. |
+| Design | The live demo: Telugu answers with the English "Judge view", a read-back and a yes before anything is saved, every simulated number labelled. |
+| Potential Impact | A real, very small pilot (one farmer, two sheds, two records confirmed on 19 October); see "Impact: measured and not yet measured" below. |
+| Quality of the Idea | Answers come from the farmer's own records; code sets the urgency; guidance for the vet, never a diagnosis or a dose; docs/SAFETY_MATRIX.md. |
+
+Judges: the one-page guide is docs/JUDGES.md.
 
 ## Status: real, simulated, not yet
 
@@ -65,7 +88,9 @@ flowchart LR
   T -.->|"optional, off in the demo and the pilot"| N["Amazon Nova 2 Lite<br/>(Bedrock)"]
 ```
 
-An image version for slides is `docs/img/architecture.png`; the detailed diagrams, with what is real and what is simulated, are in `docs/ARCHITECTURE.md`.
+![CluckTalk architecture: real parts solid, simulated or optional parts dashed](docs/img/architecture.png)
+
+Real parts are solid; simulated or optional parts are dashed. The detailed diagrams, with what is real and what is simulated, are in `docs/ARCHITECTURE.md`.
 
 ## Limits and what's next
 
