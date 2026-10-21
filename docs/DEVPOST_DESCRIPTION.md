@@ -28,7 +28,7 @@ A farmer can do five things.
 4. Record the day: deaths, feed, weights, treatments. The record is read back and saved only after the farmer says yes.
 5. Plan a sale or a feed order. The price is simulated.
 
-The Alexa+ screen is simulated. Our web app plays the Alexa+ client and speaks MCP to the real server. Its banner says: "Simulated Alexa+ screen. The backend is a real MCP server (Streamable HTTP)." The badge says "Demo data · mock host". The demo farm is fictional and has 3 houses.
+The Alexa+ screen is simulated. My web app plays the Alexa+ client and speaks MCP to the real server. Its banner says: "Simulated Alexa+ screen. The backend is a real MCP server (Streamable HTTP)." The badge says "Demo data · mock host". The demo farm is fictional and has 3 houses.
 
 ## 5. How I built it
 
@@ -51,7 +51,7 @@ Amazon Nova 2 Lite through the Bedrock Converse API is integrated in `src/cluckt
 
 Measured, each from a file in this repository:
 
-- 14 tools and 3,486 automated tests (524 harness, 1,757 unit, 1,205 contract), CI green on 528dc9c.
+- 14 tools and 3,486 automated tests (524 harness, 1,757 unit, 1,205 contract); the CI badge in `README.md` shows the latest run.
 - 88 of 88 golden evaluation cases pass in mock mode (run of 2026-10-16).
 - Server time for the slowest step is p95 about 25 ms, on localhost in mock mode (docs/RESULTS.md). This is not Amazon's 500 ms round trip.
 - In the pilot, one farmer confirmed two daily records on 19 October.
@@ -71,7 +71,7 @@ Dairy, sheep and fish farming are planned, each needing its own vet-reviewed con
 
 **Design.** The first screen has five starter tiles. Each answer comes in Telugu with the English under it ("Judge view"). Nothing is saved before a read-back and a yes, and every simulated number is labelled. Limit: no Telugu speech, and the layout is shown by screenshots only. Evidence: `docs/evidence/2026-10-18_judge_view/`; `tests/contract/test_simulator_starters.py`.
 
-**Potential Impact.** The target is a broiler farmer who tracks several sheds by memory or notebook. One farmer used the pilot with two sheds and confirmed two records on 19 October. Yield, mortality, time saved and adoption are not measured. Evidence: `README.md` (Impact); `docs/JUDGES.md`.
+**Potential Impact.** The target is a broiler farmer who tracks several sheds by memory or notebook. One farmer used the pilot with two sheds and confirmed two records on 19 October. The next pilot would measure the time spent on daily records and whether deaths are noticed earlier; that is a plan, not a result. Yield, mortality, time saved and adoption are not measured. Evidence: `README.md` (Impact); `docs/JUDGES.md`.
 
 **Quality of the Idea.** The idea is a helper a farmer can ask in Telugu that answers from the farmer's own records and does not diagnose. Code sets the urgency, and the reply is guidance for the vet. The schedule, safety and language layers are not poultry-specific, but other species are only planned. Evidence: `docs/SAFETY_MATRIX.md`; `tests/unit/test_triage_rules.py`.
 
@@ -81,7 +81,7 @@ Dairy, sheep and fish farming are planned, each needing its own vet-reviewed con
 |---|---|
 | 14 tools, MCP 2025-11-25 | `docs/RESULTS.md` sections 1 and 4; `python tasks.py verify` |
 | 3,486 tests (524, 1,757, 1,205) | `docs/RESULTS.md` section 1; the line at the top of `README.md` |
-| CI green on 528dc9c | GitHub Actions run for commit 528dc9c |
+| CI is green | The CI badge at the top of `README.md`; the GitHub Actions page |
 | 88 of 88 golden cases | `docs/EVALS.md`; `docs/RESULTS.md` section 2 |
 | p95 about 25 ms, localhost, mock mode | `docs/RESULTS.md` section 5 |
 | Nova integrated, four calls on 2026-09-29, off in demo and pilot | `src/clucktalk/agents/bedrock.py`; `docs/AWS_SETUP.md` sections 5.2 and 5.3; `FRICTION_LOG.md` FL-031 |
@@ -111,9 +111,9 @@ Amazon Bedrock, Nova 2 Lite. Used for: triage and briefing slow paths via Conver
 
 Amazon Lightsail. Used for: hosting the farmer pilot on one Mumbai instance (Ubuntu 24.04, static IP, about $7 a month, paid by card). Worked well: the deploy and verify scripts ran twice on the real server, and the app, HTTPS proxy and backup timer came back after a reboot. Needs work: port 443 is closed on a new instance; the instance name cannot be changed; the console key download is a one-time secret (FL-030); memory under real load is untested. Onboarding: about 5 hours from creating the instance to the first deploy. Build again: yes.
 
-Alexa+ MCP documentation and our Simulator. Used for: building an MCP server to the published guidance (QuickStart, 10 Jul; Local Inspector, 3 Aug); we wrote our own Simulator because we could not run on Alexa+. Worked well: the QuickStart gave the transport, the auth checklist and the 500 ms target. Needs work: no self-serve way to run the Alexa AI CLI or Local Inspector (FL-024); no stated protocolVersion (FL-026); no card size, CSP or font guidance (FL-009). Onboarding: about 2 hours reading the docs; we never tested on real Alexa+. Build again: yes, we would build for MCP again.
+Alexa+ MCP documentation and my Simulator. Used for: building an MCP server to the published guidance (QuickStart, 10 Jul; Local Inspector, 3 Aug); I wrote my own Simulator because I could not run on Alexa+. Worked well: the QuickStart gave the transport, the auth checklist and the 500 ms target. Needs work: no self-serve way to run the Alexa AI CLI or Local Inspector (FL-024); no stated protocolVersion (FL-026); no card size, CSP or font guidance (FL-009). Onboarding: about 2 hours reading the docs; I never tested on real Alexa+. Build again: yes, I would build for MCP again.
 
-AWS CLI and boto3 on Windows. Used for: Identity Center sign-in, plan and quota checks, a hello call to Bedrock, and the live client in our code. Worked well: no access keys were needed, and we read the Converse request shapes in the installed botocore model before any paid call. Needs work: the CLI crashed on Windows while saving a reply with an emoji and left a truncated file (FL-019); a billing error did not name the setting to change (FL-015); an aws login profile needed botocore[crt] (FL-032, details not recorded). Onboarding: about 60 minutes from install to a working aws sts get-caller-identity.
+AWS CLI and boto3 on Windows. Used for: Identity Center sign-in, plan and quota checks, a hello call to Bedrock, and the live client in my code. Worked well: no access keys were needed, and I read the Converse request shapes in the installed botocore model before any paid call. Needs work: the CLI crashed on Windows while saving a reply with an emoji and left a truncated file (FL-019); a billing error did not name the setting to change (FL-015); an aws login profile needed botocore[crt] (FL-032). Onboarding: about 60 minutes from install to a working aws sts get-caller-identity.
 
 ## 16. Pre-existing projects
 
