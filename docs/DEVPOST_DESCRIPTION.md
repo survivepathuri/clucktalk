@@ -24,7 +24,7 @@ A farmer can do five things.
 
 1. Ask how each shed is doing. A card shows the status, with health items first.
 2. Get a daily briefing: what needs attention today, in order.
-3. Check sick birds. The farmer says what they see in one sentence, for example coughing and not eating. CluckTalk starts a check, shows "Still checking", then gives the result. Code sets the urgency. It gives guidance for the vet, never a diagnosis or a dose. The vet summary is read back first, and the SMS is simulated. It does not ask the farmer questions. A follow-up about the shed comes with the briefing days later (`report_health_follow_up`, tested in `tests/contract/test_follow_up_tools.py`; not shown in a short demo).
+3. Check sick birds. The farmer says what they see in one sentence, for example coughing and not eating. CluckTalk starts a check, shows "Still checking", then gives the result. Code sets the urgency. It gives guidance for the vet, never a diagnosis or a dose. The vet summary is read back first, and the SMS is simulated. It asks no symptom questions before the result; the result then offers to send a summary to the vet (Yes or No). A follow-up about the shed comes with the briefing days later (`report_health_follow_up`, tested in `tests/contract/test_follow_up_tools.py`; not shown in a short demo).
 4. Record the day: deaths, feed, weights, treatments. The record is read back and saved only after the farmer says yes.
 5. Plan a sale or a feed order. The price is simulated.
 
