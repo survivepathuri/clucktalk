@@ -94,16 +94,18 @@ def test_the_readme_has_the_try_it_now_commands_the_limits_and_the_claims_table(
     assert top.index("## Try it now") < top.index("## Known limitations") < top.index("## What is verified")
 
 
-# The one sentence allowed to type counts: "Automated tests: <total>, CI green on <sha>."
+# The one sentence allowed to type counts: "Automated tests: <total> (<parts>); counts from the full verify ..."
 TEST_LINE = re.compile(
-    r"^Automated tests: (\d+) \((\d+) harness, (\d+) unit, (\d+) contract\), CI green on [0-9a-f]{7}\.$", re.MULTILINE
+    r"^Automated tests: ([\d,]+) \(([\d,]+) harness, ([\d,]+) unit, ([\d,]+) contract\); "
+    r"counts from the full verify recorded in docs/RESULTS\.md\.$",
+    re.MULTILINE,
 )
 
 
 def test_the_readme_does_not_type_test_counts():
     lines = TEST_LINE.findall(README)
     assert len(lines) == 1, "exactly one 'Automated tests:' line is allowed in the README"
-    total, *parts = (int(n) for n in lines[0])
+    total, *parts = (int(n.replace(",", "")) for n in lines[0])
     assert total == sum(parts), "the typed total must equal the sum of its parts"
     rest = TEST_LINE.sub("", README)
     assert not re.search(r"\b\d{2,4} (unit|contract|harness|golden)\b", rest), "counts come from verify, not the README"

@@ -8,7 +8,7 @@ The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend
 
 MIT licensed · Built for the Alexa+ track of the Build, Ship, Shape hackathon · Judges: start at "Try the live demo" below, or `docs/JUDGES.md`.
 
-Automated tests: 3486 (524 harness, 1757 unit, 1205 contract), CI green on 528dc9c.
+Automated tests: 3,486 (524 harness, 1,757 unit, 1,205 contract); counts from the full verify recorded in docs/RESULTS.md.
 
 A broiler farmer counts the dead birds each morning with busy hands, often with no screen in reach, and the number that matters (a sudden spike, the total so far, the moment to call the vet) is easy to miss.
 CluckTalk is an MCP server with 14 tools: it keeps each shed's daily records, ranks what needs attention today, and answers in Telugu and English, in text and on a card.
@@ -39,7 +39,7 @@ It reads every number back before saving it, and never gives a diagnosis or a do
 Open **https://demo.13-127-66-28.sslip.io/** in a desktop browser. No sign-in. It was tested in Chromium-based browsers (Chrome); Firefox and Safari (WebKit) were not tested. The Telugu farmer phone page is not on the public demo.
 
 1. Read the banner, "Simulated Alexa+ screen. The backend is a real MCP server (Streamable HTTP)." and the badge "Demo data · mock host": the farm is fictional.
-2. Tap one of the five starter tiles (farm status, when to sell, health check, daily briefing, help). A card and the answer appear.
+2. Tap one of the five starter tiles (farm status, when to sell, health check, daily briefing, help). A card and the answer appear. The health check tile sends one sentence about shed two (coughing and not eating); the server starts a check, the card says "Still checking", then it shows the result. It does not ask the farmer questions.
 3. Or type a question, for example *"How is shed two doing?"*.
 4. "Judge view" (on by default) shows the English under each Telugu answer; the button switches it off.
 5. Open "Developer panel" to see the MCP `tools/call` request and response behind each answer.
