@@ -5,6 +5,7 @@
 ## Live demo (nothing to install)
 
 Demo video (2:03): https://youtu.be/wB2TxMqiE_U
+The same video as a file (no YouTube needed): docs/video/clucktalk_demo.mp4. Transcript: docs/VIDEO_TRANSCRIPT.md.
 
 Farmer pilot: Link private (real farm records). Screenshots: gallery images 10-11. Available to judges on request via a Devpost message.
 
