@@ -10,7 +10,7 @@ The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend
 
 Watch the 2-minute demo: https://youtu.be/wB2TxMqiE_U
 
-No YouTube needed: the same video is in this repo, [docs/video/clucktalk_demo.mp4](docs/video/clucktalk_demo.mp4) (about 11.1 MB; GitHub plays it on the file page). Transcript for text readers: [docs/VIDEO_TRANSCRIPT.md](docs/VIDEO_TRANSCRIPT.md).
+Prefer a file? [Download the same video (MP4, about 11.1 MB)](https://github.com/survivepathuri/clucktalk/raw/main/docs/video/clucktalk_demo.mp4): your browser downloads it or opens it in a new tab. Transcript for text readers: [docs/VIDEO_TRANSCRIPT.md](docs/VIDEO_TRANSCRIPT.md).
 
 Try the live demo (no sign-in, desktop browser): https://demo.13-127-66-28.sslip.io/
 
