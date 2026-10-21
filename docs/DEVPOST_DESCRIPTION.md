@@ -79,6 +79,7 @@ Dairy, sheep and fish farming are planned, each needing its own vet-reviewed con
 
 | Claim | Where to check it |
 |---|---|
+| Demo video (2:03) | https://youtu.be/wB2TxMqiE_U |
 | 14 tools, MCP 2025-11-25 | `docs/RESULTS.md` sections 1 and 4; `python tasks.py verify` |
 | 3,486 tests (524, 1,757, 1,205) | `docs/RESULTS.md` section 1; the line at the top of `README.md` |
 | CI is green | The CI badge at the top of `README.md`; the GitHub Actions page |

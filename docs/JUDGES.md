@@ -4,6 +4,8 @@
 
 ## Live demo (nothing to install)
 
+Demo video (2:03): https://youtu.be/wB2TxMqiE_U
+
 Open https://demo.13-127-66-28.sslip.io/ in a desktop browser. It is the same Simulator as below, with the same fictional farm, running against a real MCP server. What to click:
 
 1. Tap one of the five starter tiles (farm status, when to sell, health check, daily briefing, help) and read the card. The health check tile sends one sentence about shed two; the card says "Still checking", then shows the result. It asks no symptom questions before the result; the result then offers to send a summary to the vet (Yes or No).

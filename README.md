@@ -6,6 +6,8 @@
 
 The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend').
 
+Watch the 2-minute demo: https://youtu.be/wB2TxMqiE_U
+
 MIT licensed · Built for the Alexa+ track of the Build, Ship, Shape hackathon · Judges: start at "Try the live demo" below, or `docs/JUDGES.md`.
 
 Automated tests: 3,486 (524 harness, 1,757 unit, 1,205 contract); counts from the full verify recorded in docs/RESULTS.md.
@@ -78,6 +80,7 @@ An image version for slides is `docs/img/architecture.png`; the detailed diagram
 
 - Code: https://github.com/survivepathuri/clucktalk (MIT, `LICENSE`)
 - Live demo: https://demo.13-127-66-28.sslip.io/
+- Demo video (2:03): https://youtu.be/wB2TxMqiE_U
 - Results: `docs/RESULTS.md` · Judges' guide: `docs/JUDGES.md` · Friction log: `FRICTION_LOG.md`
 
 ## Try it now
