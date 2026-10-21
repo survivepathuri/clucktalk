@@ -8,9 +8,7 @@ The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend
 
 MIT licensed · Built for the Alexa+ track of the Build, Ship, Shape hackathon · Judges: start at "Try the live demo" below, or `docs/JUDGES.md`.
 
-Automated tests: 3481 (519 harness, 1757 unit, 1205 contract), CI green on 764fa80.
-
-That line is true for commit 764fa80. One harness test was added after it, so `python tasks.py verify` on the newest commit counts one more than the line above.
+Automated tests: 3486 (524 harness, 1757 unit, 1205 contract), CI green on 528dc9c.
 
 A broiler farmer counts the dead birds each morning with busy hands, often with no screen in reach, and the number that matters (a sudden spike, the total so far, the moment to call the vet) is easy to miss.
 CluckTalk is an MCP server with 14 tools: it keeps each shed's daily records, ranks what needs attention today, and answers in Telugu and English, in text and on a card.
@@ -48,7 +46,7 @@ Open **https://demo.13-127-66-28.sslip.io/** in a desktop browser. No sign-in. I
 
 ## Impact: measured and not yet measured
 
-- **Measured:** 3,481 automated tests (the line above, `docs/RESULTS.md`); p95 about 25 ms (docs/RESULTS.md) for the slowest step of the server, on localhost in mock mode (section 5; not Amazon's 500 ms round trip); in the pilot, two daily records confirmed by one farmer on 19 October.
+- **Measured:** 3,486 automated tests (the line above, `docs/RESULTS.md`); p95 about 25 ms (docs/RESULTS.md) for the slowest step of the server, on localhost in mock mode (section 5; not Amazon's 500 ms round trip); in the pilot, two daily records confirmed by one farmer on 19 October.
 - **Not yet measured:** yield, mortality, time saved, adoption. One day of pilot data cannot show any of them.
 
 **Scale, honestly:** records are kept per house (shed), not per bird. The demo farm has 3 houses and the pilot has 2 sheds; nothing has been tested on a large farm.
