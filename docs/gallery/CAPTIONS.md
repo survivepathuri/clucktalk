@@ -11,7 +11,7 @@ Screenshots of the public demo (demo data, fictional farm), taken on 2026-10-21 
 7. `07_developer-panel-mcp.png`: Developer panel: the real MCP tools/call request and response behind one answer, from the public demo.
 8. `08_architecture.png`: Architecture: Alexa+ screen and cards are simulated or sandboxed; the MCP server and its 14 tools are real. Nova is off in the demo.
 9. `09_tests-and-ci.png`: README test line (3,486 tests) and the CI run summary of the commit pushed just before: four jobs passed, macOS manual and skipped.
-10. `10_pilot-phone-home-questions.png`: Pilot build on a phone: Telugu home buttons and ten quick questions. Pilot link is private (real farm data, small server); sent to judges on request.
+10. `10_pilot-phone-home-questions.png`: Pilot build on a phone: Telugu home buttons and ten quick questions. Pilot link is private (real farm data); sent to judges on request.
 11. `11_pilot-phone-alert-briefing.png`: Pilot build on a phone: red doctor alert when a shed's deaths pass the farmer's own daily limit, with a plain-Telugu briefing. Shown with permission.
 
 Known crops: the health check card (image 4) is taller than the simulated screen and scrolls, so its lower part is cut. The transcript box scrolls and shows the end of a long answer.

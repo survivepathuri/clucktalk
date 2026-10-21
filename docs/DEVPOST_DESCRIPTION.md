@@ -63,7 +63,7 @@ Put the safety rules in code and let a model only raise an alert. Label every si
 
 ## 9. What's next
 
-Dairy, sheep and fish farming are planned, each needing its own vet-reviewed content. They are not started. Other next steps: Telugu speech in and out, a longer farmer pilot, a Telugu review by someone besides me, and a live AI run through the server.
+Dairy, sheep and fish farming are planned, each needing its own vet-reviewed content. They are not started. Other next steps: Telugu speech in and out (the first request from the pilot farmer), a longer farmer pilot, a Telugu review by someone besides me, and a live AI run through the server.
 
 ## 10. How this meets each criterion
 
@@ -71,7 +71,7 @@ Dairy, sheep and fish farming are planned, each needing its own vet-reviewed con
 
 **Design.** The first screen has five starter tiles. Each answer comes in Telugu with the English under it ("Judge view"). Nothing is saved before a read-back and a yes, and every simulated number is labelled. Limit: no Telugu speech, and the layout is shown by screenshots only. Evidence: `docs/evidence/2026-10-18_judge_view/`; `tests/contract/test_simulator_starters.py`.
 
-**Potential Impact.** India's poultry market is estimated at about 2.6 lakh crore rupees (INR 2,636 billion in 2025, IMARC Group); this is a third-party market estimate, not my measurement. The target is a broiler farmer who tracks several sheds by memory or notebook. One farmer used the pilot with two sheds and confirmed two records on 19 October. The next pilot would measure the time spent on daily records and whether deaths are noticed earlier; that is a plan, not a result. Yield, mortality, time saved and adoption are not measured. Evidence: `README.md` (Impact); `docs/JUDGES.md`.
+**Potential Impact.** In the pilot, one farmer used CluckTalk with two sheds and confirmed two daily records on 19 October. India's poultry market is estimated at about 2.6 lakh crore rupees (INR 2,636 billion in 2025, IMARC Group); this is a third-party market estimate, not my measurement. The target is a broiler farmer who tracks several sheds by memory or notebook. The next pilot would measure the time spent on daily records and whether deaths are noticed earlier; that is a plan, not a result. Yield, mortality, time saved and adoption are not measured. Evidence: `README.md` (Impact); `docs/JUDGES.md`.
 
 **Quality of the Idea.** The idea is a helper a farmer can ask in Telugu that answers from the farmer's own records and does not diagnose. Code sets the urgency, and the reply is guidance for the vet. The schedule, safety and language layers are not poultry-specific, but other species are only planned. Evidence: `docs/SAFETY_MATRIX.md`; `tests/unit/test_triage_rules.py`.
 
@@ -106,7 +106,7 @@ Python 3.13, `mcp` 2.2.0, Model Context Protocol 2025-11-25 over Streamable HTTP
 
 ## 14. Testing instructions
 
-Open https://demo.13-127-66-28.sslip.io/ in a desktop browser. No sign-in. Tap a starter tile (farm status, when to sell, health check, daily briefing, help) and read the card. The health check shows "Still checking", then the result. Judge view shows the English under each Telugu answer. Type a question, for example "How is shed two doing?". Open "Developer panel" to see the MCP request and response. The farm is fictional demo data. I tested only in Chromium-based browsers. Nova is off ("Demo rules (no AI model)"). The farmer's pilot link is not public: it opens real farm records and runs on a small server. If you need it for testing, message me on Devpost and I will email it to you. Screenshots are in the gallery.
+Open https://demo.13-127-66-28.sslip.io/ in a desktop browser. No sign-in. Tap a starter tile (farm status, when to sell, health check, daily briefing, help) and read the card. The health check shows "Still checking", then the result. Judge view shows the English under each Telugu answer. Type a question, for example "How is shed two doing?". Open "Developer panel" to see the MCP request and response. The farm is fictional demo data. I tested only in Chromium-based browsers. Nova is off ("Demo rules (no AI model)"). The farmer's pilot link is not public: it opens real farm records. If you need it for testing, message me on Devpost and I will email it to you. Screenshots are in the gallery.
 
 ## 15. Product feedback
 
