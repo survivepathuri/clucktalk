@@ -6,11 +6,7 @@
 
 The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend').
 
-[
-
-![Watch the 2-minute demo video](docs/img/demo_video_thumbnail.jpg)
-
-](https://youtu.be/wB2TxMqiE_U)
+[![Watch the 2-minute demo video](docs/img/demo_video_thumbnail.jpg)](https://youtu.be/wB2TxMqiE_U)
 
 Watch the 2-minute demo: https://youtu.be/wB2TxMqiE_U
 
