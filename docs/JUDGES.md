@@ -65,6 +65,8 @@ What each command does:
 
 The times are from one clean-clone run on Windows 11 with Python 3.13, made by an independent audit run in a fresh context (same vendor model): setup took 1 min 16 s and verify took 45 s. Everything runs on seeded, fictional data in mock mode and shows a "Demo data" badge.
 
+Fresh-clone check: on 22 October 2026 a clean clone on Windows 11 (Python 3.13, which `setup` picked although the default `python` was 3.14) ran setup, verify and run exactly as written here (setup 64 s, verify 49 s).
+
 ## Ports and browser
 
 If port 8765 (MCP server) or 8766 (Simulator) is busy, `run` and `serve` print one line that names the port and start nothing. If no browser opens, open the URL printed after "ready". To choose another port or stop the browser from opening, set the variables like this (one example per shell; the first is cmd, the second PowerShell, the third bash or zsh):
