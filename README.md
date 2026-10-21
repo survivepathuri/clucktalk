@@ -45,6 +45,15 @@ It reads every number back before saving it, and never gives a diagnosis or a do
 
 Judges: the one-page guide is docs/JUDGES.md.
 
+## For Amazon's teams: friction and feedback
+
+I kept a friction log while building, and wrote feedback on every tool used. The one page to read first is docs/FRICTION_SUMMARY.md.
+
+- docs/FRICTION_SUMMARY.md: the entries the Amazon teams most need, each with who is affected, what it cost, and the change I ask for.
+- FRICTION_LOG.md: the full log (34 live entries, FL-001 to FL-037), with steps and evidence.
+- FEATURE_REQUESTS.md: the changes I ask for.
+- docs/PRODUCT_FEEDBACK.md: feedback per tool (what I used it for, what worked, what needs work, onboarding, would I build with it again).
+
 ## Status: real, simulated, not yet
 
 | Part | Status | What that means |

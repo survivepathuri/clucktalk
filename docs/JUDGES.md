@@ -99,7 +99,7 @@ The vet offer in the Simulator: the summary is read back first, and only a secon
 | Golden evals | `data/eval/golden_cases.json`, results in `docs/EVALS.md` |
 | The architecture | `docs/ARCHITECTURE.md`; the full design is `docs/DESIGN.md` |
 | What the pilot is | `docs/PILOT_RUNBOOK_WINDOWS.md` (the plan; the Lightsail cloud pilot has been deployed since 2026-10-13 and one farmer used it, counts as of 20 October 2026, see `docs/RESULTS.md`) |
-| Friction with the platforms we used | `FRICTION_LOG.md`, `FEATURE_REQUESTS.md`, `docs/PRODUCT_FEEDBACK.md` |
+| Friction with the platforms we used | docs/FRICTION_SUMMARY.md (one page, read first), FRICTION_LOG.md, FEATURE_REQUESTS.md, docs/PRODUCT_FEEDBACK.md |
 | Security notes | `SECURITY.md` |
 | The Agent Skill | `skills/clucktalk/` |
 
