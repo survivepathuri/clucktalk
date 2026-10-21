@@ -14,7 +14,9 @@ Prefer a file? [Download the same video (MP4, about 11.1 MB)](https://github.com
 
 Try the live demo (no sign-in, desktop browser): https://demo.13-127-66-28.sslip.io/
 
-MIT licensed · Built for the Alexa+ track of the Build, Ship, Shape hackathon · Judges: start at "Try the live demo" below, or `docs/JUDGES.md`.
+*Judges: start here → [docs/JUDGES.md](docs/JUDGES.md)*: the one-page guide (what to click, what is real and what is simulated, known limits).
+
+MIT licensed · Built for the Alexa+ track of the Build, Ship, Shape hackathon · Judges: start at "Try the live demo" below, or [`docs/JUDGES.md`](docs/JUDGES.md).
 
 Automated tests: 3,486 (524 harness, 1,757 unit, 1,205 contract); counts from the full verify recorded in docs/RESULTS.md.
 
@@ -38,30 +40,30 @@ It reads every number back before saving it, and never gives a diagnosis or a do
 
 | Criterion | Where to see it |
 |---|---|
-| Technical Implementation | A real MCP server (2025-11-25, Streamable HTTP) with 14 tools; 3,486 automated tests; docs/RESULTS.md, docs/ARCHITECTURE.md. Limits are in the Status table below. |
+| Technical Implementation | A real MCP server (2025-11-25, Streamable HTTP) with 14 tools; 3,486 automated tests; [docs/RESULTS.md](docs/RESULTS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Limits are in the Status table below. |
 | Design | The live demo: Telugu answers with the English "Judge view", a read-back and a yes before anything is saved, every simulated number labelled. |
 | Potential Impact | A real, very small pilot (one farmer, two sheds, two records confirmed on 19 October); see "Impact: measured and not yet measured" below. |
-| Quality of the Idea | Answers come from the farmer's own records; code sets the urgency; guidance for the vet, never a diagnosis or a dose; docs/SAFETY_MATRIX.md. |
+| Quality of the Idea | Answers come from the farmer's own records; code sets the urgency; guidance for the vet, never a diagnosis or a dose; [docs/SAFETY_MATRIX.md](docs/SAFETY_MATRIX.md). |
 
-Judges: the one-page guide is docs/JUDGES.md.
+Judges: the one-page guide is [docs/JUDGES.md](docs/JUDGES.md).
 
 ## For Amazon's teams: friction and feedback
 
-I kept a friction log while building, and wrote feedback on every tool used. The one page to read first is docs/FRICTION_SUMMARY.md.
+I kept a friction log while building, and wrote feedback on every tool used. The one page to read first is [docs/FRICTION_SUMMARY.md](docs/FRICTION_SUMMARY.md).
 
-- docs/FRICTION_SUMMARY.md: the entries the Amazon teams most need, each with who is affected, what it cost, and the change I ask for.
-- FRICTION_LOG.md: the log with steps and evidence (34 live entries in all, FL-001 to FL-037: 23 here, 11 about my own tooling in docs/DEV_NOTES.md).
-- FEATURE_REQUESTS.md: the changes I ask for.
-- docs/PRODUCT_FEEDBACK.md: feedback per tool (what I used it for, what worked, what needs work, onboarding, would I build with it again).
+- [docs/FRICTION_SUMMARY.md](docs/FRICTION_SUMMARY.md): the entries the Amazon teams most need, each with who is affected, what it cost, and the change I ask for.
+- [FRICTION_LOG.md](FRICTION_LOG.md): the log with steps and evidence (34 live entries in all, FL-001 to FL-037: 23 here, 11 about my own tooling in [docs/DEV_NOTES.md](docs/DEV_NOTES.md)).
+- [FEATURE_REQUESTS.md](FEATURE_REQUESTS.md): the changes I ask for.
+- [docs/PRODUCT_FEEDBACK.md](docs/PRODUCT_FEEDBACK.md): feedback per tool (what I used it for, what worked, what needs work, onboarding, would I build with it again).
 
 ## Status: real, simulated, not yet
 
 | Part | Status | What that means |
 |---|---|---|
-| MCP server and its 14 tools | **Real** | Runs on the public demo and locally; tests and protocol checks in `docs/RESULTS.md`. Not run on an Alexa+ device. |
+| MCP server and its 14 tools | **Real** | Runs on the public demo and locally; tests and protocol checks in [`docs/RESULTS.md`](docs/RESULTS.md). Not run on an Alexa+ device. |
 | Alexa+ screen (the Simulator) | **Simulated** | Our web app plays the Alexa+ client and speaks MCP to the real server. Its banner says so. |
 | Prices, sensors, supplier, SMS, payments | **Simulated** | Labelled "Simulated" in every answer. The demo farm is fictional. |
-| Amazon Nova 2 Lite (Bedrock) | **Integrated, switched off** | In code (`src/clucktalk/agents/bedrock.py`). Four real calls on 2026-09-29, outside the server, in a separate AWS account. The server-path run of 17 October failed (throttled, quotas 0, FL-031). The demo and the pilot use rules ("Demo rules (no AI model)"). |
+| Amazon Nova 2 Lite (Bedrock) | **Integrated, switched off** | In code ([`src/clucktalk/agents/bedrock.py`](src/clucktalk/agents/bedrock.py)). Four real calls on 2026-09-29, outside the server, in a separate AWS account. The server-path run of 17 October failed (throttled, quotas 0, FL-031). The demo and the pilot use rules ("Demo rules (no AI model)"). |
 | Farmer pilot | **Real, very small** | One farmer (anonymous), two sheds, two records confirmed on 19 October. The pilot link is not public. |
 | Large-farm scale | **Not yet** | The demo farm has 3 houses, the pilot 2 sheds. Not tested on large farms. |
 | Other species | **Not yet** | Dairy, sheep and fish are planned, not built. |
@@ -78,7 +80,7 @@ Open **https://demo.13-127-66-28.sslip.io/** in a desktop browser. No sign-in. I
 
 ## Impact: measured and not yet measured
 
-- **Measured:** 3,486 automated tests (the line above, `docs/RESULTS.md`); p95 about 25 ms (docs/RESULTS.md) for the slowest step of the server, on localhost in mock mode (section 5; not Amazon's 500 ms round trip); in the pilot, two daily records confirmed by one farmer on 19 October.
+- **Measured:** 3,486 automated tests (the line above, [`docs/RESULTS.md`](docs/RESULTS.md)); p95 about 25 ms ([docs/RESULTS.md](docs/RESULTS.md)) for the slowest step of the server, on localhost in mock mode (section 5; not Amazon's 500 ms round trip); in the pilot, two daily records confirmed by one farmer on 19 October.
 - **Not yet measured:** yield, mortality, time saved, adoption. One day of pilot data cannot show any of them.
 
 **Scale, honestly:** records are kept per house (shed), not per bird. The demo farm has 3 houses and the pilot has 2 sheds; nothing has been tested on a large farm.
@@ -97,7 +99,7 @@ flowchart LR
 
 ![CluckTalk architecture: real parts solid, simulated or optional parts dashed](docs/img/architecture.png)
 
-Real parts are solid; simulated or optional parts are dashed. The detailed diagrams, with what is real and what is simulated, are in `docs/ARCHITECTURE.md`.
+Real parts are solid; simulated or optional parts are dashed. The detailed diagrams, with what is real and what is simulated, are in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Limits and what's next
 
@@ -110,10 +112,10 @@ Real parts are solid; simulated or optional parts are dashed. The detailed diagr
 
 ## Links
 
-- Code: https://github.com/survivepathuri/clucktalk (MIT, `LICENSE`)
+- Code: https://github.com/survivepathuri/clucktalk (MIT, [`LICENSE`](LICENSE))
 - Live demo: https://demo.13-127-66-28.sslip.io/
 - Demo video (2:03): https://youtu.be/wB2TxMqiE_U
-- Results: `docs/RESULTS.md` · Judges' guide: `docs/JUDGES.md` · Friction log: `FRICTION_LOG.md`
+- Results: [`docs/RESULTS.md`](docs/RESULTS.md) · Judges' guide: [`docs/JUDGES.md`](docs/JUDGES.md) · Friction log: [`FRICTION_LOG.md`](FRICTION_LOG.md)
 
 ## Try it now
 
