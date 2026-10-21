@@ -1,75 +1,124 @@
-# Devpost project description (draft)
+# Devpost project description
 
-**Telugu-first MCP assistant for broiler farmers**
+Paste-ready text for the Devpost form, in form order. Every claim names the file or command it comes from in section 11. Nothing here has run on an Alexa+ device.
 
-English, first person. Every claim names the file or command it comes from in the source list at the end. Items only the builder can fill are marked `[FILL]`. Nothing here has run on an Alexa+ device.
+## 1. Project name
 
-## Inspiration
+CluckTalk (కోడి మిత్ర; Kodi Mitra, 'Chicken Friend')
 
-India has a very large number of broiler farmers, and many of them run their sheds from memory, a notebook or a phone gallery. The numbers they need every day are scattered: how many birds died today, how old each shed is, how much feed is left, when to sell. When a farmer has several sheds, a small problem in one of them is easy to miss until it becomes an expensive one.
+## 2. Tagline
 
-I have worked on broiler farms before, so I have seen this up close.
+Telugu-first MCP assistant for broiler farmers
 
-I built CluckTalk to put every shed in one place and make it easy to ask about. A farmer asks in Telugu, and the answer comes from his own records and his own declared schedule, not from a generic guess. The goal is fewer surprises, less guesswork on sale day, and more transparency in a business that runs on trust and memory.
+## 3. Inspiration
 
-I built it with input from a real broiler farmer. His feedback was clear: he wants to ask by speaking and to hear the answer back in Telugu. Today CluckTalk answers in written Telugu; the Simulator has a microphone button for English questions and reads English answers aloud when Sound is on. Asking by speaking in Telugu and hearing spoken Telugu replies are the next steps on the roadmap.
+A broiler farmer starts the day in the shed with busy hands. Birds died overnight, and the count, the feed left and the age of each shed sit in a notebook, in memory or in a phone gallery. With several sheds, a sudden rise in deaths in one of them is easy to miss until it is costly.
 
-## What it does
+CluckTalk keeps those records in one place. It tells the farmer, in Telugu and English, what needs attention first, and it answers from the farmer's own records, not from a generic guess.
 
-CluckTalk is a self-hosted MCP server (spec 2025-11-25, Streamable HTTP), shown through a simulated Alexa+ web app and the MCP Inspector. The Telugu subtitle is కోడి మిత్ర (Kodi Mitra, 'Chicken Friend'). It is entered on the Alexa+ track and uses the official `mcp` Python SDK and 14 tools. My Simulator is a web app: browser UI plus a backend MCP client that sends initialize (protocolVersion 2025-11-25), tools/list and tools/call to the MCP server over Streamable HTTP.
+A broiler farmer gave feedback during the build: they want to ask by speaking and hear the answer in Telugu. Today the answers are written Telugu. The Simulator's microphone takes English, and spoken Telugu is not built.
 
-It gives a daily briefing that puts health items first, a record book (deaths, feed, weights, treatments) that is saved only after an explicit yes, health triage with a vet handoff (guidance, never a diagnosis or a dose; the vet message is a simulated SMS), a follow-up question days later, and feed and sale plans (the price is simulated). Each tool returns English text, Telugu text and structured data.
+## 4. What it does
 
-I have not run it on real Alexa+. The Alexa+ developer tools are preview for select partners and I found no way to apply. As I read the Devpost FAQ (https://amazonappdev2026.devpost.com/details/faqs), testing on real Alexa+ is not required, and a web simulator that I build myself and that acts as an MCP client meets the requirement. So I tested it through my own Simulator. The browser page itself only calls the Simulator's own backend; the backend is the MCP client (see "How the Simulator speaks MCP" in the README, with file and line references and a captured exchange). The Simulator picks tools with rule-based matchers.
+A farmer can do five things.
 
-## How I built it
+1. Ask how each shed is doing. A card shows the status, with health items first.
+2. Get a daily briefing: what needs attention today, in order.
+3. Check sick birds. CluckTalk asks short questions and sets the urgency in code. It gives guidance for the vet, never a diagnosis or a dose. The vet summary is read back first, and the SMS is simulated.
+4. Record the day: deaths, feed, weights, treatments. The record is read back and saved only after the farmer says yes.
+5. Plan a sale or a feed order. The price is simulated.
 
-I built it alone with Claude Code, in Python 3.13 with Starlette, uvicorn, SQLite and Pydantic. A tool answers from stored state and does not wait for a model. Two tools, `start_health_check` and `get_daily_briefing`, hand a job to a background worker, and that worker is the only code that can call a model.
+The Alexa+ screen is simulated. Our web app plays the Alexa+ client and speaks MCP to the real server. Its banner says: "Simulated Alexa+ screen. The backend is a real MCP server (Streamable HTTP)." The badge says "Demo data · mock host". The demo farm is fictional and has 3 houses.
 
-Amazon Nova 2 Lite through the Bedrock Converse API is integrated in the code for those two agents and is off by default. It makes closed-list decisions only and never writes farmer-facing wording. My code sets the minimum urgency, so the model can raise it and never lower it. The integration is covered by tests with a botocore Stubber. Four live calls happened on 2026-09-29, outside the server. A live run through the server is blocked: on my newer AWS account every Nova 2 Lite quota is 0, and all four calls attempted on 2026-10-17 were throttled (FL-031).
+## 5. How I built it
 
-The demo and the Lightsail pilot use a rule-based stand-in labelled "AI: off", and pilot mode forces `MOCK_BEDROCK=true`. The pilot makes no Bedrock calls. A live call is capped at 100 a day and one every 4 seconds, and every call is written to a ledger. A script fails the build if anything refers to OpenSearch Serverless, because it bills for always-on capacity.
+I built it alone with Claude Code. The server is a self-hosted MCP server (spec 2025-11-25, Streamable HTTP) written in Python with the official `mcp` SDK. It has 14 tools. Each tool returns English text, Telugu text and a structured result, and the four cards run in a sandboxed iframe. An Agent Skill (`skills/clucktalk/`) describes the tools and the safety rules. The data is kept in SQLite.
 
-The cloud pilot runs on one AWS Lightsail server in Mumbai, with the sample farm for the demo; the farmer's own two sheds were loaded for the pilot. The demo farm is fictional. The example daily-deaths limit that demo mode uses (6 deaths a day up to age 29 days, 3 a day from age 30 days) comes from figures relayed by one broiler farmer; they are examples, not recommendations.
+A tool answers from stored state and does not wait for a model. The safety rules are in code. The urgency is set by code, so a model could raise it and never lower it.
 
-## Challenges
+Tests: 3,486 automated tests (524 harness, 1,757 unit, 1,205 contract). CI runs them on Ubuntu and Windows with Python 3.12 and 3.13. The macOS job is manual.
 
-- A new AWS account showed Nova 2 Lite as available while every Bedrock quota was 0. After two Support cases, the first call was refused with "account is currently being verified", and it worked on retry about two hours later (FL-014). On my newer account, opened after I lost access to the first (I regained it on 2026-10-19 through the root user), every Nova 2 Lite quota was 0 again and all four server-path calls were throttled (FL-031).
-- Claude models stayed blocked by a missing Anthropic Marketplace agreement and, for Sonnet 5, a quota of 0, so Nova 2 Lite is the only model I ran.
-- I could not get Amazon's Local Inspector, so I wrote my own replay of the documented flow and said so (FL-024). I did not run the Local Inspector.
-- Writing triage wording that is never a diagnosis and that no model can talk down.
-- Telugu wording: 470 of 476 strings were reviewed by me, a native Telugu speaker (single reviewer, not independent); 6 are pending, because the farmer-preferred wording for follow-up is still to be confirmed. On 2026-10-16 I personally read the 390 strings that were still pending and found them correct (single-reviewer self-review as a native Telugu speaker); I approved 384 and kept 6 follow-up strings pending until the farmer confirms his word. The counts: 470 approved + 6 pending = 476 strings, counted wherever they appear in the code (86 approved on 2026-09-27, 384 on 2026-10-16); the approvals file `data/i18n/telugu_approvals.json` holds 433 entries (80 + 353) because a repeated English+Telugu pair shares one approval.
+Amazon Nova 2 Lite through the Bedrock Converse API is integrated in `src/clucktalk/agents/bedrock.py` and is off in the live demo and in the pilot. The demo shows "Demo rules (no AI model)". Four real calls ran on 2026-09-29, outside the server, in a separate AWS account. A run through the server on 17 October failed: it was throttled, because every Nova 2 Lite quota on that account is 0 (FL-031).
 
-## Accomplishments
+## 6. Challenges I ran into
 
-14 tools, four MCP Apps cards, 3,481 automated tests (collected by `python tasks.py results`, see `docs/RESULTS.md` section 1; all passed in `python tasks.py check` on 2026-10-18), and 88 of 88 golden eval cases passing in mock mode on 2026-10-16. Automated tests: 3481 (519 harness, 1757 unit, 1205 contract), CI green on d167410. A safety matrix ties each rule to its source and tests. My friction log has 30 live entries (FL-001 to FL-033; three more numbers are merged stubs), and I wrote product feedback for the Amazon teams.
+- Cards did not show on the public demo. The card sandbox origin was built as `https://localhost:` with an empty port. The cards now load from a second origin under the demo's own host name, and the server checks that setting at start (FL-034, FL-037).
+- A check that spoken numbers equal the numbers on the card failed on the briefing date, which is display-only text. I marked it as skipped, as for the other cards (FL-035).
+- One CI job failed on Windows with Python 3.12 and passed on a re-run. It is an overlapping-request test, and I have not investigated it. It is still open (FL-036).
+- I could not get Amazon's Local Inspector, so I wrote my own replay of the documented flow and said so (FL-024).
 
-## What I learned
+## 7. Accomplishments
+
+Measured, each from a file in this repository:
+
+- 14 tools and 3,486 automated tests (524 harness, 1,757 unit, 1,205 contract), CI green on 528dc9c.
+- 88 of 88 golden evaluation cases pass in mock mode (run of 2026-10-16).
+- Server time for the slowest step is p95 about 25 ms, on localhost in mock mode (docs/RESULTS.md). This is not Amazon's 500 ms round trip.
+- In the pilot, one farmer confirmed two daily records on 19 October.
+- The friction log has 34 live entries (FL-001 to FL-037).
+
+## 8. What I learned
 
 Put the safety rules in code and let a model only raise an alert. Label every simulated number. Read-back and confirmation suit voice well. Check Bedrock quotas with a real call, not the model list.
 
-## What's next
+## 9. What's next
 
-Run a longer farmer pilot over more days, enter the farmer's own rules in the app, get the Telugu strings reviewed by someone besides me, run the live AI path through the server, and run Amazon's validation if access opens.
+Dairy, sheep and fish farming are planned, each needing its own vet-reviewed content. They are not started. Other next steps: Telugu speech in and out, a longer farmer pilot, a Telugu review by someone besides me, and a live AI run through the server.
 
-Built with a broiler farmer. The schedule, safety and language layers are not poultry-specific, so the next step is other livestock and aquaculture, each with its own vet-reviewed content.
+## 10. How this meets each criterion
 
-> **Pilot facts**
-> One farmer used the cloud pilot with two sheds, with their consent: two records confirmed on one day (19 October). A short one-farmer pilot, not a study or trial. Counts as of 20 October 2026.
-> The cloud pilot link is not published, because it is the farmer's login to their real records. Judges can run the same app locally with synthetic demo data (see the judge path in the README, "Try it now").
+**Technical Implementation.** The server follows MCP 2025-11-25 over Streamable HTTP with 14 tools, and 29 protocol tests pass against it. The 3,486 tests and the 88 evaluation cases run without AWS. Limit: Nova is integrated but did not run through the server. Evidence: `docs/RESULTS.md` sections 1, 2 and 4; `python tasks.py verify`.
 
-## Built with
+**Design.** The first screen has five starter tiles. Each answer comes in Telugu with the English under it ("Judge view"). Nothing is saved before a read-back and a yes, and every simulated number is labelled. Limit: no Telugu speech, and the layout is shown by screenshots only. Evidence: `docs/evidence/2026-10-18_judge_view/`; `tests/contract/test_simulator_starters.py`.
+
+**Potential Impact.** The target is a broiler farmer who tracks several sheds by memory or notebook. One farmer used the pilot with two sheds and confirmed two records on 19 October. Yield, mortality, time saved and adoption are not measured. Evidence: `README.md` (Impact); `docs/JUDGES.md`.
+
+**Quality of the Idea.** The idea is a helper a farmer can ask in Telugu that answers from the farmer's own records and does not diagnose. Code sets the urgency, and the reply is guidance for the vet. The schedule, safety and language layers are not poultry-specific, but other species are only planned. Evidence: `docs/SAFETY_MATRIX.md`; `tests/unit/test_triage_rules.py`.
+
+## 11. Where to verify each claim
+
+| Claim | Where to check it |
+|---|---|
+| 14 tools, MCP 2025-11-25 | `docs/RESULTS.md` sections 1 and 4; `python tasks.py verify` |
+| 3,486 tests (524, 1,757, 1,205) | `docs/RESULTS.md` section 1; the line at the top of `README.md` |
+| CI green on 528dc9c | GitHub Actions run for commit 528dc9c |
+| 88 of 88 golden cases | `docs/EVALS.md`; `docs/RESULTS.md` section 2 |
+| p95 about 25 ms, localhost, mock mode | `docs/RESULTS.md` section 5 |
+| Nova integrated, four calls on 2026-09-29, off in demo and pilot | `src/clucktalk/agents/bedrock.py`; `docs/AWS_SETUP.md` sections 5.2 and 5.3; `FRICTION_LOG.md` FL-031 |
+| Pilot: two sheds, two records, 19 October | `docs/RESULTS.md` section 9; `submission.md` |
+| No diagnosis or dose | `docs/SAFETY_MATRIX.md`; `tests/unit/test_triage_rules.py` |
+| Friction entries FL-034 to FL-037 | `docs/DEV_NOTES.md`; `FRICTION_LOG.md` |
+
+## 12. Impact metrics
+
+**Measured:** 3,486 automated tests; server time p95 about 25 ms for the slowest step, on localhost in mock mode; two daily records confirmed by one farmer in the pilot on 19 October.
+
+**Not yet measured:** yield, mortality, time saved, adoption. One day of pilot data cannot show any of them.
+
+**Scale, honestly:** records are kept per house (shed), not per bird. The demo farm has 3 houses and the pilot has 2 sheds. Nothing has been tested on a large farm.
+
+## 13. Built with
 
 Python 3.13, `mcp` 2.2.0, Model Context Protocol 2025-11-25 over Streamable HTTP, MCP Apps cards (vanilla HTML and JavaScript), Starlette 1.7.0, uvicorn 0.54.0, Pydantic 2.13.5, SQLite, Amazon Bedrock (Amazon Nova 2 Lite, Converse API), boto3 1.43.103, AWS Lightsail, AWS CLI 2.37.4, Caddy, Open-Meteo (optional, off by default), Noto Sans Telugu 2.005, Hypothesis, pytest, ruff, GitHub Actions, Claude Code.
 
-## What I built during the submission window vs before
+## 14. Testing instructions
 
-Pre-existing projects: none found. The first commit (`d1d1662`, 2026-09-27) holds only build scaffolding (task runner, secret and cost checks, version pins, license); the product code follows in later commits. The GitHub repository was created on 2026-09-30. A check on 2026-10-18 (`gh repo list`, and folder names on my machine) found no earlier repository and no earlier project folder for it. Commit titles use plan-day labels; the dates are the commit dates. It was built with Claude Code. I cannot say what code I wrote outside this history.
+Open https://demo.13-127-66-28.sslip.io/ in a desktop browser. No sign-in. Tap one of the five starter tiles (farm status, when to sell, health check, daily briefing, help) and read the card. Judge view is on by default and shows the English under each Telugu answer. Type a question, for example "How is shed two doing?". Open "Developer panel" to see the MCP request and response. The farm is fictional demo data. I tested only in Chromium-based browsers; Firefox and Safari (WebKit) were not tested. The farmer's Telugu phone page is not on the public demo. Nova is off ("Demo rules (no AI model)").
 
-## Track and mini challenges
+## 15. Product feedback
 
-Alexa+ track. What runs on AWS: the Lightsail instance in Mumbai that hosts the farmer pilot. The pilot makes no Bedrock calls. Amazon Nova 2 Lite through Bedrock is integrated in the code and off by default; it was called live four times on 2026-09-29, outside the server, and a server-path live run is blocked by zero Nova quotas on the newer account (FL-031). Open Source mini challenge: undecided, no claim.
+Amazon Bedrock, Nova 2 Lite. Used for: triage and briefing slow paths via Converse; the pilot runs with it off. Worked well: four real calls on 29 Sep 2026 succeeded: 2,342 input and 106 output tokens, $0.000000. Needs work: models showed available while every quota was 0, then an account-verification error blocked the first call (FL-014); ThrottlingException says only "Too many requests" (FL-031). Onboarding: about 2 hours of work to unblock the first call (quota and account verification, solved with Claude Code's help); the account was created on 28 September and the first successful calls were on 29 September. Build again: yes, with invocation logging from day one.
 
-## Sources
+Amazon Lightsail. Used for: hosting the farmer pilot on one Mumbai instance (Ubuntu 24.04, static IP, about $7 a month, paid by card). Worked well: the deploy and verify scripts ran twice on the real server, and the app, HTTPS proxy and backup timer came back after a reboot. Needs work: port 443 is closed on a new instance; the instance name cannot be changed; the console key download is a one-time secret (FL-030); memory under real load is untested. Onboarding: about 5 hours from creating the instance to the first deploy. Build again: yes.
 
-Tools, versions, 14 tools: `submission.md`, `docs/VERSIONS.md`, `requirements.txt`. Bedrock code and tests: `src/clucktalk/agents/bedrock.py`, `tests/unit/test_agents.py`. Caps and ledger: `src/clucktalk/agents/budget.py`, `src/clucktalk/config.py`, `src/clucktalk/store/sqlite.py`. Live calls: `docs/AWS_SETUP.md` sections 5.2 and 5.3. Quotas and the verification step: `FRICTION_LOG.md` FL-014. Pilot mode: `src/clucktalk/config.py`, `deploy/cloud/bootstrap.sh`, `docs/CLOUD_PILOT.md`. Evals and results: `docs/EVALS.md`, `docs/RESULTS.md`. Never-lower test: `tests/unit/test_triage_rules.py`, `tests/unit/test_agents.py`.
+Alexa+ MCP documentation and our Simulator. Used for: building an MCP server to the published guidance (QuickStart, 10 Jul; Local Inspector, 3 Aug); we wrote our own Simulator because we could not run on Alexa+. Worked well: the QuickStart gave the transport, the auth checklist and the 500 ms target. Needs work: no self-serve way to run the Alexa AI CLI or Local Inspector (FL-024); no stated protocolVersion (FL-026); no card size, CSP or font guidance (FL-009). Onboarding: about 2 hours reading the docs; we never tested on real Alexa+. Build again: yes, we would build for MCP again.
+
+AWS CLI and boto3 on Windows. Used for: Identity Center sign-in, plan and quota checks, a hello call to Bedrock, and the live client in our code. Worked well: no access keys were needed, and we read the Converse request shapes in the installed botocore model before any paid call. Needs work: the CLI crashed on Windows while saving a reply with an emoji and left a truncated file (FL-019); a billing error did not name the setting to change (FL-015); an aws login profile needed botocore[crt] (FL-032, details not recorded). Onboarding: about 60 minutes from install to a working aws sts get-caller-identity.
+
+## 16. Pre-existing projects
+
+None found. The first commit (`d1d1662`, 2026-09-27) holds only build scaffolding (task runner, secret and cost checks, version pins, license); the product code follows in later commits. The GitHub repository was created on 2026-09-30. It was built with Claude Code.
+
+## 17. Disclosure
+
+Video narration: AI-generated voice (Gemini TTS).
