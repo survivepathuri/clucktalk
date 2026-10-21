@@ -221,8 +221,11 @@ def test_the_amazon_requirements_table_has_an_evidence_or_pending_for_every_row(
         cells = [c.strip() for c in row.strip("|").split("|")]
         assert len(cells) == 3 and all(cells), row
         assert "pending" in row.lower() or "`" in cells[2] or "not claimed" in row.lower(), row
-    for placeholder in ("[VIDEO URL: pending", "[CONTRIBUTION URL: pending]", "[SECOND REPOSITORY URL: pending]"):
-        assert placeholder in table, placeholder
+    by_name = {row.strip("|").split("|")[0].strip(): row for row in rows}
+    video_row = by_name["A video under 3 minutes, public, in English"]
+    assert "https://youtu.be/wB2TxMqiE_U" in video_row and "Done" in video_row, video_row
+    for name in ("Open Source mini challenge: the contribution", "Open Source mini challenge: the second repository"):
+        assert "Not entered" in by_name[name], name
 
 
 def test_the_submission_says_what_was_live_on_aws_and_what_was_mocked():

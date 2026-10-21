@@ -1,4 +1,4 @@
-# Submission text (draft)
+# Submission notes (the final Devpost text is docs/DEVPOST_DESCRIPTION.md)
 
 Written for the Devpost fields, in the order of the form. Every claim points to a file or a command. Where something is not done or not known, it says **pending** or **not recorded**. Nothing here has run on an Alexa+ device. Counts and timings are generated in `docs/RESULTS.md`; the one count repeated here, the Telugu review sentence, is checked against `docs/TELUGU_REVIEW.md` by a test.
 
@@ -103,12 +103,12 @@ Python 3.13, the MCP Python SDK (`mcp` 2.2.0), Model Context Protocol 2025-11-25
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| An MCP server or a simulated Alexa+ experience, with the simulation source in the repository and a demo that shows it working | **Done for the server and the simulation**; the demo video is **pending** | Server: `src/clucktalk/server/`. Simulation source: `src/clucktalk/simulator/`. Demo: `python tasks.py run` and `python tasks.py verify`; `docs/proof/`; `docs/evidence/2026-09-27_card_and_simulator.md` |
+| An MCP server or a simulated Alexa+ experience, with the simulation source in the repository and a demo that shows it working | **Done for the server and the simulation**; the demo video is public: https://youtu.be/wB2TxMqiE_U | Server: `src/clucktalk/server/`. Simulation source: `src/clucktalk/simulator/`. Demo: `python tasks.py run` and `python tasks.py verify`; `docs/proof/`; `docs/evidence/2026-09-27_card_and_simulator.md` |
 | The repository calls the track technology in code | **Done** | `src/clucktalk/server/app.py` (the MCP server over Streamable HTTP); `src/clucktalk/simulator/mcp_client.py` (the client side); `tests/contract/test_protocol_conformance.py` |
-| A video under 3 minutes, public, in English | **Pending** | [VIDEO URL: pending; must be public, in English and under 3 minutes] |
+| A video under 3 minutes, public, in English | *Done* | `docs/VIDEO_TRANSCRIPT.md`; https://youtu.be/wB2TxMqiE_U (2:03, English narration and subtitles) |
 | Product feedback per tool | **Written**; the builder pastes it into the Devpost fields | `docs/PRODUCT_FEEDBACK.md` (long form with sources) and `docs/PRODUCT_FEEDBACK_DEVPOST.md` (ten paste-ready blocks): for each tool, what it was used for, what worked, what needs work, onboarding, and whether I would build with it again, plus the AWS services used and how. `FRICTION_LOG.md`, `FEATURE_REQUESTS.md` |
 | An open-source license | **Done** | `LICENSE` (MIT); `NOTICE` lists the dependencies' licenses |
 | AWS services used and how | **Lightsail hosts the farmer pilot; Nova 2 Lite through Bedrock is integrated in the code and off by default**. Four live calls happened on 2026-09-29, outside the server. A server-path live run is blocked by zero Nova quotas on the newer account (FL-031). Nova makes closed-list decisions and never writes farmer-facing wording. The pilot makes no Bedrock calls | Lightsail: `docs/CLOUD_PILOT.md`, `deploy/cloud/RUNBOOK.md`. Bedrock: `src/clucktalk/agents/bedrock.py`, `tests/unit/test_agents.py`; the one-off live calls of 2026-09-29: `docs/AWS_SETUP.md` sections 5.2 and 5.3; limits: `FRICTION_LOG.md` FL-014, FL-020, FL-031 |
-| Open Source mini challenge: the contribution | **Undecided**; no claim is made | [CONTRIBUTION URL: pending] |
-| Open Source mini challenge: the second repository | **Undecided**; no claim is made | [SECOND REPOSITORY URL: pending] |
+| Open Source mini challenge: the contribution | *Not entered*; no claim is made | not claimed |
+| Open Source mini challenge: the second repository | *Not entered*; no claim is made | not claimed |
 | Running on an Alexa+ device, or passing Amazon's review | **Not done** | Not claimed anywhere; `docs/ALEXA_READINESS.md` lists what cannot be checked locally |

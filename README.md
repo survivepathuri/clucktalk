@@ -50,7 +50,7 @@ Judges: the one-page guide is docs/JUDGES.md.
 I kept a friction log while building, and wrote feedback on every tool used. The one page to read first is docs/FRICTION_SUMMARY.md.
 
 - docs/FRICTION_SUMMARY.md: the entries the Amazon teams most need, each with who is affected, what it cost, and the change I ask for.
-- FRICTION_LOG.md: the full log (34 live entries, FL-001 to FL-037), with steps and evidence.
+- FRICTION_LOG.md: the log with steps and evidence (34 live entries in all, FL-001 to FL-037: 23 here, 11 about my own tooling in docs/DEV_NOTES.md).
 - FEATURE_REQUESTS.md: the changes I ask for.
 - docs/PRODUCT_FEEDBACK.md: feedback per tool (what I used it for, what worked, what needs work, onboarding, would I build with it again).
 
@@ -235,7 +235,7 @@ this repository, not that Alexa+ has seen it.
 | The architecture diagrams and the judges' guide name exactly the tools the server lists | VERIFIED (a test compares the names; the diagrams are not rendered by a test) | `docs/ARCHITECTURE.md`; `docs/JUDGES.md`; `tests/harness/test_submission_docs.py` |
 | The pilot page's access controls (a token on every call, exact host and origin, size and rate limits, a kill switch) work as the tests describe | VERIFIED (tests only; not checked on the shared pilot or on a phone) | `SECURITY.md`; `tests/contract/test_pilot_hardening.py` |
 | A human security audit, a privacy and data-law review, OAuth 2.1, remote hosting | NOT BUILT (every item is listed as not done) | `docs/PRODUCTION_PATH.md` |
-| The submission text is complete | UNVERIFIED (the demo video and the two mini-challenge URLs are pending; pilot numbers do not exist yet) | `submission.md` |
+| The Devpost submission text is final | VERIFIED (read by hand; no test checks it): the demo video is public, the Open Source mini challenge is not entered, and the pilot numbers are in docs/RESULTS.md section 9 | docs/DEVPOST_DESCRIPTION.md; submission.md |
 | The pilot runs on Amazon Lightsail (not on the builder's own PC through a Tailscale Funnel), and the farmer can use it | UNVERIFIED (one farmer used it with two sheds on one day, counts as of 20 October 2026; no uptime, speed or reliability was measured; availability depends on that server) | none; `docs/CLOUD_PILOT.md` |
 | The server runs on an Alexa+ device, or passes Amazon's review | UNVERIFIED | none; see "Known limitations" |
 | The Local Inspector itself accepts the server | UNVERIFIED | none; `FRICTION_LOG.md` FL-024 |
@@ -543,7 +543,7 @@ is unverified for all four.
 - `docs/INDEPENDENT_REVIEW.md` — the review rounds, what they found and how each was fixed.
 - `SECURITY.md` — the threat model in plain words, and what is not protected.
 - `docs/PRODUCTION_PATH.md` — an honest list of what is missing before a farmer could depend on it (all not done).
-- `submission.md` — the draft submission text, field by field, with pending items marked.
+- submission.md — earlier field-by-field submission notes; the final Devpost text is docs/DEVPOST_DESCRIPTION.md.
 - `docs/SOURCES.md` — provenance for every number CluckTalk uses.
 - `docs/VERSIONS.md` — pinned/verified tool and package versions.
 - `docs/AWS_SETUP.md` — live-mode AWS setup (not needed for the demo).
